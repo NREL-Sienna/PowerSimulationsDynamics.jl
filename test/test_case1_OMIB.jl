@@ -112,7 +112,7 @@ case1_DynSystem = DynamicSystem(nodes_case1,
 ##################################################
 
 #Compute Y_bus after fault
-PSY.Ybus_fault = PSY.PSY.Ybus(branch_case1_fault, nodes_case1)[:,:]
+Ybus_fault = PSY.Ybus(branch_case1_fault, nodes_case1)[:,:]
 
 #Initialize variables
 dx0 = zeros(LITS.get_total_rows(case1_DynSystem))
