@@ -27,3 +27,5 @@ docs/site/
 #Figures
 *.pdf
 *.ipynb
+
+Manifest.toml
