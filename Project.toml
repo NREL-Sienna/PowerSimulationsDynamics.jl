@@ -9,6 +9,14 @@ NLsolve = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
 PowerSystems = "bcd98974-b02a-5e2f-9ee0-a103f5c450dd"
 Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 
+[compat]
+DiffEqBase = "~6.3.1"
+DiffEqCallbacks = "~2.8"
+NLsolve = "~4.1"
+PowerSystems = "~v0.4"
+Sundials = "~3.7.0"
+julia = "~1.2"
+
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
