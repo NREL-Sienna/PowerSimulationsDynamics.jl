@@ -2,8 +2,7 @@ using LITS
 using PowerSystems
 using Test
 
-@test 1 == 1
-
+const PSY = PowerSystems
 
 tests = readdir(dirname( @__FILE__))
 tests = filter(f -> startswith(f, "test_") &&
