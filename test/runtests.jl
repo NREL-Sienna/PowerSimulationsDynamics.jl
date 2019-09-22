@@ -1,6 +1,9 @@
 using LITS
 using PowerSystems
 using Test
+using NLsolve
+using DiffEqBase
+using Sundials
 
 const PSY = PowerSystems
 
