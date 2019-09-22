@@ -133,7 +133,7 @@ case5_DynSystem = DynamicSystem(nodes_case5,
 Ybus_fault = PSY.Ybus(branch_case5_fault, nodes_case5)[:,:];
 
 #Initialize variables
-dx0 = zeros(get_total_rows(case5_DynSystem))
+dx0 = zeros(LITS.get_total_rows(case5_DynSystem))
 x0 = [1.02, 1.0, 1.0, 0.0, -0.01, -0.01,
       1.0, #eq_p
       0.0, #ed_p
@@ -170,7 +170,7 @@ sol = solve(prob, IDA());
 
 #Define data for using callbacks for defining the fault
 tstop = [1.0] #Define a timestop at t=1, the step change
-cb = DiffEqBase.DiscreteCallback(change_t_one, Y_change!)
+cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
 
 #Solve DAE system
 sol2 = solve(prob, IDA(init_all = :false), dtmax= 0.02, callback=cb, tstops=tstop);

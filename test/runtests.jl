@@ -16,4 +16,4 @@ for test in tests
     println()
 end
 
-true
+@test true
