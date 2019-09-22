@@ -1,5 +1,3 @@
-using PowerSystems
-
 """
 Case 1:
 This case study defines a classical machine against an infinite bus. The fault
@@ -135,7 +133,7 @@ x0_init = sys_solve.zero
 
 #Define problem
 prob = DiffEqBase.DAEProblem(system_model!, dx0, x0_init, tspan,
-                            (u0, case1_DynSystem), differential_vars = diff_vars);
+                            (u0, case1_DynSystem), differential_vars = diff_vars)
 
 #Solve problem in equilibrium
 sol = solve(prob, IDA());
@@ -145,10 +143,7 @@ tstop = [1.0] #Define a timestop at t=1, the step change
 cb = DiffEqBase.DiscreteCallback(change_t_one, Y_change!)
 
 #Solve DAE system
-sol2 = solve(prob, IDA(init_all = :false), dtmax= 0.02, callback=cb, tstops=tstop);
+sol2 = solve(prob, IDA(init_all = :false), dtmax= 0.02, callback=cb, tstops=tstop)
 
 #Obtain data for angles
-series = get_state_series(sol2, case1_DynSystem, (:Case1Gen, :δ));
-
-#Plot data
-plot(series[1],series[2])
+series = get_state_series(sol2, case1_DynSystem, (:Case1Gen, :δ))
