@@ -13,10 +13,12 @@ tests = filter(f -> startswith(f, "test_") &&
                                f != basename( @__FILE__),
                                tests)
 
+@testset "BasicTests" begin
+
 for test in tests
     print(splitext(test)[1], ": ")
     include(test)
     println()
 end
 
-@test true
+end

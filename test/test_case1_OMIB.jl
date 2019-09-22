@@ -123,17 +123,16 @@ x0 = [1.05, #VR_1
       0.2, #δ
       1.0] #ω
 diff_vars = case1_DynSystem.DAE_vector
-u0 = [0.4]
 tspan = (0.0, 20.0);
 
 #Find initial condition
-inif! = (out,x) -> system_model!(out, dx0 ,x, (u0,case1_DynSystem), 0.0)
+inif! = (out,x) -> system_model!(out, dx0 ,x, (Ybus_fault,case1_DynSystem), 0.0)
 sys_solve = nlsolve(inif!, x0)
 x0_init = sys_solve.zero
 
 #Define problem
 prob = DiffEqBase.DAEProblem(system_model!, dx0, x0_init, tspan,
-                            (u0, case1_DynSystem), differential_vars = diff_vars)
+                            (Ybus_fault, case1_DynSystem), differential_vars = diff_vars)
 
 #Solve problem in equilibrium
 sol = solve(prob, IDA());
@@ -147,3 +146,5 @@ sol2 = solve(prob, IDA(init_all = :false), dtmax= 0.02, callback=cb, tstops=tsto
 
 #Obtain data for angles
 series = LITS.get_state_series(sol2, case1_DynSystem, (:Case1Gen, :δ))
+
+@test sol2.retcode == :Success
