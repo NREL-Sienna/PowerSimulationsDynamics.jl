@@ -190,4 +190,4 @@ cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
 sol2 = solve(prob, IDA(init_all = :false), dtmax= 0.02, callback=cb, tstops=tstop);
 
 #Obtain data for angles
-series = get_state_series(sol2, case2_DynSystem, (:Case2Gen2, :δ));
+series = LITS.get_state_series(sol2, case2_DynSystem, (:Case2Gen2, :δ));
