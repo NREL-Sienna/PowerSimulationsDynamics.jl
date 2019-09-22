@@ -1,34 +1,34 @@
-# PowerSystems
+# LITS
 
 ```@meta
-CurrentModule = PowerSystems
+CurrentModule = LITS
 DocTestSetup  = quote
-    using PowerSystems
+    using LITS
 end
 ```
 
 API documentation
 
 ```@contents
-Pages = ["PowerSystems.md"]
+Pages = ["LITS.md"]
 ```
 
 ## Index
 
 ```@index
-Pages = ["PowerSystems.md"]
+Pages = ["LITS.md"]
 ```
 
 ## Exported
 
 ```@autodocs
-Modules = [PowerSystems]
+Modules = [LITS]
 Private = false
 ```
 
 ## Internal
 
 ```@autodocs
-Modules = [PowerSystems]
+Modules = [LITS]
 Public = false
 ```
