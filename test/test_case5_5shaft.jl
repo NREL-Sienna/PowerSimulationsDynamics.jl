@@ -1,5 +1,3 @@
-using PowerSystems
-
 """
 Case 5:
 This case study a three bus system with 1 machine located at bus 2.
@@ -179,6 +177,3 @@ sol2 = solve(prob, IDA(init_all = :false), dtmax= 0.02, callback=cb, tstops=tsto
 
 #Obtain data for angles
 series = get_state_series(sol2, case5_DynSystem, (:Case5Gen, :δ));
-
-#Plot data
-plot(series[1],series[2])

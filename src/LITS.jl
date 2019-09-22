@@ -1,5 +1,25 @@
 module LITS
 
+#AVR Exports
+export AVR
+export AVRFixed
+export AVRSimple
+export AVRTypeI
+export AVRTypeII
+export AVRTypeIIManual
+
+#Machine Exports
+export Machine
+export BaseMachine
+export OneDOneQMachine
+export MarconatoMachine
+export SimpleMarconatoMachine
+export AndersonFouadMachine
+export SimpleAFMachine
+export FullMachine
+export SimpleFullMachine
+
+
 import DiffEqBase
 import DiffEqCallbacks
 import Sundials
