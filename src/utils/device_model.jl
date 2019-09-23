@@ -6,7 +6,7 @@ function device_model!(x,
                       current_i,
                       ix_range::UnitRange{Int64},
                       ode_range::UnitRange{Int64},
-                      controls::Vector{Float64},
+                      controls,
                       device::DynG,
                       sys::DynamicSystem) where {DynG <: DynGenerator}
        #Obtain local device states
@@ -83,7 +83,7 @@ function device_model!(x,
                         current_i,
                         ix_range::UnitRange{Int64},
                         ode_range::UnitRange{Int64},
-                        controls::Vector{Float64},
+                        controls,
                         device::DynI,
                         sys::DynamicSystem) where {DynI <: DynInverter}
 
