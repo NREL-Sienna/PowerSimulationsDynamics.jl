@@ -22,5 +22,5 @@ function step_change3!(integrator)
 end
 
 function Y_change!(integrator)
-  integrator.p[2].Ybus = Ybus_fault
+  integrator.p[2].Ybus = integrator.p[1]
 end
