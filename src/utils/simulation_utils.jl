@@ -18,7 +18,7 @@ function step_change2!(integrator)
 end
 
 function step_change3!(integrator)
-  integrator.p[2].dyn_injections[1].P_ref += 0.1
+  integrator.p[2].dyn_injections[1].P_ref += 0.2
 end
 
 function Y_change!(integrator)
