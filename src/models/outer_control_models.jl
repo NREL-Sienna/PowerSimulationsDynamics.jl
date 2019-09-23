@@ -1,7 +1,7 @@
 function mdl_outer_ode!(device_states,
                         output_ode,
                         f0,
-                        device::DynInverter{C,VirtualInertiaQdrop{VirtualInertia,ReactivePowerDrop},VC,DC,P,F}) where {C <: Converter,
+                        device::DynInverter{C,VirtualInertiaQdroop{VirtualInertia,ReactivePowerDroop},VC,DC,P,F}) where {C <: Converter,
                                                                 VC<: VSControl,
                                                                 DC<: DCSource,
                                                                 P <: FrequencyEstimator,

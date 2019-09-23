@@ -4,8 +4,8 @@ filter = LCLFilter(0.08, 0.003, 0.074, 0.2, 0.01)
 pll = PLL(500.0, 0.084, 4.69)
 
 virtual_H = VirtualInertia(2.0, 400.0, 20.0, 2*pi*50.0)
-Q_control = ReactivePowerDrop(0.2, 1000.0)
-outer_control = VirtualInertiaQdrop(virtual_H, Q_control)
+Q_control = ReactivePowerDroop(0.2, 1000.0)
+outer_control = VirtualInertiaQdroop(virtual_H, Q_control)
 
 vsc = CurrentControl(1.27, 14.3, 0.59, 736.0, 50.0, 0.5, 0.2,
 0.00)

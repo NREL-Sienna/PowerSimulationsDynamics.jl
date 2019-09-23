@@ -53,9 +53,9 @@ export PLL
 
 # Outer Control Exports
 export OuterControl
-export VirtualInertiaQdrop
+export VirtualInertiaQdroop
 export VirtualInertia
-export ReactivePowerDrop
+export ReactivePowerDroop
 
 # VSControl Export
 export VSControl

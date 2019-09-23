@@ -50,10 +50,10 @@ virtual_H = VirtualInertia(2.0, #Ta:: VSM inertia constant
                            20.0, #kω:: Frequency droop gain in pu
                            2*pi*50.0) #ωb:: Rated angular frequency
 
-Q_control = ReactivePowerDrop(0.2, #kq:: Reactive power droop gain in pu
+Q_control = ReactivePowerDroop(0.2, #kq:: Reactive power droop gain in pu
                               1000.0) #ωf:: Reactive power cut-off low pass filter frequency
 
-outer_control = VirtualInertiaQdrop(virtual_H, Q_control)
+outer_control = VirtualInertiaQdroop(virtual_H, Q_control)
 
 vsc = CombinedVIwithVZ(0.59, #kpv:: Voltage controller proportional gain
                        736.0, #kiv:: Voltage controller integral gain
