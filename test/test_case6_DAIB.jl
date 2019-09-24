@@ -47,7 +47,7 @@ converter = AvgCnvFixedDC(690.0, #Rated Voltage
 
 dc_source = FixedDCSource(600.0) #Not in the original data, guessed.
 
-filter = LCLFilter(0.08, #Series inductance lf in pu
+filt = LCLFilter(0.08, #Series inductance lf in pu
                    0.003, #Series resitance rf in pu
                    0.074, #Shunt capacitance cf in pu
                    0.2, #Series ractance rg to grid connection (#Step up transformer or similar)
@@ -91,7 +91,7 @@ Darco_Inverter = DynInverter(1, #number
                              vsc, #Voltage Source Controller
                              dc_source, #DC Source
                              pll, #Frequency Estimator
-                             filter) #Output Filter
+                             filt) #Output Filter
 
 
 ######################### Dynamical System ########################

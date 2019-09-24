@@ -21,6 +21,10 @@ function step_change3!(integrator)
   integrator.p[2].dyn_injections[1].P_ref += integrator.p[1][1]
 end
 
+function step_change4!(integrator)
+  integrator.p[2].dyn_injections[2].P_ref += integrator.p[1][1]
+end
+
 function Y_change!(integrator)
   integrator.p[2].Ybus = integrator.p[1]
 end
