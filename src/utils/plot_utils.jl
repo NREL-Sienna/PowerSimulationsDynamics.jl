@@ -34,3 +34,4 @@ function print_init_states(x0::Vector{Float64}, dyn_system::DynamicSystem)
         end
         println("====================")
     end
+end
