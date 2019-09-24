@@ -9,7 +9,7 @@ abstract type ReativePowerControl end
 end
 
 
-mutable struct VirtualInertiaQdrop{A <: ActivePowerControl,
+mutable struct VirtualInertiaQdroop{A <: ActivePowerControl,
                                    R <: ReativePowerControl} <: OuterControl
     active_power::A
     reactive_power::R
@@ -17,7 +17,7 @@ mutable struct VirtualInertiaQdrop{A <: ActivePowerControl,
     states::Vector{Symbol}
     ports::Ports
 
-        function VirtualInertiaQdrop(active_power::A,
+        function VirtualInertiaQdroop(active_power::A,
                                      reactive_power::R) where {A <: ActivePowerControl,
                                                                R <: ReativePowerControl}
 
@@ -69,13 +69,13 @@ end
 *  `kq`::Float64 : reactive power droop gain
 *  `ωf`::Float64 : reactive power filter cutoff frequency (rad/sec)
 """
-mutable struct ReactivePowerDrop <: ReativePowerControl
+mutable struct ReactivePowerDroop <: ReativePowerControl
     kq::Float64
     ωf::Float64
     n_states::Int64
     states::Vector{Symbol}
 
-        function ReactivePowerDrop(kq::Float64,
+        function ReactivePowerDroop(kq::Float64,
                                    ωf::Float64)
 
             new(kq, ωf, 1, [:qm])
