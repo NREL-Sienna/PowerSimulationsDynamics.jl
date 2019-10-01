@@ -153,15 +153,15 @@ function _index_dynamic_system!(sys::DynamicSystem)
 end
 
 function DynamicSystem(buses::Vector{PSY.Bus},
-    branches::Vector{Br},
-    dyn_injections::Vector{Di},
-    injections::Vector{I} ,
-    Sbase::Float64,
-    sys_f::Float64,
-    dyn_branch::Union{Nothing, Vector{Dbr}}=nothing) where  {Dbr <: DynBranch,
-                                                             Br <: PSY.Branch,
-                                                             Di <: DynInjection,
-                                                             I <: PSY.Injection}
+                        branches::Vector{Br},
+                        dyn_injections::Vector{Di},
+                        injections::Vector{I} ,
+                        Sbase::Float64,
+                        sys_f::Float64,
+                        dyn_branch::Union{Nothing, Vector{Dbr}}=nothing) where  {Dbr <: DynBranch,
+                                                                                Br <: PSY.Branch,
+                                                                                Di <: DynInjection,
+                                                                                I <: PSY.Injection}
 
     dyn_system = DynamicSystem(Sbase, sys_f)
 
@@ -199,3 +199,4 @@ system_state_count(sys::DynamicSystem) = sys.counts[:total_states]
 get_sys_base(sys::DynamicSystem) = sys.Sbase
 get_device_index(sys::DynamicSystem, device::D) where {D <: DynDevice} = sys.global_state_index[device.name]
 get_sys_f(sys::DynamicSystem) = sys.sys_f
+is_indexed(sys::DynamicSystem) = sys.indexed
