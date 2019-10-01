@@ -37,7 +37,7 @@ function DynamicSimulation(dyn_system::DynamicSystem,
 end
 
 
-function solve!(sim::DynamicSimulation, solver; kwargs...)
+function run_simulation!(sim::DynamicSimulation, solver; kwargs...)
     sim.solution = DiffEqBase.solve(sim.problem,
                            solver;
                            callback = sim.callbacks,
