@@ -68,6 +68,13 @@ function add_device!(sys::DynamicSystem, device::PSY.Injection)
     return
 end
 
+function add_devices!(sys::DynamicSystem, devices)
+    for d in devices
+        add_device!(sys, d)
+    end
+    return
+end
+
 function add_network!(sys::DynamicSystem, array_bus::Vector{PSY.Bus}, array_branches::Vector{<:PSY.Branch})
     sys.buses = array_bus
     sys.branches = array_branches
