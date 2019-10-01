@@ -1,4 +1,3 @@
-
 ################ Abstract Structs #######################################
 abstract type DynDevice <: PSY.Component end
 abstract type DynamicComponent <: PSY.Component end
@@ -8,7 +7,7 @@ abstract type DynInjection <: DynDevice end
 abstract type DynBranch <: DynDevice end
 
 get_bus_number(d::T) where {T <: DynInjection} = d.bus.number
-get_bus_number(d::T) where {T <: PSY.Injection} = d.bus.number #
+get_bus_number(d::T) where {T <: PSY.Injection} = d.bus.number
 total_device_states(d::T) where {T <: DynDevice} = d.n_states
 
 get_ω_ref(d::T) where {T <: DynInjection} = d.ω_ref
