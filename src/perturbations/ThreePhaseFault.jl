@@ -1,6 +1,5 @@
 " Define a step change of the mechanical power at t = 1.0"
 
-
 function change_t_one(x,t,integrator)
   t in [1.0]
 end

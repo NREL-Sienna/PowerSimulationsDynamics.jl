@@ -138,8 +138,7 @@ prob = DiffEqBase.DAEProblem(system_model!, dx0, x0_init, tspan,
 sol = solve(prob, IDA());
 
 #Define data for using callbacks for defining the fault
-tstop = [1.0] #Define a timestop at t=1, the step change
-cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
+
 
 #Solve DAE system
 sol2 = solve(prob, IDA(init_all = :false), dtmax= 0.02, callback=cb, tstops=tstop)
