@@ -72,12 +72,12 @@ export DynGenerator
 export DynInverter
 export DynamicSystem
 export DynamicSimulation
-export solve!
+export run_simulation!
 export get_state_series
 export get_voltagemag_series
-
-####################################### Function Exports ###################################
-export system_model!
+export add_device!
+export add_devices!
+export add_network!
 
 ####################################### Package Imports ####################################
 import DiffEqBase
@@ -139,5 +139,6 @@ include("perturbations/PowerStepChange.jl")
 
 #Utils
 include("utils/plot_utils.jl")
+include("utils/print.jl")
 
 end # module
