@@ -170,7 +170,7 @@ diff_vars = case2_DynSystem.DAE_vector
 tspan = (0.0, 20.0);
 
 #Find initial condition
-inif! = (out,x) -> system_model!(out, dx0 ,x, (Ybus_fault,case2_DynSystem), 0.0)
+inif! = (out,x) -> LITS.system_model!(out, dx0 ,x, (Ybus_fault,case2_DynSystem), 0.0)
 sys_solve = nlsolve(inif!, x0)
 x0_init = sys_solve.zero
 cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
@@ -178,7 +178,7 @@ cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
 sim = DynamicSimulation(case2_DynSystem, (0.0, 30.0), Ybus_fault, cb, x0_init)
 
 #Solve problem in equilibrium
-solve!(sim, IDA());
+run_simulation!(sim, IDA());
 
 #Obtain data for angles
 series = get_state_series(sim, (:Case2Gen2, :δ));
