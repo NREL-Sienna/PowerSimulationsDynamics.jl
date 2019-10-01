@@ -1,17 +1,47 @@
 mutable struct DynamicSimulation
-    system::DynamicSystem
+    dyn_system::DynamicSystem
     problem::DiffEqBase.DAEProblem
-    callbacks::Vector{DiffEqBase.DiscreteCallback}
+    callbacks::DiffEqBase.DiscreteCallback
     tstops::Vector{Float64}
     x0_init::Vector{Float64}
+    initialized::Bool
+    solution::Union{Nothing, DiffEqBase.DAESolution}
 end
 
-tstop = [1.0] #Define a timestop at t=1, the step change
-cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
+function DynamicSimulation(dyn_system::DynamicSystem,
+                           tspan,
+                           control,
+                           callback,
+                           x0_init)
 
-    prob = DiffEqBase.DAEProblem(system_model!, dx0, x0_init, tspan,
-                            (Ybus_fault, case1_DynSystem), differential_vars = diff_vars)
+    if !is_indexed(dyn_system)
+        _index_dynamic_system!(dyn_system)
+    end
+
+    dx0 = zeros(get_total_rows(dyn_system))
+    prob = DiffEqBase.DAEProblem(system_model!,
+                              dx0,
+                              x0_init,
+                              tspan,
+                              (control, dyn_system),
+                              differential_vars = dyn_system.DAE_vector)
+
+    return DynamicSimulation(dyn_system,
+                             prob,
+                             callback,
+                             [1.0],
+                             x0_init,
+                             true,
+                             nothing)
+
+end
 
 
-function DynamicSimulation(system::DynamicSystem,
-                            tspan,
+function solve!(sim::DynamicSimulation, solver; kwargs...)
+    sim.solution = DiffEqBase.solve(sim.problem,
+                           solver;
+                           callback = sim.callbacks,
+                           tstops = sim.tstops, kwargs...)
+
+    return
+end
