@@ -6,7 +6,7 @@ and a tuple containing the symbol name of the Dynamic Injection device and the s
 
 function get_state_series(sim::DynamicSimulation, ref::NTuple{2, Symbol})
     ix = get(sim.dyn_system.global_state_index[ref[1]], ref[2], nothing)
-    return sim.sol.t, [value[ix] for value in sim.sol.u]
+    return sim.solution.t, [value[ix] for value in sim.solution.u]
 end
 
 
@@ -17,7 +17,7 @@ Function to obtain the voltage magnitude series out of the DAE Solution. It rece
 
 function get_voltagemag_series(sim::DynamicSimulation, bus_number::Int64)
     bus_size = length(sim.dyn_system.buses)
-    return sim.sol.t, [sqrt(value[bus_number]^2 + value[bus_number+bus_size]^2) for value in sim.sol.u]
+    return sim.solution.t, [sqrt(value[bus_number]^2 + value[bus_number+bus_size]^2) for value in sim.solution.u]
 end
 
 
