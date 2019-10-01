@@ -71,21 +71,20 @@ export StaticSource
 export DynGenerator
 export DynInverter
 export DynamicSystem
+export DynamicSimulation
+export solve!
+export get_state_series
+export get_voltagemag_series
 
 ####################################### Function Exports ###################################
 export system_model!
 
 ####################################### Package Imports ####################################
 import DiffEqBase
-import DiffEqCallbacks
-import Sundials
-import Sundials: IDA
 import SparseArrays: SparseMatrixCSC
 import LinearAlgebra: BLAS
 import Base.to_index
 import NLsolve
-
-const solve = DiffEqBase.solve
 import PowerSystems
 const PSY = PowerSystems
 
@@ -108,6 +107,8 @@ include("models/branch_model.jl")
 include("models/device_model.jl")
 include("models/kcl.jl")
 include("models/dynline_model.jl")
+include("models/ref_transformations.jl")
+
 
 #Generator Component Models
 include("models/generator_models/machine_models.jl")
@@ -137,13 +138,6 @@ include("perturbations/ThreePhaseFault.jl")
 include("perturbations/PowerStepChange.jl")
 
 #Utils
-include("utils/ref_transformations.jl")
-include("utils/simulation_utils.jl")
 include("utils/plot_utils.jl")
-
-
-
-#System model
-include("system_model.jl")
 
 end # module
