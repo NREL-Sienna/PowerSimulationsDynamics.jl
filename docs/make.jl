@@ -8,8 +8,9 @@ makedocs(
     pages = Any[ # Compat: `Any` for 0.4 compat
         "Home" => "index.md",
         # "User Guide" => "man/guide.md",
-        "API" => Any[
-            "LITS" => "api/LITS.md"
+        "Models" => Any[
+           "Generator" => "Models/gens.md",
+           "Inverter" => "Models/inverters.md"
         ]
     ]
 )
