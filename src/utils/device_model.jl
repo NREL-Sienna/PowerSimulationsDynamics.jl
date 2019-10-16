@@ -121,7 +121,7 @@ mdl_freq_estimator_ode!(device_states,
 
 #Obtain inner controller ODEs and modulation commands
 mdl_VScontrol_ode!(device_states,
-                   output_ode,
+                   view(output_ode, ode_range),
                    device)
 
 #Obtain converter relations
