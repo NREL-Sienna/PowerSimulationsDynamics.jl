@@ -1,7 +1,7 @@
 
 # LITS.jl
 
-  *LITS.jl* is a [`Julia`](http://www.julialang.org) package for doing Power Systems Dynamic Modeling with Low Innertia Energy Sources.
+  *LITS.jl* is a [`Julia`](http://www.julialang.org) package for doing Power Systems Dynamic Modeling with Low Inertia Energy Sources.
 
   ## Installation
 
@@ -23,6 +23,6 @@ julia> Pkg.clone("https://github.com/Energy-MAC/LITS.jl.git")
 ## Contents
 ```@contents
 Pages = [
-  "man/guide.md"
+  "Models/gens.md"
 ]
 ```
