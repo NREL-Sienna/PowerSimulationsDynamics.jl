@@ -11,7 +11,7 @@ Parameters of 0-states synchronous machine: Classical Model
 
 # Conmutable structor
 ```julia
-BaseMachine(Xd_p, f, MVABase)
+BaseMachine(R, Xd_p, eq_p, MVABase)
 ```
 
 #Arguments
@@ -440,7 +440,7 @@ end
 
 Parameter of a full order flux stator-rotor model without zero sequence flux in the stator.
 The derivative of stator fluxes (ψd and ψq) is NOT neglected. Only one q-axis damping circuit
-is considered. All per unit are in machine per unit.
+is considered. All parameters are in machine per unit.
 
 Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power
 System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details.
