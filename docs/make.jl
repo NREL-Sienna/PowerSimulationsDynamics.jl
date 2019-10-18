@@ -9,6 +9,7 @@ makedocs(
         "Home" => "index.md",
         # "User Guide" => "man/guide.md",
         "Models" => Any[
+           "Network" => "Models/network.md",
            "Generator" => "Models/gens.md",
            "Inverter" => "Models/inverters.md"
         ]
