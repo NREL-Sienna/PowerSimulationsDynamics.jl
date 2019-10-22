@@ -15,11 +15,10 @@ the reference for the AVR
 PSSFixed(Vs)
 ```
 
-#Arguments
+# Arguments
 * `Vs`::Float64 : Fixed voltage stabilization signal
 
 """
-
 mutable struct PSSFixed <: PSS
       Vs::Float64
       n_states::Int64
@@ -44,12 +43,11 @@ the reference for the AVR
 PSSSimple(K_ω, K_p)
 ```
 
-#Arguments
+# Arguments
 * `K_ω`::Float64 : Proportional gain for frequency
 * `K_p`::Float64 : Proportional gain for active power
 
 """
-
 mutable struct PSSSimple <: PSS
       K_ω::Float64
       K_p::Float64

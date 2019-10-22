@@ -8,7 +8,18 @@ abstract type ReativePowerControl end
     inner_input = [Vdo_var, Vdo_var, ω_freq_estimator_var]
 end
 
+"""
+Parameters of a Outer-Loop controller using a virtual inertia with VSM for active power controller
+and a reactive power droop controller.
+# Conmutable structor
+```julia
+VirtualInertiaQDroop(A, R)
+```
 
+# Arguments
+*  `A`::Float64 : Active power controller using virtual inertia with VSM
+*  `R`::Float64 : Reactive power controller using reactive power droop
+"""
 mutable struct VirtualInertiaQdroop{A <: ActivePowerControl,
                                    R <: ReativePowerControl} <: OuterControl
     active_power::A
@@ -35,7 +46,14 @@ mutable struct VirtualInertiaQdroop{A <: ActivePowerControl,
 end
 
 """
-*  `Ta`::Float64 : VSM interia constant
+Parameters of a Virtual Inertia with SRF using VSM for active power controller
+# Conmutable structor
+```julia
+VirtualInertia(Ta, kd, kw, ωb)
+```
+
+# Arguments
+*  `Ta`::Float64 : VSM inertia constant
 *  `kd`::Float64 : VSM damping constant
 *  `kw`::Float64 : frequency droop gain
 *  `ωb`::Float64 : rated angular frequency
@@ -64,8 +82,14 @@ mutable struct VirtualInertia <: ActivePowerControl
 
 end
 
-
 """
+Parameters of a Reactive Power droop controller
+# Conmutable structor
+```julia
+ReactivePowerDroop(kq, ωf)
+```
+
+# Arguments
 *  `kq`::Float64 : reactive power droop gain
 *  `ωf`::Float64 : reactive power filter cutoff frequency (rad/sec)
 """

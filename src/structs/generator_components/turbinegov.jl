@@ -16,11 +16,10 @@ given by the product of P_ref*efficiency
 TGFixed(efficiency)
 ```
 
-#Arguments
+# Arguments
 * `efficiency`::Float64 : Efficiency factor that multiplies P_ref
 
 """
-
 mutable struct TGFixed <: TurbineGov
       efficiency::Float64
       n_states::Int64
@@ -43,7 +42,7 @@ Parameters of a Turbine Governor Type I.
 TGTypeI(R, Ts, Tc, T3, T4, T5, P_min, P_max)
 ```
 
-#Arguments
+# Arguments
 * `R`::Float64 : Droop parameter
 * `Ts`::Float64 : Governor time constant
 * `Tc`::Float64 : Servo time constant
@@ -54,8 +53,6 @@ TGTypeI(R, Ts, Tc, T3, T4, T5, P_min, P_max)
 * `P_max`::Float64 : Max Power into the Governor
 
 """
-
-
 mutable struct TGTypeI <: TurbineGov
       R::Float64
       Ts::Float64
@@ -96,7 +93,7 @@ Parameters of a Turbine Governor Type II.
 TGTypeI(R, T1, T2, τ_min, τ_max)
 ```
 
-#Arguments
+# Arguments
 * `R`::Float64 : Droop parameter
 * `T1`::Float64 : Transient gain time constant
 * `T2`::Float64 : Governor time constant
@@ -104,8 +101,6 @@ TGTypeI(R, T1, T2, τ_min, τ_max)
 * `τ_max`::Float64 : Max turbine torque output
 
 """
-
-
 mutable struct TGTypeII <: TurbineGov
       R::Float64
       T1::Float64

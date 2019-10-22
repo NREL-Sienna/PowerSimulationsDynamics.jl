@@ -7,6 +7,13 @@ abstract type FrequencyEstimator <: InverterComponent end
 end
 
 """
+Parameters of a Phase-Locked Loop (PLL) for VSM
+# Conmutable structor
+```julia
+PLL(ω_lp, kp_pll, ki_pll)
+```
+
+# Arguments
 *  `ω_lp`::Float64 : PLL low-pass filter frequency (rad/sec)
 *  `kp_pll`::Float64 : PLL proportional gain
 *  `ki_pll`::Float64 : PLL integral gain

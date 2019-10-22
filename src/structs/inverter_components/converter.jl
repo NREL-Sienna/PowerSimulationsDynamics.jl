@@ -6,11 +6,18 @@ abstract type Converter <: InverterComponent end
 
 
 @def converter_ports begin
-    state_input = Vector{Symbol}() 
+    state_input = Vector{Symbol}()
     inner_input = [md_var, mq_var, Vdc_var, Vdcnv_var,Vqcnv_var]
 end
 
 """
+Parameters of an average converter model
+# Conmutable structor
+```julia
+AvgCnvFixedDC(v_rated, s_rated)
+```
+
+# Arguments
 *  `v_rated`::Float64 : rated voltage
 *  `s_rated`::Float64 : rated VA
 """
