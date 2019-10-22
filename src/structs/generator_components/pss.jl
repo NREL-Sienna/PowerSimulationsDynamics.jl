@@ -5,11 +5,20 @@ abstract type PSS <: GeneratorComponent end
       inner_input = [τe_var, VR_gen_var]
   end
 
+
 """
 Parameters of a PSS that returns a fixed voltage to add to
 the reference for the AVR
-"""
 
+# Conmutable structor
+```julia
+PSSFixed(Vs)
+```
+
+# Arguments
+* `Vs`::Float64 : Fixed voltage stabilization signal
+
+"""
 mutable struct PSSFixed <: PSS
       Vs::Float64
       n_states::Int64
@@ -25,6 +34,20 @@ mutable struct PSSFixed <: PSS
 end
 
 
+"""
+Parameters of a PSS that returns a proportional droop voltage to add to
+the reference for the AVR
+
+# Conmutable structor
+```julia
+PSSSimple(K_ω, K_p)
+```
+
+# Arguments
+* `K_ω`::Float64 : Proportional gain for frequency
+* `K_p`::Float64 : Proportional gain for active power
+
+"""
 mutable struct PSSSimple <: PSS
       K_ω::Float64
       K_p::Float64

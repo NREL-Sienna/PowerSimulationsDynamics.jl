@@ -89,9 +89,3 @@ mutable struct DynGenerator{M <: Machine,
 
         end
   end
-
-function TwoStateGenerator()
-end
-
-function FourStateGenerator()
-end

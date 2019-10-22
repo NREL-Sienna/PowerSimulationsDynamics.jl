@@ -6,9 +6,16 @@ abstract type AVR <: GeneratorComponent end
 end
 
 """
-Parameters of a AVR that returns a fixed voltage
-"""
+Parameters of a AVR that returns a fixed voltage to the rotor winding:
+# Conmutable structor
+```julia
+AVRFixed(Emf)
+```
 
+# Arguments
+* `Emf`   ::Float64 : Fixed voltage to the rotor winding
+
+"""
 mutable struct AVRFixed <: AVR
       Emf::Float64
       n_states::Int64
@@ -27,6 +34,15 @@ end
 """
 Parameters of a simple proportional AVR in the derivative of EMF
 i.e. an integrator controller on EMF
+
+# Conmutable structor
+```julia
+AVRSimple(Kv)
+```
+
+#Arguments
+* `Kv`   ::Float64 : Integral Gain
+
 """
 mutable struct AVRSimple <: AVR
      Kv::Float64
@@ -51,7 +67,7 @@ Parameters of an Automatic Voltage Regulator Type I - Resembles IEEE Type DC1
 AVRTypeI(Ka, Ke, Kf, Ta, Tf, Te, Tr, Vr_max, Vr_min, Ae, Be)
 ```
 
-#Arguments
+# Arguments
 * `Ka`::Float64 : Amplifier Gain
 * `Ke`::Float64 : Field circuit integral deviation
 * `Kf`::Float64 : Stabilizer Gain in s * pu/pu
@@ -64,8 +80,6 @@ AVRTypeI(Ka, Ke, Kf, Ta, Tf, Te, Tr, Vr_max, Vr_min, Ae, Be)
 * `Ae`::Float64 : 1st ceiling coefficient
 * `Be`::Float64 : 2nd ceiling coefficient
 """
-
-
 mutable struct AVRTypeI <: AVR
       Ka::Float64
       Ke::Float64
@@ -111,7 +125,7 @@ Parameters of an Automatic Voltage Regulator Type II -  Typical static exciter m
 AVRTypeII(K0, T1, T2, T3, T4, Te, Tr, Vr_max, Vr_min, Ae, Be)
 ```
 
-#Arguments
+# Arguments
 * `K0`::Float64 : Regulator Gain
 * `T1`::Float64 : First Pole in s
 * `T2`::Float64 : First zero in s
@@ -124,7 +138,6 @@ AVRTypeII(K0, T1, T2, T3, T4, Te, Tr, Vr_max, Vr_min, Ae, Be)
 * `Ae`::Float64 : 1st ceiling coefficient
 * `Be`::Float64 : 2nd ceiling coefficient
 """
-
 mutable struct AVRTypeII <: AVR
       K0::Float64
       T1::Float64
@@ -171,7 +184,7 @@ Parameters of an Automatic Voltage Regulator Type II from PSAT Manual -  Typical
 AVRTypeII(K0, T1, T2, T3, T4, Te, Tr, Vr_max, Vr_min, Ae, Be)
 ```
 
-#Arguments
+# Arguments
 * `Kf`::Float64 : Regulator Gain
 * `Ta`::Float64 : Amplifier time constant
 * `Kf`::Float64 : Stabilizer gain
@@ -183,7 +196,6 @@ AVRTypeII(K0, T1, T2, T3, T4, Te, Tr, Vr_max, Vr_min, Ae, Be)
 * `Ae`::Float64 : 1st ceiling coefficient
 * `Be`::Float64 : 2nd ceiling coefficient
 """
-
 mutable struct AVRTypeIIManual <: AVR
       Ka::Float64
       Ta::Float64

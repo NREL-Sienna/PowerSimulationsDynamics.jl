@@ -36,7 +36,23 @@ struct LCFilter <: Filter
 
     end
 
-    struct LCLFilter <: Filter
+
+"""
+Parameters of a LCL filter outside the converter
+# Conmutable structor
+```julia
+LCLFilter(lf, rf, cf, lg, rg)
+```
+
+# Arguments
+* `lf`::Float64 : Series inductance in p.u. of converter filter
+* `rf`::Float64 : Series resistance in p.u. of converter filter
+* `cf`::Float64 : Shunt capacitance in p.u. of converter filter
+* `lg`::Float64 : Series inductance in p.u. of converter filter to the grid
+* `rg`::Float64 : Series resistance in p.u. of converter filter to the grid
+
+"""
+struct LCLFilter <: Filter
         lf::Float64
         rf::Float64
         cf::Float64

@@ -11,16 +11,16 @@ Parameters of 0-states synchronous machine: Classical Model
 
 # Conmutable structor
 ```julia
-BaseMachine(Xd_p, f, MVABase)
+BaseMachine(R, Xd_p, eq_p, MVABase)
 ```
 
-#Arguments
+# Arguments
 * `R`::Float64 : Resistance after EMF in machine per unit
 * `Xd_p`::Float64 : Reactance after EMF in machine per unit
+* `eq_p`::Float64 : Fixed EMF behind the impedance
 * `MVABase`::Float64 : Nominal Capacity in MVA
 
 """
-
 mutable struct BaseMachine <: Machine
   R::Float64
   Xd_p::Float64
@@ -56,7 +56,7 @@ Parameters of 2-states synchronous machine: One d- and One q-Axis Model
 OneDOneQMachine(R, Xd, Xq, Xd_p, Xq_pp, Td0_p, Tq0_pp, MVABase)
 ```
 
-#Arguments
+# Arguments
 * `R`::Float64
 * `Xd`::Float64
 * `Xq`::Float64
@@ -115,7 +115,7 @@ Parameters of 6-states synchronous machine: Marconato model
 MarconatoMachine(R, Xd, Xq, Xd_p, Xq_p, Xd_pp, Xq_pp, Td0_p, Tq0_p, Td0_pp, Tq0_pp, T_AA, MVABase)
 ```
 
-#Arguments
+# Arguments
 * `R`::Float64 : Resistance after EMF in machine per unit
 * `Xd`::Float64 : Reactance after EMF in d-axis per unit
 * `Xq`::Float64 : Reactance after EMF in q-axis per unit
@@ -202,7 +202,7 @@ dynamics is neglected.
 SimpleMarconatoMachine(R, Xd, Xq, Xd_p, Xq_p, Xd_pp, Xq_pp, Td0_p, Tq0_p, Td0_pp, Tq0_pp, T_AA, MVABase)
 ```
 
-#Arguments
+# Arguments
 * `R`::Float64 : Resistance after EMF in machine per unit
 * `Xd`::Float64 : Reactance after EMF in d-axis per unit
 * `Xq`::Float64 : Reactance after EMF in q-axis per unit
@@ -287,7 +287,7 @@ Parameters of 6-states synchronous machine: Anderson-Fouad model
 AndersonFouadMachine(R, Xd, Xq, Xd_p, Xq_p, Xd_pp, Xq_pp, Td0_p, Tq0_p, Td0_pp, Tq0_pp, MVABase)
 ```
 
-#Arguments
+# Arguments
 * `R`::Float64 : Resistance after EMF in machine per unit
 * `Xd`::Float64 : Reactance after EMF in d-axis per unit
 * `Xq`::Float64 : Reactance after EMF in q-axis per unit
@@ -367,7 +367,7 @@ If transmission dynamics is considered use the full order Anderson Fouad model.
 SimpleAFMachine(R, Xd, Xq, Xd_p, Xq_p, Xd_pp, Xq_pp, Td0_p, Tq0_p, Td0_pp, Tq0_pp, MVABase)
 ```
 
-#Arguments
+# Arguments
 * `R`::Float64 : Resistance after EMF in machine per unit
 * `Xd`::Float64 : Reactance after EMF in d-axis per unit
 * `Xq`::Float64 : Reactance after EMF in q-axis per unit
@@ -440,7 +440,7 @@ end
 
 Parameter of a full order flux stator-rotor model without zero sequence flux in the stator.
 The derivative of stator fluxes (ψd and ψq) is NOT neglected. Only one q-axis damping circuit
-is considered. All per unit are in machine per unit.
+is considered. All parameters are in machine per unit.
 
 Refer to Chapter 3 of Power System Stability and Control by P. Kundur or Chapter 11 of Power
 System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby, for more details.
@@ -449,10 +449,10 @@ Transformation used in both books.
 
 # Conmutable structor
 ```julia
-SimpleFullMachine(R, R_f, R_1d, R_1q, L_d, L_q, L_ad, L_aq, L_f1d, L_f, L_1d, L_1q)
+FullMachine(R, R_f, R_1d, R_1q, L_d, L_q, L_ad, L_aq, L_f1d, L_f, L_1d, L_1q)
 ```
 
-#Arguments
+# Arguments
 * `R`::Float64 : Stator resistance after EMF in per unit
 * `R_f`::Float64 : Field rotor winding resistance in per unit
 * `R_1d`::Float64 : Damping rotor winding resistance on d-axis in per unit.
@@ -477,7 +477,6 @@ SimpleFullMachine(R, R_f, R_1d, R_1q, L_d, L_q, L_ad, L_aq, L_f1d, L_f, L_1d, L_
 * `MVABase`::Float64 : Nominal Capacity in MVA
 
 """
-
 mutable struct FullMachine <: Machine
   R::Float64
   R_f::Float64

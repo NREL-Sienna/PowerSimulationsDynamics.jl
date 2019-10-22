@@ -5,6 +5,18 @@ abstract type DCSource <: InverterComponent end
     inner_input = Vector{Int64}()
 end
 
+
+"""
+Parameters of a Fixed DC Source that returns a fixed DC voltage
+# Conmutable structor
+```julia
+FixedDCSource(voltage)
+```
+
+# Arguments
+* `voltage`::Float64 : Fixed DC voltage to the converter
+
+"""
 mutable struct FixedDCSource <: DCSource
     voltage::Float64
     n_states::Int64

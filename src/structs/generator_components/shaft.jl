@@ -5,6 +5,20 @@ abstract type Shaft <: GeneratorComponent end
     inner_input = [τe_var, τm_var]
 end
 
+
+"""
+Parameters of single mass shaft model. Typically represents the rotor mass.
+
+# Conmutable structor
+```julia
+SingleMass(H, D)
+```
+
+# Arguments
+* `H`   ::Float64 : Rotor inertia constant in MWs/MVA
+* `D`   ::Float64 : Rotor natural damping in pu
+
+"""
 mutable struct SingleMass <: Shaft
     H::Float64
     D::Float64
@@ -42,7 +56,7 @@ FiveMassShaft(H, H_hp, H_ip, H_lp, H_ex,
               K_hp, K_ip, K_lp, K_ex)
 ```
 
-#Arguments
+# Arguments
 * `H`   ::Float64 : Rotor inertia constant in MWs/MVA
 * `H_hp`::Float64 : High pressure turbine inertia constant in MWs/MVA
 * `H_ip`::Float64 : Intermediate pressure turbine inertia constant in MWs/MVA
@@ -63,7 +77,6 @@ FiveMassShaft(H, H_hp, H_ip, H_lp, H_ex,
 * `K_ex`::Float64 : Exciter angle coefficient
 
 """
-
 mutable struct FiveMassShaft <: Shaft
     H::Float64
     H_hp::Float64
