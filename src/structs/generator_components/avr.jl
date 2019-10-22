@@ -6,7 +6,15 @@ abstract type AVR <: GeneratorComponent end
 end
 
 """
-Parameters of a AVR that returns a fixed voltage
+Parameters of a AVR that returns a fixed voltage to the rotor winding:
+# Conmutable structor
+```julia
+AVRFixed(Emf)
+```
+
+#Arguments
+* `Emf`   ::Float64 : Fixed voltage to the rotor winding
+
 """
 
 mutable struct AVRFixed <: AVR
@@ -27,7 +35,17 @@ end
 """
 Parameters of a simple proportional AVR in the derivative of EMF
 i.e. an integrator controller on EMF
+
+# Conmutable structor
+```julia
+AVRSimple(Kv)
+```
+
+#Arguments
+* `Kv`   ::Float64 : Integral Gain
+
 """
+
 mutable struct AVRSimple <: AVR
      Kv::Float64
      n_states::Int64

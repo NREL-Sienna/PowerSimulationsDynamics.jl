@@ -17,6 +17,7 @@ BaseMachine(R, Xd_p, eq_p, MVABase)
 #Arguments
 * `R`::Float64 : Resistance after EMF in machine per unit
 * `Xd_p`::Float64 : Reactance after EMF in machine per unit
+* `eq_p`::Float64 : Fixed EMF behind the impedance
 * `MVABase`::Float64 : Nominal Capacity in MVA
 
 """

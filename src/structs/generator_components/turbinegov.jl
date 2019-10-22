@@ -10,8 +10,16 @@ end
 """
 Parameters of a fixed Turbine Governor that returns a fixed mechanical torque
 given by the product of P_ref*efficiency
-"""
 
+# Conmutable structor
+```julia
+TGFixed(efficiency)
+```
+
+#Arguments
+* `efficiency`::Float64 : Efficiency factor that multiplies P_ref
+
+"""
 
 mutable struct TGFixed <: TurbineGov
       efficiency::Float64
