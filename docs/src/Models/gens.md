@@ -307,3 +307,27 @@ This turbine governor is a simplified model of the Type I.
 \tau_m &= P_{\text{ref}} + \frac{1}{R}\frac{T_1}{T_2}(\omega_s - \omega) \tag{14b}
 \end{align}
 ```
+
+
+## Reference
+
+```@docs
+LITS.BaseMachine
+LITS.OneDOneQMachine
+LITS.MarconatoMachine
+LITS.SimpleMarconatoMachine
+LITS.AndersonFouadMachine
+LITS.SimpleAFMachine
+LITS.FullMachine
+LITS.SingleMass
+LITS.FiveMassShaft
+LITS.AVRFixed
+LITS.AVRSimple
+LITS.AVRTypeI
+LITS.AVRTypeII
+LITS.PSSFixed
+LITS.PSSSimple
+LITS.TGFixed
+LITS.TGTypeI
+LITS.TGTypeII
+```
