@@ -166,8 +166,7 @@ x0 = [1.02, 1.0, 1.0, 0.0, -0.01, -0.01,
       0.11, #Vr1
       -0.31, #Vr2,
       1.0] #Vm
-diff_vars = case2_DynSystem.DAE_vector
-tspan = (0.0, 20.0);
+tspan = (0.0, 30.0);
 
 #Find initial condition
 inif! = (out,x) -> LITS.system_model!(out, dx0 ,x, (Ybus_fault,case2_DynSystem), 0.0)
@@ -175,7 +174,7 @@ sys_solve = nlsolve(inif!, x0)
 x0_init = sys_solve.zero
 cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
 
-sim = DynamicSimulation(case2_DynSystem, (0.0, 30.0), Ybus_fault, cb, x0_init)
+sim = DynamicSimulation(case2_DynSystem, tspan, Ybus_fault, cb, x0_init)
 
 #Solve problem in equilibrium
 run_simulation!(sim, IDA());
