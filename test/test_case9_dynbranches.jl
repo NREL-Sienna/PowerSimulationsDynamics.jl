@@ -1,9 +1,8 @@
 """
-Case 7:
-This case study a three bus system with 1 machine (One d- One q-: 4th order model), a VSM of 19 states and an infinite source.
-The perturbation increase the reference power (analogy for mechanical power) of the machine from 0.6 to 0.8.
+Case 9:
+This case study a three bus system with 1 machine (One d- One q-: 4th order model), a VSM of 19 states and an infinite source. The connection between buses 2 and 3 is modeled using dynamic lines.
+The perturbation trips two of the three circuits of line between buses 1 and 2, triplicating its impedance.
 """
-
 
 ##################################################
 ############### LOAD DATA ########################
@@ -11,29 +10,31 @@ The perturbation increase the reference power (analogy for mechanical power) of 
 
 ############### Data Network ########################
 
-nodes_case7   = [Bus(1 , "Bus 1"  , "REF" , 0 , 1.02  , (min=0.94, max=1.06), 138),
+nodes_case9   = [Bus(1 , "Bus 1"  , "REF" , 0 , 1.02  , (min=0.94, max=1.06), 138),
                     Bus(2 , "Bus 2"  , "PV" , 0 , 1.00 , (min=0.94, max=1.06), 138),
                     Bus(3 , "Bus 3"  , "PQ" , 0 , 1.00 , (min=0.94, max=1.06), 138)]
 
-branch_case7  =  [Line("Line1", true, 0.0, 0.0, Arc(from=nodes_case7[1], to=nodes_case7[3]), 0.01, 0.12, (from=0.0, to=0.0), 100, 1.04),
-                    Line("Line2", true, 0.0, 0.0, Arc(from=nodes_case7[1], to=nodes_case7[2]), 0.01, 0.12, (from=0.0, to=0.0), 100, 1.04),
-                    Line("Line3", true, 0.0, 0.0, Arc(from=nodes_case7[2], to=nodes_case7[3]), 0.01, 0.12, (from=0.0, to=0.0), 100, 1.04)]
+branch_case9  =  [Line("Line1", true, 0.0, 0.0, Arc(from=nodes_case9[1], to=nodes_case9[3]), 0.01, 0.12, (from=0.1, to=0.1), 100, 1.04),
+                    Line("Line2", true, 0.0, 0.0, Arc(from=nodes_case9[1], to=nodes_case9[2]), 0.01, 0.12, (from=0.1, to=0.1), 100, 1.04)]
 
 #Trip of Line 1.
-branch_case7_fault = [Line("Line2", true, 0.0, 0.0, Arc(from=nodes_case7[1], to=nodes_case7[2]), 0.01, 0.12, (from=0.0, to=0.0), 100, 1.04),
-                        Line("Line3", true, 0.0, 0.0, Arc(from=nodes_case7[2], to=nodes_case7[3]), 0.01, 0.12, (from=0.0, to=0.0), 100, 1.04)]
+branch_case9_fault = [Line("Line1", true, 0.0, 0.0, Arc(from=nodes_case9[1], to=nodes_case9[3]), 0.03, 0.36, (from=0.03, to=0.03), 100, 1.04),
+    Line("Line2", true, 0.0, 0.0, Arc(from=nodes_case9[1], to=nodes_case9[2]), 0.01, 0.12, (from=0.1, to=0.1), 100, 1.04)]
 
 
-loads_case7 =   [PowerLoad("Bus1", true, nodes_case7[1], PowerSystems.ConstantPower, 0.5, 0.1, 1.5, 0.8),
-                   PowerLoad("Bus2", true, nodes_case7[2], PowerSystems.ConstantPower, 1.0, 0.3, 1.5, 0.8),
-                   PowerLoad("Bus3", true, nodes_case7[3], PowerSystems.ConstantPower, 0.3, 0.1, 0.5, 0.3)]
+loads_case9 =   [PowerLoad("Bus1", true, nodes_case9[1], PowerSystems.ConstantPower, 0.5, 0.1, 1.5, 0.8),
+                   PowerLoad("Bus2", true, nodes_case9[2], PowerSystems.ConstantPower, 1.0, 0.3, 1.5, 0.8),
+                   PowerLoad("Bus3", true, nodes_case9[3], PowerSystems.ConstantPower, 0.3, 0.1, 0.5, 0.3)]
+
+dyn_branch9 = [LITS.DynLine("Line3", true, Arc(from=nodes_case9[2], to=nodes_case9[3]), 0.02, 0.9, (from=0.5, to=0.5))]
+
 
 
 ############### Data devices ########################
 
-inf_gen_case7 = StaticSource(1, #number
+inf_gen_case9 = StaticSource(1, #number
                     :InfBus, #name
-                    nodes_case7[1],#bus
+                    nodes_case9[1],#bus
                     1.00, #VR
                     0.0, #VI
                     0.000005) #Xth
@@ -42,7 +43,7 @@ inf_gen_case7 = StaticSource(1, #number
 ######## Machine Data #########
 
 ### Case 2: 4th Order Model with AVR (3-bus case) ###
-case7_machine =  OneDOneQMachine(0.0, #R
+case9_machine =  OneDOneQMachine(0.0, #R
                                   1.3125, #Xd
                                   1.2578, #Xq
                                   0.1813, #Xd_p
@@ -54,7 +55,7 @@ case7_machine =  OneDOneQMachine(0.0, #R
 ######## Shaft Data #########
 
 ### Shafts for Gen ###
-case7_shaft = SingleMass(3.01, #H (M = 6.02 -> H = M/2)
+case9_shaft = SingleMass(3.01, #H (M = 6.02 -> H = M/2)
                             0.0) #D
 
 ######## PSS Data #########
@@ -64,12 +65,12 @@ cases_no_pss = PSSFixed(0.0)
 ######## TG Data #########
 
 ### No TG for Cases 1, 2, 3, 4 ###
-case7_no_tg = TGFixed(1.0) #eff
+case9_no_tg = TGFixed(1.0) #eff
 
 
 ########  AVR Data #########
 ### AVRs for Case 2, 3, 4 and 5 ###
-case7_avr = AVRTypeI(20.0, #Ka - Gain
+case9_avr = AVRTypeI(20.0, #Ka - Gain
                         0.01, #Ke
                         0.063, #Kf
                         0.2, #Ta
@@ -82,16 +83,16 @@ case7_avr = AVRTypeI(20.0, #Ka - Gain
                         1.555) #Be - 2nd ceiling coefficient
 
 ### Case 7 Generators ###
-case7_gen = DynGenerator(1, #Number
-                         :Case7Gen,
-                         nodes_case7[2], #bus
+case9_gen = DynGenerator(1, #Number
+                         :Case9Gen,
+                         nodes_case9[2], #bus
                          1.0, # ω_ref,
-                         1.0142, #V_ref
+                         1.0124, #V_ref
                          0.6, #P_ref
-                         case7_machine, #machine
-                         case7_shaft, #shaft
-                         case7_avr, #avr
-                         case7_no_tg, #tg
+                         case9_machine, #machine
+                         case9_shaft, #shaft
+                         case9_avr, #avr
+                         case9_no_tg, #tg
                          cases_no_pss) #pss
 
 ############### Inverter Data ########################
@@ -132,13 +133,13 @@ vsc = CombinedVIwithVZ(0.59, #kpv:: Voltage controller proportional gain
                        50.0, #ωad:: Active damping low pass filter cut-off frequency
                        0.2) #kad:: Active damping gain
 
-case7_inv = DynInverter(2, #number
+case9_inv = DynInverter(2, #number
                              :DARCO, #name
-                             nodes_case7[3], #bus location
+                             nodes_case9[3], #bus location
                              1.0, #ω_ref
-                             1.02, #V_ref
+                             0.8, #V_ref
                              0.5, #P_ref
-                             0.0, #Q_ref
+                             -0.3, #Q_ref
                              100.0, #MVABase
                              converter, #Converter
                              outer_control, #OuterControl
@@ -150,14 +151,14 @@ case7_inv = DynInverter(2, #number
 
 ######################### Dynamical System ########################
 
-case7_DynSystem = DynamicSystem(nodes_case7, branch_case7, [case7_inv, case7_gen], vcat(inf_gen_case7, loads_case7), 100.0, 50.0);
+case9_DynSystem = DynamicSystem(nodes_case9, branch_case9,  [case9_inv, case9_gen], vcat(inf_gen_case9, loads_case9),  100.0, 50.0, dyn_branch9);
 
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-dx0 = zeros(LITS.get_total_rows(case7_DynSystem))
+dx0 = zeros(LITS.get_total_rows(case9_DynSystem))
 x0 = [1.00, #V1_R
           1.00, #V2_R
           1.00, #V3_R
@@ -190,29 +191,32 @@ x0 = [1.00, #V1_R
           2.1, #Vf
           0.28, #Vr1
           -0.39, #Vr2,
-          1.0] #Vm
+          1.0, #Vm
+          0.5, #IL1_R
+          0.5] #IL1_I
 
-case7_inv.inner_vars[13] = 0.95 #Vd_cnv var
-case7_inv.inner_vars[14] = -0.1 #Vq_cnv var
-Ybus_fault = Ybus(branch_case7_fault, nodes_case7)[:,:]
+case9_inv.inner_vars[13] = 0.95 #Vd_cnv var
+case9_inv.inner_vars[14] = -0.1 #Vq_cnv var
+Ybus_fault = Ybus(branch_case9_fault, nodes_case9)[:,:]
 u0 = [0.2]
-tspan = (0.0, 20.0);
+tspan = (0.0, 30.0);
 
 #Find initial condition
-inif! = (out,x) -> LITS.system_model!(out, dx0 ,x, (u0,case7_DynSystem), 0.0)
+inif! = (out,x) -> LITS.system_model!(out, dx0 ,x, (Ybus_fault,case9_DynSystem), 0.0)
 sys_solve = nlsolve(inif!, x0, xtol=:1e-8,ftol=:1e-8,method=:trust_region)
 x0_init = sys_solve.zero
 
 #Define Fault using Callbacks
-cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.step_change_second!)
+cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
 
 #Define Simulation Problem
-sim = DynamicSimulation(case7_DynSystem, tspan, u0, cb, x0_init)
+sim = DynamicSimulation(case9_DynSystem, tspan, Ybus_fault, cb, x0_init)
 
 #Solve problem in equilibrium
 run_simulation!(sim, IDA());
 
-#Obtain data for angles
-series = get_state_series(sim, (:Case7Gen, :δ));
+#Obtain data for voltages
+series = get_voltagemag_series(sim, 2)
+zoom = [(series[1][ix], series[2][ix]) for (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)]
 
 @test sim.solution.retcode == :Success

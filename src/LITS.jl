@@ -71,27 +71,28 @@ export StaticSource
 export DynGenerator
 export DynInverter
 export DynamicSystem
-
-####################################### Function Exports ###################################
-export system_model!
+export DynamicSimulation
+export run_simulation!
+export get_state_series
+export get_voltagemag_series
+export add_device!
+export add_devices!
+export add_network!
 
 ####################################### Package Imports ####################################
 import DiffEqBase
-import DiffEqCallbacks
-import Sundials
-import Sundials: IDA
 import SparseArrays: SparseMatrixCSC
 import LinearAlgebra: BLAS
 import Base.to_index
 import NLsolve
-
-const solve = DiffEqBase.solve
 import PowerSystems
 const PSY = PowerSystems
 
 #Structs for General Devices and System
 include("utils/util_macros.jl")
 include("structs/base.jl")
+include("structs/perturbations.jl")
+include("structs/simulation.jl")
 
 #Structs for Dynamic Devices
 include("structs/common.jl")
@@ -100,35 +101,44 @@ include("structs/generator.jl")
 include("structs/inverter.jl")
 include("structs/dyn_branches.jl")
 
-#Generator Component Models
-include("models/machine_models.jl")
-include("models/pss_models.jl")
-include("models/avr_models.jl")
-include("models/tg_models.jl")
-include("models/shaft_models.jl")
+
+#Common Models
+include("models/branch_model.jl")
+include("models/device_model.jl")
+include("models/kcl.jl")
 include("models/dynline_model.jl")
+include("models/ref_transformations.jl")
+
+
+#Generator Component Models
+include("models/generator_models/machine_models.jl")
+include("models/generator_models/pss_models.jl")
+include("models/generator_models/avr_models.jl")
+include("models/generator_models/tg_models.jl")
+include("models/generator_models/shaft_models.jl")
 
 #Inverter Component Models
-include("models/DCside_models.jl")
-include("models/filter_models.jl")
-include("models/frequency_estimator_models.jl")
-include("models/outer_control_models.jl")
-include("models/voltage_source_control_models.jl")
-include("models/converter_models.jl")
+include("models/inverter_models/DCside_models.jl")
+include("models/inverter_models/filter_models.jl")
+include("models/inverter_models/frequency_estimator_models.jl")
+include("models/inverter_models/outer_control_models.jl")
+include("models/inverter_models/voltage_source_control_models.jl")
+include("models/inverter_models/converter_models.jl")
 
 #Injection Models
 include("models/load_models.jl")
 include("models/source_models.jl")
 
-#Utils
-include("utils/ref_transformations.jl")
-include("utils/simulation_utils.jl")
-include("utils/plot_utils.jl")
-include("utils/branch_model.jl")
-include("utils/device_model.jl")
-include("utils/kcl.jl")
+#System Model
+include("models/system_model.jl")
 
-#System model
-include("system_model.jl")
+#Perturbations
+include("perturbations/common.jl")
+include("perturbations/ThreePhaseFault.jl")
+include("perturbations/PowerStepChange.jl")
+
+#Utils
+include("utils/plot_utils.jl")
+include("utils/print.jl")
 
 end # module

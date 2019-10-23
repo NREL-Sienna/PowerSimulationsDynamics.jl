@@ -166,29 +166,20 @@ x0 = [1.02, 1.0, 1.0, 0.0, -0.01, -0.01,
       0.11, #Vr1
       -0.31, #Vr2,
       1.0] #Vm
-diff_vars = case2_DynSystem.DAE_vector
-tspan = (0.0, 20.0);
+tspan = (0.0, 30.0);
 
 #Find initial condition
-inif! = (out,x) -> system_model!(out, dx0 ,x, (Ybus_fault,case2_DynSystem), 0.0)
+inif! = (out,x) -> LITS.system_model!(out, dx0 ,x, (Ybus_fault,case2_DynSystem), 0.0)
 sys_solve = nlsolve(inif!, x0)
 x0_init = sys_solve.zero
-
-#Define problem
-prob = DiffEqBase.DAEProblem(system_model!, dx0, x0_init, tspan,
-                            (Ybus_fault, case2_DynSystem), differential_vars = diff_vars);
-
-#Solve problem in equilibrium
-sol = solve(prob, IDA());
-
-#Define data for using callbacks for defining the fault
-tstop = [1.0] #Define a timestop at t=1, the step change
 cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
 
-#Solve DAE system
-sol2 = solve(prob, IDA(init_all = :false), dtmax= 0.02, callback=cb, tstops=tstop);
+sim = DynamicSimulation(case2_DynSystem, tspan, Ybus_fault, cb, x0_init)
+
+#Solve problem in equilibrium
+run_simulation!(sim, IDA());
 
 #Obtain data for angles
-series = LITS.get_state_series(sol2, case2_DynSystem, (:Case2Gen2, :δ));
+series = get_state_series(sim, (:Case2Gen2, :δ));
 
-@test sol2.retcode == :Success
+@test sim.solution.retcode == :Success

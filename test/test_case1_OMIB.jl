@@ -11,7 +11,7 @@ drop a circuit on the (double circuit) line connecting the two buses, doubling i
 
 ############### Data Network ########################
 
-nodes_case1 = [Bus(1 , #number
+nodes_case1 = [PSY.Bus(1 , #number
                    "Bus 1", #Name
                    "REF" , #BusType (REF, PV, PQ)
                    0, #Angle in radians
@@ -20,7 +20,7 @@ nodes_case1 = [Bus(1 , #number
                    69), #Base voltage in kV
                    Bus(2 , "Bus 2"  , "PV" , 0 , 1.0 , (min=0.94, max=1.06), 69)]
 
-branch_case1 = [Line("Line1", #name
+branch_case1 = [PSY.Line("Line1", #name
                      true, #available
                      0.0, #active power flow initial condition (from-to)
                      0.0, #reactive power flow initial condition (from-to)
@@ -32,7 +32,7 @@ branch_case1 = [Line("Line1", #name
                      1.04)]  #angle limits (-min and max)
 
 #Trip of a single circuit of Line 1 -> Resistance and Reactance doubled.
-branch_case1_fault = [Line("Line1", #name
+branch_case1_fault = [PSY.Line("Line1", #name
                            true, #available
                            0.0, #active power flow initial condition (from-to)
                            0.0, #reactive power flow initial condition (from-to)
@@ -117,34 +117,28 @@ Ybus_fault = PSY.Ybus(branch_case1_fault, nodes_case1)[:,:]
 #Initialize variables
 dx0 = zeros(LITS.get_total_rows(case1_DynSystem))
 x0 = [1.05, #VR_1
-      1.0, #VR_21.0, 0.0, -0.01, -0.01,
+      1.0, #VR_2
       0.0, #VI_1
       0.01, #VI_2
       0.2, #δ
       1.0] #ω
-diff_vars = case1_DynSystem.DAE_vector
-tspan = (0.0, 20.0);
+tspan = (0.0, 30.0);
 
 #Find initial condition
-inif! = (out,x) -> system_model!(out, dx0 ,x, (Ybus_fault,case1_DynSystem), 0.0)
+inif! = (out,x) -> LITS.system_model!(out, dx0 ,x, (Ybus_fault,case1_DynSystem), 0.0)
 sys_solve = nlsolve(inif!, x0)
 x0_init = sys_solve.zero
 
-#Define problem
-prob = DiffEqBase.DAEProblem(system_model!, dx0, x0_init, tspan,
-                            (Ybus_fault, case1_DynSystem), differential_vars = diff_vars)
-
-#Solve problem in equilibrium
-sol = solve(prob, IDA());
-
-#Define data for using callbacks for defining the fault
-tstop = [1.0] #Define a timestop at t=1, the step change
+#Define Fault using Callbacks
 cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
 
-#Solve DAE system
-sol2 = solve(prob, IDA(init_all = :false), dtmax= 0.02, callback=cb, tstops=tstop)
+#Define Simulation Problem
+sim = DynamicSimulation(case1_DynSystem, tspan, Ybus_fault, cb, x0_init)
+
+#Solve problem in equilibrium
+run_simulation!(sim, IDA(), dtmax=0.02);
 
 #Obtain data for angles
-series = LITS.get_state_series(sol2, case1_DynSystem, (:Case1Gen, :δ))
+series = get_state_series(sim, (:Case1Gen, :δ));
 
-@test sol2.retcode == :Success
+@test sim.solution.retcode == :Success
