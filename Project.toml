@@ -1,6 +1,6 @@
 name = "LITS"
 uuid = "86b0dc02-7903-11e9-325f-f195ca7e6c1a"
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
@@ -12,10 +12,10 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 
 [compat]
-DiffEqBase = "~6.3.1"
+DiffEqBase = "~6.3"
 DiffEqCallbacks = "~2.8"
 NLsolve = "~4.1"
-PowerSystems = "~v0.4"
+PowerSystems = "~0.5"
 Sundials = "~3.7.0"
 julia = "^1.2"
 
