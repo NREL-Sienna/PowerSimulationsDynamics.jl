@@ -56,6 +56,9 @@ end
 
 
 function add_device!(sys::DynamicSystem, device::DynBranch)
+    if isnothing(sys.dyn_branch)
+        sys.dyn_branch = Vector{DynBranch}()
+    end
     push!(sys.dyn_branch, device)
     sys.indexed = false
     return
