@@ -5,6 +5,8 @@ Note that this tutorial is for `LITS 0.2.0`. Future versions will have dedicated
 
 This tutorial presents a simulation of a three-bus system, with an infinite bus (represented as a voltage source behind an impedance) at bus 1, and a one d- one q- machine on bus 2 and an inverter of 19 states, as a virtual synchronous machine at bus 3. The perturbation will be the trip of two of the three circuits (triplicating its resistance and impedance) of the line that connects bus 1 and bus 3. This case also consider a dynamic line model for connection between buses 2 and 3.
 
+This tutorial can be found on [LITS/Examples](https://github.com/Energy-MAC/LITS-Examples) repository.
+
 ## Step 1: Package Initialization
 
 ```julia

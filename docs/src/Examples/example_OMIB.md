@@ -5,6 +5,8 @@ Note that this tutorial is for `LITS 0.2.0`. Future versions will have dedicated
 
 This tutorial presents a simulation of a two-bus system, with an infinite bus (represented as a voltage source behind an impedance) at bus 1 and a classic machine on bus 2. The perturbation will be the trip of one of the two circuits (doubling its resistance and impedance) of the line that connects both buses.
 
+This tutorial can be found on [LITS/Examples](https://github.com/Energy-MAC/LITS-Examples) repository.
+
 ## Step 1: Package Initialization
 
 The first step consists in initialize all packages that will be used to run the simulation. All the necessary packages are listed:
