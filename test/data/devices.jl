@@ -181,7 +181,7 @@ gen3_avr_fixed = AVRFixed(1.7327)
 
 ######################### Generators ########################
 
-Gen1AVR = DynGenerator(1, #Number
+Gen1AVR = PSY.DynamicGenerator(1, #Number
                  :TestGen,
                  nodes_OMIB[2], #bus
                  1.0, # ω_ref,
@@ -193,7 +193,7 @@ Gen1AVR = DynGenerator(1, #Number
                  fixed_tg, #tg
                  no_pss)
 
-Gen1AVRnoAVR = DynGenerator(1, #Number
+Gen1AVRnoAVR = PSY.DynamicGenerator(1, #Number
                  :TestGen,
                  nodes_OMIB[2], #bus
                  1.0, # ω_ref,
@@ -205,7 +205,7 @@ Gen1AVRnoAVR = DynGenerator(1, #Number
                  fixed_tg, #tg
                  no_pss)
 
-Gen2AVRnoAVR = DynGenerator(1, #Number
+Gen2AVRnoAVR = PSY.DynamicGenerator(1, #Number
                  :TestGen,
                  nodes_OMIB[2], #bus
                  1.0, # ω_ref,
@@ -217,7 +217,7 @@ Gen2AVRnoAVR = DynGenerator(1, #Number
                  fixed_tg, #tg
                  no_pss)
 
-Gen2AVR = DynGenerator(1, #Number
+Gen2AVR = PSY.DynamicGenerator(1, #Number
                  :TestGen,
                  nodes_OMIB[2], #bus
                  1.0, # ω_ref,
@@ -229,7 +229,7 @@ Gen2AVR = DynGenerator(1, #Number
                  fixed_tg, #tg
                  no_pss)
 
-Gen3AVR = DynGenerator(1, #number
+Gen3AVR = PSY.DynamicGenerator(1, #number
                        :TestGen, #name
                        nodes_OMIB[2], #bus
                        1.0, # ω_ref
@@ -241,7 +241,7 @@ Gen3AVR = DynGenerator(1, #number
                        fixed_tg, #tg
                        no_pss)
 
-Gen4AVRTG = DynGenerator(1, #number
+Gen4AVRTG = PSY.DynamicGenerator(1, #number
                        :TestGen, #name
                        nodes_OMIB[2], #bus
                        1.0, # ω_ref
@@ -253,7 +253,7 @@ Gen4AVRTG = DynGenerator(1, #number
                        typeI_tg, #tg
                        no_pss)
 
-Gen5AVR = DynGenerator(1, #number
+Gen5AVR = PSY.DynamicGenerator(1, #number
                        :TestGen, #name
                        nodes_OMIB[2], #bus
                        1.0, # ω_ref
@@ -265,7 +265,7 @@ Gen5AVR = DynGenerator(1, #number
                        fixed_tg, #tg
                        no_pss)
 
-Gen6AVR = DynGenerator(1, #number
+Gen6AVR = PSY.DynamicGenerator(1, #number
                        :TestGen, #name
                        nodes_OMIB[2], #bus
                        1.0, #ω_ref
@@ -277,7 +277,7 @@ Gen6AVR = DynGenerator(1, #number
                        fixed_tg, #tg
                        no_pss)
 
-GenKundur = DynGenerator(1, #number
+GenKundur = PSY.DynamicGenerator(1, #number
                          :KundurGen, #name
                          nodes_kundur[1],
                          1.0, #ω_ref
@@ -289,7 +289,7 @@ GenKundur = DynGenerator(1, #number
                          fixed_tg, #tg
                          no_pss) #pss
 
-GenFullKundur =  DynGenerator(1, #number
+GenFullKundur =  PSY.DynamicGenerator(1, #number
                               :KundurGen, #name
                               nodes_kundur[1],
                               1.0, #ω_ref
@@ -302,7 +302,7 @@ GenFullKundur =  DynGenerator(1, #number
                               no_pss) #pss
 
 
-Gen2_benchmark = DynGenerator(1, #number
+Gen2_benchmark = PSY.DynamicGenerator(1, #number
                               :Gen1, #name
                               nodes_benchmark[2],
                               1.0, #ω_ref
@@ -314,7 +314,7 @@ Gen2_benchmark = DynGenerator(1, #number
                               fixed_tg, #tg
                               no_pss) #pss
 
-Gen2_benchmark_tg = DynGenerator(1, #number
+Gen2_benchmark_tg = PSY.DynamicGenerator(1, #number
                               :Gen1, #name
                               nodes_benchmark[2],
                               1.0, #ω_ref
@@ -326,7 +326,7 @@ Gen2_benchmark_tg = DynGenerator(1, #number
                               typeII_tg, #tg
                               no_pss) #pss
 
-Gen3_benchmark = DynGenerator(2, #number
+Gen3_benchmark = PSY.DynamicGenerator(2, #number
                                 :Gen2, #name
                                 nodes_benchmark[3],
                                 1.0, #ω_ref
@@ -338,7 +338,7 @@ Gen3_benchmark = DynGenerator(2, #number
                                 fixed_tg, #tg
                                 no_pss) #pss
 
-Gen2_benchmark_fixedavr = DynGenerator(1, #number
+Gen2_benchmark_fixedavr = PSY.DynamicGenerator(1, #number
                               :Gen1, #name
                               nodes_benchmark[2],
                               1.0, #ω_ref
@@ -350,7 +350,7 @@ Gen2_benchmark_fixedavr = DynGenerator(1, #number
                               fixed_tg, #tg
                               no_pss) #pss
 
-Gen3_benchmark_fixedavr = DynGenerator(2, #number
+Gen3_benchmark_fixedavr = PSY.DynamicGenerator(2, #number
                                 :Gen2, #name
                                 nodes_benchmark[3],
                                 1.0, #ω_ref
@@ -362,7 +362,7 @@ Gen3_benchmark_fixedavr = DynGenerator(2, #number
                                 fixed_tg, #tg
                                 no_pss) #pss
 
-Gen_bench = DynGenerator(1, #number
+Gen_bench = PSY.DynamicGenerator(1, #number
                               :Gen1, #name
                               nodes_bench[2],
                               1.0, #ω_ref
@@ -400,42 +400,42 @@ inf_gen_benchmark = StaticSource(1, #number
 
 ################### StaticSources #####################
 
-OMIB =  DynamicSystem(nodes_OMIB, branch_OMIB, [Gen1AVR], [inf_gen], 100.0, 60.0)
+OMIB =  PSY.System(nodes_OMIB, branch_OMIB, [Gen1AVR], [inf_gen], 100.0, 60.0)
 #include("src/LITS.jl")
-OMIB_dyn_line =  DynamicSystem(nodes_OMIB, branch_OMIB, [Gen1AVR], [inf_gen], 100.0, 60.0, Dynbranch_OMIB)
+OMIB_dyn_line =  PSY.System(nodes_OMIB, branch_OMIB, [Gen1AVR], [inf_gen], 100.0, 60.0, Dynbranch_OMIB)
 
-OMIBA = DynamicSystem(nodes_OMIB, branch_OMIB, [Gen5AVR], [inf_gen], 100.0, 60.0)
-OMIB_Kundur = DynamicSystem(nodes_kundur, branch_kundur, [GenKundur], [inf_gen_kundur], 100.0, 60.0)
-OMIB_FullKundur = DynamicSystem(nodes_kundur, branch_kundur, [GenFullKundur], [inf_gen_kundur], 100.0, 60.0)
-TwoBus_Benchmark = DynamicSystem(nodes_bench, #buses
+OMIBA = PSY.System(nodes_OMIB, branch_OMIB, [Gen5AVR], [inf_gen], 100.0, 60.0)
+OMIB_Kundur = PSY.System(nodes_kundur, branch_kundur, [GenKundur], [inf_gen_kundur], 100.0, 60.0)
+OMIB_FullKundur = PSY.System(nodes_kundur, branch_kundur, [GenFullKundur], [inf_gen_kundur], 100.0, 60.0)
+TwoBus_Benchmark = PSY.System(nodes_bench, #buses
                                    branch_bench, #branches
                                    [Gen_bench], #dynamic injections
                                    [inf_gen_benchmark, loads_bench[1]], #static injections
                                    100.0, #Sbase
                                    60.0) #fbase
 
-ThreeBus_Benchmark = DynamicSystem(nodes_benchmark, #buses
+ThreeBus_Benchmark = PSY.System(nodes_benchmark, #buses
                                   branch_benchmark, #branches
                                   [Gen2_benchmark, Gen3_benchmark], #dynamic injections
                                   [inf_gen_benchmark, loads_benchmark[1], loads_benchmark[2], loads_benchmark[3]], #static injections
                                   100.0, #Sbase
                                   60.0) #fbase
 
-ThreeBus_Benchmark = DynamicSystem(nodes_benchmark, #buses
+ThreeBus_Benchmark = PSY.System(nodes_benchmark, #buses
                                   branch_benchmark, #branches
                                   [Gen2_benchmark, Gen3_benchmark], #dynamic injections
                                   [inf_gen_benchmark, loads_benchmark[1], loads_benchmark[2], loads_benchmark[3]], #static injections
                                   100.0, #Sbase
                                   60.0) #fbase
 
-ThreeBus_Benchmark_tg = DynamicSystem(nodes_benchmark, #buses
+ThreeBus_Benchmark_tg = PSY.System(nodes_benchmark, #buses
                                   branch_benchmark, #branches
                                   [Gen2_benchmark_tg, Gen3_benchmark], #dynamic injections
                                   [inf_gen_benchmark, loads_benchmark[1], loads_benchmark[2], loads_benchmark[3]], #static injections
                                   100.0, #Sbase
                                   60.0) #fbase
 
-ThreeBus_Benchmark_fixedavr = DynamicSystem(nodes_benchmark, #buses
+ThreeBus_Benchmark_fixedavr = PSY.System(nodes_benchmark, #buses
                                 branch_benchmark, #branches
                                 [Gen2_benchmark_fixedavr, Gen3_benchmark_fixedavr], #dynamic injections
                                 [inf_gen_benchmark, loads_benchmark[1], loads_benchmark[2], loads_benchmark[3]], #static injections

@@ -1,8 +1,8 @@
-function mdl_converter_ode!( device::DynInverter{AvgCnvFixedDC,O,VC,DC,P,F}) where {O <: OuterControl,
-                                                   VC<: VSControl,
-                                                   DC<: DCSource,
-                                                   P <: FrequencyEstimator,
-                                                   F <: Filter}
+function mdl_converter_ode!( device::PSY.DynamicInverter{PSY.AvgCnvFixedDC,O,VC,DC,P,F}) where {O <: PSY.OuterControl,
+                                                   VC<: PSY.VSControl,
+                                                   DC<: PSY.DCSource,
+                                                   P <: PSY.FrequencyEstimator,
+                                                   F <: PSY.Filter}
 
     #Obtain external states inputs for component
 

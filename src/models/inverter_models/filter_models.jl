@@ -4,11 +4,11 @@ function mdl_filter_ode!(device_states,
         current_i,
         sys_Sbase,
         f0,
-        device::DynInverter{C,O,VC,DC,P,LCLFilter}) where {C <: Converter,
-                                                   O <: OuterControl,
-                                                   VC<: VSControl,
-                                                   DC<: DCSource,
-                                                   P <: FrequencyEstimator}
+        device::PSY.DynamicInverter{C,O,VC,DC,P,PSY.LCLFilter}) where {C <: PSY.Converter,
+                                                   O <: PSY.OuterControl,
+                                                   VC<: PSY.VSControl,
+                                                   DC<: PSY.DCSource,
+                                                   P <: PSY.FrequencyEstimator}
 
     #Obtain external states inputs for component
     #TODO: If converter has dynamics, need to reference states:

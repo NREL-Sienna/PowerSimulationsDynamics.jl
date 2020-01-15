@@ -3,7 +3,7 @@ function mdl_Zload!(voltage_r,
                     current_r,
                     current_i,
                     device::PSY.PowerLoad,
-                    sys::DynamicSystem)
+                    sys::PSY.System)
 
     #Get parameters
     P = device.activepower

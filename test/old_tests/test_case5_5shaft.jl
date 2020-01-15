@@ -101,7 +101,7 @@ case5_avr =    AVRTypeI(20.0, #Ka - Gain
 
 
 ### Case 5 Generator ###
-case5_gen = DynGenerator(1, #Number
+case5_gen = PSY.DynamicGenerator(1, #Number
                          :Case5Gen,
                          nodes_case5[2], #bus
                          1.0, # ω_ref,
@@ -116,7 +116,7 @@ case5_gen = DynGenerator(1, #Number
 
 ######################### Dynamical System ########################
 
-case5_DynSystem = DynamicSystem(nodes_case5,
+case5_DynSystem = PSY.System(nodes_case5,
                                 branch_case5,
                                 [case5_gen],
                                 vcat(inf_gen_case5,loads_case5),

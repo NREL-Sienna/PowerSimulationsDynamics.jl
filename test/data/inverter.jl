@@ -10,7 +10,7 @@ outer_control = VirtualInertiaQdroop(virtual_H, Q_control)
 vsc = CurrentControl(1.27, 14.3, 0.59, 736.0, 50.0, 0.5, 0.2,
 0.00)
 
-DynInverter(1,
+PSY.DynamicInverter(1,
             :DARCO,
             nodes_OMIB[2],
             1.0,

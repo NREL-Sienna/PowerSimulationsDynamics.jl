@@ -84,7 +84,7 @@ case1234_no_tg = TGFixed(1.0) #eff
 case1_avr = AVRFixed(0.0) #Vf not applicable in Classic Machines
 
 ### Case 1 Generator ###
-case1_gen = DynGenerator(1, #Number
+case1_gen = PSY.DynamicGenerator(1, #Number
                       :Case1Gen,
                       nodes_case1[2], #bus
                       1.0, # ω_ref,
@@ -99,7 +99,7 @@ case1_gen = DynGenerator(1, #Number
 
 ######################### Dynamical System ########################
 
-case1_DynSystem = DynamicSystem(nodes_case1,
+case1_DynSystem = PSY.System(nodes_case1,
                               branch_case1,
                               [case1_gen],
                               vcat(inf_gen_case1,loads_case1),
