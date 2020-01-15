@@ -1,9 +1,9 @@
 function mdl_tg_ode!(device_states,
                     output_ode,
-                    device::DynGenerator{M, S, A, TGFixed, P})  where {M <: Machine,
-                                                                       S <: Shaft,
-                                                                       A <: AVR,
-                                                                       P <: PSS}
+                    device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P})  where {M <: PSY.Machine,
+                                                                       S <: PSY.Shaft,
+                                                                       A <: PSY.AVR,
+                                                                       P <: PSY.PSS}
 
     #Update inner vars
     device.inner_vars[τm_var] = get_P_ref(device) * device.tg.efficiency
@@ -18,10 +18,10 @@ end
 
 function mdl_tg_ode!(device_states,
                     output_ode,
-                    device::DynGenerator{M, S, A, TGTypeI, P})  where {M <: Machine,
-                                                                       S <: Shaft,
-                                                                       A <: AVR,
-                                                                       P <: PSS}
+                    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P})  where {M <: PSY.Machine,
+                                                                       S <: PSY.Shaft,
+                                                                       A <: PSY.AVR,
+                                                                       P <: PSY.PSS}
 
     #Obtain references
     ω_ref = get_ω_ref(device)
@@ -76,10 +76,10 @@ end
 
 function mdl_tg_ode!(device_states,
                     output_ode,
-                    device::DynGenerator{M, S, A, TGTypeII, P})  where {M <: Machine,
-                                                                       S <: Shaft,
-                                                                       A <: AVR,
-                                                                       P <: PSS}
+                    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P})  where {M <: PSY.Machine,
+                                                                       S <: PSY.Shaft,
+                                                                       A <: PSY.AVR,
+                                                                       P <: PSY.PSS}
 
     #Obtain references
     ω_ref = get_ω_ref(device)

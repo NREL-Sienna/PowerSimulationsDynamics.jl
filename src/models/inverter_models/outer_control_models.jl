@@ -1,11 +1,11 @@
 function mdl_outer_ode!(device_states,
                         output_ode,
                         f0,
-                        device::DynInverter{C,VirtualInertiaQdroop{VirtualInertia,ReactivePowerDroop},VC,DC,P,F}) where {C <: Converter,
-                                                                VC<: VSControl,
-                                                                DC<: DCSource,
-                                                                P <: FrequencyEstimator,
-                                                                F <: Filter}
+                        device::PSY.DynamicInverter{C,PSY.VirtualInertiaQdroop{PSY.VirtualInertia,PSY.ReactivePowerDroop},VC,DC,P,F}) where {C <: PSY.Converter,
+                                                                VC<: PSY.VSControl,
+                                                                DC<: PSY.DCSource,
+                                                                P <: PSY.FrequencyEstimator,
+                                                                F <: PSY.Filter}
 
 
       #Obtain external states inputs for component

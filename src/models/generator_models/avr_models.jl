@@ -1,9 +1,9 @@
 function mdl_avr_ode!(device_states,
                     output_ode,
-                    device::DynGenerator{M, S, AVRFixed, TG, P})  where {M <: Machine,
-                                                                         S <: Shaft,
-                                                                         TG <: TurbineGov,
-                                                                         P <: PSS}
+                    device::PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P})  where {M <: PSY.Machine,
+                                                                         S <: PSY.Shaft,
+                                                                         TG <: PSY.TurbineGov,
+                                                                         P <: PSY.PSS}
 
     #Obtain parameters
     Vf = device.avr.Emf
@@ -17,10 +17,10 @@ end
 
 function mdl_avr_ode!(device_states,
                       output_ode,
-                      device::DynGenerator{M, S, AVRSimple, TG, P})  where {M <: Machine,
-                                                                            S <: Shaft,
-                                                                            TG <: TurbineGov,
-                                                                            P <: PSS}
+                      device::PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P})  where {M <: PSY.Machine,
+                                                                            S <: PSY.Shaft,
+                                                                            TG <: PSY.TurbineGov,
+                                                                            P <: PSY.PSS}
 
     #Obtain references
     V_ref = get_V_ref(device)
@@ -54,10 +54,10 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 
 function mdl_avr_ode!(device_states,
                       output_ode,
-                      device::DynGenerator{M, S, AVRTypeI, TG, P})  where {M <: Machine,
-                                                                           S <: Shaft,
-                                                                           TG <: TurbineGov,
-                                                                           P <: PSS}
+                      device::PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P})  where {M <: PSY.Machine,
+                                                                           S <: PSY.Shaft,
+                                                                           TG <: PSY.TurbineGov,
+                                                                           P <: PSY.PSS}
 
     #Obtain references
     V0_ref = get_V_ref(device)
@@ -121,10 +121,10 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 
 function mdl_avr_ode!(device_states,
                       output_ode,
-                      device::DynGenerator{M, S, AVRTypeII, TG, P})  where {M <: Machine,
-                                                                           S <: Shaft,
-                                                                           TG <: TurbineGov,
-                                                                           P <: PSS}
+                      device::PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P})  where {M <: PSY.Machine,
+                                                                           S <: PSY.Shaft,
+                                                                           TG <: PSY.TurbineGov,
+                                                                           P <: PSY.PSS}
 
     #Obtain references
     V0_ref = get_V_ref(device)

@@ -14,7 +14,7 @@ function branch_model!(x,
                       ode_range::UnitRange{Int64},
                       controls,
                       branch::DynBr,
-                      sys::DynamicSystem) where {DynBr <: DynBranch}
+                      sys::PSY.System) where {DynBr <: DynBranch}
 
 
     #Obtain local device states

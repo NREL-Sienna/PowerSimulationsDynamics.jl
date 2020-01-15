@@ -24,7 +24,7 @@ const PSY = PowerSystems
 
 ## Step 2: Data creation
 
-Next we need to define the different elements required to run a simulation. To run a simulation, it is required to define a `DynamicSystem` that requires the following components:
+Next we need to define the different elements required to run a simulation. To run a simulation, it is required to define a `PSY.System` that requires the following components:
 
 - Vector of `PSY.Bus` elements, that define all the buses in the network.
 - Vector of `PSY.Branch` elements, that define all the branches elements (that connect two buses) in the network.
@@ -139,7 +139,7 @@ case1234_no_tg = TGFixed(1.0) #eff
 cases_no_pss = PSSFixed(0.0) #No PSS without AVR
 
 ### Constructing the Generator ###
-case1_gen = DynGenerator(1, #Number
+case1_gen = PSY.DynamicGenerator(1, #Number
                       :Case1Gen,
                       nodes_case1[2], #bus
                       1.0, # ω_ref,
@@ -159,7 +159,7 @@ Note that a generator is defined by its 5 components, while also defining its re
 Finally, with all the components properly constructed we define the dynamic system:
 
 ```julia
-case1_DynSystem = DynamicSystem(nodes_case1, #Vector of Buses
+case1_DynSystem = PSY.System(nodes_case1, #Vector of Buses
                               branch_case1, #Vector of Branches
                               [case1_gen], #Vector of Dynamic Injections
                               vcat(inf_gen_case1,loads_case1), #Vector of Injections

@@ -1,10 +1,10 @@
 function mdl_VScontrol_ode!(device_states,
         output_ode,
-        device::DynInverter{C,O,CombinedVIwithVZ,DC,P,F}) where {C <: Converter,
-                                                                O <: OuterControl,
-                                                                DC<: DCSource,
-                                                                P <: FrequencyEstimator,
-                                                                F <: Filter}
+        device::PSY.DynamicInverter{C,O,PSY.CombinedVIwithVZ,DC,P,F}) where {C <: PSY.Converter,
+                                                                O <: PSY.OuterControl,
+                                                                DC<: PSY.DCSource,
+                                                                P <: PSY.FrequencyEstimator,
+                                                                F <: PSY.Filter}
 
     #Obtain external states inputs for component
     external_ix = device.input_port_mapping[device.vscontrol]

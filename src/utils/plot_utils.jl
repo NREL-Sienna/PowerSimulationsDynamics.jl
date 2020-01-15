@@ -25,7 +25,7 @@ end
 Function to print initial states. It receives the vector of initial states and the dynamical system.
 """
 
-function print_init_states(x0::Vector{Float64}, dyn_system::DynamicSystem)
+function print_init_states(x0::Vector{Float64}, dyn_system::PSY.System)
     for (ix, val_sys) in dyn_system.global_state_index
         println(ix)
         println("====================")

@@ -15,14 +15,14 @@ Mach3_benchmark = OneDOneQMachine(0.0, #R
                         5.89, #Td0_p
                         0.6, #Tq0_p
                         100.0)   #MVABase
-                        
+
 Shaft2_benchmark = SingleMass(3.01, #H (M = 6.02 -> H = M/2)
                        0.0) #D
 
 Shaft3_benchmark = SingleMass(3.01, #H (M = 6.02 -> H = M/2)
                       0.0) #D
-                      
-                      
+
+
 no_pss = PSSFixed(0.0)
 
 fixed_tg = TGFixed(1.0) #eff
@@ -51,7 +51,7 @@ gen3_avr_benchmark_m = AVRTypeI(20.0, #Ka - Gain
                                 0.0039, #Ae - 1st ceiling coefficient
                                 1.555) #Be - 2nd ceiling coefficient
 
-Gen2_benchmark = DynGenerator(1, #number
+Gen2_benchmark = PSY.DynamicGenerator(1, #number
                               :Gen1, #name
                               nodes_benchmark[2],
                               1.0, #ω_ref
@@ -62,8 +62,8 @@ Gen2_benchmark = DynGenerator(1, #number
                               gen2_avr_benchmark_m, #avr
                               fixed_tg, #tg
                               no_pss) #pss
-                              
-Gen3_benchmark = DynGenerator(2, #number
+
+Gen3_benchmark = PSY.DynamicGenerator(2, #number
                                 :Gen2, #name
                                 nodes_benchmark[3],
                                 1.0, #ω_ref
@@ -74,19 +74,18 @@ Gen3_benchmark = DynGenerator(2, #number
                                 gen3_avr_benchmark_m, #avr
                                 fixed_tg, #tg
                                 no_pss) #pss
-                                
+
 inf_gen_benchmark = StaticSource(1, #number
                  :InfBus, #name
                  nodes_benchmark[1], #bus
                  1.02, #VR
                  0.0, #VI
                  0.000001) #Xth
-                 
-                 
-ThreeBus_Benchmark = DynamicSystem(nodes_benchmark, #buses
+
+
+ThreeBus_Benchmark = PSY.System(nodes_benchmark, #buses
                                   branch_benchmark, #branches
                                   [Gen2_benchmark, Gen3_benchmark], #dynamic injections
-                                  [inf_gen_benchmark, loads_benchmark[1], loads_benchmark[2], loads_benchmark[3]], 
+                                  [inf_gen_benchmark, loads_benchmark[1], loads_benchmark[2], loads_benchmark[3]],
                                   100.0, #Sbase
                                   60.0) #fbase
-                                  

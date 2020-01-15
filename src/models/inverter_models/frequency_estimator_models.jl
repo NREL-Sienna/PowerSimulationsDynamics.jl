@@ -1,11 +1,11 @@
 function mdl_freq_estimator_ode!(device_states,
         output_ode,
         f0,
-        device::DynInverter{C,O,VC,DC,PLL,F}) where {C <: Converter,
-                                                   O <: OuterControl,
-                                                   VC<: VSControl,
-                                                   DC<: DCSource,
-                                                   F <: Filter}
+        device::PSY.DynamicInverter{C,O,VC,DC,PSY.PLL,F}) where {C <: PSY.Converter,
+                                                   O <: PSY.OuterControl,
+                                                   VC<: PSY.VSControl,
+                                                   DC<: PSY.DCSource,
+                                                   F <: PSY.Filter}
 
     #Obtain external states inputs for component
     external_ix = device.input_port_mapping[device.freq_estimator]

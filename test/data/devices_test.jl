@@ -31,7 +31,7 @@ load_test2 = PowerLoad("Bus3", true, nodes_test2[3], PowerSystems.ConstantPower,
 load_test3a = PowerLoad("Bus3", true, nodes_test2[2], PowerSystems.ConstantPower, 0.3, 0.05, 0.6, 0.05)
 load_test3b = PowerLoad("Bus3", true, nodes_test2[3], PowerSystems.ConstantPower, 0.3, 0.05, 0.6, 0.05)
 
-Gen_test = DynGenerator(1, #Number
+Gen_test = PSY.DynamicGenerator(1, #Number
                  :TestGen,
                  nodes_test[2], #bus
                  1.0, # ω_ref,
@@ -43,7 +43,7 @@ Gen_test = DynGenerator(1, #Number
                  tg_test, #tg
                  pss_test)
 
-Gen_test2 = DynGenerator(1, #Number
+Gen_test2 = PSY.DynamicGenerator(1, #Number
                 :TestGen,
                 nodes_test[2], #bus
                 1.0, # ω_ref,
@@ -55,7 +55,7 @@ Gen_test2 = DynGenerator(1, #Number
                 tg_test, #tg
                 pss_test)
 
-Gen_test3 = DynGenerator(1, #Number
+Gen_test3 = PSY.DynamicGenerator(1, #Number
               :TestGen,
               nodes_test[2], #bus
               1.0, # ω_ref,
@@ -67,7 +67,7 @@ Gen_test3 = DynGenerator(1, #Number
               tg_test, #tg
               pss_test)
 
-OMIB_test =  DynamicSystem(nodes_test, branch_test, [Gen_test], [load_test], 100.0, 60.0)
-OMIB_test2 =  DynamicSystem(nodes_test, branch_test, [Gen_test2], [load_test], 100.0, 60.0)
-OMIB_test_load = DynamicSystem(nodes_test2, branch_test2, [Gen_test3], [load_test2], 100.0, 60.0)
-OMIB_test_load2 = DynamicSystem(nodes_test2, branch_test2, [Gen_test3], [load_test3a, load_test3b], 100.0, 60.0)
+OMIB_test =  PSY.System(nodes_test, branch_test, [Gen_test], [load_test], 100.0, 60.0)
+OMIB_test2 =  PSY.System(nodes_test, branch_test, [Gen_test2], [load_test], 100.0, 60.0)
+OMIB_test_load = PSY.System(nodes_test2, branch_test2, [Gen_test3], [load_test2], 100.0, 60.0)
+OMIB_test_load2 = PSY.System(nodes_test2, branch_test2, [Gen_test3], [load_test3a, load_test3b], 100.0, 60.0)

@@ -1,4 +1,4 @@
-function Base.show(io::IO, op_model::DynamicSystem)
+function Base.show(io::IO, op_model::PSY.System)
     println(io, "System()")
 end
 

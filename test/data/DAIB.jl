@@ -66,7 +66,7 @@ vsc = CombinedVIwithVZ(0.59, #kpv:: Voltage controller proportional gain
                        50.0, #ωad:: Active damping low pass filter cut-off frequency
                        0.2) #kad:: Active damping gain
 
-Darco_Inverter = DynInverter(1, #number
+Darco_Inverter = PSY.DynamicInverter(1, #number
                              :DARCO, #name
                              nodes_DAIB[2], #bus location
                              1.0, #ω_ref
@@ -83,6 +83,6 @@ Darco_Inverter = DynInverter(1, #number
 
 loads_DAIB = [PowerLoad("Bus1", true, nodes_DAIB[1], PowerSystems.ConstantPower, 0.0, 0.0, 0.0, 0.0)]
 
-DAIB = DynamicSystem(nodes_DAIB, branch_DAIB, [Darco_Inverter], [inf_gen_DAIB], 100.0, 50.0);
+DAIB = PSY.System(nodes_DAIB, branch_DAIB, [Darco_Inverter], [inf_gen_DAIB], 100.0, 50.0);
 
-#DAIB = DynamicSystem(nodes_DAIB, branch_DAIB, [Darco_Inverter], loads_DAIB, 100.0, 50.0)
+#DAIB = PSY.System(nodes_DAIB, branch_DAIB, [Darco_Inverter], loads_DAIB, 100.0, 50.0)

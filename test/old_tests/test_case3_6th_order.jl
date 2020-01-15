@@ -115,7 +115,7 @@ case2345_avr3 = AVRTypeI(20.0, #Ka - Gain
                         1.555) #Be - 2nd ceiling coefficient
 
 ### Case 3 Generators ###
-case3_gen2 = DynGenerator(1, #Number
+case3_gen2 = PSY.DynamicGenerator(1, #Number
                          :Case3Gen2,
                          nodes_case234[2], #bus
                          1.0, # ω_ref,
@@ -127,7 +127,7 @@ case3_gen2 = DynGenerator(1, #Number
                          case1234_no_tg, #tg
                          cases_no_pss) #pss
 
-case3_gen3 = DynGenerator(2, #Number
+case3_gen3 = PSY.DynamicGenerator(2, #Number
                          :Case3Gen3,
                          nodes_case234[3], #bus
                          1.0, # ω_ref,
@@ -142,7 +142,7 @@ case3_gen3 = DynGenerator(2, #Number
 
 ######################### Dynamical System ########################
 
-case3_DynSystem = DynamicSystem(nodes_case234,
+case3_DynSystem = PSY.System(nodes_case234,
                                 branch_case234,
                                 [case3_gen2, case3_gen3],
                                 vcat(inf_gen_case234,loads_case234),

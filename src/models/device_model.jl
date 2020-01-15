@@ -8,7 +8,7 @@ function device_model!(x,
                       ode_range::UnitRange{Int64},
                       controls,
                       device::DynG,
-                      sys::DynamicSystem) where {DynG <: DynGenerator}
+                      sys::PSY.System) where {DynG <: PSY.DynamicGenerator}
        #Obtain local device states
     n_states = total_device_states(device)
     device_states = @view x[ix_range]
@@ -40,7 +40,7 @@ function device_model!(x,
                     sys_Sbase,
                     sys_f,
                     device)
-                       #Obtain ODEs for Shaft
+                       #Obtain ODEs for PSY.Shaft
     mdl_shaft_ode!(device_states,
                    view(output_ode, ode_range),
                    sys_f,
@@ -55,8 +55,8 @@ function device_model!(voltage_r,
                        voltage_i,
                        current_r,
                        current_i,
-                       device::StaticSource,
-                       sys::DynamicSystem)
+                       device::PSY.Source,
+                       sys::PSY.System)
 
     mdl_source!(voltage_r, voltage_i, current_r, current_i, device, sys)
 
@@ -68,7 +68,7 @@ function device_model!(voltage_r,
                        current_r,
                        current_i,
                        device::PSY.PowerLoad,
-                       sys::DynamicSystem)
+                       sys::PSY.System)
 
     mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device, sys)
 
@@ -85,7 +85,7 @@ function device_model!(x,
                         ode_range::UnitRange{Int64},
                         controls,
                         device::DynI,
-                        sys::DynamicSystem) where {DynI <: DynInverter}
+                        sys::PSY.System) where {DynI <: PSY.DynamicInverter}
 
         #Obtain local device states
         n_states = total_device_states(device)

@@ -1,9 +1,9 @@
 function mdl_pss_ode!(device_states,
                      output_ode,
-                     device::DynGenerator{M, S, A, TG, PSSFixed})  where {M <: Machine,
-                                                                        S <: Shaft,
-                                                                        A <: AVR,
-                                                                        TG <: TurbineGov}
+                     device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed})  where {M <: PSY.Machine,
+                                                                        S <: PSY.Shaft,
+                                                                        A <: PSY.AVR,
+                                                                        TG <: PSY.TurbineGov}
 
     #Compute Vs update
     device.inner_vars[V_pss_var] = device.pss.Vs
@@ -15,10 +15,10 @@ end
 
 function mdl_pss_ode!(device_states,
                      output_ode,
-                     device::DynGenerator{M, S, A, TG, PSSSimple})  where {M <: Machine,
-                                                                        S <: Shaft,
-                                                                        A <: AVR,
-                                                                        TG <: TurbineGov}
+                     device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSSimple})  where {M <: PSY.Machine,
+                                                                        S <: PSY.Shaft,
+                                                                        A <: PSY.AVR,
+                                                                        TG <: PSY.TurbineGov}
 
     #Get references
     ω_ref = get_ω_ref(device)
