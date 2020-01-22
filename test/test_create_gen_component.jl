@@ -197,7 +197,7 @@ oneDoneQ = PSY.OneDOneQMachine(0.0, #R
                         615.0)   #MVABase
 
 Gen1AVR = PSY.DynamicGenerator(1, #Number
-                 :TestGen,
+                 "TestGen",
                  nodes_OMIB[2],#bus
                  1.0, # ω_ref,
                  1.05,
@@ -210,7 +210,7 @@ Gen1AVR = PSY.DynamicGenerator(1, #Number
 @test Gen1AVR isa PowerSystems.Component
 
 Gen1AVRnoAVR = PSY.DynamicGenerator(1, #Number
-                 :TestGen,
+                 "TestGen",
                  nodes_OMIB[2],#bus
                  1.0, # ω_ref,
                  1.05,
@@ -223,7 +223,7 @@ Gen1AVRnoAVR = PSY.DynamicGenerator(1, #Number
 @test Gen1AVRnoAVR isa PowerSystems.Component
 
 Gen2AVRnoAVR = PSY.DynamicGenerator(1, #Number
-                 :TestGen,
+                 "TestGen",
                  nodes_OMIB[2],#bus
                  1.0, # ω_ref,
                  1.02,
@@ -236,7 +236,7 @@ Gen2AVRnoAVR = PSY.DynamicGenerator(1, #Number
 @test Gen2AVRnoAVR isa PowerSystems.Component
 
 Gen2AVR = PSY.DynamicGenerator(1, #Number
-                 :TestGen,
+                 "TestGen",
                  nodes_OMIB[2],#bus
                  1.0, # ω_ref,
                  1.02,

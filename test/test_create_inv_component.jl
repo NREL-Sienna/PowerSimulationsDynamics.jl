@@ -64,7 +64,7 @@ vsc = CombinedVIwithVZ(0.59, #kpv:: Voltage controller proportional gain
                  0.2) #kad:: Active damping gain
 
 test_inverter = PSY.DynamicInverter(2, #number
-                       :DARCO, #name
+                       "DARCO", #name
                        nodes_OMIB[1], #bus location
                        1.0, #ω_ref
                        1.02, #V_ref
