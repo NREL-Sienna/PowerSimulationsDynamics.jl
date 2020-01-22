@@ -105,7 +105,7 @@ case9_avr = AVRTypeI(20.0, #Ka - Gain
                         1.555) #Be - 2nd ceiling coefficient
 
 ### Generators ###
-case9_gen = DynGenerator(1, #Number
+case9_gen = PSY.DynamicGenerator(1, #Number
                          :Case9Gen,
                          nodes_case9[2], #bus
                          1.0, # ω_ref,
@@ -159,7 +159,7 @@ vsc = CombinedVIwithVZ(0.59, #kpv:: Voltage controller proportional gain
                        50.0, #ωad:: Active damping low pass filter cut-off frequency
                        0.2) #kad:: Active damping gain
 
-case9_inv = DynInverter(2, #number
+case9_inv = PSY.DynamicInverter(2, #number
                              :DARCO, #name
                              nodes_case9[3], #bus location
                              1.0, #ω_ref
@@ -178,7 +178,7 @@ case9_inv = DynInverter(2, #number
 ### Dynamic System
 
 ```julia
-case9_DynSystem = DynamicSystem(nodes_case9, #Vector of Buses
+case9_DynSystem = PSY.System(nodes_case9, #Vector of Buses
                                  branch_case9, #Vector of Branches
                                  [case9_inv, case9_gen], #Vector of Dynamic Injections
                                  vcat(inf_gen_case9, loads_case9), #Vector of Injections

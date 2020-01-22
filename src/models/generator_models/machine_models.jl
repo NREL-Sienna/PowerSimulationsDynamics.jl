@@ -9,10 +9,10 @@ function mdl_machine_ode!(device_states,
                           current_i,
                           Sbase::Float64,
                           f0::Float64,
-                          device::DynGenerator{BaseMachine, S, A, TG, P})  where {S <: Shaft,
-                                                                                  A <: AVR,
-                                                                                  TG <: TurbineGov,
-                                                                                  P <: PSS}
+                          device::PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P})  where {S <: PSY.Shaft,
+                                                                                  A <: PSY.AVR,
+                                                                                  TG <: PSY.TurbineGov,
+                                                                                  P <: PSY.PSS}
 
 
 
@@ -64,10 +64,10 @@ function mdl_machine_ode!(device_states,
                           current_i,
                           Sbase::Float64,
                           f0::Float64,
-                          device::DynGenerator{OneDOneQMachine, S, A, TG, P})  where {S <: Shaft,
-                                                                                      A <: AVR,
-                                                                                      TG <: TurbineGov,
-                                                                                      P <: PSS}
+                          device::PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P})  where {S <: PSY.Shaft,
+                                                                                      A <: PSY.AVR,
+                                                                                      TG <: PSY.TurbineGov,
+                                                                                      P <: PSY.PSS}
 
 
 
@@ -137,10 +137,10 @@ function mdl_machine_ode!(device_states,
                           current_i,
                           Sbase::Float64,
                           f0::Float64,
-                          device::DynGenerator{MarconatoMachine, S, A, TG, P})  where {S <: Shaft,
-                                                                                       A <: AVR,
-                                                                                       TG <: TurbineGov,
-                                                                                       P <: PSS}
+                          device::PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P})  where {S <: PSY.Shaft,
+                                                                                       A <: PSY.AVR,
+                                                                                       TG <: PSY.TurbineGov,
+                                                                                       P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = device.local_state_ix[device.machine]
@@ -225,10 +225,10 @@ function mdl_machine_ode!(device_states,
                           current_i,
                           Sbase::Float64,
                           f0::Float64,
-                          device::DynGenerator{SimpleMarconatoMachine, S, A, TG, P})  where {S <: Shaft,
-                                                                                             A <: AVR,
-                                                                                             TG <: TurbineGov,
-                                                                                             P <: PSS}
+                          device::PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P})  where {S <: PSY.Shaft,
+                                                                                             A <: PSY.AVR,
+                                                                                             TG <: PSY.TurbineGov,
+                                                                                             P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = device.local_state_ix[device.machine]
@@ -311,10 +311,10 @@ function mdl_machine_ode!(device_states,
                           current_i,
                           Sbase::Float64,
                           f0::Float64,
-                          device::DynGenerator{AndersonFouadMachine, S, A, TG, P})  where {S <: Shaft,
-                                                                                           A <: AVR,
-                                                                                           TG <: TurbineGov,
-                                                                                           P <: PSS}
+                          device::PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P})  where {S <: PSY.Shaft,
+                                                                                           A <: PSY.AVR,
+                                                                                           TG <: PSY.TurbineGov,
+                                                                                           P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = device.local_state_ix[device.machine]
@@ -395,10 +395,10 @@ function mdl_machine_ode!(device_states,
                           current_i,
                           Sbase::Float64,
                           f0::Float64,
-                          device::DynGenerator{SimpleAFMachine, S, A, TG, P})  where {S <: Shaft,
-                                                                                           A <: AVR,
-                                                                                           TG <: TurbineGov,
-                                                                                           P <: PSS}
+                          device::PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P})  where {S <: PSY.Shaft,
+                                                                                           A <: PSY.AVR,
+                                                                                           TG <: PSY.TurbineGov,
+                                                                                           P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = device.local_state_ix[device.machine]
@@ -475,10 +475,10 @@ function mdl_machine_ode!(device_states,
                           current_i,
                           Sbase::Float64,
                           f0::Float64,
-                          device::DynGenerator{FullMachine, S, A, TG, P})  where {S <: Shaft,
-                                                                                           A <: AVR,
-                                                                                           TG <: TurbineGov,
-                                                                                           P <: PSS}
+                          device::PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P})  where {S <: PSY.Shaft,
+                                                                                           A <: PSY.AVR,
+                                                                                           TG <: PSY.TurbineGov,
+                                                                                           P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = device.local_state_ix[device.machine]
@@ -561,10 +561,10 @@ function mdl_machine_ode!(device_states,
                           current_i,
                           Sbase::Float64,
                           f0::Float64,
-                          device::DynGenerator{SimpleFullMachine, S, A, TG, P})  where {S <: Shaft,
-                                                                                           A <: AVR,
-                                                                                           TG <: TurbineGov,
-                                                                                           P <: PSS}
+                          device::PSY.DynamicGenerator{PSY.SimpleFullMachine, S, A, TG, P})  where {S <: PSY.Shaft,
+                                                                                           A <: PSY.AVR,
+                                                                                           TG <: PSY.TurbineGov,
+                                                                                           P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = device.local_state_ix[device.machine]

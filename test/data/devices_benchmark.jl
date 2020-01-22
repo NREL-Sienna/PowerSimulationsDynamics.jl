@@ -210,7 +210,7 @@ case2345_avr3 = AVRTypeI(20.0, #Ka - Gain
 ######################### Generators ########################
 
 ### Case 1 Generator ###
-case1_gen = DynGenerator(1, #Number
+case1_gen = PSY.DynamicGenerator(1, #Number
                          :Case1Gen,
                          nodes_case1[2], #bus
                          1.0, # ω_ref,
@@ -224,7 +224,7 @@ case1_gen = DynGenerator(1, #Number
 
 
 ### Case 2 Generators ###
-case2_gen2 = DynGenerator(1, #Number
+case2_gen2 = PSY.DynamicGenerator(1, #Number
                          :Case2Gen2,
                          nodes_case234[2], #bus
                          1.0, # ω_ref,
@@ -236,7 +236,7 @@ case2_gen2 = DynGenerator(1, #Number
                          case1234_no_tg, #tg
                          cases_no_pss) #pss
 
-case2_gen3 = DynGenerator(2, #Number
+case2_gen3 = PSY.DynamicGenerator(2, #Number
                          :Case2Gen3,
                          nodes_case234[3], #bus
                          1.0, # ω_ref,
@@ -249,7 +249,7 @@ case2_gen3 = DynGenerator(2, #Number
                          cases_no_pss) #pss
 
 ### Case 3 Generators ###
-case3_gen2 = DynGenerator(1, #Number
+case3_gen2 = PSY.DynamicGenerator(1, #Number
                          :Case3Gen2,
                          nodes_case234[2], #bus
                          1.0, # ω_ref,
@@ -261,7 +261,7 @@ case3_gen2 = DynGenerator(1, #Number
                          case1234_no_tg, #tg
                          cases_no_pss) #pss
 
-case3_gen3 = DynGenerator(2, #Number
+case3_gen3 = PSY.DynamicGenerator(2, #Number
                          :Case3Gen3,
                          nodes_case234[3], #bus
                          1.0, # ω_ref,
@@ -275,7 +275,7 @@ case3_gen3 = DynGenerator(2, #Number
 
 
 ### Case 4 Generators ###
-case4_gen2 = DynGenerator(1, #Number
+case4_gen2 = PSY.DynamicGenerator(1, #Number
                          :Case4Gen2,
                          nodes_case234[2], #bus
                          1.0, # ω_ref,
@@ -287,7 +287,7 @@ case4_gen2 = DynGenerator(1, #Number
                          case1234_no_tg, #tg
                          cases_no_pss) #pss
 
-case4_gen3 = DynGenerator(2, #Number
+case4_gen3 = PSY.DynamicGenerator(2, #Number
                          :Case4Gen3,
                          nodes_case234[3], #bus
                          1.0, # ω_ref,
@@ -300,7 +300,7 @@ case4_gen3 = DynGenerator(2, #Number
                          cases_no_pss) #pss
 
 ### Case 5 Generator ###
-case5_gen = DynGenerator(1, #Number
+case5_gen = PSY.DynamicGenerator(1, #Number
                          :Case5Gen,
                          nodes_case5[2], #bus
                          1.0, # ω_ref,
@@ -318,7 +318,7 @@ case5_gen = DynGenerator(1, #Number
 
 ######################### Dynamical System ########################
 
-case1_DynSystem = DynamicSystem(nodes_case1,
+case1_DynSystem = PSY.System(nodes_case1,
                                 branch_case1,
                                 [case1_gen],
                                 vcat(inf_gen_case1,loads_case1),
@@ -326,7 +326,7 @@ case1_DynSystem = DynamicSystem(nodes_case1,
                                 60.0)
 
 
-case2_DynSystem = DynamicSystem(nodes_case234,
+case2_DynSystem = PSY.System(nodes_case234,
                                 branch_case234,
                                 [case2_gen2, case2_gen3],
                                 vcat(inf_gen_case234,loads_case234),
@@ -334,21 +334,21 @@ case2_DynSystem = DynamicSystem(nodes_case234,
                                 60.0)
 
 
-case3_DynSystem = DynamicSystem(nodes_case234,
+case3_DynSystem = PSY.System(nodes_case234,
                                 branch_case234,
                                 [case3_gen2, case3_gen3],
                                 vcat(inf_gen_case234,loads_case234),
                                 100.0,
                                 60.0)
 
-case4_DynSystem = DynamicSystem(nodes_case234,
+case4_DynSystem = PSY.System(nodes_case234,
                                 branch_case234,
                                 [case4_gen2, case4_gen3],
                                 vcat(inf_gen_case234,loads_case234),
                                 100.0,
                                 60.0)
 
-case5_DynSystem = DynamicSystem(nodes_case5,
+case5_DynSystem = PSY.System(nodes_case5,
                                 branch_case5,
                                 [case5_gen],
                                 vcat(inf_gen_case5,loads_case5),

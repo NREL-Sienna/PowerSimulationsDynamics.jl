@@ -2,8 +2,8 @@ function mdl_source!(voltage_r,
                      voltage_i,
                         current_r,
                         current_i,
-                     device::StaticSource,
-                     sys::DynamicSystem)
+                     device::PSY.Source,
+                     sys::PSY.System)
 
 
         #Load device parameters

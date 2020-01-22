@@ -1,9 +1,4 @@
-mutable struct Ports <: DynDevice
-    state::Vector{Symbol}
-    inner::Vector
-end
-
-function _make_state_mapping(components::Vector{DT}, states::Vector{Symbol}) where DT <: DynamicComponent
+function _make_state_mapping(components::Vector{DT}, states::Vector{Symbol}) where DT <: PSY.DynamicComponent
 
     local_state_mapping = Dict{DT, Vector{Int64}}()
     local_state_space_ix = 0
@@ -20,7 +15,7 @@ function _make_state_mapping(components::Vector{DT}, states::Vector{Symbol}) whe
 
 end
 
-function _make_port_mapping(components::Vector{DT}, states::Vector{Symbol}) where DT <: DynamicComponent
+function _make_port_mapping(components::Vector{DT}, states::Vector{Symbol}) where DT <: PSY.DynamicComponent
 
     input_port_mapping = Dict{DT, Vector{Int64}}()
 
