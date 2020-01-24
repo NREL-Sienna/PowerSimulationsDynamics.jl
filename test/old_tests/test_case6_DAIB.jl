@@ -142,7 +142,7 @@ x0_init = sys_solve.zero
 cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.step_change_first!)
 
 #Define Simulation Problem
-sim = DynamicSimulation(DAIB, tspan, u0, cb, x0_init)
+sim = Simulation(DAIB, tspan, u0, cb, x0_init)
 
 #Solve problem in equilibrium
 run_simulation!(sim, IDA());
