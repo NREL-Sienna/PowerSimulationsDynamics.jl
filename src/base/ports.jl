@@ -1,5 +1,5 @@
 ### Port struct ###
-mutable struct Ports <: DynDevice
+mutable struct Ports
     state::Vector{Symbol}
     inner::Vector
 end
