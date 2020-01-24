@@ -253,7 +253,7 @@ Ybus_fault = Ybus(branch_case9_fault, nodes_case9)[:,:]
 cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, LITS.Y_change!)
 
 #Define Simulation Problem
-sim = DynamicSimulation(case9_DynSystem, tspan, Ybus_fault, cb, x0_init)
+sim = Simulation(case9_DynSystem, tspan, Ybus_fault, cb, x0_init)
 
 #Solve problem
 run_simulation!(sim, IDA());

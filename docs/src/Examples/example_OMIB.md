@@ -221,7 +221,7 @@ Now we define the simulation structure:
 
 ```julia
 #Define Simulation Problem
-sim = DynamicSimulation(case1_DynSystem, #Dynamic System
+sim = Simulation(case1_DynSystem, #Dynamic System
                         tspan, #Time span to simulate
                         Ybus_fault, #Parameter that will be changed in the fault
                         cb, #Callback
