@@ -1,3 +1,9 @@
+### Temporal Structs ###
+abstract type DynBranch <: PSY.Component end
+
+mutable struct DynLine <: DynBranch end
+#####
+
 function branch_model!(x,
                        dx,
                       output_ode::Vector{Float64},

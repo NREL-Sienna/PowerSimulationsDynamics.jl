@@ -66,3 +66,9 @@ Vqcnv_var :: Voltage supplied from the converter in the q-component
     Vdcnv_var = 12
     Vqcnv_var = 13
 end
+
+const LITS_COUNTS = "lits_counts"
+const LOCAL_STATE_MAPPING = "local_state_mapping"
+const INPUT_PORT_MAPPING = "input_port_mapping"
+const PORTS = "ports"
+const GLOBAL_INDEX = "global_index"

@@ -4,14 +4,10 @@ module LITS
 
 # Base Exports
 export DynBranch
-export DynamicSimulation
+export Simulation
 export run_simulation!
 export get_state_series
 export get_voltagemag_series
-export add_device!
-export add_devices!
-export add_network!
-
 ####################################### Package Imports ####################################
 import DiffEqBase
 import SparseArrays: SparseMatrixCSC
@@ -22,13 +18,10 @@ import PowerSystems
 const PSY = PowerSystems
 
 #Structs for General Devices and System
-include("utils/util_macros.jl")
-#include("structs/perturbations.jl")
-#include("structs/simulation.jl")
-
-#Structs for Dynamic Devices
-include("structs/common.jl")
-include("structs/structs.jl")
+#include("base/perturbations.jl")
+include("base/definitions.jl")
+include("base/ports.jl")
+include("base/simulation.jl")
 
 #Common Models
 include("models/branch_model.jl")
