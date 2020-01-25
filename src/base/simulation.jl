@@ -1,108 +1,111 @@
-mutable struct Simulation
+    mutable struct Simulation
     system::PSY.System
-    problem::DiffEqBase.DAEProblem
+    #problem::DiffEqBase.DAEProblem
     #callbacks::DiffEqBase.DiscreteCallback
     #tstops::Vector{Float64}
-    x0_init::Vector{Float64}
-    initialized::Bool
-    solution::Union{Nothing, DiffEqBase.DAESolution}
-    #global_state_index::Dict{Symbol, Dict{Symbol, Int64}}
-    #DAE_vector::Vector{Bool}
-    #counts::Dict{Symbol, Int64}
-    #indexed::Bool
+    #x0_init::Vector{Float64}
+    #initialized::Bool
+    #solution::Union{Nothing, DiffEqBase.DAESolution}
     #ext::Dict{Symbol, Any}
 end
 
-function Simulation(dyn_system::PSY.System,
-                           tspan,
-                           #control,
-                           #callback,
-                           #x0_init
+function Simulation(system::PSY.System,
+                    tspan::NTuple{2, Float64},
+                    #control,
+                    #callback,
+                    #x0_init
                            )
+    n_buses = length(PSY.get_components(PSY.Bus, system))
+    DAE_vector = collect(falses(n_buses*2))
+    _index_dynamic_system!(DAE_vector, system)
 
-    if !is_indexed(dyn_system)
-        _index_dynamic_system!(dyn_system)
-    end
 
-    dx0 = zeros(get_total_rows(dyn_system))
-    prob = DiffEqBase.DAEProblem(system_model,
-                              dx0,
-                              x0_init,
-                              tspan,
-                              (control, dyn_system),
-                              differential_vars = dyn_system.DAE_vector)
+    # dx0 = zeros(length(DAE_vector))
+    # prob = DiffEqBase.DAEProblem(system_model,
+    #                          dx0,
+    #                          x0_init,
+    #                          tspan,
+    #                          (system, control, global_state_index),
+    #                           differential_vars = DAE_vector)
 
-    return Simulation(dyn_system,
-                             prob,
-                             callback,
-                             [1.0],
-                             x0_init,
-                             true,
-                             nothing)
+    return Simulation(system,
+                     #prob,
+                     #callback,
+                     #[1.0],
+                     #x0_init,
+                     #nothing,
+                     )
 
 end
 
 
 function run_simulation!(sim::Simulation, solver; kwargs...)
-    sim.solution = DiffEqBase.solve(sim.problem,
-                           solver;
-                           callback = sim.callbacks,
-                           tstops = sim.tstops, kwargs...)
-
+    #sim.solution = DiffEqBase.solve(sim.problem,
+    #                       solver;
+    #                       callback = sim.callbacks,
+    #                       tstops = sim.tstops, kwargs...)
     return
 end
 
-function _make_local_state_mapping!(device::PSY.DynamicInjection)
+function _index_local_states!(component_state_index::Vector{Int64},
+                              local_states::Vector{Symbol},
+                              component::PSY.DynamicComponent)
+    for (ix, s) in enumerate(component.states)
+        component_state_index[ix] = findfirst(x->x == s, local_states)
+    end
+    return
+end
 
-    local_state_mapping = Dict{PSY.DynamicComponent, Vector{Int64}}()
-    local_state_space_ix = 0
-    for c in PSY.get_dynamic_components(device)
-        component_state_index= Vector{Int64}(undef, length(c.states))
-        for (ix, s) in enumerate(c.states)
-            component_state_index[ix] = findfirst(x->x == s, states)
-        end
-        local_state_mapping[c] = component_state_index
+function _attach_ports!(component::PSY.DynamicComponent)
+    component.ext[PORTS] = Ports(component)
+    return
+end
+
+function _index_port_mapping!(index_component_inputs::Vector{Int64},
+                             local_states::Vector{Symbol},
+                              component::PSY.DynamicComponent)
+    _attach_ports!(component)
+    for i in component.ext[PORTS].state
+        tmp = [(ix, var) for (ix, var) in enumerate(local_states) if var == i]
+        isempty(tmp) && continue
+        push!(index_component_inputs, tmp[1][1])
     end
 
-    device.ext["local_state_mapping"] = local_state_mapping
-
     return
 end
 
-function _make_port_mapping(device::PSY.DynamicInjection)
+function _make_device_index!(device::PSY.DynamicInjection)
     states = PSY.get_states(device)
+    device_state_mapping = Dict{PSY.DynamicComponent, Vector{Int64}}()
     input_port_mapping = Dict{PSY.DynamicComponent, Vector{Int64}}()
 
-    for c in components
-        index_component_in = Vector{Int64}()
-        for i in c.ports.state
-            tmp = [(ix,var) for (ix,var) in enumerate(states) if var == i]
-            isempty(tmp) && continue
-            push!(index_component_in, tmp[1][1])
-        end
-        input_port_mapping[c] = index_component_in
+    for c in PSY.get_dynamic_components(device)
+        device_state_mapping[c] = Vector{Int64}(undef, length(c.states))
+        input_port_mapping[c] = Vector{Int64}()
+        _index_local_states!(device_state_mapping[c], states, c)
+        _index_port_mapping!(input_port_mapping[c], states, c)
+        device.ext[LOCAL_STATE_MAPPING] = device_state_mapping
+        device.ext[INPUT_PORT_MAPPING] = input_port_mapping
     end
 
-    return input_port_mapping
-
+    return
 end
 
-function _index_dynamic_system!(sys::PSY.System)
+function _index_dynamic_system!(DAE_vector::Vector{Bool},
+                                sys::PSY.System)
+
+    global_state_index = Dict{String, Dict{Symbol, Int64}}()
     n_buses = length(PSY.get_components(PSY.Bus, sys))
-    total_states = 0
-    state_space_ix = 0
-    DAE_vector = collect(falses(n_buses*2))
-    total_states = 0
     state_space_ix = n_buses*2
+    total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
-    global_state_index = Dict{String, Dict{Symbol, Int64}}()
 
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         if !(:states in fieldnames(typeof(d)))
             continue
         end
-        _make_local_state_mapping!(d)
+        _make_device_index!(d)
         device_n_states = PSY.get_n_states(d)
         DAE_vector = vcat(DAE_vector, collect(trues(device_n_states)))
         total_states += device_n_states
@@ -153,15 +156,16 @@ function _index_dynamic_system!(sys::PSY.System)
     else
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
     end
-
+    sys_ext = Dict{String, Dict}()
     counts = Dict{Symbol, Int64}(:total_states => total_states,
-                                    :injection_n_states => injection_n_states,
-                                    :branches_n_states => branches_n_states,
-                                    :first_dyn_injection_pointer => 2*n_buses+1,
-                                    :first_dyn_branch_point => first_dyn_branch_point)
+                                  :injection_n_states => injection_n_states,
+                                  :branches_n_states => branches_n_states,
+                                  :first_dyn_injection_pointer => 2*n_buses+1,
+                                  :first_dyn_branch_point => first_dyn_branch_point)
 
-    indexed = true
+    sys_ext[LITS_COUNTS] = counts
+    sys_ext[GLOBAL_INDEX] = global_state_index
+    sys.internal.ext = sys_ext
 
     return
-
 end
