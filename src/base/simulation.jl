@@ -86,13 +86,13 @@ end
 
 function _make_device_index!(device::PSY.DynamicInjection)
     states = PSY.get_states(device)
-    device_state_mapping = Dict{PSY.DynamicComponent, Vector{Int64}}()
-    input_port_mapping = Dict{PSY.DynamicComponent, Vector{Int64}}()
+    device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
+    input_port_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
     _attach_inner_vars!(device)
 
     for c in PSY.get_dynamic_components(device)
-        device_state_mapping[c] = Vector{Int64}(undef, length(c.states))
-        input_port_mapping[c] = Vector{Int64}()
+        device_state_mapping[typeof(c)] = Vector{Int64}(undef, length(c.states))
+        input_port_mapping[typeof(c)] = Vector{Int64}()
         _index_local_states!(device_state_mapping[c], states, c)
         _index_port_mapping!(input_port_mapping[c], states, c)
         device.ext[LOCAL_STATE_MAPPING] = device_state_mapping
@@ -182,16 +182,31 @@ function _index_dynamic_system!(DAE_vector::Vector{Bool},
 end
 
 get_injection_pointer(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:first_dyn_injection_pointer]
-get_branches_pointer(sys::PSY.System) = get_ext(sys)[LITS_COUNTS][:first_dyn_branch_point]
-get_n_injection_states(sys::PSY.System) = get_ext(sys)[LITS_COUNTS][:injection_n_states]
-get_n_branches_states(sys::PSY.System) = get_ext(sys)[LITS_COUNTS][:branches_n_states]
-system_state_count(sys::PSY.System) = get_ext(sys)[LITS_COUNTS][:total_states]
+get_branches_pointer(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:first_dyn_branch_point]
+get_n_injection_states(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:injection_n_states]
+get_n_branches_states(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:branches_n_states]
+system_state_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_states]
 get_device_index(
     sys::PSY.System,
     device::D,
-    ) where {D <: PSY.DynamicInjection} = get_ext(sys)[GLOBAL_INDEX][device.name]
+    ) where {D <: PSY.DynamicInjection} = PSY.get_ext(sys)[GLOBAL_INDEX][device.name]
 
 get_inner_vars(device::PSY.DynamicInjection) = device.ext[INNER_VARS]
 get_sys_f(sys::PSY.System) = 60.0
 #get_sys_f(sys::DynamicSystem) = sys.sys_f #TODO: Should we add frequency in the simulation??
-#is_indexed(sys::DynamicSystem) = sys.indexed #TODO: Are we keeping indexed systems info?
+
+function _get_internal_mapping(device::PSY.DynamicInjection, key::AbstractString, ::T) where T <: PSY.DynamicComponent
+    device_index = PSY.get_ext(device)[key]
+    val = get(device_index, T, nothing)
+    @assert !isnothing(val)
+    return val
+end
+
+function get_local_state_ix(device::PSY.DynamicInjection, ::T) where T <: PSY.DynamicComponent
+    return _get_internal_mapping(device, LOCAL_STATE_MAPPING, T)
+end
+
+
+function get_input_port_ix(device::PSY.DynamicInjection, ::T) where T <: PSY.DynamicComponent
+    return _get_internal_mapping(device, INPUT_PORT_MAPPING, T)
+end
