@@ -20,8 +20,9 @@ const PSY = PowerSystems
 #Structs for General Devices and System
 include("base/definitions.jl")
 include("base/ports.jl")
-include("base/simulation.jl")
 include("perturbations/perturbations.jl")
+include("base/simulation.jl")
+
 
 #Common Models
 include("models/branch_model.jl")
