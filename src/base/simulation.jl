@@ -47,7 +47,7 @@ function Simulation(system::PSY.System,
                      initialized,
                      tstops,
                      callback_set,
-                     nothing
+                     nothing,
                      Dict{String, Any}()
                      )
 
