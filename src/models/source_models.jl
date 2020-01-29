@@ -1,15 +1,15 @@
 function mdl_source!(voltage_r,
                      voltage_i,
-                        current_r,
-                        current_i,
+                     current_r,
+                     current_i,
                      device::PSY.Source,
                      sys::PSY.System)
 
 
         #Load device parameters
-        V_R = device.V_R
-        V_I = device.V_I
-        X_th = device.X_th
+        V_R = PSY.get_V_R(device)
+        V_I = PSY.get_V_I(device)
+        X_th = PSY.get_X_th(device)
 
         #I = ( (V_R + V_I*1im) - (V_tR + V_tI*1im) )/(X_th*1im)
         #I_r = (V_I - V_tI)/X_th #in system pu flowing out

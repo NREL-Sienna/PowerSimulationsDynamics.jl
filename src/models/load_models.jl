@@ -6,8 +6,8 @@ function mdl_Zload!(voltage_r,
                     sys::PSY.System)
 
     #Get parameters
-    P = device.activepower
-    Q = device.reactivepower
+    P = PSY.get_activepower(device)
+    Q = PSY.get_reactivepower(device)
 
     #Compute impedance and load
     #Z_load =  1.0/(P-Q*1im) #in pu
@@ -21,6 +21,7 @@ function mdl_Zload!(voltage_r,
     #current_i[1] += imag(I)
 
     #Update current
+    #This model creates an equivalent RL/RC circuit assuming nominal voltage (1 pu)
     current_r[1] += -(voltage_r[1]*P + voltage_i[1]*Q) #in system pu flowing out
     current_i[1] += -(voltage_i[1]*P - voltage_r[1]*Q) #in system pu flowing out
 

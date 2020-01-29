@@ -6,7 +6,7 @@ function mdl_pss_ode!(device_states,
                                                                         TG <: PSY.TurbineGov}
 
     #Update V_pss on inner vars
-    get_inner_vars(device)[V_pss_var] = PSY.get_Vpss(PSY.get_pss(device))
+    get_inner_vars(device)[V_pss_var] = PSY.get_V_pss(PSY.get_pss(device))
 
     return
 end

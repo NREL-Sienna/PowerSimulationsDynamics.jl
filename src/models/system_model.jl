@@ -76,8 +76,8 @@ function system_model!(out, dx, x, (controls, sys), t)
     end
     =#
 
-    for d in sys.injections
-        bus_n = get_bus_number(d)
+    for d in PSY.get_components(PSY.StaticInjection, sys)
+        bus_n = PSY.get_number(PSY.get_bus(d))
 
         device_model!( view(V_r, bus_n),
                        view(V_i, bus_n),
@@ -87,7 +87,7 @@ function system_model!(out, dx, x, (controls, sys), t)
                        sys)
     end
 
-    out[bus_range] = kcl(sys.Ybus, V_r, V_i,
+    out[bus_range] = kcl(PSY.get_ext(sys)[YBUS], V_r, V_i,
                                I_injections_r, I_injections_i)
 
 
