@@ -1,7 +1,3 @@
-function Base.show(io::IO, op_model::PSY.System)
-    println(io, "System()")
-end
-
-function Base.show(io::IO, op_model::Simulation)
+function Base.show(io::IO, simulation::Simulation)
     println(io, "Simulation()")
 end
