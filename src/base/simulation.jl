@@ -1,41 +1,73 @@
     mutable struct Simulation
     system::PSY.System
-    #problem::DiffEqBase.DAEProblem
+    problem::DiffEqBase.DAEProblem
     #callbacks::DiffEqBase.DiscreteCallback
     #tstops::Vector{Float64}
-    #x0_init::Vector{Float64}
-    #initialized::Bool
-    #solution::Union{Nothing, DiffEqBase.DAESolution}
-    #ext::Dict{Symbol, Any}
+    x0_init::Vector{Float64}
+    initialized::Bool
+    solution::Union{Nothing, DiffEqBase.DAESolution}
+    ext::Dict{String, Any}
 end
 
 function Simulation(system::PSY.System,
-                    tspan::NTuple{2, Float64},
+                    tspan::NTuple{2, Float64};
                     #control,
                     #callback,
-                    #x0_init
-                           )
+                    initialize_simulation::Bool=true,
+                    kwargs...)
+
+    initialized = false
     n_buses = length(PSY.get_components(PSY.Bus, system))
     DAE_vector = collect(falses(n_buses*2))
     _index_dynamic_system!(DAE_vector, system)
+    var_count = get_variable_count(system)
 
+    control = [0.0]
 
-    # dx0 = zeros(length(DAE_vector))
-    # prob = DiffEqBase.DAEProblem(system_model,
-    #                          dx0,
-    #                          x0_init,
-    #                          tspan,
-    #                          (system, control, global_state_index),
-    #                           differential_vars = DAE_vector)
+    if initialize_simulation
+        @info("Initializing Simulation States")
+        x0_guess = get(kwargs, :initial_guess, zeros(var_count))
+        x0_init, initialized = _calculate_initial_conditions(system, x0_guess)
+    else
+        x0_init = zeros(var_count)
+    end
+
+    dx0 = zeros(var_count)
+    prob = DiffEqBase.DAEProblem(system_model!,
+                                 dx0,
+                                 x0_init,
+                                 tspan,
+                                 (control, system),
+                                 differential_vars = DAE_vector)
 
     return Simulation(system,
-                     #prob,
+                     prob,
                      #callback,
                      #[1.0],
-                     #x0_init,
-                     #nothing,
+                     x0_init,
+                     initialized,
+                     nothing,
+                     Dict{String, Any}()
                      )
 
+end
+
+function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Float64})
+    # TODO: Code to refine initial_guess
+    var_count = get_variable_count(sys)
+    dx0 = zeros(var_count) #Define a vector of zeros for the derivative
+    inif! = (out,x) -> system_model!(
+        out, #output of the function
+        dx0, #derivatives equal to zero
+        x, #states
+        ([0.0], sys), #Parameters: [0.0] is not used
+        0.0) #time equals to zero.
+    sys_solve = NLsolve.nlsolve(inif!, initial_guess) #Solve using initial guess x0
+    if !NLsolve.converged(sys_solve)
+        @warn("Initialization failed, initial conditions do not meet conditions for an stable equilibrium")
+    end
+
+    return sys_solve.zero, NLsolve.converged(sys_solve)
 end
 
 
@@ -172,7 +204,8 @@ function _index_dynamic_system!(DAE_vector::Vector{Bool},
                                   :injection_n_states => injection_n_states,
                                   :branches_n_states => branches_n_states,
                                   :first_dyn_injection_pointer => 2*n_buses+1,
-                                  :first_dyn_branch_point => first_dyn_branch_point)
+                                  :first_dyn_branch_point => first_dyn_branch_point,
+                                  :total_variables => total_states + 2*n_buses)
 
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
@@ -187,6 +220,7 @@ get_branches_pointer(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:first_dyn
 get_n_injection_states(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:injection_n_states]
 get_n_branches_states(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:branches_n_states]
 get_system_state_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_states]
+get_variable_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_variables]
 get_device_index(
     sys::PSY.System,
     device::D,
@@ -195,8 +229,7 @@ get_device_index(
 get_inner_vars(device::PSY.DynamicInjection) = device.ext[INNER_VARS]
 
 function _get_internal_mapping(device::PSY.DynamicInjection, key::AbstractString, ty::Type{T}) where T <: PSY.DynamicComponent
-    #device_index = PSY.get_ext(device)[key]
-    device_index = device.ext[key] #Add generator ext
+    device_index = PSY.get_ext(device)[key]
     val = get(device_index, ty, nothing)
     @assert !isnothing(val)
     return val
