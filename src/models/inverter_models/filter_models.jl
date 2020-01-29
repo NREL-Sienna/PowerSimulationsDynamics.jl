@@ -15,23 +15,24 @@ function mdl_filter_ode!(device_states,
     #external_ix = device.input_port_mapping[device.converter]
     #vcvd = device_states[external_ix[1]]
     #vcvq = device_states[external_ix[2]]
-    external_ix = device.input_port_mapping[device.filter]
+    external_ix = get_input_port_ix(device, PSY.LCLFilter)
     δ = device_states[external_ix[1]]
 
     #Obtain inner variables for component
-    V_tR = device.inner_vars[VR_inv_var]
-    V_tI = device.inner_vars[VI_inv_var]
-    vcvd = device.inner_vars[Vdcnv_var]
-    vcvq = device.inner_vars[Vqcnv_var]
+    V_tR = get_inner_vars(device)[VR_inv_var]
+    V_tI = get_inner_vars(device)[VI_inv_var]
+    vcvd = get_inner_vars(device)[Vdcnv_var]
+    vcvq = get_inner_vars(device)[Vqcnv_var]
 
     #Get parameters
+    filter = PSY.get_filter(device)
     ωb = 2*pi*f0
-    lf = device.filter.lf
-    rf = device.filter.rf
-    cf = device.filter.cf
-    lg = device.filter.lg
-    rg = device.filter.rg
-    MVABase = get_inverter_Sbase(device)
+    lf = PSY.get_lf(filter)
+    rf = PSY.get_rf(filter)
+    cf = PSY.get_cf(filter)
+    lg = PSY.get_lg(filter)
+    rg = PSY.get_rg(filter)
+    MVABase = PSY.get_inverter_Sbase(device)
     ωg = 1.0 #TODO: create getter later
 
     #RI to dq transformation
@@ -39,17 +40,16 @@ function mdl_filter_ode!(device_states,
     V_g = sqrt(V_tR^2 + V_tI^2)
 
     #Obtain indices for component w/r to device
-    local_ix = device.local_state_ix[device.filter]
-    #@show local_ix
+    local_ix = get_local_state_ix(device, PSY.LCLFilter)
 
     #Define internal states for filter
     internal_states = @view device_states[local_ix]
     icvd = internal_states[1]
     icvq = internal_states[2]
-     vod = internal_states[3]
-     voq = internal_states[4]
-     iod = internal_states[5]
-     ioq = internal_states[6]
+    vod = internal_states[3]
+    voq = internal_states[4]
+    iod = internal_states[5]
+    ioq = internal_states[6]
 
     #Inputs (control signals) - N/A
 
@@ -87,11 +87,11 @@ function mdl_filter_ode!(device_states,
                               - ωb*ωg*iod )
 
     #Update inner_vars
-    device.inner_vars[Vdo_var] = vod
-    device.inner_vars[Vqo_var] = voq
+    get_inner_vars(device)[Vdo_var] = vod
+    get_inner_vars(device)[Vqo_var] = voq
     #TODO: If PLL models at PCC, need to update inner vars:
-    #device.inner_vars[Vdo_var] = V_dq[q::dq_ref]
-    #device.inner_vars[Vqo_var] = V_dq[q::dq_ref]
+    #get_inner_vars(device)[Vdo_var] = V_dq[q::dq_ref]
+    #get_inner_vars(device)[Vqo_var] = V_dq[q::dq_ref]
 
     #Compute current from the generator to the grid
     I_RI = (MVABase/sys_Sbase)*dq_ri(δ)*[iod; ioq]
