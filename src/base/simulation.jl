@@ -4,6 +4,7 @@
     perturbations::Vector{<:Perturbation}
     x0_init::Vector{Float64}
     initialized::Bool
+    control::Dict
     tstops::Vector{Float64}
     callbacks::Union{Nothing, DiffEqBase.CallbackSet}
     solution::Union{Nothing, DiffEqBase.DAESolution}
@@ -12,7 +13,7 @@ end
 
 function Simulation(system::PSY.System,
                     tspan::NTuple{2, Float64},
-                    perturbations::Vector{<:Perturbation};
+                    perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
                     initialize_simulation::Bool=true,
                     kwargs...)
 
@@ -29,8 +30,10 @@ function Simulation(system::PSY.System,
     else
         x0_init = zeros(var_count)
     end
-
+    control = Dict()
     dx0 = zeros(var_count)
+    callback_set, tstops = _build_callbacks(perturbations::Vector{<:Perturbation})
+
     prob = DiffEqBase.DAEProblem(system_model!,
                                  dx0,
                                  x0_init,
@@ -38,13 +41,12 @@ function Simulation(system::PSY.System,
                                  (control, system),
                                  differential_vars = DAE_vector)
 
-    callback_set, tstops = _build_callbacks(perturbations::Vector{<:Perturbation})
-
     return Simulation(system,
                      prob,
                      perturbations,
                      x0_init,
                      initialized,
+                     control,
                      tstops,
                      callback_set,
                      nothing,
