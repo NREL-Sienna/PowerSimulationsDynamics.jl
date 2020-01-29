@@ -14,8 +14,8 @@ function device_model!(x,
    device_states = @view x[ix_range]
 
    #Obtain references
-   sys_Sbase = sys.basepower #TODO: add getter function
-   sys_f = get_sys_f(sys) #TODO: add sys frequency in PowerSystems
+   sys_Sbase = PSY.get_basepower(sys)
+   sys_f =PSY.get_frequency(sys)
 
    #Update Voltage data
    get_inner_vars(device)[VR_gen_var] = voltage_r[1]
@@ -97,8 +97,8 @@ function device_model!(x,
    device_states = @view x[ix_range]
 
    #Obtain references
-   Sbase = sys.basepower #TODO: add getter function
-   sys_f = get_sys_f(sys) #TODO: add sys frequency in PowerSystems
+   Sbase = PSY.get_basepower(sys)
+   sys_f =PSY.get_frequency(sys)
 
    #Update Voltage data
    get_inner_vars(device)[VR_inv_var] = voltage_r[1]

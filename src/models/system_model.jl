@@ -12,7 +12,7 @@ function system_model!(out, dx, x, (controls, sys), t)
     #Network quantities
     V_r = @view x[1:bus_size]
     V_i = @view x[bus_size+1:bus_vars_count]
-    Sbase = sys.basepower #TODO: Add getter function for base power
+    Sbase = PSY.get_basepower(sys) #TODO: Add getter function for base power
     I_injections_r = zeros(bus_size)
     I_injections_i = zeros(bus_size)
     injection_ode = zeros(get_n_injection_states(sys))

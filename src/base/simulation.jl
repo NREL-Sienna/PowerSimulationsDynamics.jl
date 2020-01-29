@@ -186,15 +186,13 @@ get_injection_pointer(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:first_dy
 get_branches_pointer(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:first_dyn_branch_point]
 get_n_injection_states(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:injection_n_states]
 get_n_branches_states(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:branches_n_states]
-system_state_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_states]
+get_system_state_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_states]
 get_device_index(
     sys::PSY.System,
     device::D,
     ) where {D <: PSY.DynamicInjection} = PSY.get_ext(sys)[GLOBAL_INDEX][device.name]
 
 get_inner_vars(device::PSY.DynamicInjection) = device.ext[INNER_VARS]
-get_sys_f(sys::PSY.System) = 60.0
-#get_sys_f(sys::DynamicSystem) = sys.sys_f #TODO: Should we add frequency in the simulation??
 
 function _get_internal_mapping(device::PSY.DynamicInjection, key::AbstractString, ty::Type{T}) where T <: PSY.DynamicComponent
     #device_index = PSY.get_ext(device)[key]
