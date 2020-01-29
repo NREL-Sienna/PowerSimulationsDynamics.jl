@@ -1,18 +1,18 @@
     mutable struct Simulation
     system::PSY.System
     problem::DiffEqBase.DAEProblem
-    #callbacks::DiffEqBase.DiscreteCallback
-    #tstops::Vector{Float64}
+    perturbations::Vector{<:Perturbation}
     x0_init::Vector{Float64}
     initialized::Bool
+    tstops::Vector{Float64}
+    callbacks::Union{Nothing, DiffEqBase.CallbackSet}
     solution::Union{Nothing, DiffEqBase.DAESolution}
     ext::Dict{String, Any}
 end
 
 function Simulation(system::PSY.System,
-                    tspan::NTuple{2, Float64};
-                    #control,
-                    #callback,
+                    tspan::NTuple{2, Float64},
+                    perturbations::Vector{<:Perturbation};
                     initialize_simulation::Bool=true,
                     kwargs...)
 
@@ -21,8 +21,6 @@ function Simulation(system::PSY.System,
     DAE_vector = collect(falses(n_buses*2))
     _index_dynamic_system!(DAE_vector, system)
     var_count = get_variable_count(system)
-
-    control = [0.0]
 
     if initialize_simulation
         @info("Initializing Simulation States")
@@ -40,17 +38,25 @@ function Simulation(system::PSY.System,
                                  (control, system),
                                  differential_vars = DAE_vector)
 
+    callback_set, tstops = _build_callbacks(perturbations::Vector{<:Perturbation})
+
     return Simulation(system,
                      prob,
-                     #callback,
-                     #[1.0],
+                     perturbations,
                      x0_init,
                      initialized,
-                     nothing,
+                     tstops,
+                     callback_set,
+                     nothing
                      Dict{String, Any}()
                      )
 
 end
+
+function _build_callbacks(perturbations::Vector{<:Perturbation})
+    return nothing, [0.0]
+end
+
 
 function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Float64})
     # TODO: Code to refine initial_guess
@@ -72,10 +78,10 @@ end
 
 
 function run_simulation!(sim::Simulation, solver; kwargs...)
-    #sim.solution = DiffEqBase.solve(sim.problem,
-    #                       solver;
-    #                       callback = sim.callbacks,
-    #                       tstops = sim.tstops, kwargs...)
+    sim.solution = DiffEqBase.solve(sim.problem, solver;
+                           callback = sim.callbacks,
+                           tstops = sim.tstops,
+                           kwargs...)
     return
 end
 
