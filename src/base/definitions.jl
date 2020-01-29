@@ -32,6 +32,7 @@ Generator Inner Vars:
     ψq_var = 8
 end
 
+Base.to_index(ix::generator_inner_vars) = Int(ix)
 
 """
 Inverter Inner Vars:
@@ -67,8 +68,12 @@ Vqcnv_var :: Voltage supplied from the converter in the q-component
     Vqcnv_var = 13
 end
 
+Base.to_index(ix::inverter_inner_vars) = Int(ix)
+
 const LITS_COUNTS = "lits_counts"
 const LOCAL_STATE_MAPPING = "local_state_mapping"
 const INPUT_PORT_MAPPING = "input_port_mapping"
 const PORTS = "ports"
 const GLOBAL_INDEX = "global_index"
+const INNER_VARS = "inner_vars"
+const YBUS = "Ybus"

@@ -9,10 +9,10 @@ function mdl_shaft_ode!(device_states,
 
 
     #Obtain references
-    ω_ref = get_ω_ref(device)
+    ω_ref = PSY.get_ω_ref(device)
 
     #Obtain indices for component w/r to device
-    local_ix = device.local_state_ix[device.shaft]
+    local_ix = get_local_state_ix(device, PSY.SingleMass)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -20,12 +20,13 @@ function mdl_shaft_ode!(device_states,
     ω = internal_states[2]
 
     #Obtain inner variables for component
-    τe = device.inner_vars[τe_var]
-    τm = device.inner_vars[τm_var]
+    τe = get_inner_vars(device)[τe_var]
+    τm = get_inner_vars(device)[τm_var]
 
     #Get parameters
-    H = device.shaft.H
-    D = device.shaft.D
+    shaft = PSY.get_shaft(device)
+    H = PSY.get_H(shaft)
+    D = PSY.get_D(shaft)
 
     #Compute 2 states ODEs
     output_ode[local_ix[1]] = 2*π*f0*(ω-ω_ref)                    #15.5
@@ -44,10 +45,11 @@ function mdl_shaft_ode!(device_states,
                                                                                   P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = get_ω_ref(device)
+    ω_ref = PSY.get_ω_ref(device)
 
     #Obtain indices for component w/r to device
-    local_ix = device.local_state_ix[device.shaft]
+    local_ix = get_local_state_ix(device, PSY.FiveMassShaft)
+
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -63,28 +65,29 @@ function mdl_shaft_ode!(device_states,
     ω_ex = internal_states[10]
 
     #Obtain inner variables for component
-    τe = device.inner_vars[τe_var]
-    τm = device.inner_vars[τm_var]
+    τe = get_inner_vars(device)[τe_var]
+    τm = get_inner_vars(device)[τm_var]
 
     #Get parameters
-    H = device.shaft.H
-    H_hp = device.shaft.H_hp
-    H_ip = device.shaft.H_ip
-    H_lp = device.shaft.H_lp
-    H_ex = device.shaft.H_ex
-    D = device.shaft.D
-    D_hp = device.shaft.D_hp
-    D_ip = device.shaft.D_ip
-    D_lp = device.shaft.D_lp
-    D_ex = device.shaft.D_ex
-    D_12 = device.shaft.D_12
-    D_23 = device.shaft.D_23
-    D_34 = device.shaft.D_34
-    D_45 = device.shaft.D_45
-    K_hp = device.shaft.K_hp
-    K_ip = device.shaft.K_ip
-    K_lp = device.shaft.K_lp
-    K_ex = device.shaft.K_ex
+    shaft = PSY.get_shaft(device)
+    H = PSY.get_H(shaft)
+    H_hp = PSY.get_H_hp(shaft)
+    H_ip = PSY.get_H_ip(shaft)
+    H_lp = PSY.get_H_lp(shaft)
+    H_ex = PSY.get_H_ex(shaft)
+    D = PSY.get_D(shaft)
+    D_hp = PSY.get_D_hp(shaft)
+    D_ip = PSY.get_D_ip(shaft)
+    D_lp = PSY.get_D_lp(shaft)
+    D_ex = PSY.get_D_ex(shaft)
+    D_12 = PSY.get_D_12(shaft)
+    D_23 = PSY.get_D_23(shaft)
+    D_34 = PSY.get_D_34(shaft)
+    D_45 = PSY.get_D_45(shaft)
+    K_hp = PSY.get_K_hp(shaft)
+    K_ip = PSY.get_K_ip(shaft)
+    K_lp = PSY.get_K_lp(shaft)
+    K_ex = PSY.get_K_ex(shaft)
 
 
     #Compute 10 states ODEs #15.51
