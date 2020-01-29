@@ -16,7 +16,7 @@ function mdl_outer_ode!(device_states,
     vod = device_states[external_ix[4]]
     voq = device_states[external_ix[5]]
     iod = device_states[external_ix[6]]
-    oq = device_states[external_ix[7]]
+    ioq = device_states[external_ix[7]]
 
     #Obtain inner variables for component
     ω_pll =  get_inner_vars(device)[ω_freq_estimator_var]
@@ -41,7 +41,8 @@ function mdl_outer_ode!(device_states,
     p_ref = PSY.get_P_ref(device)
     ω_ref = PSY.get_ω_ref(device)
     V_ref = PSY.get_V_ref(device)
-    q_ref = PSY.get_Q_ref(device)
+    #q_ref = PSY.get_Q_ref(device)
+    q_ref = device.Q_ref
     ωg = 1.0
 
     #Obtain indices for component w/r to device
