@@ -24,10 +24,11 @@ function mdl_VScontrol_ode!(device_states,
 
     #Get Voltage Controller parameters
     vscontrol = PSY.get_vscontrol(device)
+    filter = PSY.get_filter(device)
     kpv = PSY.get_kpv(vscontrol)
     kiv = PSY.get_kiv(vscontrol)
     kffi = PSY.get_kffi(vscontrol)
-    cf = PSY.get_cf(vscontrol)
+    cf = PSY.get_cf(filter)
     rv = PSY.get_rv(vscontrol)
     lv = PSY.get_lv(vscontrol)
 
@@ -35,7 +36,7 @@ function mdl_VScontrol_ode!(device_states,
     kpc = PSY.get_kpc(vscontrol)
     kic = PSY.get_kic(vscontrol)
    kffv = PSY.get_kffv(vscontrol)
-     lf = PSY.get_lf(vscontrol)
+     lf = PSY.get_lf(filter)
     ωad = PSY.get_ωad(vscontrol)
     kad = PSY.get_kad(vscontrol)
 

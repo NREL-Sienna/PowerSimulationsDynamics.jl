@@ -12,8 +12,8 @@ function mdl_converter_ode!( device::PSY.DynamicInverter{PSY.AvgCnvFixedDC,O,VC,
     VDC = get_inner_vars(device)[Vdc_var]
 
     #Update inner_vars
-    device.inner_vars[Vdcnv_var] = md*VDC
-    device.inner_vars[Vqcnv_var] = mq*VDC
+    get_inner_vars(device)[Vdcnv_var] = md*VDC
+    get_inner_vars(device)[Vqcnv_var] = mq*VDC
 end
 
 #TODO: Same as above, but:
