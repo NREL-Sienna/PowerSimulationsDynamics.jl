@@ -5,7 +5,6 @@ mutable struct Simulation
     perturbations::Vector{<:Perturbation}
     x0_init::Vector{Float64}
     initialized::Bool
-    control::Dict
     tstops::Vector{Float64}
     callbacks::Union{Nothing, DiffEqBase.CallbackSet}
     solution::Union{Nothing, DiffEqBase.DAESolution}
@@ -31,6 +30,7 @@ function Simulation(system::PSY.System,
     else
         x0_init = zeros(var_count)
     end
+
     dx0 = zeros(var_count)
     callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
 
@@ -52,7 +52,6 @@ function Simulation(system::PSY.System,
                      nothing,
                      Dict{String, Any}()
                      )
-
 end
 
 function _build_perturbations(perturbations::Vector{<:Perturbation})
@@ -65,11 +64,11 @@ function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Fl
     var_count = get_variable_count(sys)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     inif! = (out,x) -> system_model!(
-        out, #output of the function
-        dx0, #derivatives equal to zero
-        x, #states
-        ([0.0], sys), #Parameters: [0.0] is not used
-        0.0) #time equals to zero.
+        out,    #output of the function
+        dx0,    #derivatives equal to zero
+        x,      #states
+        sys,    #Parameters
+        0.0)    #time equals to zero.
     sys_solve = NLsolve.nlsolve(inif!, initial_guess) #Solve using initial guess x0
     if !NLsolve.converged(sys_solve)
         @warn("Initialization failed, initial conditions do not meet conditions for an stable equilibrium")
