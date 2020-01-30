@@ -6,7 +6,7 @@ mutable struct Simulation
     x0_init::Vector{Float64}
     initialized::Bool
     tstops::Vector{Float64}
-    callbacks::Union{Nothing, DiffEqBase.CallbackSet}
+    callbacks::DiffEqBase.CallbackSet
     solution::Union{Nothing, DiffEqBase.DAESolution}
     ext::Dict{String, Any}
 end
@@ -39,7 +39,7 @@ function Simulation(system::PSY.System,
                                  x0_init,
                                  tspan,
                                  system,
-                                 differential_vars = DAE_vector)
+                                 differential_vars = DAE_vector; kwargs...)
 
     return Simulation(system,
                      false,
@@ -54,8 +54,32 @@ function Simulation(system::PSY.System,
                      )
 end
 
+function Simulation(system::PSY.System,
+    tspan::NTuple{2, Float64},
+    perturbation::Perturbation;
+    initialize_simulation::Bool=true,
+    kwargs...)
+    return Simulation(
+                      system,
+                      tspan,
+                      [perturbation];
+                      initialize_simulation = initialize_simulation, kwargs...)
+end
+
 function _build_perturbations(perturbations::Vector{<:Perturbation})
-    return nothing, [0.0]
+    isempty(perturbations) && return DiffEqBase.CallbackSet(), [0.0]
+    perturbations_count = length(perturbations)
+    callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
+    tstops =  Vector{Float64}(undef, perturbations_count)
+    for (ix, pert) in enumerate(perturbations)
+        condition = (x, t, integrator) -> t in [pert.time]
+        affect = get_affect(pert)
+        callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
+        tstops[ix] = pert.time
+    end
+    callback_tuple = Tuple(cb for cb in callback_vector)
+    callback_set = DiffEqBase.CallbackSet((), callback_tuple)
+    return callback_set, tstops
 end
 
 
@@ -79,7 +103,7 @@ end
 
 
 function run_simulation!(sim::Simulation, solver; kwargs...)
-    if reset
+    if sim.reset
         @error("Reset the simulation")
     end
 
