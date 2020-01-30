@@ -1,8 +1,8 @@
-function system_model!(out, dx, x, (controls, sys), t)
+function system_model!(out, dx, x, sys, t)
 
     #Index Setup
     bus_size = length(PSY.get_components(PSY.Bus, sys))
-    bus_range = 1:2*bus_size #TODO: Should we make this a getter function?
+    bus_range = 1:2*bus_size
     bus_vars_count = length(bus_range)
     injection_start = get_injection_pointer(sys)
     injection_count = 1
@@ -12,7 +12,7 @@ function system_model!(out, dx, x, (controls, sys), t)
     #Network quantities
     V_r = @view x[1:bus_size]
     V_i = @view x[bus_size+1:bus_vars_count]
-    Sbase = PSY.get_basepower(sys) #TODO: Add getter function for base power
+    Sbase = PSY.get_basepower(sys)
     I_injections_r = zeros(bus_size)
     I_injections_i = zeros(bus_size)
     injection_ode = zeros(get_n_injection_states(sys))
@@ -32,7 +32,6 @@ function system_model!(out, dx, x, (controls, sys), t)
                       view(I_injections_i, bus_n),
                       ix_range,
                       ode_range,
-                      controls,
                       d,
                       sys)
         out[ix_range] = injection_ode[ode_range] - dx[ix_range]
@@ -67,7 +66,6 @@ function system_model!(out, dx, x, (controls, sys), t)
                         ix_range,
                         ix_dx,
                         ode_range,
-                        controls,
                         br,
                         sys)
 

@@ -18,7 +18,6 @@ function branch_model!(x,
                       ix_range::UnitRange{Int64},
                       ix_dx::Vector{Int64},
                       ode_range::UnitRange{Int64},
-                      controls,
                       branch::DynBr,
                       sys::PSY.System) where {DynBr <: DynBranch}
 
