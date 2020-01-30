@@ -19,7 +19,7 @@ function system_model!(out, dx, x, sys, t)
     branches_ode = zeros(get_n_branches_states(sys))
 
     for d in PSY.get_components(PSY.DynamicInjection, sys)
-        bus_n = PSY.get_number(PSY.get_bus(d))
+        bus_n = PSY.get_number(PSY.get_bus(d)) # TODO: This requires that the bus numbers are indexed 1-N
         ix_range = range(injection_start, length=PSY.get_n_states(d))
         ode_range = range(injection_count, length=PSY.get_n_states(d))
         injection_count = injection_count + PSY.get_n_states(d)
