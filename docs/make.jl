@@ -24,6 +24,6 @@ deploydocs(
     repo = "github.com/Energy-MAC/LITS.jl",
     branch = "gh-pages",
     target = "build",
-    deps = Deps.pip("pygments", "mkdocs", "python-markdown-math"),
+    #deps = Deps.pip("pygments", "mkdocs", "python-markdown-math"),
     make = nothing,
 )
