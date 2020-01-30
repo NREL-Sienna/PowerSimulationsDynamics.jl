@@ -6,7 +6,8 @@ function mdl_tg_ode!(device_states,
                                                                        P <: PSY.PSS}
 
     #Update inner vars
-    get_inner_vars(device)[τm_var] = PSY.get_P_ref(device) * PSY.get_efficiency(PSY.get_tg(device))
+    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
+    get_inner_vars(device)[τm_var] = P_ref * PSY.get_efficiency(PSY.get_tg(device))
 
     return
 end
