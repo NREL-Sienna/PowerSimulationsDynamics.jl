@@ -20,20 +20,22 @@ function system_model!(out, dx, x, sys, t)
 
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         bus_n = PSY.get_number(PSY.get_bus(d)) # TODO: This requires that the bus numbers are indexed 1-N
-        ix_range = range(injection_start, length=PSY.get_n_states(d))
-        ode_range = range(injection_count, length=PSY.get_n_states(d))
+        ix_range = range(injection_start, length = PSY.get_n_states(d))
+        ode_range = range(injection_count, length = PSY.get_n_states(d))
         injection_count = injection_count + PSY.get_n_states(d)
         injection_start = injection_start + PSY.get_n_states(d)
-        device_model!(x,
-                      injection_ode,
-                      view(V_r, bus_n),
-                      view(V_i, bus_n),
-                      view(I_injections_r, bus_n),
-                      view(I_injections_i, bus_n),
-                      ix_range,
-                      ode_range,
-                      d,
-                      sys)
+        device_model!(
+            x,
+            injection_ode,
+            view(V_r, bus_n),
+            view(V_i, bus_n),
+            view(I_injections_r, bus_n),
+            view(I_injections_i, bus_n),
+            ix_range,
+            ode_range,
+            d,
+            sys,
+        )
         out[ix_range] = injection_ode[ode_range] - dx[ix_range]
     end
     #=
@@ -77,16 +79,17 @@ function system_model!(out, dx, x, sys, t)
     for d in PSY.get_components(PSY.StaticInjection, sys)
         bus_n = PSY.get_number(PSY.get_bus(d))
 
-        device_model!( view(V_r, bus_n),
-                       view(V_i, bus_n),
-                       view(I_injections_r, bus_n),
-                       view(I_injections_i, bus_n),
-                       d,
-                       sys)
+        device_model!(
+            view(V_r, bus_n),
+            view(V_i, bus_n),
+            view(I_injections_r, bus_n),
+            view(I_injections_i, bus_n),
+            d,
+            sys,
+        )
     end
 
-    out[bus_range] = kcl(PSY.get_ext(sys)[YBUS], V_r, V_i,
-                               I_injections_r, I_injections_i)
+    out[bus_range] = kcl(PSY.get_ext(sys)[YBUS], V_r, V_i, I_injections_r, I_injections_i)
 
 
 end

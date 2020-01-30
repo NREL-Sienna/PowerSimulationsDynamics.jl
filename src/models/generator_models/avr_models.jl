@@ -1,9 +1,8 @@
-function mdl_avr_ode!(device_states,
-                    output_ode,
-                    device::PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P})  where {M <: PSY.Machine,
-                                                                         S <: PSY.Shaft,
-                                                                         TG <: PSY.TurbineGov,
-                                                                         P <: PSY.PSS}
+function mdl_avr_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M,S,PSY.AVRFixed,TG,P},
+) where {M<:PSY.Machine,S<:PSY.Shaft,TG<:PSY.TurbineGov,P<:PSY.PSS}
 
 
     #TODO Change EMF name for Vf in PowerSystems
@@ -14,12 +13,11 @@ function mdl_avr_ode!(device_states,
 end
 
 
-function mdl_avr_ode!(device_states,
-                      output_ode,
-                      device::PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P})  where {M <: PSY.Machine,
-                                                                            S <: PSY.Shaft,
-                                                                            TG <: PSY.TurbineGov,
-                                                                            P <: PSY.PSS}
+function mdl_avr_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M,S,PSY.AVRSimple,TG,P},
+) where {M<:PSY.Machine,S<:PSY.Shaft,TG<:PSY.TurbineGov,P<:PSY.PSS}
 
     #Obtain references
     V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
@@ -38,7 +36,7 @@ function mdl_avr_ode!(device_states,
     Kv = PSY.get_Kv(PSY.get_avr(device))
 
     #Compute ODEs
-    output_ode[local_ix[1]] = Kv*(V_ref - V_th)
+    output_ode[local_ix[1]] = Kv * (V_ref - V_th)
 
     #Update inner_vars
     get_inner_vars(device)[Vf_var] = Vf
@@ -52,12 +50,11 @@ Model of AVR Type I in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 
-function mdl_avr_ode!(device_states,
-                      output_ode,
-                      device::PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P})  where {M <: PSY.Machine,
-                                                                           S <: PSY.Shaft,
-                                                                           TG <: PSY.TurbineGov,
-                                                                           P <: PSY.PSS}
+function mdl_avr_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M,S,PSY.AVRTypeI,TG,P},
+) where {M<:PSY.Machine,S<:PSY.Shaft,TG<:PSY.TurbineGov,P<:PSY.PSS}
 
     #Obtain references
     V0_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
@@ -70,7 +67,7 @@ function mdl_avr_ode!(device_states,
     Vf = internal_states[1]
     Vr1 = internal_states[2]
     Vr2 = internal_states[3]
-    Vm  = internal_states[4]
+    Vm = internal_states[4]
 
     #Define external states for device
     V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
@@ -92,7 +89,7 @@ function mdl_avr_ode!(device_states,
     Be = PSY.get_Be(avr)
 
     #Compute auxiliary parameters
-    Se_Vf = Ae*exp(Be*abs(Vf)) #16.13
+    Se_Vf = Ae * exp(Be * abs(Vf)) #16.13
     V_ref = V0_ref + Vs
 
     #Set anti-windup for Vr1. #TODO in callbacks
@@ -103,10 +100,10 @@ function mdl_avr_ode!(device_states,
     #end
 
     #Compute 4 States AVR ODE:
-    output_ode[local_ix[1]] = -(1.0/Te)*(Vf*(Ke + Se_Vf) - Vr1) #16.12c
-    output_ode[local_ix[2]] = (1.0/Ta)*(Ka*(V_ref - Vm - Vr2 - (Kf/Tf)*Vf) - Vr1) #16.12a
-    output_ode[local_ix[3]] = -(1.0/Tf)*((Kf/Tf)*Vf + Vr2) #16.12b
-    output_ode[local_ix[4]] = (1.0/Tr)*(V_th - Vm) #16.11
+    output_ode[local_ix[1]] = -(1.0 / Te) * (Vf * (Ke + Se_Vf) - Vr1) #16.12c
+    output_ode[local_ix[2]] = (1.0 / Ta) * (Ka * (V_ref - Vm - Vr2 - (Kf / Tf) * Vf) - Vr1) #16.12a
+    output_ode[local_ix[3]] = -(1.0 / Tf) * ((Kf / Tf) * Vf + Vr2) #16.12b
+    output_ode[local_ix[4]] = (1.0 / Tr) * (V_th - Vm) #16.11
 
     #Update inner_vars
     get_inner_vars(device)[Vf_var] = Vf
@@ -121,12 +118,11 @@ Model of AVR Type II in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 
-function mdl_avr_ode!(device_states,
-                      output_ode,
-                      device::PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P})  where {M <: PSY.Machine,
-                                                                           S <: PSY.Shaft,
-                                                                           TG <: PSY.TurbineGov,
-                                                                           P <: PSY.PSS}
+function mdl_avr_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M,S,PSY.AVRTypeII,TG,P},
+) where {M<:PSY.Machine,S<:PSY.Shaft,TG<:PSY.TurbineGov,P<:PSY.PSS}
 
     #Obtain references
     V0_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
@@ -139,7 +135,7 @@ function mdl_avr_ode!(device_states,
     Vf = internal_states[1]
     Vr1 = internal_states[2]
     Vr2 = internal_states[3]
-    Vm  = internal_states[4]
+    Vm = internal_states[4]
 
     #Define external states for device
     V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
@@ -161,9 +157,9 @@ function mdl_avr_ode!(device_states,
     Be = PSY.get_Be(avr)
 
     #Compute auxiliary parameters
-    Se_Vf = Ae*exp(Be*abs(Vf)) #16.13
+    Se_Vf = Ae * exp(Be * abs(Vf)) #16.13
     V_ref = V0_ref + Vs
-    Vr = K0*Vr2 + (T4/T3)*(Vr1 + K0*(T2/T1)*(V_ref - Vm)) #16.21
+    Vr = K0 * Vr2 + (T4 / T3) * (Vr1 + K0 * (T2 / T1) * (V_ref - Vm)) #16.21
 
     #Set anti-windup for Vr1. #TODO in callbacks
     #if Vr > Vr_max
@@ -173,13 +169,15 @@ function mdl_avr_ode!(device_states,
     #end
 
     #Compute 4 States AVR ODE:
-    output_ode[local_ix[1]] = -(1.0/Te)*(Vf*(1.0 + Se_Vf) - Vr) #16.18
-    output_ode[local_ix[2]] = (1.0/T1)*(K0*(1.0 - (T2/T1))*(V_ref - Vm) - Vr1) #16.14
-    output_ode[local_ix[3]] = (1.0/(K0*T3))*((1.0 - (T4/T3))*(Vr1 + K0*(T2/T1)*(V_ref - Vm)) - K0*Vr2)  #16.20
-    output_ode[local_ix[4]] = (1.0/Tr)*(V_th - Vm) #16.11
+    output_ode[local_ix[1]] = -(1.0 / Te) * (Vf * (1.0 + Se_Vf) - Vr) #16.18
+    output_ode[local_ix[2]] = (1.0 / T1) * (K0 * (1.0 - (T2 / T1)) * (V_ref - Vm) - Vr1) #16.14
+    output_ode[local_ix[3]] =
+        (1.0 / (K0 * T3)) *
+        ((1.0 - (T4 / T3)) * (Vr1 + K0 * (T2 / T1) * (V_ref - Vm)) - K0 * Vr2)  #16.20
+    output_ode[local_ix[4]] = (1.0 / Tr) * (V_th - Vm) #16.11
 
     #Update inner_vars
-    get_inner_vars(device)[Vf_var]= Vf
+    get_inner_vars(device)[Vf_var] = Vf
 
     return
 end
