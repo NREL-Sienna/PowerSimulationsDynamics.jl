@@ -20,8 +20,8 @@ function mdl_tg_ode!(device_states,
                                                                        P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = PSY.get_ω_ref(device)
-    P_ref = PSY.get_P_ref(device)
+    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
+    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.TGTypeI)
@@ -79,8 +79,8 @@ function mdl_tg_ode!(device_states,
                                                                        P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = PSY.get_ω_ref(device)
-    P_ref = PSY.get_P_ref(device)
+    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
+    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.TGTypeII)

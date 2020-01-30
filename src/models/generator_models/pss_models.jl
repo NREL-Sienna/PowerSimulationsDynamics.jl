@@ -21,8 +21,8 @@ function mdl_pss_ode!(device_states,
                                                                         TG <: PSY.TurbineGov}
 
     #Get references
-    ω_ref = PSY.get_ω_ref(device)
-    P_ref = PSY.get_P_ref(device)
+    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
+    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
 
     #Obtain external states for device
     external_ix = get_input_port_ix(device, PSY.PSSSimple)
