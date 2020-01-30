@@ -1,10 +1,14 @@
-function mdl_VScontrol_ode!(device_states,
-        output_ode,
-        device::PSY.DynamicInverter{C,O,PSY.CombinedVIwithVZ,DC,P,F}) where {C <: PSY.Converter,
-                                                                O <: PSY.OuterControl,
-                                                                DC<: PSY.DCSource,
-                                                                P <: PSY.FrequencyEstimator,
-                                                                F <: PSY.Filter}
+function mdl_VScontrol_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicInverter{C,O,PSY.CombinedVIwithVZ,DC,P,F},
+) where {
+    C<:PSY.Converter,
+    O<:PSY.OuterControl,
+    DC<:PSY.DCSource,
+    P<:PSY.FrequencyEstimator,
+    F<:PSY.Filter,
+}
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.CombinedVIwithVZ)
@@ -35,8 +39,8 @@ function mdl_VScontrol_ode!(device_states,
     #Get Current Controller parameters
     kpc = PSY.get_kpc(vscontrol)
     kic = PSY.get_kic(vscontrol)
-   kffv = PSY.get_kffv(vscontrol)
-     lf = PSY.get_lf(filter)
+    kffv = PSY.get_kffv(vscontrol)
+    lf = PSY.get_lf(filter)
     ωad = PSY.get_ωad(vscontrol)
     kad = PSY.get_kad(vscontrol)
 
@@ -58,38 +62,30 @@ function mdl_VScontrol_ode!(device_states,
     ## SRF Voltage Control w/ Virtual Impedance ##
     #Virtual Impedance - Computation but not DAE
     #v_refr = V_ref + kq*(q_ref - qm)
-    vod_ref = ( v_refr - rv*iod + ω_vsm*lv*ioq )
-    voq_ref = (        - rv*ioq - ω_vsm*lv*iod )
+    vod_ref = (v_refr - rv * iod + ω_vsm * lv * ioq)
+    voq_ref = (-rv * ioq - ω_vsm * lv * iod)
     #Output Control Signal - Links to SRF Current Controller
-    icvd_ref = ( kpv*(vod_ref-vod)
-               + kiv*ξ_d
-               - cf*ω_vsm*voq #j product - change axis
-               + kffi*iod )
+    icvd_ref = (kpv * (vod_ref - vod) + kiv * ξ_d - cf * ω_vsm * voq + kffi * iod)
 
-    icvq_ref = ( kpv*(voq_ref-voq)
-               + kiv*ξ_q
-               + cf*ω_vsm*vod #j product - change axis
-               + kffi*ioq )
+    icvq_ref = (kpv * (voq_ref - voq) + kiv * ξ_q + cf * ω_vsm * vod + kffi * ioq)
     #Voltage Control ODEs
     #PI Integrator (internal state)
-    output_ode[local_ix[1]] = (vod_ref-vod)
-    output_ode[local_ix[2]] = (voq_ref-voq)
+    output_ode[local_ix[1]] = (vod_ref - vod)
+    output_ode[local_ix[2]] = (voq_ref - voq)
 
     ## SRF Current Control ##
     #Active Damping
     #vad_d = kad*(vod-ϕ_d)
     #vad_q = kad*(voq-ϕ_q)
     #References for Converter Output Voltage
-    vcvd_ref = ( kpc*(icvd_ref-icvd)
-               + kic*γ_d
-               - ω_vsm*lf*icvq #j product - change axis
-               + kffv*vod
-               - kad*(vod-ϕ_d))
-    vcvq_ref = ( kpc*(icvq_ref-icvq)
-               + kic*γ_q
-               + ω_vsm*lf*icvd #j product - change axis
-               + kffv*voq
-               - kad*(voq-ϕ_q) )
+    vcvd_ref = (
+        kpc * (icvd_ref - icvd) + kic * γ_d - ω_vsm * lf * icvq + kffv * vod -
+            kad * (vod - ϕ_d)
+    )
+    vcvq_ref = (
+        kpc * (icvq_ref - icvq) + kic * γ_q + ω_vsm * lf * icvd + kffv * voq -
+            kad * (voq - ϕ_q)
+    )
     #Modulation Commands to Converter
     #md = vcvd_ref/vdc
     #mq = vcvq_ref/vdc
@@ -98,11 +94,11 @@ function mdl_VScontrol_ode!(device_states,
     output_ode[local_ix[3]] = icvd_ref - icvd
     output_ode[local_ix[4]] = icvq_ref - icvq
     #Active Damping LPF (internal state)
-    output_ode[local_ix[5]] = ωad*vod - ωad*ϕ_d
-    output_ode[local_ix[6]] = ωad*voq - ωad*ϕ_q
+    output_ode[local_ix[5]] = ωad * vod - ωad * ϕ_d
+    output_ode[local_ix[6]] = ωad * voq - ωad * ϕ_q
 
     #Update inner_vars
-    get_inner_vars(device)[md_var] = vcvd_ref/vdc
-    get_inner_vars(device)[mq_var] = vcvq_ref/vdc
+    get_inner_vars(device)[md_var] = vcvd_ref / vdc
+    get_inner_vars(device)[mq_var] = vcvq_ref / vdc
 
 end

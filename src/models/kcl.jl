@@ -9,6 +9,6 @@
 
 
 function kcl(Ybus, V_r, V_i, I_injections_r, I_injections_i)
-    I_bus = Ybus*(V_r + V_i.*1im)
+    I_bus = Ybus * (V_r + V_i .* 1im)
     return [I_injections_r - real(I_bus); I_injections_i - imag(I_bus)]
 end
