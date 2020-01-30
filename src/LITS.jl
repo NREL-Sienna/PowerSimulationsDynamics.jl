@@ -6,6 +6,8 @@ module LITS
 export DynBranch
 export Simulation
 export run_simulation!
+export ThreePhaseFault
+export ControlStepUp
 export get_state_series
 export get_voltagemag_series
 ####################################### Package Imports ####################################
@@ -60,7 +62,7 @@ include("perturbations/ThreePhaseFault.jl")
 include("perturbations/PowerStepChange.jl")
 
 #Utils
-#include("utils/plot_utils.jl")
+include("utils/plot_utils.jl")
 include("utils/print.jl")
 
 end # module
