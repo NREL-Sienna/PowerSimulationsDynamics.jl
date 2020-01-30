@@ -22,7 +22,7 @@ function mdl_avr_ode!(device_states,
                                                                             P <: PSY.PSS}
 
     #Obtain references
-    V_ref = PSY.get_V_ref(device)
+    V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.AVRSimple)
@@ -60,7 +60,7 @@ function mdl_avr_ode!(device_states,
                                                                            P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = PSY.get_V_ref(device)
+    V0_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.AVRTypeI)
@@ -129,7 +129,7 @@ function mdl_avr_ode!(device_states,
                                                                            P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = PSY.get_V_ref(device)
+    V0_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.AVRTypeII)

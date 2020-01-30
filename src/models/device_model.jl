@@ -6,7 +6,6 @@ function device_model!(x,
                       current_i,
                       ix_range::UnitRange{Int64},
                       ode_range::UnitRange{Int64},
-                      controls,
                       device::DynG,
                       sys::PSY.System) where {DynG <: PSY.DynamicGenerator}
    #Obtain local device states
@@ -14,8 +13,8 @@ function device_model!(x,
    device_states = @view x[ix_range]
 
    #Obtain references
-   sys_Sbase = sys.basepower #TODO: add getter function
-   sys_f = get_sys_f(sys) #TODO: add sys frequency in PowerSystems
+   sys_Sbase = PSY.get_basepower(sys)
+   sys_f =PSY.get_frequency(sys)
 
    #Update Voltage data
    get_inner_vars(device)[VR_gen_var] = voltage_r[1]
@@ -88,7 +87,6 @@ function device_model!(x,
                         current_i,
                         ix_range::UnitRange{Int64},
                         ode_range::UnitRange{Int64},
-                        controls,
                         device::DynI,
                         sys::PSY.System) where {DynI <: PSY.DynamicInverter}
 
@@ -97,15 +95,15 @@ function device_model!(x,
    device_states = @view x[ix_range]
 
    #Obtain references
-   Sbase = sys.basepower #TODO: add getter function
-   sys_f = get_sys_f(sys) #TODO: add sys frequency in PowerSystems
+   Sbase = PSY.get_basepower(sys)
+   sys_f =PSY.get_frequency(sys)
 
    #Update Voltage data
    get_inner_vars(device)[VR_inv_var] = voltage_r[1]
    get_inner_vars(device)[VI_inv_var] = voltage_i[1]
 
    #Update V_ref
-   V_ref = PSY.get_V_ref(device)
+   V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
    get_inner_vars(device)[v_control_var] = V_ref
 
    #Obtain ODES for DC side

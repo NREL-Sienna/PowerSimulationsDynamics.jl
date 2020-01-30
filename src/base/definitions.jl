@@ -70,6 +70,11 @@ end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
 
+const V_ref_index = 1
+const ω_ref_index = 2
+const P_ref_index = 3
+const Q_ref_index = 4
+
 const LITS_COUNTS = "lits_counts"
 const LOCAL_STATE_MAPPING = "local_state_mapping"
 const INPUT_PORT_MAPPING = "input_port_mapping"
@@ -77,3 +82,4 @@ const PORTS = "ports"
 const GLOBAL_INDEX = "global_index"
 const INNER_VARS = "inner_vars"
 const YBUS = "Ybus"
+const CONTROL_REFS = "control_refs"

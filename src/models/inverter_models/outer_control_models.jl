@@ -38,11 +38,10 @@ function mdl_outer_ode!(device_states,
     pll_control = PSY.get_freq_estimator(device)
     kp_pll = PSY.get_kp_pll(pll_control)
     ki_pll = PSY.get_ki_pll(pll_control)
-    p_ref = PSY.get_P_ref(device)
-    ω_ref = PSY.get_ω_ref(device)
-    V_ref = PSY.get_V_ref(device)
-    #q_ref = PSY.get_Q_ref(device)
-    q_ref = device.Q_ref
+    p_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
+    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
+    V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
+    q_ref = PSY.get_ext(device)[CONTROL_REFS][Q_ref_index]
     ωg = 1.0
 
     #Obtain indices for component w/r to device

@@ -18,7 +18,6 @@ function branch_model!(x,
                       ix_range::UnitRange{Int64},
                       ix_dx::Vector{Int64},
                       ode_range::UnitRange{Int64},
-                      controls,
                       branch::DynBr,
                       sys::PSY.System) where {DynBr <: DynBranch}
 
@@ -30,8 +29,8 @@ function branch_model!(x,
     dv_to = view(dx, ix_dx[3:4])
 
     #Obtain references
-    Sbase = get_sys_base(sys)
-    sys_f = get_sys_f(sys)
+    Sbase = PSY.get_basepower(sys)
+    sys_f = PSY.get_frequency(sys)
 
     #Obtain ODEs and Mechanical Power for Turbine Governor
     mdl_line_ode!(device_states,

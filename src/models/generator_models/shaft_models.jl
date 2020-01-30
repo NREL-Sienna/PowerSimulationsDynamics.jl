@@ -9,7 +9,7 @@ function mdl_shaft_ode!(device_states,
 
 
     #Obtain references
-    ω_ref = PSY.get_ω_ref(device)
+    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.SingleMass)
@@ -45,7 +45,7 @@ function mdl_shaft_ode!(device_states,
                                                                                   P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = PSY.get_ω_ref(device)
+    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.FiveMassShaft)
