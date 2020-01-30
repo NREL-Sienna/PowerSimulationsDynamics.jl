@@ -1,5 +1,6 @@
-    mutable struct Simulation
+mutable struct Simulation
     system::PSY.System
+    reset::Bool
     problem::DiffEqBase.DAEProblem
     perturbations::Vector{<:Perturbation}
     x0_init::Vector{Float64}
@@ -30,23 +31,22 @@ function Simulation(system::PSY.System,
     else
         x0_init = zeros(var_count)
     end
-    control = Dict()
     dx0 = zeros(var_count)
-    callback_set, tstops = _build_callbacks(perturbations::Vector{<:Perturbation})
+    callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
 
     prob = DiffEqBase.DAEProblem(system_model!,
                                  dx0,
                                  x0_init,
                                  tspan,
-                                 (control, system),
+                                 system,
                                  differential_vars = DAE_vector)
 
     return Simulation(system,
+                     false,
                      prob,
                      perturbations,
                      x0_init,
                      initialized,
-                     control,
                      tstops,
                      callback_set,
                      nothing,
@@ -55,7 +55,7 @@ function Simulation(system::PSY.System,
 
 end
 
-function _build_callbacks(perturbations::Vector{<:Perturbation})
+function _build_perturbations(perturbations::Vector{<:Perturbation})
     return nothing, [0.0]
 end
 
@@ -80,6 +80,10 @@ end
 
 
 function run_simulation!(sim::Simulation, solver; kwargs...)
+    if reset
+        @error("Reset the simulation")
+    end
+
     sim.solution = DiffEqBase.solve(sim.problem, solver;
                            callback = sim.callbacks,
                            tstops = sim.tstops,
@@ -111,6 +115,16 @@ function _attach_inner_vars!(device::PSY.DynamicInverter)
     return
 end
 
+function _attach_control_refs!(device::PSY.DynamicInjection)
+    device.ext[CONTROL_REFS] = [
+                                PSY.get_V_ref(device),
+                                PSY.get_ω_ref(device),
+                                PSY.get_P_ref(device),
+                                PSY.get_Q_ref(device),
+                                ]
+    return
+end
+
 function _index_port_mapping!(index_component_inputs::Vector{Int64},
                              local_states::Vector{Symbol},
                               component::PSY.DynamicComponent)
@@ -129,6 +143,7 @@ function _make_device_index!(device::PSY.DynamicInjection)
     device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
     input_port_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
     _attach_inner_vars!(device)
+    _attach_control_refs!(device)
 
     for c in PSY.get_dynamic_components(device)
         device_state_mapping[typeof(c)] = Vector{Int64}(undef, length(c.states))
