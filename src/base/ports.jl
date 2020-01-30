@@ -39,7 +39,6 @@ function Ports(::PSY.TurbineGov)
     return Ports(state_input, inner_input)
 end
 
-
 ##################################################
 ############ Inverter Components ################
 
@@ -57,7 +56,6 @@ function Ports(::PSY.DCSource)
     return Ports(state_input, inner_input)
 end
 
-
 #### Filter Ports ####
 function Ports(::PSY.Filter)
     #TODO: If converter has dynamics, need to connect state_input
@@ -66,7 +64,6 @@ function Ports(::PSY.Filter)
         [VR_inv_var, VI_inv_var, Vdcnv_var, Vqcnv_var, δdqRI_var, Vdo_var, Vqo_var]
     return Ports(state_input, inner_input)
 end
-
 
 #### Freq. Estimator Ports ####
 
@@ -83,7 +80,6 @@ function Ports(::PSY.OuterControl)
     inner_input = [Vdo_var, Vdo_var, ω_freq_estimator_var]
     return Ports(state_input, inner_input)
 end
-
 
 #### Inner Control Ports ####
 function Ports(::PSY.VSControl)

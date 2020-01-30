@@ -5,8 +5,6 @@ function mdl_shaft_ode!(
     device::PSY.DynamicGenerator{M,PSY.SingleMass,A,TG,P},
 ) where {M<:PSY.Machine,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
 
-
-
     #Obtain references
     ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
 
@@ -34,7 +32,6 @@ function mdl_shaft_ode!(
     return
 end
 
-
 function mdl_shaft_ode!(
     device_states,
     output_ode,
@@ -47,7 +44,6 @@ function mdl_shaft_ode!(
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.FiveMassShaft)
-
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -86,7 +82,6 @@ function mdl_shaft_ode!(
     K_ip = PSY.get_K_ip(shaft)
     K_lp = PSY.get_K_lp(shaft)
     K_ex = PSY.get_K_ex(shaft)
-
 
     #Compute 10 states ODEs #15.51
     output_ode[local_ix[1]] = 2.0 * π * f0 * (ω - ω_ref)

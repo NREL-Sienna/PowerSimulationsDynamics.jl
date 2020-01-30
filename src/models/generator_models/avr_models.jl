@@ -4,14 +4,12 @@ function mdl_avr_ode!(
     device::PSY.DynamicGenerator{M,S,PSY.AVRFixed,TG,P},
 ) where {M<:PSY.Machine,S<:PSY.Shaft,TG<:PSY.TurbineGov,P<:PSY.PSS}
 
-
     #TODO Change EMF name for Vf in PowerSystems
     #Update Vf voltage on inner vars
     get_inner_vars(device)[Vf_var] = PSY.get_Emf(PSY.get_avr(device))
 
     return
 end
-
 
 function mdl_avr_ode!(
     device_states,
@@ -44,7 +42,6 @@ function mdl_avr_ode!(
     return
 end
 
-
 """
 Model of AVR Type I in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
@@ -72,7 +69,6 @@ function mdl_avr_ode!(
     #Define external states for device
     V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
     Vs = get_inner_vars(device)[V_pss_var]
-
 
     #Get parameters
     avr = PSY.get_avr(device)
@@ -111,8 +107,6 @@ function mdl_avr_ode!(
     return
 end
 
-
-
 """
 Model of AVR Type II in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
@@ -140,7 +134,6 @@ function mdl_avr_ode!(
     #Define external states for device
     V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
     Vs = get_inner_vars(device)[V_pss_var]
-
 
     #Get parameters
     avr = PSY.get_avr(device)

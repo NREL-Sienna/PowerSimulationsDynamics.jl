@@ -26,7 +26,6 @@ function mdl_line_ode!(
     current_r_to[1] -= (1.0 / ω_b) * c_to * dv_to[1] - c_to * V_i_to[1]
     current_i_to[1] -= (1.0 / ω_b) * c_to * dv_to[2] + c_to * V_r_to[1]
 
-
     Il_r = device_states[1]
     Il_i = device_states[2]
     output_ode[1] = (ω_b / L) * ((V_r_from[1] - V_r_to[1]) - (R * Il_r - L * Il_i))

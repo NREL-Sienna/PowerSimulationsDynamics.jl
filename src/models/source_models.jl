@@ -7,7 +7,6 @@ function mdl_source!(
     sys::PSY.System,
 )
 
-
     #Load device parameters
     V_R = PSY.get_V_R(device)
     V_I = PSY.get_V_I(device)

@@ -10,8 +10,6 @@ function mdl_pss_ode!(
     return
 end
 
-
-
 function mdl_pss_ode!(
     device_states,
     output_ode,

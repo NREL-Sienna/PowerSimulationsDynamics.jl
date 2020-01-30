@@ -49,7 +49,6 @@ function device_model!(
 
 end
 
-
 function device_model!(
     voltage_r,
     voltage_i,

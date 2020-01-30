@@ -13,8 +13,6 @@ function mdl_machine_ode!(
     device::PSY.DynamicGenerator{PSY.BaseMachine,S,A,TG,P},
 ) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
 
-
-
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.BaseMachine)
     δ = device_states[external_ix[1]]
@@ -51,8 +49,6 @@ function mdl_machine_ode!(
     return
 end
 
-
-
 """
 Model of 4-state (One d- and One q-) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
@@ -68,9 +64,6 @@ function mdl_machine_ode!(
     device::PSY.DynamicGenerator{PSY.OneDOneQMachine,S,A,TG,P},
 ) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
 
-
-
-
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.OneDOneQMachine)
 
@@ -82,7 +75,6 @@ function mdl_machine_ode!(
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.OneDOneQMachine)
     δ = device_states[external_ix[1]]
-
 
     #Obtain inner variables for component
     V_tR = get_inner_vars(device)[VR_gen_var]
@@ -124,7 +116,6 @@ function mdl_machine_ode!(
 
     return
 end
-
 
 """
 Model of 6-state (MarconatoMachine) synchronous machine in Julia.
@@ -212,8 +203,6 @@ function mdl_machine_ode!(
     return
 end
 
-
-
 """
 Model of 4-state (SimpleMarconatoMachine) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
@@ -286,7 +275,6 @@ function mdl_machine_ode!(
         ((1.0 / Td0_pp) * (-eq_pp + eq_p - (Xd_p - Xd_pp + γd) * i_d + (T_AA / Td0_p) * Vf))       #15.16 eq_pp
     output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (-ed_pp + ed_p + (Xq_p - Xq_pp + γq) * i_q) #15.16 ed_pp
 
-
     #Update inner_vars
     get_inner_vars(device)[τe_var] = τ_e
 
@@ -299,8 +287,6 @@ function mdl_machine_ode!(
 
     return
 end
-
-
 
 """
 Model of 6-state (AndersonFouadMachine) synchronous machine in Julia.
@@ -383,9 +369,6 @@ function mdl_machine_ode!(
     return
 end
 
-
-
-
 """
 Model of 4-state (SimpleAFMachine) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
@@ -465,8 +448,6 @@ function mdl_machine_ode!(
     return
 end
 
-
-
 """
 Model of 5-state (FullOrderMachine) synchronous machine in Julia.
 Refer to Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby,
@@ -523,7 +504,6 @@ function mdl_machine_ode!(
     i_df1d = inv_d_fluxlink * [ψd; ψf; ψ1d]  #11.18 in Machowski (3.127, 3.130 and 3.131 in Kundur)
     i_q1q = inv_q_fluxlink * [ψq; ψ1q]        #11.19 in Machowski (3.128 and 3.132 in Kundur)
 
-
     #Compute ODEs
     output_ode[local_ix[1]] = 2 * pi * f0 * (ψq * ω + R * i_df1d[1] + V_dq[1])  #11.32 in Machowski or 3.120 in Kundur
     output_ode[local_ix[2]] = 2 * pi * f0 * (-ψd * ω + R * i_q1q[1] + V_dq[2])
@@ -550,8 +530,6 @@ function mdl_machine_ode!(
 
     return
 end
-
-
 
 """
 Model of 3-state (FullOrderMachine) synchronous machine in Julia.
@@ -606,7 +584,6 @@ function mdl_machine_ode!(
     #Obtain electric currents] using Flux Linkage equations
     i_df1d = inv_d_fluxlink * [ψd; ψf; ψ1d]  #11.18 in Machowski (3.127, 3.130 and 3.131 in Kundur)
     i_q1q = inv_q_fluxlink * [ψq; ψ1q]        #11.19 in Machowski (3.128 and 3.132 in Kundur)
-
 
     #Compute ODEs
     output_ode[local_ix[1]] = -R_f * i_df1d[2] + Vf      #11.33 in Machowski or 3.123 in Kundur

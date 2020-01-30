@@ -11,7 +11,6 @@ function mdl_tg_ode!(
     return
 end
 
-
 function mdl_tg_ode!(
     device_states,
     output_ode,
@@ -67,9 +66,6 @@ function mdl_tg_ode!(
 
     return
 end
-
-
-
 
 function mdl_tg_ode!(
     device_states,

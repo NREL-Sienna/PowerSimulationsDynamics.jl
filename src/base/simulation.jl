@@ -92,7 +92,6 @@ function _build_perturbations(perturbations::Vector{<:Perturbation})
     return callback_set, tstops
 end
 
-
 function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Float64})
     # TODO: Code to refine initial_guess
     var_count = get_variable_count(sys)
@@ -111,7 +110,6 @@ function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Fl
 
     return sys_solve.zero, NLsolve.converged(sys_solve)
 end
-
 
 function run_simulation!(sim::Simulation, solver; kwargs...)
     if sim.reset
@@ -243,7 +241,6 @@ function _index_dynamic_system!(DAE_vector::Vector{Bool}, sys::PSY.System)
                 sys.global_state_index[getfield(br, :name)] = state_ix
             end
 
-
             for (ix, val) in enumerate(sys.DAE_vector[1:n_buses])
                 if val
                     sys.global_state_index[Symbol("V_$(ix)")] = Dict(:R => ix,
@@ -310,7 +307,6 @@ function get_local_state_ix(
 ) where {T<:PSY.DynamicComponent}
     return _get_internal_mapping(device, LOCAL_STATE_MAPPING, ty)
 end
-
 
 function get_input_port_ix(
     device::PSY.DynamicInjection,
