@@ -105,7 +105,7 @@ function device_model!(x,
    get_inner_vars(device)[VI_inv_var] = voltage_i[1]
 
    #Update V_ref
-   V_ref = PSY.get_V_ref(device)
+   V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
    get_inner_vars(device)[v_control_var] = V_ref
 
    #Obtain ODES for DC side
