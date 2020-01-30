@@ -7,9 +7,10 @@ export DynBranch
 export Simulation
 export run_simulation!
 export ThreePhaseFault
-export ControlStepUp
+export ControlReferenceChange
 export get_state_series
 export get_voltagemag_series
+export print_init_states
 ####################################### Package Imports ####################################
 import DiffEqBase
 import SparseArrays: SparseMatrixCSC
