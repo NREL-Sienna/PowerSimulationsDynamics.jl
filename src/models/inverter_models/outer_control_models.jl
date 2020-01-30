@@ -18,7 +18,6 @@ function mdl_outer_ode!(
     F<:PSY.Filter,
 }
 
-
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(
         device,

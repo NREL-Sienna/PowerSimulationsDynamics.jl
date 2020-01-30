@@ -17,9 +17,8 @@ Function to obtain the voltage magnitude series out of the DAE Solution. It rece
 function get_voltagemag_series(sim::Simulation, bus_number::Int64)
     n_buses = length(PSY.get_components(PSY.Bus, sim.system))
     return sim.solution.t,
-    [sqrt(value[bus_number]^2 + value[bus_number+n_buses]^2) for value in sim.solution.u]
+    [sqrt(value[bus_number]^2 + value[bus_number + n_buses]^2) for value in sim.solution.u]
 end
-
 
 """
 Function to print initial states. It receives the vector of initial states and the dynamical system.

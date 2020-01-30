@@ -23,7 +23,6 @@ function branch_model!(
     sys::PSY.System,
 ) where {DynBr<:DynBranch}
 
-
     #Obtain local device states
     n_states = total_device_states(branch)
     device_states = @view x[ix_range]

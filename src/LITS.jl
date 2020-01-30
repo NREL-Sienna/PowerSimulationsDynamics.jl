@@ -26,14 +26,12 @@ include("base/ports.jl")
 include("perturbations/perturbations.jl")
 include("base/simulation.jl")
 
-
 #Common Models
 include("models/branch_model.jl")
 include("models/device_model.jl")
 include("models/kcl.jl")
 include("models/dynline_model.jl")
 include("models/ref_transformations.jl")
-
 
 #Generator Component Models
 include("models/generator_models/machine_models.jl")
