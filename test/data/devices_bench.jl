@@ -30,7 +30,6 @@ Shaft3_benchmark = SingleMass(
     0.0,
 ) #D
 
-
 no_pss = PSSFixed(0.0)
 
 fixed_tg = TGFixed(1.0) #eff
@@ -99,7 +98,6 @@ inf_gen_benchmark = StaticSource(
     0.0, #VI
     0.000001,
 ) #Xth
-
 
 ThreeBus_Benchmark = PSY.System(
     nodes_benchmark, #buses

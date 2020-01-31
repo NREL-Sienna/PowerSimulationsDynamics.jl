@@ -29,7 +29,6 @@ inf_gen_case5 = StaticSource(
     0.000001,
 ) #Xth
 
-
 """
 Generators data
 """
@@ -43,8 +42,6 @@ case1_machine = BaseMachine(
     0.7087, #eq_p
     100.0,
 )  #MVABase
-
-
 
 ### Case 2: 4th Order Model with AVR (3-bus case) ###
 case2_machine2 = OneDOneQMachine(
@@ -118,7 +115,6 @@ case4_machine2 = MarconatoMachine(
     0.0, #T_AA
     100.0,
 ) #MVABase
-
 
 case4_machine3 = MarconatoMachine(
     0.0,
@@ -239,10 +235,6 @@ case2345_avr3 = AVRTypeI(
     1.555,
 ) #Be - 2nd ceiling coefficient
 
-
-
-
-
 ######################### Generators ########################
 
 ### Case 1 Generator ###
@@ -259,7 +251,6 @@ case1_gen = PSY.DynamicGenerator(
     case1234_no_tg, #tg
     cases_no_pss,
 ) #pss
-
 
 ### Case 2 Generators ###
 case2_gen2 = PSY.DynamicGenerator(
@@ -319,7 +310,6 @@ case3_gen3 = PSY.DynamicGenerator(
     cases_no_pss,
 ) #pss
 
-
 ### Case 4 Generators ###
 case4_gen2 = PSY.DynamicGenerator(
     1, #Number
@@ -365,9 +355,6 @@ case5_gen = PSY.DynamicGenerator(
     cases_no_pss,
 ) #pss
 
-
-
-
 ######################### Dynamical System ########################
 
 case1_DynSystem = PSY.System(
@@ -379,7 +366,6 @@ case1_DynSystem = PSY.System(
     60.0,
 )
 
-
 case2_DynSystem = PSY.System(
     nodes_case234,
     branch_case234,
@@ -388,7 +374,6 @@ case2_DynSystem = PSY.System(
     100.0,
     60.0,
 )
-
 
 case3_DynSystem = PSY.System(
     nodes_case234,

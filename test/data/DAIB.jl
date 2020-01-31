@@ -14,7 +14,6 @@ nodes_DAIB = [
     Bus(2, "Bus 2", "PV", 0, 1.0, (min = 0.94, max = 1.06), 0.69),
 ]
 
-
 branch_DAIB = [Line(
     "Line1", #name
     true, #available
