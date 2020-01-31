@@ -52,6 +52,7 @@ Gen1AVR = PSY.DynamicGenerator(
     1.0, # ω_ref,
     1.05,
     0.4,
+    0.0,
     Basic,
     BaseShaft,
     proportional_avr, #avr
@@ -66,6 +67,7 @@ Gen2AVR = PSY.DynamicGenerator(
     1.0, # ω_ref,
     1.05,
     0.4,
+    0.0,
     Basic,
     BaseShaft,
     proportional_avr, #avr
