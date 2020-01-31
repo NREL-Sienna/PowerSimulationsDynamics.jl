@@ -103,7 +103,13 @@ function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Fl
         sys,    #Parameters
         0.0,
     )    #time equals to zero.
-    sys_solve = NLsolve.nlsolve(inif!, initial_guess) #Solve using initial guess x0
+    sys_solve = NLsolve.nlsolve(
+        inif!,
+        initial_guess,
+        xtol = :1e-9,
+        ftol = :1e-9,
+        method = :trust_region,
+    ) #Solve using initial guess x0
     if !NLsolve.converged(sys_solve)
         @warn("Initialization failed, initial conditions do not meet conditions for an stable equilibrium")
     end
