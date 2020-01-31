@@ -143,12 +143,12 @@ function _attach_ports!(component::PSY.DynamicComponent)
 end
 
 function _attach_inner_vars!(device::PSY.DynamicGenerator)
-    device.ext[INNER_VARS] = zeros(8)
+    device.ext[INNER_VARS] = zeros(Real, 8)
     return
 end
 
 function _attach_inner_vars!(device::PSY.DynamicInverter)
-    device.ext[INNER_VARS] = zeros(13)
+    device.ext[INNER_VARS] = zeros(Real, 13)
     return
 end
 

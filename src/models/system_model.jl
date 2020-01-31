@@ -1,8 +1,8 @@
-function system_model!(out, dx, x, sys, t)
+function system_model!(out::Vector{T}, dx, x, sys, t) where {T<:Real}
 
     #Index Setup
     bus_size = length(PSY.get_components(PSY.Bus, sys))
-    bus_range = 1:(2 * bus_size)
+    bus_range = 1:(2*bus_size)
     bus_vars_count = length(bus_range)
     injection_start = get_injection_pointer(sys)
     injection_count = 1
@@ -11,12 +11,12 @@ function system_model!(out, dx, x, sys, t)
 
     #Network quantities
     V_r = @view x[1:bus_size]
-    V_i = @view x[(bus_size + 1):bus_vars_count]
+    V_i = @view x[(bus_size+1):bus_vars_count]
     Sbase = PSY.get_basepower(sys)
-    I_injections_r = zeros(bus_size)
-    I_injections_i = zeros(bus_size)
-    injection_ode = zeros(get_n_injection_states(sys))
-    branches_ode = zeros(get_n_branches_states(sys))
+    I_injections_r = zeros(T, bus_size)
+    I_injections_i = zeros(T, bus_size)
+    injection_ode = zeros(T, get_n_injection_states(sys))
+    branches_ode = zeros(T, get_n_branches_states(sys))
 
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         bus_n = PSY.get_number(PSY.get_bus(d)) # TODO: This requires that the bus numbers are indexed 1-N
