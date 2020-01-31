@@ -29,6 +29,7 @@ docs/site/
 *.ipynb
 
 Manifest.toml
+.vscode
 
 ################################################################################
 #                              Operating systems                               #
