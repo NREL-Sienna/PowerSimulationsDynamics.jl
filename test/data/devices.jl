@@ -90,7 +90,6 @@ Mach3_benchmark = OneDOneQMachine(
     100.0,
 )   #MVABase
 
-
 ################ Shaft Data #####################
 BaseShaft = SingleMass(
     5.148, #H
@@ -157,7 +156,6 @@ typeII_tg = TGTypeII(
     1.0, #τ_max
     0.1,
 ) #τ_min
-
 
 ################ AVR Data #####################
 proportional_avr = AVRSimple(5000.0) #Kv
@@ -355,7 +353,6 @@ GenFullKundur = PSY.DynamicGenerator(
     no_pss,
 ) #pss
 
-
 Gen2_benchmark = PSY.DynamicGenerator(
     1, #number
     :Gen1, #name
@@ -461,7 +458,6 @@ inf_gen_benchmark = StaticSource(
     0.0, #VI
     0.000001,
 ) #Xth
-
 
 ################### StaticSources #####################
 
