@@ -237,6 +237,7 @@ end
         1.0, # ω_ref,
         1.05,
         0.4,
+        0.0,
         Basic,
         BaseShaft,
         proportional_avr, #avr
@@ -252,6 +253,7 @@ end
         1.0, # ω_ref,
         1.05,
         0.4,
+        0.0,
         Basic,
         BaseShaft,
         fixed_avr, #avr
@@ -267,6 +269,7 @@ end
         1.0, # ω_ref,
         1.02,
         0.4,
+        0.0,
         oneDoneQ,
         BaseShaft,
         fixed_avr, #avr
@@ -282,6 +285,7 @@ end
         1.0, # ω_ref,
         1.02,
         0.4,
+        0.0,
         oneDoneQ,
         BaseShaft,
         proportional_avr, #avr
