@@ -64,7 +64,6 @@ nodes_OMIB = [
     ) #MVABase
     @test KundurMachine isa PSY.DynamicComponent
 
-
     KundurFullMachine = PSY.FullMachine(
         0.003, #R on Example 3.1 and 4.1 of Kundur
         0.0006, #R_f

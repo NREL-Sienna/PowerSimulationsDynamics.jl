@@ -10,107 +10,126 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 
 ############### Data Network ########################
 
-nodes_DAIB= [PSY.Bus(1 , #number
-                 "Bus 1", #Name
-                 "REF" , #BusType (REF, PV, PQ)
-                 0, #Angle in radians
-                 1.04, #Voltage in pu
-                 (min=0.94, max=1.06), #Voltage limits in pu
-                 0.69),  #Base voltage in kV
-                 PSY.Bus(2 , "Bus 2"  , "PV" ,  0 , 1.0 , (min=0.94, max=1.06), 0.69)]
+nodes_DAIB = [
+    PSY.Bus(
+        1, #number
+        "Bus 1", #Name
+        "REF", #BusType (REF, PV, PQ)
+        0, #Angle in radians
+        1.04, #Voltage in pu
+        (min = 0.94, max = 1.06), #Voltage limits in pu
+        0.69,
+    ),  #Base voltage in kV
+    PSY.Bus(2, "Bus 2", "PV", 0, 1.0, (min = 0.94, max = 1.06), 0.69),
+]
 
-
-branch_DAIB = [PSY.Line("Line1", #name
-                    true, #available
-                    0.0, #active power flow initial condition (from-to)
-                    0.0, #reactive power flow initial condition (from-to)
-                    Arc(from=nodes_DAIB[1],to=nodes_DAIB[2]), #Connection between buses
-                    0.0, #resistance in pu
-                    0.075, #reactance in pu
-                    (from=0.0, to=0.0), #susceptance in pu
-                    5.0, #rate in MW
-                    1.04)]  #angle limits (-min and max)
+branch_DAIB = [PSY.Line(
+    "Line1", #name
+    true, #available
+    0.0, #active power flow initial condition (from-to)
+    0.0, #reactive power flow initial condition (from-to)
+    Arc(from = nodes_DAIB[1], to = nodes_DAIB[2]), #Connection between buses
+    0.0, #resistance in pu
+    0.075, #reactance in pu
+    (from = 0.0, to = 0.0), #susceptance in pu
+    5.0, #rate in MW
+    1.04,
+)]  #angle limits (-min and max)
 
 ############### Data devices ########################
 
-inf_gen_DAIB = PSY.Source("InfBus", #name
-                    true, #availability
-                    nodes_DAIB[1],#bus
-                    1.00, #VR
-                    0.0, #VI
-                    0.000005) #Xth
+inf_gen_DAIB = PSY.Source(
+    "InfBus", #name
+    true, #availability
+    nodes_DAIB[1],#bus
+    1.00, #VR
+    0.0, #VI
+    0.000005,
+) #Xth
 
 ############### Inverter Data ########################
 
-converter = PSY.AvgCnvFixedDC(690.0, #Rated Voltage
-                          2.75) #Rated MVA
+converter = PSY.AvgCnvFixedDC(
+    690.0, #Rated Voltage
+    2.75,
+) #Rated MVA
 
 dc_source = PSY.FixedDCSource(600.0) #Not in the original data, guessed.
 
-filt = PSY.LCLFilter(0.08, #Series inductance lf in pu
-                   0.003, #Series resitance rf in pu
-                   0.074, #Shunt capacitance cf in pu
-                   0.2, #Series ractance rg to grid connection (#Step up transformer or similar)
-                   0.01) #Series resistance lg to grid connection (#Step up transformer or similar)
+filt = PSY.LCLFilter(
+    0.08, #Series inductance lf in pu
+    0.003, #Series resitance rf in pu
+    0.074, #Shunt capacitance cf in pu
+    0.2, #Series ractance rg to grid connection (#Step up transformer or similar)
+    0.01,
+) #Series resistance lg to grid connection (#Step up transformer or similar)
 
-pll = PSY.PLL(500.0, #ω_lp: Cut-off frequency for LowPass filter of PLL filter.
-          0.084, #k_p: PLL proportional gain
-          4.69) #k_i: PLL integral gain
+pll = PSY.PLL(
+    500.0, #ω_lp: Cut-off frequency for LowPass filter of PLL filter.
+    0.084, #k_p: PLL proportional gain
+    4.69,
+) #k_i: PLL integral gain
 
-virtual_H = PSY.VirtualInertia(2.0, #Ta:: VSM inertia constant
-                           400.0, #kd:: VSM damping coefficient
-                           20.0, #kω:: Frequency droop gain in pu
-                           2*pi*50.0) #ωb:: Rated angular frequency
+virtual_H = PSY.VirtualInertia(
+    2.0, #Ta:: VSM inertia constant
+    400.0, #kd:: VSM damping coefficient
+    20.0, #kω:: Frequency droop gain in pu
+    2 * pi * 50.0,
+) #ωb:: Rated angular frequency
 
-Q_control = PSY.ReactivePowerDroop(0.2, #kq:: Reactive power droop gain in pu
-                              1000.0) #ωf:: Reactive power cut-off low pass filter frequency
+Q_control = PSY.ReactivePowerDroop(
+    0.2, #kq:: Reactive power droop gain in pu
+    1000.0,
+) #ωf:: Reactive power cut-off low pass filter frequency
 
 outer_control = PSY.VirtualInertiaQdroop(virtual_H, Q_control)
 
-vsc = PSY.CombinedVIwithVZ(0.59, #kpv:: Voltage controller proportional gain
-                       736.0, #kiv:: Voltage controller integral gain
-                       0.0, #kffv:: Binary variable enabling the voltage feed-forward in output of current controllers
-                       0.0, #rv:: Virtual resistance in pu
-                       0.2, #lv: Virtual inductance in pu
-                       1.27, #kpc:: Current controller proportional gain
-                       14.3, #kiv:: Current controller integral gain
-                       0.0, #kffi:: Binary variable enabling the current feed-forward in output of current controllers
-                       50.0, #ωad:: Active damping low pass filter cut-off frequency
-                       0.2) #kad:: Active damping gain
+vsc = PSY.CombinedVIwithVZ(
+    0.59, #kpv:: Voltage controller proportional gain
+    736.0, #kiv:: Voltage controller integral gain
+    0.0, #kffv:: Binary variable enabling the voltage feed-forward in output of current controllers
+    0.0, #rv:: Virtual resistance in pu
+    0.2, #lv: Virtual inductance in pu
+    1.27, #kpc:: Current controller proportional gain
+    14.3, #kiv:: Current controller integral gain
+    0.0, #kffi:: Binary variable enabling the current feed-forward in output of current controllers
+    50.0, #ωad:: Active damping low pass filter cut-off frequency
+    0.2,
+) #kad:: Active damping gain
 
-Darco_Inverter = PSY.DynamicInverter(1, #number
-                             "DARCO", #name
-                             nodes_DAIB[2], #bus location
-                             1.0, #ω_ref
-                             1.02, #V_ref
-                             0.5, #P_ref
-                             0.0, #Q_ref
-                             2.75, #MVABase
-                             converter, #Converter
-                             outer_control, #OuterControl
-                             vsc, #Voltage Source Controller
-                             dc_source, #DC Source
-                             pll, #Frequency Estimator
-                             filt) #Output Filter
-
+Darco_Inverter = PSY.DynamicInverter(
+    1, #number
+    "DARCO", #name
+    nodes_DAIB[2], #bus location
+    1.0, #ω_ref
+    1.02, #V_ref
+    0.5, #P_ref
+    0.0, #Q_ref
+    2.75, #MVABase
+    converter, #Converter
+    outer_control, #OuterControl
+    vsc, #Voltage Source Controller
+    dc_source, #DC Source
+    pll, #Frequency Estimator
+    filt,
+) #Output Filter
 
 ######################### Dynamical System ########################
 
 #Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-sys = PSY.System(100, frequency=50.0)
+sys = PSY.System(100, frequency = 50.0)
 #Add buses
 for bus in nodes_DAIB
-    PSY.add_component!(sys,bus)
+    PSY.add_component!(sys, bus)
 end
 #Add lines
 for lines in branch_DAIB
-    PSY.add_component!(sys,lines)
+    PSY.add_component!(sys, lines)
 end
 #Add infinite source
-PSY.add_component!(sys,inf_gen_DAIB)
+PSY.add_component!(sys, inf_gen_DAIB)
 #Add inverter
-PSY.add_component!(sys,Darco_Inverter)
-
+PSY.add_component!(sys, Darco_Inverter)
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -120,30 +139,31 @@ PSY.add_component!(sys,Darco_Inverter)
 tspan = (0.0, 4.0);
 
 #Initial guess
-x0_guess = [1.00, #V1_R
-          1.0648, #V2_R
-          0.0, #V1_I
-          0.001, #V2_I
-          0.0, #δω_vsm
-          0.2, #δθ_vsm
-          0.025, #qm
-          0.0015, #ξ_d
-          -0.07, #ξ_q
-          0.05, #γ_d
-        -0.001, #γ_q
-         0.95, #ϕ_d
-         -0.10, #ϕ_q
-         1.004, #vpll_d
-         0.0, #vpll_q
-         0.0, #ε_pll
-         0.1, #δθ_pll
-         0.5, #id_cv
-         0.0, #iq_cv
-         0.95, #vod
-         -0.1, #voq
-         0.49, #iod
-        -0.1] #ioq
-
+x0_guess = [
+    1.00, #V1_R
+    1.0648, #V2_R
+    0.0, #V1_I
+    0.001, #V2_I
+    0.0, #δω_vsm
+    0.2, #δθ_vsm
+    0.025, #qm
+    0.0015, #ξ_d
+    -0.07, #ξ_q
+    0.05, #γ_d
+    -0.001, #γ_q
+    0.95, #ϕ_d
+    -0.10, #ϕ_q
+    1.004, #vpll_d
+    0.0, #vpll_q
+    0.0, #ε_pll
+    0.1, #δθ_pll
+    0.5, #id_cv
+    0.0, #iq_cv
+    0.95, #vod
+    -0.1, #voq
+    0.49, #iod
+    -0.1,
+] #ioq
 
 #Define Fault using Callbacks
 Pref_change = LITS.ControlReferenceChange(1.0, Darco_Inverter, LITS.P_ref_index, 0.7)

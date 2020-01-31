@@ -139,7 +139,6 @@ test_inverter = PSY.DynamicInverter(
     filt,
 ); #Output Filter
 
-
 @testset "Dynamic Generator in System" begin
 
     sys = PSY.System(100)
