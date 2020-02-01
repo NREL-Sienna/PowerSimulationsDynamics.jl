@@ -114,21 +114,6 @@ function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Fl
     return sys_solve.zero, NLsolve.converged(sys_solve)
 end
 
-function run_simulation!(sim::Simulation, solver; kwargs...)
-    if sim.reset
-        @error("Reset the simulation")
-    end
-
-    sim.solution = DiffEqBase.solve(
-        sim.problem,
-        solver;
-        callback = sim.callbacks,
-        tstops = sim.tstops,
-        kwargs...,
-    )
-    return
-end
-
 function _index_local_states!(
     component_state_index::Vector{Int64},
     local_states::Vector{Symbol},
@@ -145,13 +130,19 @@ function _attach_ports!(component::PSY.DynamicComponent)
     return
 end
 
-function _attach_inner_vars!(device::PSY.DynamicGenerator)
-    device.ext[INNER_VARS] = zeros(Real, 8)
+function _attach_inner_vars!(
+    device::PSY.DynamicGenerator,
+    ::Type{T} = Float64,
+) where {T<:Real}
+    device.ext[INNER_VARS] = zeros(T, 8)
     return
 end
 
-function _attach_inner_vars!(device::PSY.DynamicInverter)
-    device.ext[INNER_VARS] = zeros(Real, 13)
+function _attach_inner_vars!(
+    device::PSY.DynamicInverter,
+    ::Type{T} = Float64,
+) where {T<:Real}
+    device.ext[INNER_VARS] = zeros(T, 13)
     return
 end
 
@@ -317,4 +308,53 @@ function get_input_port_ix(
     ty::Type{T},
 ) where {T<:PSY.DynamicComponent}
     return _get_internal_mapping(device, INPUT_PORT_MAPPING, ty)
+end
+
+function run_simulation!(sim::Simulation, solver; kwargs...)
+    if sim.reset
+        @error("Reset the simulation")
+    end
+
+    sim.solution = DiffEqBase.solve(
+        sim.problem,
+        solver;
+        callback = sim.callbacks,
+        tstops = sim.tstops,
+        kwargs...,
+    )
+    return
+end
+
+function _change_vector_type(sys::PSY.System)
+    for d in PSY.get_components(PSY.DynamicInjection, sys)
+        _attach_inner_vars!(d, Real)
+    end
+end
+
+function _determine_stability(vals::Vector{Complex{Float64}})
+    for real_eig in real(vals)
+        real_eig >= 0.0 && return false
+    end
+    return true
+end
+
+function small_signal_analysis(sim::Simulation; kwargs...)
+    if sim.reset
+        @error("Reset the simulation")
+    end
+    _change_vector_type(sim.system)
+    var_count = LITS.get_variable_count(sim.system)
+    dx0 = zeros(var_count) #Define a vector of zeros for the derivative
+    sysf! = (out, x) -> LITS.system_model!(
+        out,            #output of the function
+        dx0,            #derivatives equal to zero
+        x,              #states
+        sim.system,     #Parameters
+        0.0,            #time equals to zero.
+    )
+    out = zeros(var_count) #Define a vector of zeros for the output
+    x_eval = get(kwargs, :operating_point, sim.x0_init)
+    res = ForwardDiff.jacobian(sysf!, out, x_eval)
+    vals, vect = eigen(res)
+    return SmallSignalOutput(res, vals, vect, _determine_stability(vals), x_eval)
 end
