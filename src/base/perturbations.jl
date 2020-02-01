@@ -2,7 +2,7 @@ abstract type Perturbation end
 
 struct ThreePhaseFault <: Perturbation
     time::Float64
-    Ybus #::SparseMatrixCSC{Complex{Float64}, Int64}
+    Ybus::SparseMatrixCSC{Complex{Float64},Int64}
 end
 
 get_affect(pert::ThreePhaseFault) =
@@ -17,7 +17,7 @@ end
 
 function get_affect(pert::ControlReferenceChange)
     return (integrator) -> begin
-        return PSY.get_ext(pert.device)[CONTROL_REFS][pert.signal_index] =
-                pert.ref_value
+        control_ref = PSY.get_ext(pert.device)[CONTROL_REFS]
+        return control_ref[pert.signal_index] = pert.ref_value
     end
 end
