@@ -105,8 +105,6 @@ machine_full_kundur() = PSY.FullMachine(
     555.0,
 ) #MVABase
 
-
-
 ######## Shaft Data #########
 
 shaft_damping() = PSY.SingleMass(
@@ -140,11 +138,9 @@ shaft_fivemass() = PSY.FiveMassShaft(
     21.984,
 ) #K_ex
 
-
 ######## PSS Data #########
 
 pss_none() = PSY.PSSFixed(0.0)
-
 
 ######## TG Data #########
 
@@ -169,7 +165,6 @@ tg_type2() = PSY.TGTypeII(
     0.1,
 ) #τ_min
 
-
 ########  AVR Data #########
 
 avr_none() = PSY.AVRFixed(0.0)
@@ -192,7 +187,7 @@ avr_type1() = PSY.AVRTypeI(
     1.555,
 ) #Be - 2nd ceiling coefficient
 
-avr_type2() =  PSY.AVRTypeII(
+avr_type2() = PSY.AVRTypeII(
     20.0, #K0 - Gain
     0.2, #T1 - 1st pole
     0.063, #T2 - 1st zero
@@ -205,7 +200,6 @@ avr_type2() =  PSY.AVRTypeII(
     0.0039, #Ae - 1st ceiling coefficient
     1.555,
 ) #Be - 2nd ceiling coefficient
-
 
 ###### Dynamic Generators constructors ######
 
@@ -383,7 +377,6 @@ end
 ############# Inverters ##############
 ######################################
 
-
 ###### Converter Data ######
 
 converter_DAIB() = PSY.AvgCnvFixedDC(
@@ -412,7 +405,6 @@ filter_test() = PSY.LCLFilter(
     0.01,
 ) #Series resistance lg to grid connection (#Step up transformer or similar)
 
-
 ###### PLL Data ######
 
 pll_test() = PSY.PLL(
@@ -435,7 +427,8 @@ reactive_droop_test() = PSY.ReactivePowerDroop(
     1000.0,
 ) #ωf:: Reactive power cut-off low pass filter frequency
 
-outer_control_test() = PSY.VirtualInertiaQdroop(virtual_inertia_test(), reactive_droop_test())
+outer_control_test() =
+    PSY.VirtualInertiaQdroop(virtual_inertia_test(), reactive_droop_test())
 
 ######## Inner Control ######
 
@@ -451,7 +444,6 @@ vsc_test() = PSY.CombinedVIwithVZ(
     50.0, #ωad:: Active damping low pass filter cut-off frequency
     0.2,
 ) #kad:: Active damping gain
-
 
 ###### Inverters constructors ######
 
