@@ -34,35 +34,21 @@ case8_inv = inv_case78(nodes_case8)
 ######################### Dynamical System ########################
 
 #Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-sys = PSY.System(100.0, frequency = 50.0)
-
-#Add buses
-for bus in nodes_case8
-    PSY.add_component!(sys, bus)
-end
-
-#Add lines
-for lines in branch_case8
-    PSY.add_component!(sys, lines)
-end
-
-#Add loads
-for loads in loads_case8
-    PSY.add_component!(sys, loads)
-end
-
-#Add infinite source
-PSY.add_component!(sys, inf_gen_case8)
-
-#Add inverter
-PSY.add_component!(sys, case8_inv)
-
-#Add generator
-PSY.add_component!(sys, case8_gen)
+sys = system_50Hz(
+    nodes_case8,
+    branch_case8,
+    loads_case8,
+    [inf_gen_case8],
+    [case8_inv],
+    [case8_gen],
+)
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
+
+#Compute Y_bus after fault
+Ybus_fault = get_admittance_matrix(nodes_case8, branch_case8_fault)
 
 #time span
 tspan = (0.0, 20.0)
@@ -103,21 +89,6 @@ x0_guess = [
     -0.39, #Vr2,
     1.0,
 ] #Vm
-
-#Compute Y_bus after fault
-sys2 = PSY.System(100.0, frequency = 50.0);
-
-#Add buses
-for bus in nodes_case8
-    PSY.add_component!(sys2, bus)
-end
-
-#Add lines
-for lines in branch_case8_fault
-    PSY.add_component!(sys2, lines)
-end
-
-Ybus_fault = PSY.Ybus(sys2)[:, :]
 
 #Define Fault: Change of YBus
 Ybus_change = LITS.ThreePhaseFault(

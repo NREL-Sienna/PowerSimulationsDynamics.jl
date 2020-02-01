@@ -31,44 +31,14 @@ case5_gen = dyn_gen_case5(nodes_case5)
 ######################### Dynamical System ########################
 
 #Create system with BasePower = 100 MVA and nominal frequency 60 Hz.
-sys = PSY.System(100.0, frequency = 60.0);
-
-#Add buses
-for bus in nodes_case5
-    PSY.add_component!(sys, bus)
-end
-
-#Add lines
-for lines in branch_case5
-    PSY.add_component!(sys, lines)
-end
-
-#Add loads
-for loads in loads_case5
-    PSY.add_component!(sys, loads)
-end
-
-#Add infinite source
-PSY.add_component!(sys, inf_gen_case5)
-
-#Add generators
-PSY.add_component!(sys, case5_gen)
+sys = system_no_inv(nodes_case5, branch_case5, loads_case5, [inf_gen_case5], [case5_gen])
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
 #Compute Y_bus after fault
-sys2 = PSY.System(100.0, frequency = 60.0);
-#Add buses
-for bus in nodes_case5
-    PSY.add_component!(sys2, bus)
-end
-#Add lines
-for lines in branch_case5_fault
-    PSY.add_component!(sys2, lines)
-end
-Ybus_fault = PSY.Ybus(sys2)[:, :]
+Ybus_fault = get_admittance_matrix(nodes_case5, branch_case5_fault)
 
 #time span
 tspan = (0.0, 20.0);

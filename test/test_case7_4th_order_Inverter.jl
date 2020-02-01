@@ -34,31 +34,14 @@ case7_inv = inv_case78(nodes_case7)
 ######################### Dynamical System ########################
 
 #Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-sys = PSY.System(100, frequency = 50.0)
-
-#Add buses
-for bus in nodes_case7
-    PSY.add_component!(sys, bus)
-end
-
-#Add lines
-for lines in branch_case7
-    PSY.add_component!(sys, lines)
-end
-
-#Add loads
-for loads in loads_case7
-    PSY.add_component!(sys, loads)
-end
-
-#Add infinite source
-PSY.add_component!(sys, inf_gen_case7)
-
-#Add inverter
-PSY.add_component!(sys, case7_inv)
-
-#Add generator
-PSY.add_component!(sys, case7_gen)
+sys = system_50Hz(
+    nodes_case7,
+    branch_case7,
+    loads_case7,
+    [inf_gen_case7],
+    [case7_inv],
+    [case7_gen],
+)
 
 ##################################################
 ############### SOLVE PROBLEM ####################
