@@ -1,7 +1,6 @@
 using PowerSystems
 const PSY = PowerSystems
 
-
 ############### Buses Data ########################
 
 nodes_OMIB() = [
@@ -16,7 +15,6 @@ nodes_OMIB() = [
     ), #Base voltage in kV
     PSY.Bus(2, "Bus 2", "PV", 0, 1.0, (min = 0.94, max = 1.06), 69),
 ]
-
 
 nodes_3bus() = [
     PSY.Bus(1, "Bus 1", "REF", 0, 1.02, (min = 0.94, max = 1.06), 138),
@@ -43,9 +41,7 @@ nodes_DArco_IB() = [
     PSY.Bus(2, "Bus 2", "PV", 0, 1.0, (min = 0.94, max = 1.06), 0.69),
 ]
 
-
 ############### Branches Data ########################
-
 
 branches_OMIB(nodes_OMIB) = [PSY.Line(
     "Line1", #name
@@ -230,7 +226,6 @@ branches_DArco_IB(nodes_DArco_IB) = [PSY.Line(
     1.04,
 )]  #angle limits (-min and max)
 
-
 branches_3lines_case8(nodes_3bus) = [
     PSY.Line(
         "Line1",
@@ -309,7 +304,6 @@ branches_3lines_case8_fault(nodes_3bus) = [
     ),
 ]
 
-
 ############### Load Data ########################
 
 loads_OMIB(nodes_OMIB) = [PSY.PowerLoad(
@@ -323,7 +317,6 @@ loads_OMIB(nodes_OMIB) = [PSY.PowerLoad(
     0.01,
 )] #Q_max
 
-
 loads_3bus(nodes_3bus) = [
     PSY.PowerLoad("Bus1", true, nodes_3bus[1], PSY.ConstantPower, 1.5, 0.8, 1.5, 0.8),
     PSY.PowerLoad("Bus2", true, nodes_3bus[2], PSY.ConstantPower, 1.5, 0.7, 1.5, 0.8),
@@ -334,7 +327,6 @@ loads_3bus_case5(nodes_3bus) = [
     PSY.PowerLoad("Bus2", true, nodes_3bus[2], PSY.ConstantPower, 0.3, 0.05, 0.3, 0.05),
     PSY.PowerLoad("Bus3", true, nodes_3bus[3], PSY.ConstantPower, 0.3, 0.05, 0.3, 0.05),
 ]
-
 
 loads_3bus_case7(nodes_3bus) = [
     PSY.PowerLoad("Bus1", true, nodes_3bus[1], PSY.ConstantPower, 0.5, 0.1, 1.5, 0.8),
@@ -347,7 +339,6 @@ loads_3bus_case8(nodes_3bus) = [
     PSY.PowerLoad("Bus2", true, nodes_3bus[2], PSY.ConstantPower, 1.0, 0.3, 1.5, 0.8),
     PSY.PowerLoad("Bus3", true, nodes_3bus[3], PSY.ConstantPower, 0.3, 0.1, 0.5, 0.3),
 ]
-
 
 ############### Infinite Sources Data ########################
 
