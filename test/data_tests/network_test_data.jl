@@ -368,3 +368,18 @@ inf_gen_105_pu(nodes) = PSY.Source(
     0.0, #VI
     0.000001,
 ) #Xth
+
+############# Obtain Ybus ###########
+
+function get_admittance_matrix(nodes, branches)
+    sys2 = PSY.System(100.0, frequency = 60.0)
+    for bus in nodes
+        PSY.add_component!(sys2, bus)
+    end
+
+    #Add lines
+    for lines in branches
+        PSY.add_component!(sys2, lines)
+    end
+    return PSY.Ybus(sys2)[:, :]
+end

@@ -25,19 +25,7 @@ Darco_Inverter = inv_DAIB(nodes_DAIB)
 ######################### Dynamical System ########################
 
 #Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-sys = PSY.System(100, frequency = 50.0)
-#Add buses
-for bus in nodes_DAIB
-    PSY.add_component!(sys, bus)
-end
-#Add lines
-for lines in branch_DAIB
-    PSY.add_component!(sys, lines)
-end
-#Add infinite source
-PSY.add_component!(sys, inf_gen_DAIB)
-#Add inverter
-PSY.add_component!(sys, Darco_Inverter)
+sys = system_DAIB(nodes_DAIB, branch_DAIB, [inf_gen_DAIB], [Darco_Inverter])
 
 ##################################################
 ############### SOLVE PROBLEM ####################
