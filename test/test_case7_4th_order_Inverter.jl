@@ -10,251 +10,26 @@ The perturbation increase the reference power (analogy for mechanical power) of 
 
 ############### Data Network ########################
 
-nodes_case7 = [
-    PSY.Bus(1, "Bus 1", "REF", 0, 1.02, (min = 0.94, max = 1.06), 138),
-    PSY.Bus(2, "Bus 2", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138),
-    PSY.Bus(3, "Bus 3", "PQ", 0, 1.00, (min = 0.94, max = 1.06), 138),
-]
+nodes_case7 = nodes_3bus()
 
-branch_case7 = [
-    PSY.Line(
-        "Line1",
-        true,
-        0.0,
-        0.0,
-        Arc(from = nodes_case7[1], to = nodes_case7[3]),
-        0.01,
-        0.12,
-        (from = 0.0, to = 0.0),
-        100,
-        1.04,
-    ),
-    PSY.Line(
-        "Line2",
-        true,
-        0.0,
-        0.0,
-        Arc(from = nodes_case7[1], to = nodes_case7[2]),
-        0.01,
-        0.12,
-        (from = 0.0, to = 0.0),
-        100,
-        1.04,
-    ),
-    PSY.Line(
-        "Line3",
-        true,
-        0.0,
-        0.0,
-        Arc(from = nodes_case7[2], to = nodes_case7[3]),
-        0.01,
-        0.12,
-        (from = 0.0, to = 0.0),
-        100,
-        1.04,
-    ),
-]
+branch_case7 = branches_3lines(nodes_case7)
 
 #Trip of Line 1.
-branch_case7_fault = [
-    PSY.Line(
-        "Line2",
-        true,
-        0.0,
-        0.0,
-        Arc(from = nodes_case7[1], to = nodes_case7[2]),
-        0.01,
-        0.12,
-        (from = 0.0, to = 0.0),
-        100,
-        1.04,
-    ),
-    PSY.Line(
-        "Line3",
-        true,
-        0.0,
-        0.0,
-        Arc(from = nodes_case7[2], to = nodes_case7[3]),
-        0.01,
-        0.12,
-        (from = 0.0, to = 0.0),
-        100,
-        1.04,
-    ),
-]
+branch_case7_fault = branches_3lines_fault(nodes_case7)
 
-loads_case7 = [
-    PSY.PowerLoad(
-        "Bus1",
-        true,
-        nodes_case7[1],
-        PowerSystems.ConstantPower,
-        0.5,
-        0.1,
-        1.5,
-        0.8,
-    ),
-    PSY.PowerLoad(
-        "Bus2",
-        true,
-        nodes_case7[2],
-        PowerSystems.ConstantPower,
-        1.0,
-        0.3,
-        1.5,
-        0.8,
-    ),
-    PSY.PowerLoad(
-        "Bus3",
-        true,
-        nodes_case7[3],
-        PowerSystems.ConstantPower,
-        0.3,
-        0.1,
-        0.5,
-        0.3,
-    ),
-]
+loads_case7 = loads_3bus_case7(nodes_case7)
 
 ############### Data devices ########################
 
-inf_gen_case7 = PSY.Source(
-    "InfBus", #name
-    true, #availability
-    nodes_case7[1],#bus
-    1.00, #VR
-    0.0, #VI
-    0.000005,
-) #Xth
-
-######## Machine Data #########
-
-### Case 2: 4th Order Model with AVR (3-bus case) ###
-case7_machine = PSY.OneDOneQMachine(
-    0.0, #R
-    1.3125, #Xd
-    1.2578, #Xq
-    0.1813, #Xd_p
-    0.25, #Xq_p
-    5.89, #Td0_p
-    0.6, #Tq0_p
-    100.0,
-)   #MVABase
-
-######## Shaft Data #########
-
-### Shafts for Gen ###
-case7_shaft = PSY.SingleMass(
-    3.01, #H (M = 6.02 -> H = M/2)
-    0.0,
-) #D
-
-######## PSS Data #########
-cases_no_pss = PSY.PSSFixed(0.0)
-
-######## TG Data #########
-
-### No TG for Cases 1, 2, 3, 4 ###
-case7_no_tg = PSY.TGFixed(1.0) #eff
-
-########  AVR Data #########
-### AVRs for Case 2, 3, 4 and 5 ###
-case7_avr = PSY.AVRTypeI(
-    20.0, #Ka - Gain
-    0.01, #Ke
-    0.063, #Kf
-    0.2, #Ta
-    0.314, #Te
-    0.35, #Tf
-    0.001, #Tr
-    5.0, #Vrmax
-    -5.0, #Vrmin
-    0.0039, #Ae - 1st ceiling coefficient
-    1.555,
-) #Be - 2nd ceiling coefficient
+inf_gen_case7 = inf_gen_1_pu(nodes_case7)
 
 ### Case 7 Generators ###
-case7_gen = PSY.DynamicGenerator(
-    1, #Number
-    "Case7Gen",
-    nodes_case7[2], #bus
-    1.0, # ω_ref,
-    1.0142, #V_ref
-    0.6, #P_ref
-    0.0, #Q_ref
-    case7_machine, #machine
-    case7_shaft, #shaft
-    case7_avr, #avr
-    case7_no_tg, #tg
-    cases_no_pss,
-) #pss
+
+case7_gen = dyn_gen_case7(nodes_case7)
 
 ############### Inverter Data ########################
 
-converter = PSY.AvgCnvFixedDC(
-    138.0, #Rated Voltage
-    100.0,
-) #Rated MVA
-
-dc_source = PSY.FixedDCSource(1500.0) #Not in the original data, guessed.
-
-filt = PSY.LCLFilter(
-    0.08, #Series inductance lf in pu
-    0.003, #Series resitance rf in pu
-    0.074, #Shunt capacitance cf in pu
-    0.2, #Series reactance rg to grid connection (#Step up transformer or similar)
-    0.01,
-) #Series resistance lg to grid connection (#Step up transformer or similar)
-
-pll = PSY.PLL(
-    500.0, #ω_lp: Cut-off frequency for LowPass filter of PLL filter.
-    0.084, #k_p: PLL proportional gain
-    4.69,
-) #k_i: PLL integral gain
-
-virtual_H = PSY.VirtualInertia(
-    2.0, #Ta:: VSM inertia constant
-    400.0, #kd:: VSM damping coefficient
-    20.0, #kω:: Frequency droop gain in pu
-    2 * pi * 50.0,
-) #ωb:: Rated angular frequency
-
-Q_control = PSY.ReactivePowerDroop(
-    0.2, #kq:: Reactive power droop gain in pu
-    1000.0,
-) #ωf:: Reactive power cut-off low pass filter frequency
-
-outer_control = PSY.VirtualInertiaQdroop(virtual_H, Q_control)
-
-vsc = PSY.CombinedVIwithVZ(
-    0.59, #kpv:: Voltage controller proportional gain
-    736.0, #kiv:: Voltage controller integral gain
-    0.0, #kffv:: Binary variable enabling the voltage feed-forward in output of current controllers
-    0.0, #rv:: Virtual resistance in pu
-    0.2, #lv: Virtual inductance in pu
-    1.27, #kpc:: Current controller proportional gain
-    14.3, #kiv:: Current controller integral gain
-    0.0, #kffi:: Binary variable enabling the current feed-forward in output of current controllers
-    50.0, #ωad:: Active damping low pass filter cut-off frequency
-    0.2,
-) #kad:: Active damping gain
-
-case7_inv = PSY.DynamicInverter(
-    2, #number
-    "DARCO", #name
-    nodes_case7[3], #bus location
-    1.0, #ω_ref
-    1.02, #V_ref
-    0.5, #P_ref
-    0.0, #Q_ref
-    100.0, #MVABase
-    converter, #Converter
-    outer_control, #OuterControl
-    vsc, #Voltage Source Controller
-    dc_source, #DC Source
-    pll, #Frequency Estimator
-    filt,
-) #Output Filter
+case7_inv = inv_case78(nodes_case7)
 
 ######################### Dynamical System ########################
 
