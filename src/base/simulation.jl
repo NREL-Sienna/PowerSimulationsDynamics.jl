@@ -20,9 +20,7 @@ function Simulation(
 )
 
     initialized = false
-    n_buses = length(PSY.get_components(PSY.Bus, system))
-    DAE_vector = collect(falses(n_buses * 2))
-    _index_dynamic_system!(DAE_vector, system)
+    DAE_vector = _index_dynamic_system!(system)
     var_count = get_variable_count(system)
 
     if initialize_simulation
@@ -35,7 +33,6 @@ function Simulation(
 
     dx0 = zeros(var_count)
     callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
-
     prob = DiffEqBase.DAEProblem(
         system_model!,
         dx0,
@@ -202,8 +199,9 @@ function _make_device_index!(device::PSY.DynamicInjection)
     return
 end
 
-function _index_dynamic_system!(DAE_vector::Vector{Bool}, sys::PSY.System)
-
+function _index_dynamic_system!(sys::PSY.System)
+    n_buses = length(PSY.get_components(PSY.Bus, sys))
+    DAE_vector = collect(falses(n_buses * 2))
     global_state_index = Dict{String,Dict{Symbol,Int64}}()
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     state_space_ix = n_buses * 2
@@ -280,7 +278,7 @@ function _index_dynamic_system!(DAE_vector::Vector{Bool}, sys::PSY.System)
     sys_ext[YBUS] = Ybus
     sys.internal.ext = sys_ext
 
-    return
+    return DAE_vector
 end
 
 get_injection_pointer(sys::PSY.System) =
