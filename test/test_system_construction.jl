@@ -1,28 +1,6 @@
-nodes_OMIB = [
-    PSY.Bus(
-        1, #number
-        "Bus 1", #Name
-        "REF", #BusType (REF, PV, PQ)
-        0, #Angle in radians
-        1.06, #Voltage in pu
-        (min = 0.94, max = 1.06), #Voltage limits in pu
-        69,
-    ), #Base voltage in kV
-    PSY.Bus(2, "Bus 2", "PV", 0, 1.045, (min = 0.94, max = 1.06), 69),
-]
+OMIB_nodes = nodes_OMIB()
 
-branch_OMIB = [PSY.Line(
-    "Line1", #name
-    true, #available
-    0.0, #active power flow initial condition (from-to)
-    0.0, #reactive power flow initial condition (from-to)
-    Arc(from = nodes_OMIB[1], to = nodes_OMIB[2]), #Connection between buses
-    0.01, #resistance in pu
-    0.05, #reactance in pu
-    (from = 0.0, to = 0.0), #susceptance in pu
-    18.046, #rate in MW
-    1.04,
-)]  #angle limits (-min and max)
+branch_OMIB = branches_OMIB(OMIB_nodes)
 
 #### Generators #####
 Basic = PSY.BaseMachine(
@@ -48,7 +26,7 @@ no_pss = PSY.PSSFixed(0.0)
 Gen1AVR = PSY.DynamicGenerator(
     1, #Number
     "TestGen",
-    nodes_OMIB[2],#bus
+    OMIB_nodes[2],#bus
     1.0, # ω_ref,
     1.05,
     0.4,
@@ -63,7 +41,7 @@ Gen1AVR = PSY.DynamicGenerator(
 Gen2AVR = PSY.DynamicGenerator(
     1, #Number
     "TestGen2",
-    nodes_OMIB[2],#bus
+    OMIB_nodes[2],#bus
     1.0, # ω_ref,
     1.05,
     0.4,
@@ -125,7 +103,7 @@ vsc = CombinedVIwithVZ(
 test_inverter = PSY.DynamicInverter(
     2, #number
     "DARCO", #name
-    nodes_OMIB[1], #bus location
+    OMIB_nodes[1], #bus location
     1.0, #ω_ref
     1.02, #V_ref
     0.5, #P_ref
@@ -142,7 +120,7 @@ test_inverter = PSY.DynamicInverter(
 @testset "Dynamic Generator in System" begin
 
     sys = PSY.System(100)
-    for bus in nodes_OMIB
+    for bus in OMIB_nodes
         PSY.add_component!(sys, bus)
     end
     for lines in branch_OMIB
@@ -152,6 +130,6 @@ test_inverter = PSY.DynamicInverter(
     PSY.add_component!(sys, Gen2AVR)
     PSY.add_component!(sys, test_inverter)
 
-    @test collect(PSY.get_components(DynamicGenerator, sys))[1] == Gen1AVR
+    @test collect(PSY.get_components(PSY.DynamicGenerator, sys))[1] == Gen1AVR
 
 end
