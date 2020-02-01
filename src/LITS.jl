@@ -8,13 +8,19 @@ export Simulation
 export run_simulation!
 export ThreePhaseFault
 export ControlReferenceChange
+
+# Export for routines
+export small_signal_analysis
 export get_state_series
 export get_voltagemag_series
 export print_init_states
+
 ####################################### Package Imports ####################################
 import DiffEqBase
+import ForwardDiff
 import SparseArrays: SparseMatrixCSC
 import LinearAlgebra: BLAS
+import LinearAlgebra: eigen
 import Base.to_index
 import NLsolve
 import PowerSystems
@@ -23,7 +29,8 @@ const PSY = PowerSystems
 #Structs for General Devices and System
 include("base/definitions.jl")
 include("base/ports.jl")
-include("perturbations/perturbations.jl")
+include("base/perturbations.jl")
+include("base/small_signal_results.jl")
 include("base/simulation.jl")
 
 #Common Models
@@ -54,11 +61,6 @@ include("models/source_models.jl")
 
 #System Model
 include("models/system_model.jl")
-
-#Perturbations
-include("perturbations/common.jl")
-include("perturbations/ThreePhaseFault.jl")
-include("perturbations/PowerStepChange.jl")
 
 #Utils
 include("utils/plot_utils.jl")
