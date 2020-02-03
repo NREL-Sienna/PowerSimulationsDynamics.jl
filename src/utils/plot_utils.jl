@@ -4,7 +4,7 @@ and a tuple containing the symbol name of the Dynamic Injection device and the s
 
 """
 
-function get_state_series(sim::Simulation, ref::Tuple{String,Symbol})
+function get_state_series(sim::Simulation, ref::Tuple{String, Symbol})
     global_state_index = PSY.get_ext(sim.system)[GLOBAL_INDEX]
     ix = get(global_state_index[ref[1]], ref[2], nothing)
     return sim.solution.t, [value[ix] for value in sim.solution.u]

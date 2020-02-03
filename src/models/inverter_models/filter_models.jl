@@ -5,13 +5,13 @@ function mdl_filter_ode!(
     current_i,
     sys_Sbase,
     f0,
-    device::PSY.DynamicInverter{C,O,VC,DC,P,PSY.LCLFilter},
+    device::PSY.DynamicInverter{C, O, VC, DC, P, PSY.LCLFilter},
 ) where {
-    C<:PSY.Converter,
-    O<:PSY.OuterControl,
-    VC<:PSY.VSControl,
-    DC<:PSY.DCSource,
-    P<:PSY.FrequencyEstimator,
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    VC <: PSY.VSControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
 }
 
     #Obtain external states inputs for component

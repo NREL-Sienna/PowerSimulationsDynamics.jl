@@ -21,7 +21,7 @@ function branch_model!(
     ode_range::UnitRange{Int64},
     branch::DynBr,
     sys::PSY.System,
-) where {DynBr<:DynBranch}
+) where {DynBr <: DynBranch}
 
     #Obtain local device states
     n_states = total_device_states(branch)

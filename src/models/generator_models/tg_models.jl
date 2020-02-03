@@ -1,8 +1,8 @@
 function mdl_tg_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M,S,A,PSY.TGFixed,P},
-) where {M<:PSY.Machine,S<:PSY.Shaft,A<:PSY.AVR,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Update inner vars
     P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
@@ -14,8 +14,8 @@ end
 function mdl_tg_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M,S,A,PSY.TGTypeI,P},
-) where {M<:PSY.Machine,S<:PSY.Shaft,A<:PSY.AVR,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
     ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
@@ -70,8 +70,8 @@ end
 function mdl_tg_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M,S,A,PSY.TGTypeII,P},
-) where {M<:PSY.Machine,S<:PSY.Shaft,A<:PSY.AVR,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
     ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
