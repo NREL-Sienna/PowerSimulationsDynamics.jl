@@ -354,7 +354,16 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     )
     out = zeros(var_count) #Define a vector of zeros for the output
     x_eval = get(kwargs, :operating_point, sim.x0_init)
-    res = ForwardDiff.jacobian(sysf!, out, x_eval)
-    vals, vect = eigen(res)
-    return SmallSignalOutput(res, vals, vect, _determine_stability(vals), x_eval)
+    jacobian = ForwardDiff.jacobian(sysf!, out, x_eval)
+    first_dyn_injection_pointer =
+        PSY.get_ext(sim.sys)[LITS_COUNTS][:first_dyn_injection_pointer]
+    reduced_jacobian = jacobian[first_dyn_injection_pointer:end]
+    vals, vect = eigen(reduced_jacobian)
+    return SmallSignalOutput(
+        reduced_jacobian,
+        vals,
+        vect,
+        _determine_stability(vals),
+        x_eval,
+    )
 end
