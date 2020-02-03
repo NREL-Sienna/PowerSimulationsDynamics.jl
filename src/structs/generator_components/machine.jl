@@ -2,7 +2,7 @@ abstract type Machine <: GeneratorComponent end
 
 @def machine_ports begin
     state_input = [:δ, :ω, :Vf]
-    inner_input = [VI_gen_var, VR_gen_var]
+    inner_input = [LITS.VI_gen_var, LITS.VR_gen_var]
 end
 
 

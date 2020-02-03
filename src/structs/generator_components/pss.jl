@@ -2,7 +2,7 @@ abstract type PSS <: GeneratorComponent end
 
 @def pss_ports begin
       state_input = [:ω]
-      inner_input = [τe_var, VR_gen_var]
+      inner_input = [LITS.τe_var, LITS.VR_gen_var]
   end
 
 
