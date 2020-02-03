@@ -356,7 +356,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     x_eval = get(kwargs, :operating_point, sim.x0_init)
     jacobian = ForwardDiff.jacobian(sysf!, out, x_eval)
     first_dyn_injection_pointer =
-        PSY.et_ext(sim.sys)[LITS_COUNTS][:first_dyn_injection_pointer]
+        PSY.get_ext(sim.sys)[LITS_COUNTS][:first_dyn_injection_pointer]
     reduced_jacobian = jacobian[first_dyn_injection_pointer:end]
     vals, vect = eigen(reduced_jacobian)
     return SmallSignalOutput(
