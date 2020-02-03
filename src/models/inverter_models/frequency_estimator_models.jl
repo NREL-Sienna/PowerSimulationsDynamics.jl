@@ -2,13 +2,13 @@ function mdl_freq_estimator_ode!(
     device_states,
     output_ode,
     f0,
-    device::PSY.DynamicInverter{C,O,VC,DC,PSY.PLL,F},
+    device::PSY.DynamicInverter{C, O, VC, DC, PSY.PLL, F},
 ) where {
-    C<:PSY.Converter,
-    O<:PSY.OuterControl,
-    VC<:PSY.VSControl,
-    DC<:PSY.DCSource,
-    F<:PSY.Filter,
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    VC <: PSY.VSControl,
+    DC <: PSY.DCSource,
+    F <: PSY.Filter,
 }
 
     #Obtain external states inputs for component

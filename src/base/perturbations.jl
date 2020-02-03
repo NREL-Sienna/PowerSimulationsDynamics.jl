@@ -2,7 +2,7 @@ abstract type Perturbation end
 
 struct ThreePhaseFault <: Perturbation
     time::Float64
-    Ybus::SparseMatrixCSC{Complex{Float64},Int64}
+    Ybus::SparseMatrixCSC{Complex{Float64}, Int64}
 end
 
 get_affect(pert::ThreePhaseFault) =

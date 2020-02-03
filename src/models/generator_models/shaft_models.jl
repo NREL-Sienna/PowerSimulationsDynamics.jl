@@ -2,8 +2,8 @@ function mdl_shaft_ode!(
     device_states,
     output_ode,
     f0::Float64,
-    device::PSY.DynamicGenerator{M,PSY.SingleMass,A,TG,P},
-) where {M<:PSY.Machine,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
+) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
     ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
@@ -36,8 +36,8 @@ function mdl_shaft_ode!(
     device_states,
     output_ode,
     f0::Float64,
-    device::PSY.DynamicGenerator{M,PSY.FiveMassShaft,A,TG,P},
-) where {M<:PSY.Machine,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
+) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
     ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]

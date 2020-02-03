@@ -4,24 +4,24 @@ function mdl_outer_ode!(
     f0,
     device::PSY.DynamicInverter{
         C,
-        PSY.VirtualInertiaQdroop{PSY.VirtualInertia,PSY.ReactivePowerDroop},
+        PSY.VirtualInertiaQdroop{PSY.VirtualInertia, PSY.ReactivePowerDroop},
         VC,
         DC,
         P,
         F,
     },
 ) where {
-    C<:PSY.Converter,
-    VC<:PSY.VSControl,
-    DC<:PSY.DCSource,
-    P<:PSY.FrequencyEstimator,
-    F<:PSY.Filter,
+    C <: PSY.Converter,
+    VC <: PSY.VSControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
 }
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(
         device,
-        PSY.VirtualInertiaQdroop{PSY.VirtualInertia,PSY.ReactivePowerDroop},
+        PSY.VirtualInertiaQdroop{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
     vpll_d = device_states[external_ix[1]]
     vpll_q = device_states[external_ix[2]]
@@ -60,7 +60,7 @@ function mdl_outer_ode!(
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
         device,
-        PSY.VirtualInertiaQdroop{PSY.VirtualInertia,PSY.ReactivePowerDroop},
+        PSY.VirtualInertiaQdroop{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
 
     #Define internal states for frequency estimator

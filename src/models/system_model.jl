@@ -1,4 +1,4 @@
-function system_model!(out::Vector{T}, dx, x, sys, t) where {T<:Real}
+function system_model!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
 
     #Index Setup
     bus_size = length(PSY.get_components(PSY.Bus, sys))

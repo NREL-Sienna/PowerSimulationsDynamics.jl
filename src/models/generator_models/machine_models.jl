@@ -10,8 +10,8 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.BaseMachine,S,A,TG,P},
-) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.BaseMachine)
@@ -61,8 +61,8 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.OneDOneQMachine,S,A,TG,P},
-) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.OneDOneQMachine)
@@ -129,8 +129,8 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.MarconatoMachine,S,A,TG,P},
-) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.MarconatoMachine)
@@ -215,8 +215,8 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.SimpleMarconatoMachine,S,A,TG,P},
-) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.SimpleMarconatoMachine)
@@ -300,8 +300,8 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.AndersonFouadMachine,S,A,TG,P},
-) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.AndersonFouadMachine)
@@ -381,8 +381,8 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.SimpleAFMachine,S,A,TG,P},
-) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.SimpleAFMachine)
@@ -461,8 +461,8 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.FullMachine,S,A,TG,P},
-) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.FullMachine)
@@ -544,8 +544,8 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.SimpleFullMachine,S,A,TG,P},
-) where {S<:PSY.Shaft,A<:PSY.AVR,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{PSY.SimpleFullMachine, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.SimpleFullMachine)

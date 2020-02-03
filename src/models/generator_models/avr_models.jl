@@ -1,8 +1,8 @@
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M,S,PSY.AVRFixed,TG,P},
-) where {M<:PSY.Machine,S<:PSY.Shaft,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #TODO Change EMF name for Vf in PowerSystems
     #Update Vf voltage on inner vars
@@ -14,8 +14,8 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M,S,PSY.AVRSimple,TG,P},
-) where {M<:PSY.Machine,S<:PSY.Shaft,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
     V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
@@ -50,8 +50,8 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M,S,PSY.AVRTypeI,TG,P},
-) where {M<:PSY.Machine,S<:PSY.Shaft,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
     V0_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
@@ -115,8 +115,8 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M,S,PSY.AVRTypeII,TG,P},
-) where {M<:PSY.Machine,S<:PSY.Shaft,TG<:PSY.TurbineGov,P<:PSY.PSS}
+    device::PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
     V0_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]

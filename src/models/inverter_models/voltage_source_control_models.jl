@@ -1,13 +1,13 @@
 function mdl_VScontrol_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicInverter{C,O,PSY.CombinedVIwithVZ,DC,P,F},
+    device::PSY.DynamicInverter{C, O, PSY.CombinedVIwithVZ, DC, P, F},
 ) where {
-    C<:PSY.Converter,
-    O<:PSY.OuterControl,
-    DC<:PSY.DCSource,
-    P<:PSY.FrequencyEstimator,
-    F<:PSY.Filter,
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
 }
 
     #Obtain external states inputs for component
