@@ -2,7 +2,7 @@ abstract type Shaft <: GeneratorComponent end
 
 @def shaft_ports begin
     state_input = Vector{Int64}()
-    inner_input = [τe_var, τm_var]
+    inner_input = [LITS.τe_var, LITS.τm_var]
 end
 
 

@@ -3,7 +3,7 @@ abstract type Filter <: InverterComponent end
 @def filter_ports begin
     #TODO: If converter has dynamics, need to connect state_input
     state_input = [:δθ_vsm] #[:Vd_c, :Vq_c] #, :Id_c, :Iq_c]
-    inner_input = [VR_inv_var,VI_inv_var,Vdcnv_var,Vqcnv_var,δdqRI_var,Vdo_var,Vqo_var]
+    inner_input = [LITS.VR_inv_var, LITS.VI_inv_var, LITS.Vdcnv_var, LITS.Vqcnv_var, LITS.δdqRI_var, LITS.Vdo_var, LITS.Vqo_var]
 end
 
 """

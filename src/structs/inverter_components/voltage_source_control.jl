@@ -2,7 +2,7 @@ abstract type VSControl <: InverterComponent end
 
 @def vscontrol_ports begin
     state_input = [:id_o, :iq_o, :id_c, :iq_c, :vd_cap, :vq_cap]
-    inner_input = [Vdo_var, Vqo_var, v_control_var, ω_control_var]
+    inner_input = [LITS.Vdo_var, LITS.Vqo_var, LITS.v_control_var, LITS.ω_control_var]
 end
 
 """

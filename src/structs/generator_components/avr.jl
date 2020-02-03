@@ -2,7 +2,7 @@ abstract type AVR <: GeneratorComponent end
 
 @def avr_ports begin
       state_input = Vector{Symbol}()
-      inner_input = [V_pss_var, VI_gen_var, VR_gen_var]
+      inner_input = [LITS.V_pss_var, LITS.VI_gen_var, LITS.VR_gen_var]
 end
 
 """

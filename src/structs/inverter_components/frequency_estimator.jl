@@ -3,7 +3,7 @@ abstract type FrequencyEstimator <: InverterComponent end
 @def freq_estimation_ports begin
     state_input = [:vd_cap,:vq_cap, :δθ_vsm]
     #TODO: Move PLL to PCC, i.e. move v_cap (D'Arco v_o), to inner inputs
-    inner_input = [Vdo_var,Vqo_var,δdqRI_var,ω_freq_estimator_var]
+    inner_input = [LITS.Vdo_var, LITS.Vqo_var, LITS.δdqRI_var, LITS.ω_freq_estimator_var]
 end
 
 """

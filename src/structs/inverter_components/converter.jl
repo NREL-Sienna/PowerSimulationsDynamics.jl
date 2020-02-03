@@ -7,7 +7,7 @@ abstract type Converter <: InverterComponent end
 
 @def converter_ports begin
     state_input = Vector{Symbol}()
-    inner_input = [md_var, mq_var, Vdc_var, Vdcnv_var,Vqcnv_var]
+    inner_input = [LITS.md_var, LITS.mq_var, LITS.Vdc_var, LITS.Vdcnv_var, LITS.Vqcnv_var]
 end
 
 """
