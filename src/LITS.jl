@@ -8,8 +8,10 @@ export Simulation
 export run_simulation!
 export ThreePhaseFault
 export ControlReferenceChange
+export DynamicLine
 
 # Export for routines
+export make_dynamic_branch!
 export small_signal_analysis
 export get_state_series
 export get_voltagemag_series
