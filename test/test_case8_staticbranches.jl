@@ -104,6 +104,9 @@ sim = Simulation(
     initial_guess = x0_guess,
 ) #initial guess
 
+#Obtain small signal results for initial conditions
+small_sig = small_signal_analysis(sim)
+
 #Solve problem in equilibrium
 run_simulation!(sim, IDA());
 
@@ -116,3 +119,4 @@ zoom = [
 ]
 
 @test sim.solution.retcode == :Success
+@test small_sig.stable
