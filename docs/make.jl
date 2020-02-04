@@ -1,5 +1,6 @@
-using Documenter, LITS
+using Documenter, LITS, PowerSystems
 const PSYPATH = dirname(pathof(LITS))
+const PSY = PowerSystems
 
 makedocs(
     modules = [LITS],
@@ -16,6 +17,7 @@ makedocs(
             "Network" => "Models/network.md",
             "Generator" => "Models/gens.md",
             "Inverter" => "Models/inverters.md",
+            "Small Signal" => "Models/small.md",
         ],
     ],
 )
