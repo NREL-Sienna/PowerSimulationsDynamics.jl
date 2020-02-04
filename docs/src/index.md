@@ -22,10 +22,10 @@ using LITS
 ## Structure
 
 The following figure shows the interactions between `LITS.jl`, `PowerSystems.jl`, `DifferentialEquations.jl` and the integrators.
-The architecture of `LITS.jl`  is such that the power system models are all self-contained and return the model function evaluations. The Jacobian is calculated through `DifferentialEquations.jl`'s common-interface enabling the use of any solver available in Julia. Considering that the resulting models are differential-algebraic equations (DAE), the implementation focuses on the use of implicit solvers, in particular SUNDIALS since it has exceptional features applicable to large models — for instance, interfacing with distributed linear-solvers and GPU arrays.
+The architecture of `LITS.jl`  is such that the power system models are all self-contained and return the model function evaluations. The Jacobian is calculated through `DifferentialEquations.jl`'s common-interface enabling the use of any solver available in Julia. Considering that the resulting models are differential-algebraic equations (DAE), the implementation focuses on the use of implicit solvers, in particular SUNDIALS since it has exceptional features applicable to large models — for instance, interfacing with distributed linear-solvers and GPU arrays. In addition, automatic differentiation is implemented using `ForwardDiff.jl` to obtain jacobians to perform small signal analysis.
 
 ```@raw html
-<img src="./assets/SoftwareLoop.png" width="50%"/>
+<img src="./assets/SoftwareLoop.png" width="60%"/>
 ``` ⠀
 
 ## Contents
@@ -37,5 +37,6 @@ Pages = [
   "Models/network.md",
   "Models/gens.md",
   "Models/inverters.md",
+  "Models/small.md",
 ]
 ```
