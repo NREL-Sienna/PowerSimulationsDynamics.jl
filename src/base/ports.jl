@@ -77,7 +77,7 @@ end
 #### Outer Control Ports ####
 function Ports(::PSY.OuterControl)
     state_input = [:vpll_d, :vpll_q, :ε_pll, :vd_cap, :vq_cap, :id_o, :iq_o]
-    inner_input = [Vdo_var, Vdo_var, ω_freq_estimator_var]
+    inner_input = [Vdo_var, Vqo_var, ω_freq_estimator_var]
     return Ports(state_input, inner_input)
 end
 
