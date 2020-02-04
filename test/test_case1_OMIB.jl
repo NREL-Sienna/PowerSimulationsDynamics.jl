@@ -54,6 +54,7 @@ sim = Simulation(
     Ybus_change,
 ) #Type of Fault
 
+#Obtain small signal results for initial conditions
 small_sig = small_signal_analysis(sim)
 
 #Solve problem in equilibrium

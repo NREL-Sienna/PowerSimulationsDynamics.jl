@@ -104,6 +104,7 @@ sim = Simulation(
     initial_guess = x0_guess,
 ) #initial guess
 
+#Obtain small signal results for initial conditions
 small_sig = small_signal_analysis(sim)
 
 #Solve problem in equilibrium
