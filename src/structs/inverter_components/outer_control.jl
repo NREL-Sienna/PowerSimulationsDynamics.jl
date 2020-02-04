@@ -5,7 +5,7 @@ abstract type ReativePowerControl end
 
 @def outercontrol_ports begin
     state_input = [:vpll_d, :vpll_q, :ε_pll, :vd_cap, :vq_cap, :id_o, :iq_o]
-    inner_input = [LITS.Vdo_var, LITS.Vdo_var, LITS.ω_freq_estimator_var]
+    inner_input = [LITS.Vdo_var, LITS.Vqo_var, LITS.ω_freq_estimator_var]
 end
 
 """
