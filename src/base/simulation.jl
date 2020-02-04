@@ -358,7 +358,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     first_dyn_injection_pointer =
         PSY.get_ext(sim.system)[LITS_COUNTS][:first_dyn_injection_pointer]
     bus_size = length(PSY.get_components(PSY.Bus, sim.system))
-    alg_states = 1:(2*bus_size)
+    alg_states = 1:(2 * bus_size)
     diff_states = first_dyn_injection_pointer:var_count
     fx = jacobian[diff_states, diff_states]
     gy = jacobian[alg_states, alg_states]
