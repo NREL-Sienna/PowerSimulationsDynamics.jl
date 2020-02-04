@@ -54,6 +54,8 @@ sim = Simulation(
     Ybus_change,
 ) #Type of Fault
 
+small_sig = small_signal_analysis(sim)
+
 #Solve problem in equilibrium
 run_simulation!(sim, IDA(), dtmax = 0.02);
 
@@ -63,3 +65,4 @@ series2 = get_voltagemag_series(sim, 2)
 LITS.print_init_states(sim)
 
 @test sim.solution.retcode == :Success
+@test small_sig.stable
