@@ -4,6 +4,7 @@ codecov: true
 os:
   - linux
   - osx
+  - windows
 julia:
   - 1.2
   - 1.3
