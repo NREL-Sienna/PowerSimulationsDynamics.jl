@@ -28,7 +28,6 @@ jobs:
   allow_failures:
     - julia: nightly
     - os: osx
-    - os: windows
   include:
     - stage: "Documentation"
       os: linux
