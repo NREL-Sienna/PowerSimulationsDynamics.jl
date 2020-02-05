@@ -18,7 +18,7 @@ using Sundials
 const PSY = PowerSystems
 ```
 
-`PowerSystems` is used to properly define the data structure, while `Sundials` is used to solve the problem defined in `LITS`. Finally we call use can call `PowerSystems` functions using the `PSY` abbreviation.
+`PowerSystems` is used to properly define the data structure, while `Sundials` is used to fsolve the problem defined in `LITS`. Finally we call use can call `PowerSystems` functions using the `PSY` abbreviation.
 
 ## Step 2: Data creation
 
