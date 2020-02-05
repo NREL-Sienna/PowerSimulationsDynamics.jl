@@ -353,6 +353,12 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     if sim.reset
         @error("Reset the simulation")
     end
+
+    dyn_branches = PSY.get_components(DynamicLine, sim.system)
+    if !(isempty(dyn_branches))
+        @error("Small Signal Analysis is not currently supported for models with DynamicLines")
+    end
+
     _change_vector_type(sim.system)
     var_count = LITS.get_variable_count(sim.system)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
