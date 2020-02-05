@@ -56,7 +56,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
             ix_range = range(branches_start, length = n_states)
             ode_range = range(branches_count, length = n_states)
             branches_count = branches_count + n_states
-            I_injections_r, I_injections_i
             branch!(
                 x,
                 dx,
@@ -77,7 +76,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
                 br,
                 sys,
             )
-            I_injections_r, I_injections_i
             out[ix_range] = branches_ode[ode_range] - dx[ix_range]
         end
     end
