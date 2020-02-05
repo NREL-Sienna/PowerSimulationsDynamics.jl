@@ -192,13 +192,13 @@ end
 
 function _add_states_to_global!(
     global_state_index::Dict{String,Dict{Symbol,Int64}},
-    state_space_ix::Int64,
+    state_space_ix::Vector{Int64},
     device::PSY.Device,
 )
     device_state_ix = Dict{Symbol,Int}()
     for s in PSY.get_states(device)
-        state_space_ix += 1
-        device_state_ix[s] = state_space_ix
+        state_space_ix[1] += 1
+        device_state_ix[s] = state_space_ix[1]
     end
     global_state_index[PSY.get_name(device)] = device_state_ix
     return
@@ -209,10 +209,11 @@ function _index_dynamic_system!(sys::PSY.System)
     DAE_vector = collect(falses(n_buses * 2))
     global_state_index = Dict{String,Dict{Symbol,Int64}}()
     n_buses = length(PSY.get_components(PSY.Bus, sys))
-    state_space_ix = n_buses * 2
+    state_space_ix = [n_buses * 2]
     total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
+    static_bus_vars = 2 * n_buses
 
     dynamic_injection = PSY.get_components(PSY.DynamicInjection, sys)
     isempty(dynamic_injection) &&
@@ -227,11 +228,11 @@ function _index_dynamic_system!(sys::PSY.System)
         total_states += device_n_states
         _add_states_to_global!(global_state_index, state_space_ix, d)
     end
-    injection_n_states = state_space_ix - n_buses * 2
+    injection_n_states = state_space_ix[1] - n_buses * 2
 
     dyn_branches = PSY.get_components(DynamicLine, sys)
     if !(isempty(dyn_branches))
-        first_dyn_branch_point = state_space_ix + 1
+        first_dyn_branch_point = state_space_ix[1] + 1
         for br in dyn_branches
             arc = PSY.get_arc(br)
             n_states = PSY.get_n_states(br)
@@ -246,19 +247,18 @@ function _index_dynamic_system!(sys::PSY.System)
 
         for (ix, val) in enumerate(DAE_vector[1:n_buses])
             if val
-                global_state_index["V_$(ix)"] =
-                    Dict(:R => ix, :I => ix + n_buses)
+                global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
                 total_states += 2
-                state_space_ix += 2
+                state_space_ix[1] += 2
+                static_bus_vars -= 2
+                @assert static_bus_vars >= 0
             end
         end
-        branches_n_states = state_space_ix - injection_n_states - n_buses * 2
+        branches_n_states = state_space_ix[1] - injection_n_states - n_buses * 2
     else
         @debug("System doesn't contain Dynamic Branches")
     end
-    @show total_states
-    @show n_buses * 2
-    @assert total_states == state_space_ix - n_buses * 2
+    @assert total_states == state_space_ix[1] - n_buses * 2
 
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
         Ybus = PSY.Ybus(sys)[:, :]
@@ -272,7 +272,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :branches_n_states => branches_n_states,
         :first_dyn_injection_pointer => 2 * n_buses + 1,
         :first_dyn_branch_point => first_dyn_branch_point,
-        :total_variables => total_states + 2 * n_buses,
+        :total_variables => total_states + static_bus_vars,
     )
 
     sys_ext[LITS_COUNTS] = counts

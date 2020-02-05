@@ -19,12 +19,12 @@ function branch_model!(
     ix_range::UnitRange{Int64},
     ix_dx::Vector{Int64},
     ode_range::UnitRange{Int64},
-    branch::DynBr,
+    branch::DynamicLine{PSY.Line},
     sys::PSY.System,
-) where {DynBr <: DynBranch}
+)
 
     #Obtain local device states
-    n_states = total_device_states(branch)
+    n_states = PSY.get_n_states(branch)
     device_states = @view x[ix_range]
     dv_from = view(dx, ix_dx[1:2])
     dv_to = view(dx, ix_dx[3:4])
