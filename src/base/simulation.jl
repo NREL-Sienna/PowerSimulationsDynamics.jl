@@ -18,7 +18,7 @@ function Simulation(
     initialize_simulation::Bool = true,
     kwargs...,
 )
-
+    check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
     DAE_vector = _index_dynamic_system!(system)
     var_count = get_variable_count(system)

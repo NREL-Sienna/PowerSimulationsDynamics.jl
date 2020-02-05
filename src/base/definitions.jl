@@ -83,3 +83,8 @@ const GLOBAL_INDEX = "global_index"
 const INNER_VARS = "inner_vars"
 const YBUS = "Ybus"
 const CONTROL_REFS = "control_refs"
+
+const SIMULATION_ACCEPTED_KWARGS = [
+    :initial_guess,
+    :initialize_simulation
+]
