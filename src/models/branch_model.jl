@@ -1,9 +1,9 @@
-mutable struct DynamicLine{T<:PSY.ACBranch} <: PSY.Device
+mutable struct DynamicLine{T <: PSY.ACBranch} <: PSY.Device
     branch_data::T
     n_states::Int64
     states
 
-    function DynamicLine(branch::T) where T <: PSY.ACBranch
+    function DynamicLine(branch::T) where {T <: PSY.ACBranch}
         n_states = 2
         states = [
             :Il_R
@@ -47,7 +47,7 @@ PSY.get_internal(value::DynamicLine) = value.branch_data.internal
 PSY.get_states(value::DynamicLine) = value.states
 PSY.get_n_states(value::DynamicLine) = value.n_states
 
-function make_dynamic_branch!(branch::T, sys::PSY.System) where T <: PSY.ACBranch
+function make_dynamic_branch!(branch::T, sys::PSY.System) where {T <: PSY.ACBranch}
     PSY.remove_component!(sys, branch)
     PSY.add_component!(sys, DynamicLine(branch))
     return
