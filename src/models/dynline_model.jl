@@ -15,6 +15,8 @@ mutable struct DynamicLine{T<:PSY.ACBranch} <: PSY.Device
 end
 
 """Get Line name."""
+# Temporary until a fix is added to PSY
+PSY.get_name(value::DynamicLine) = IS.get_name(value)
 IS.get_name(value::DynamicLine) = value.branch_data.name
 """Get Line available."""
 PSY.get_available(value::DynamicLine) = value.branch_data.available
