@@ -373,6 +373,23 @@ function dyn_gen_case8(nodes)
     ) #pss
 end
 
+function dyn_gen_case9(nodes)
+    return PSY.DynamicGenerator(
+        1, #Number
+        "Case9Gen",
+        nodes[2], #bus
+        1.0, # ω_ref,
+        1.0124, #V_ref
+        0.6, #P_ref
+        0.0, #Q_ref
+        machine_4th(), #machine
+        shaft_no_damping(), #shaft
+        avr_type1(), #avr
+        tg_none(), #tg
+        pss_none(),
+    ) #pss
+end
+
 ######################################
 ############# Inverters ##############
 ######################################
@@ -559,6 +576,46 @@ function system_50Hz(nodes, branches, loads, sources, invs, gens)
     for lines in branches
         PSY.add_component!(sys, lines)
     end
+
+    #Add loads
+    for load in loads
+        PSY.add_component!(sys, load)
+    end
+
+    #Add infinite source
+    for source in sources
+        PSY.add_component!(sys, source)
+    end
+
+    #Add inverters
+    for inv in invs
+        PSY.add_component!(sys, inv)
+    end
+
+    #Add generators
+    for gen in gens
+        PSY.add_component!(sys, gen)
+    end
+
+    return sys
+end
+
+function system_case9(nodes, branches, loads, sources, invs, gens)
+    #Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
+    sys = PSY.System(100.0, frequency = 50.0)
+
+    #Add buses
+    for bus in nodes
+        PSY.add_component!(sys, bus)
+    end
+
+    #Add lines
+    for lines in branches
+        PSY.add_component!(sys, lines)
+    end
+
+    #Make line 3 the dynamic line
+    make_dynamic_branch!(branches[3], sys)
 
     #Add loads
     for load in loads
