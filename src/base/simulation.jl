@@ -34,7 +34,7 @@ function Simulation(
     dx0 = zeros(var_count)
     callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
     prob = DiffEqBase.DAEProblem(
-        system_model!,
+        system!,
         dx0,
         x0_init,
         tspan,
@@ -93,7 +93,7 @@ function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Fl
     # TODO: Code to refine initial_guess
     var_count = get_variable_count(sys)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    inif! = (out, x) -> system_model!(
+    inif! = (out, x) -> system!(
         out,    #output of the function
         dx0,    #derivatives equal to zero
         x,      #states
@@ -356,7 +356,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     _change_vector_type(sim.system)
     var_count = LITS.get_variable_count(sim.system)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    sysf! = (out, x) -> LITS.system_model!(
+    sysf! = (out, x) -> LITS.system!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
         x,              #states

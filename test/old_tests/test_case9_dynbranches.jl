@@ -287,7 +287,7 @@ u0 = [0.2]
 tspan = (0.0, 30.0);
 
 #Find initial condition
-inif! = (out, x) -> LITS.system_model!(out, dx0, x, (Ybus_fault, case9_DynSystem), 0.0)
+inif! = (out, x) -> LITS.system!(out, dx0, x, (Ybus_fault, case9_DynSystem), 0.0)
 sys_solve = nlsolve(inif!, x0, xtol = :1e-8, ftol = :1e-8, method = :trust_region)
 x0_init = sys_solve.zero
 

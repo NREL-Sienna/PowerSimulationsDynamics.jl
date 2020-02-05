@@ -195,7 +195,7 @@ tspan = (0.0, 30.0);
 We will use `NLsolve` to find the initial condition of the system:
 
 ```julia
-inif! = (out,x) -> LITS.system_model!(out, #output of the function
+inif! = (out,x) -> LITS.system!(out, #output of the function
                                       dx0, #derivatives equal to zero
                                       x, #states
                                        ([0.0],case1_DynSystem), #Parameters: [0.0] is not used

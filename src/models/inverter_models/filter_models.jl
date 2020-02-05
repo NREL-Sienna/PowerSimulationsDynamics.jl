@@ -87,8 +87,6 @@ function mdl_filter_ode!(
 
     #Compute current from the generator to the grid
     I_RI = (MVABase / sys_Sbase) * dq_ri(δ) * [iod; ioq]
-    #@show MVABase
-    #@show sys_Sbase
     #Update current
     current_r[1] += I_RI[1]
     current_i[1] += I_RI[2]

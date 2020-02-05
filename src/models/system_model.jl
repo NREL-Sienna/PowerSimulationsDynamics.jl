@@ -1,4 +1,4 @@
-function system_model!(out::Vector{T}, dx, x, sys, t) where {T<:Real}
+function system!(out::Vector{T}, dx, x, sys, t) where {T<:Real}
 
     #Index Setup
     bus_size = length(PSY.get_components(PSY.Bus, sys))
@@ -25,7 +25,7 @@ function system_model!(out::Vector{T}, dx, x, sys, t) where {T<:Real}
         ode_range = range(injection_count, length = n_states)
         injection_count = injection_count + n_states
         injection_start = injection_start + n_states
-        device_model!(
+        device!(
             x,
             injection_ode,
             view(V_r, bus_n),
@@ -56,7 +56,8 @@ function system_model!(out::Vector{T}, dx, x, sys, t) where {T<:Real}
             ix_range = range(branches_start, length = n_states)
             ode_range = range(branches_count, length = n_states)
             branches_count = branches_count + n_states
-            branch_model!(
+            I_injections_r, I_injections_i
+            branch!(
                 x,
                 dx,
                 branches_ode,
@@ -76,7 +77,7 @@ function system_model!(out::Vector{T}, dx, x, sys, t) where {T<:Real}
                 br,
                 sys,
             )
-
+            I_injections_r, I_injections_i
             out[ix_range] = branches_ode[ode_range] - dx[ix_range]
         end
     end
@@ -84,7 +85,7 @@ function system_model!(out::Vector{T}, dx, x, sys, t) where {T<:Real}
     for d in PSY.get_components(PSY.StaticInjection, sys)
         bus_n = PSY.get_number(PSY.get_bus(d))
 
-        device_model!(
+        device!(
             view(V_r, bus_n),
             view(V_i, bus_n),
             view(I_injections_r, bus_n),

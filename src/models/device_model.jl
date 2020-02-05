@@ -1,4 +1,4 @@
-function device_model!(
+function device!(
     x,
     output_ode::Vector{T},
     voltage_r,
@@ -9,7 +9,7 @@ function device_model!(
     ode_range::UnitRange{Int64},
     device::DynG,
     sys::PSY.System,
-) where {DynG <: PSY.DynamicGenerator, T <: Real}
+) where {DynG<:PSY.DynamicGenerator,T<:Real}
     #Obtain local device states
     n_states = PSY.get_n_states(device)
     device_states = @view x[ix_range]
@@ -49,7 +49,7 @@ function device_model!(
 
 end
 
-function device_model!(
+function device!(
     voltage_r,
     voltage_i,
     current_r,
@@ -63,7 +63,7 @@ function device_model!(
     return
 end
 
-function device_model!(
+function device!(
     voltage_r,
     voltage_i,
     current_r,
@@ -77,7 +77,7 @@ function device_model!(
     return
 end
 
-function device_model!(
+function device!(
     x,
     output_ode::Vector{T},
     voltage_r,
@@ -88,7 +88,7 @@ function device_model!(
     ode_range::UnitRange{Int64},
     device::DynI,
     sys::PSY.System,
-) where {DynI <: PSY.DynamicInverter, T <: Real}
+) where {DynI<:PSY.DynamicInverter,T<:Real}
 
     #Obtain local device states
     n_states = PSY.get_n_states(device)
