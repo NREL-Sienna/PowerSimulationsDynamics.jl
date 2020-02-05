@@ -18,7 +18,7 @@ using Sundials
 const PSY = PowerSystems
 ```
 
-`PowerSystems` is used to properly define the data structure, while `Sundials` is used to fsolve the problem defined in `LITS`. Finally we call use can call `PowerSystems` functions using the `PSY` abbreviation.
+`PowerSystems` is used to properly define the data structure, while `Sundials` is used to solve the problem defined in `LITS`. Finally we call use can call `PowerSystems` functions using the `PSY` abbreviation.
 
 ## Step 2: Data creation
 
@@ -47,7 +47,7 @@ nodes_OMIB = [
         "Bus 1", #Name
         "REF", #BusType (REF, PV, PQ)
         0, #Angle in radians
-        1.0, #Voltage in pu
+        1.05, #Voltage in pu
         (min = 0.94, max = 1.06), #Voltage limits in pu
         69, #Base voltage in kV
     ),
@@ -55,7 +55,7 @@ nodes_OMIB = [
 ]
 ```
 
-Note that two buses are defined in the vector `nodes_case1`. Similarly, to define the branches (that also has some parameters that are currently not used, such as the rate and angle limits):
+Note that two buses are defined in the vector `nodes_case1`. It is important that the bus numbers are ordered from ``1`` to ``n``, since that structure will be used to construct the vector of variables. Future versions of `LITS` will allow to relax this assumption. Similarly, to define the branches (that also has some parameters that are currently not used, such as the rate and angle limits):
 
 ```julia
 #Define the vector of branches
@@ -113,7 +113,7 @@ inf_gen_OMIB = [PSY.Source(
     "InfBus", #name
     true, #availability
     nodes_OMIB[1], #bus
-    1.00, #VR
+    1.05, #VR
     0.0, #VI
     0.000005, #Xth
 )]
@@ -156,7 +156,7 @@ pss_OMIB = PSSFixed(0.0) #No PSS without AVR
 ### Constructing the Generator ###
 gen_OMIB = PSY.DynamicGenerator(
     1, #Number
-    "Case1Gen", #name
+    "OMIB_Gen", #name
     nodes_OMIB[2], #bus
     1.0, #ω_ref
     1.0, #V_ref
@@ -189,7 +189,7 @@ for bus in nodes_OMIB
 end
 
 #Add the branches to the system
-for br in branches_OMIB
+for br in branch_OMIB
     PSY.add_component!(sys, br)
 end
 
@@ -205,79 +205,92 @@ end
 
 #Add the generator
 PSY.add_component!(sys, gen_OMIB)
-
 ```
 
-## Step 3: Initializing the problem
+## Step 3: Build the simulation and initializing the problem
 
-The next step is to create the simulation structure. This will create the indexing of our system that will be used to formulate the differential-algebraic system of equations.
+The next step is to create the simulation structure. This will create the indexing of our system that will be used to formulate the differential-algebraic system of equations. To do so, it is required to specify the perturbation that will occur in the system. `LITS` support two types of perturbations:
+- Three Phase Fault
+- Change in Reference Parameter
+
+In here, he will use a Three Phase Fault, that is modeled by modifying the admittance matrix of the system. To do so we create a ThreePhaseFault perturbation as follows:
+```julia
+#Obtain the Ybus of the faulted system
+Ybus_fault = PSY.Ybus(
+    branch_OMIB_fault, #fault set of lines
+    nodes_OMIB, #set of buses
+)[:,:]
+
+#Construct the perturbation
+perturbation_Ybus = ThreePhaseFault(
+    1.0, #change will occur at t = 1.0s
+    Ybus_fault, #new Ybus
+)
 ```
 
+With this, we are ready to create our simulation structure. We will skip solving for initial conditions to discuss about indexing. To construct our simulation we use:
+```julia
+#Time span of our simulation
+tspan = (0.0, 30.0)
 
+#Define Simulation
+sim = Simulation(
+    sys, #system
+    tspan, #time span
+    perturbation_Ybus, #Type of perturbation
+    initialize_simulation = false #keyword argument to not find initial conditions.
+)
 ```
+This will create the simulation structure that will be used to run the transient simulation and will modify the system to include the indexing. `LITS` will have the following structure for the vector of variables:
+```math
+x = \left[\begin{array}{c} v_r \\ v_i \\ z \end{array}\right]
+```
+on which ``v_r`` is the vector of real voltages of all buses, ``v_i`` is the vector of imaginary voltages of all buses and ``z`` is the rest of states defined by the dynamic devices. Then, the length of the vector of variables will ``2n + \text{len}(z)``, where ``n`` is the number of buses in the system. The indexing of the states can be found using:
+```julia
+ext = PSY.get_ext(sim.system) #Obtain ext information of the system
+ext["global_index"] #Showcase the global indexing of z
+```
+In this system, ``\delta`` of the generator is state 5 and ``\omega`` is state 6 (since the first 4 states are the bus voltages). In addition, ``ext["lits_counts"]`` has information on the total variables and total states (differential variables).
 
-The next step consists in finding an initial condition for the states. But first, we will explore some of the characteristics of our Dynamic System. All information (a ton) can be observed using `dump(case1_DynSystem)`. The following methods can be used to return some information:
-
-- `case1_DynSystem.buses`: Return the vector of buses of the dynamic system.
-- `case1_DynSystem.branches`: Return the vector of branches of the dynamic system.
-- `case1_DynSystem.dyn_injections`: Return the vector of dynamic injections of the dynamic system.
-- `case1_DynSystem.injections`: Return the vector of dynamic injections of the dynamic system.
-- `case1_DynSystem.DAE_vector`: Return the vector of booleans of the dynamic system. Returns `false` or 0 for states that are algebraic and `true` or 1 for states that have derivative defined (differential states). The arrangement will put first the real part of the voltage buses and next the imaginary part. After that the differential states are defined.
-- `case1_DynSystem.global_state_index`: Return an array of dictionaries that have the order of the states in the entire vector state.
-
-To initialize the problem we need to define an initial guess of the states:
+The next step consists in finding an initial condition for the states. In this case simply running
+```julia
+#Define Simulation
+sim = Simulation(
+    sys, #system
+    tspan, #time span
+    perturbation_Ybus, #Type of perturbation
+)
+```
+will correctly initialize the system. If no initial guess is provided, the system will use a flat start guess, assuming that all real voltages are equal to one, while imaginary voltages are equal to zero. Differential variables (states) will be guessed as zero too. The initial values can be obtained using ``sim.x0_init``. However, for most systems if a bad initial guess is used, the non-linear solver may fail in correctly initializing the system. For such purposes, an initial guess can be provided to the simulation as follows:
 
 ```julia
-#Initialize variables
-dx0 = zeros(LITS.get_total_rows(case1_DynSystem)) #Define a vector of zeros for the derivative
-x0 = [1.05, #VR_1
-      1.0, #VR_2
-      0.0, #VI_1
-      0.01, #VI_2
-      0.2, #δ
-      1.0] #ω
-tspan = (0.0, 30.0);
+#Initial guess
+x0_guess = [
+    1.0, #VR_1
+    1.0, #VR_2
+    0.0, #VI_1
+    0.0, #VI_2
+    0.2, #δ
+    1.0, #ω
+]
+
+#Define Simulation
+sim = Simulation(
+    sys, #system
+    tspan, #time span
+    perturbation_Ybus, #Type of perturbation
+    initial_guess = x0_guess, #initial guess
+)
+
+#Check the initial condition
+sim.x0_init
 ```
 
-We will use `NLsolve` to find the initial condition of the system:
+## Step 4: Run the Simulation
 
+Finally, to run the simulation we simply use:
 ```julia
-inif! = (out,x) -> LITS.system!(out, #output of the function
-                                      dx0, #derivatives equal to zero
-                                      x, #states
-                                       ([0.0],case1_DynSystem), #Parameters: [0.0] is not used
-                                        0.0) #time equals to zero.
-sys_solve = nlsolve(inif!, x0) #Solve using initial guess x0
-x0_init = sys_solve.zero
-```
-
-## Step 4: Build the Simulation
-
-Next we will construct the simulation that we are interested to run. But first, we define the pertubation we are interested in model. `LITS` have two perturbations already implemented, that are a change in the mechanical power `P_ref` and a change on the admittance matrix `Y_bus` of the system. In this case we define a change in the admittance matrix:
-
-```julia
-#Compute Y_bus after fault
-Ybus_fault = PSY.Ybus(branch_case1_fault, nodes_case1)[:,:] #Obtain Ybus for fault system
-
-#Define Fault using Callbacks
-cb = DiffEqBase.DiscreteCallback(LITS.change_t_one, #Change occurs at t=1
-                                 LITS.Y_change!) #Callback will change the Y_bus.
-```
-
-Now we define the simulation structure:
-
-```julia
-#Define Simulation Problem
-sim = Simulation(case1_DynSystem, #Dynamic System
-                        tspan, #Time span to simulate
-                        Ybus_fault, #Parameter that will be changed in the fault
-                        cb, #Callback
-                        x0_init) #Initial condition
-```
-
-Finally, to run the simulation:
-```julia
-#Solve problem in equilibrium
+#Solve problem
 run_simulation!(sim, #simulation structure
                 IDA(), #Sundials DAE Solver
                 dtmax=0.02); #Arguments: Maximum timestep allowed
@@ -287,12 +300,12 @@ run_simulation!(sim, #simulation structure
 
 After running the simulation, our simulation structure `sim` will have the solution. For that `sim.solution` can be used to explore the solution structure. In this case `sim.solution.t` returns the vector of time, while `sim.solution.u` return the array of states. In addition, `LITS` have two functions to obtain different states of the solution:
 
-- `get_state_series(sim, (:Case1Gen, :δ))`: can be used to obtain the solution as a tuple of time and the required state. In this case, we are obtaining the rotor angle `:δ` of the generator named `:Case1Gen`.
+- `get_state_series(sim, ("OMIB_Gen", :δ))`: can be used to obtain the solution as a tuple of time and the required state. In this case, we are obtaining the rotor angle `:δ` of the generator named `"OMIB_Gen"`.
 - `get_voltagemag_series(sim, 2)`: can be used to obtain the voltage magnitude as a tuple of time and voltage. In this case, we are obtaining the voltage magnitude at bus 2 (where the generator is located).
 
 ```julia
 using Plots
-angle = get_state_series(sim, (:Case1Gen, :δ))
+angle = get_state_series(sim, ("OMIB_Gen", :δ))
 plot(angle, xlabel="time", ylabel="rotor angle [rad]", label="rotor angle")
 
 volt = get_voltagemag_series(sim, 2)
