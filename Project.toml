@@ -16,7 +16,7 @@ Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 DiffEqBase = "6"
 ForwardDiff = "~v0.10"
 NLsolve = "4"
-PowerSystems = "~0.8"
+PowerSystems = "~0.9"
 Sundials = "3"
 julia = "^1.2"
 

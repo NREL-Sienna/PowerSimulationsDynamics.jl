@@ -18,6 +18,7 @@ export get_voltagemag_series
 export print_init_states
 
 ####################################### Package Imports ####################################
+import InfrastructureSystems
 import DiffEqBase
 import ForwardDiff
 import SparseArrays: SparseMatrixCSC
@@ -27,6 +28,7 @@ import Base.to_index
 import NLsolve
 import PowerSystems
 const PSY = PowerSystems
+const IS = InfrastructureSystems
 
 #Structs for General Devices and System
 include("base/definitions.jl")
