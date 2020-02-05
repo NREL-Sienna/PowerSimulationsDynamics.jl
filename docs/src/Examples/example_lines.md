@@ -238,7 +238,7 @@ We will use `NLsolve` to find the initial condition of the system:
 
 ```julia
 #Find initial condition
-inif! = (out,x) -> LITS.system_model!(out, dx0 ,x, ([0.0],case9_DynSystem), 0.0)
+inif! = (out,x) -> LITS.system!(out, dx0 ,x, ([0.0],case9_DynSystem), 0.0)
 sys_solve = nlsolve(inif!, x0, xtol=:1e-8,ftol=:1e-8,method=:trust_region)
 x0_init = sys_solve.zero
 ```

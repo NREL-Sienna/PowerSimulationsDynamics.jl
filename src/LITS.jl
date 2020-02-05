@@ -8,14 +8,17 @@ export Simulation
 export run_simulation!
 export ThreePhaseFault
 export ControlReferenceChange
+export DynamicLine
 
 # Export for routines
+export make_dynamic_branch!
 export small_signal_analysis
 export get_state_series
 export get_voltagemag_series
 export print_init_states
 
 ####################################### Package Imports ####################################
+import InfrastructureSystems
 import DiffEqBase
 import ForwardDiff
 import SparseArrays: SparseMatrixCSC
@@ -25,6 +28,7 @@ import Base.to_index
 import NLsolve
 import PowerSystems
 const PSY = PowerSystems
+const IS = InfrastructureSystems
 
 #Structs for General Devices and System
 include("base/definitions.jl")
@@ -34,8 +38,8 @@ include("base/small_signal_results.jl")
 include("base/simulation.jl")
 
 #Common Models
-include("models/branch_model.jl")
-include("models/device_model.jl")
+include("models/branch.jl")
+include("models/device.jl")
 include("models/kcl.jl")
 include("models/dynline_model.jl")
 include("models/ref_transformations.jl")
@@ -60,10 +64,11 @@ include("models/load_models.jl")
 include("models/source_models.jl")
 
 #System Model
-include("models/system_model.jl")
+include("models/system.jl")
 
 #Utils
 include("utils/plot_utils.jl")
 include("utils/print.jl")
+include("utils/kwargs_check.jl")
 
 end # module
