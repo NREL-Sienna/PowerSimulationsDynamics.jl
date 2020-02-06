@@ -9,15 +9,16 @@ makedocs(
         "Home" => "index.md",
         # "User Guide" => "man/guide.md",
         "Tutorials" => Any[
-        "Tutorial 1: OMIB" => "Examples/example_OMIB.md",
-        "Tutorial 2: Dynamic Lines" => "Examples/example_lines.md"
+            "Tutorial 1: OMIB" => "Examples/example_OMIB.md",
+            "Tutorial 2: Dynamic Lines" => "Examples/example_lines.md",
         ],
         "Models" => Any[
-           "Network" => "Models/network.md",
-           "Generator" => "Models/gens.md",
-           "Inverter" => "Models/inverters.md"
-        ]
-    ]
+            "Network" => "Models/network.md",
+            "Generator" => "Models/gens.md",
+            "Inverter" => "Models/inverters.md",
+            "Small Signal" => "Models/small.md",
+        ],
+    ],
 )
 
 deploydocs(

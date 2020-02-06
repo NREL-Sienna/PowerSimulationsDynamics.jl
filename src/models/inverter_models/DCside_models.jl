@@ -1,22 +1,13 @@
-function mdl_DCside_ode!( device::DynInverter{C,O,VC,FixedDCSource,P,F}) where {C <: Converter,
-                                                   O <: OuterControl,
-                                                   VC <: VSControl,
-                                                   P <: FrequencyEstimator,
-                                                   F <: Filter}
-
-    #Obtain external states inputs for component
-
-    #Obtain inner variables for component
-
-    #Get parameters
-    Vdc = device.dc_source.voltage
-
-    #Obtain indices for component w/r to device
-
-    #Define internal states for converter
-
-    #Compute states... none?
+function mdl_DCside_ode!(
+    device::PSY.DynamicInverter{C, O, VC, PSY.FixedDCSource, P, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    VC <: PSY.VSControl,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
 
     #Update inner_vars
-    device.inner_vars[Vdc_var] = Vdc
+    get_inner_vars(device)[Vdc_var] = PSY.get_voltage(PSY.get_dc_source(device))
 end

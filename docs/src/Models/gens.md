@@ -22,13 +22,13 @@ Each generator is defined in its own ``dq`` reference frame. Let ``\delta`` be t
 \end{align}
 ```
 
-Models are based from Federico Milano's book: "Power System Modelling and Scripting" and Prabha Kundur's book: "Power System's Stability and Control"
+Models are based from Federico Milano's book: "Power System Modelling and Scripting" and Prabha Kundur's book: "Power System's Stability and Control" and structures are defined in ```PowerSystems.jl``` abbreviated as ```PSY```.
 
 ## Machines
 
 The machine component describes the stator-rotor electromagnetic dynamics.
 
-### Classical Model (Zero Order)
+### Classical Model (Zero Order) ```[PSY.BaseMachine]```
 This is the classical order model that does not have differential equations in its machine model (``\delta`` and ``\omega`` are defined in the shaft):
 
 ```math
@@ -38,7 +38,7 @@ p_e \approx \tau_e &= (v_q + r_a i_q)i_q + (v_d + r_ai_d)i_d \tag{1b}
 \end{align}
 ```
 
-### One d- One q- Model (2th Order)
+### One d- One q- Model (2th Order) ```[PSY.OneDOneQMachine]```
 This model includes two transient emf with their respective differential equations:
 
 ```math
@@ -50,7 +50,7 @@ p_e \approx \tau_e &= (v_q + r_a i_q)i_q + (v_d + r_ai_d)i_d \tag{2d}
 \end{align}
 ```
 
-### Marconato Machine (6th Order)
+### Marconato Machine (6th Order) ```[PSY.MarconatoMachine]```
 
 The Marconato model defines 6 differential equations, two for stator fluxes and 4 for transient and subtransient emfs:
 
@@ -77,7 +77,7 @@ with
 \end{align*}
 ```
 
-### Simplified Marconato Machine (4th Order)
+### Simplified Marconato Machine (4th Order) ```[PSY.SimpleMarconatoMachine]```
 
 This model neglects the derivative of stator fluxes (``\dot{\psi}_d`` and  ``\dot{\psi}_q``) and assume that the rotor speed stays close to 1 pu (``\omega\psi_{d}=\psi_{d}`` and ``\omega\psi_{q}=\psi_{q}``) that allows to remove the stator fluxes variables from the Marconato model.
 
@@ -102,7 +102,7 @@ with
 ```
 
 
-### Anderson-Fouad Machine (6th Order)
+### Anderson-Fouad Machine (6th Order) ```[PSY.AndersonFouadMachine]```
 
 The Anderson-Fouad model also defines 6 differential equations, two for stator fluxes and 4 for transient and subtransient emfs and is derived from the Marconato model by defining ``\gamma_d \approx \gamma_q \approx T_{AA} \approx 0``:
 
@@ -120,7 +120,7 @@ i_q &= \frac{1}{x_q''} (-e_d'' - \psi_q) \tag{5h} \\
 \end{align}
 ```
 
-### Simplified Anderson-Fouad Machine (4th Order)
+### Simplified Anderson-Fouad Machine (4th Order) ``[PSY.SimpleAFMachine]``
 
 Similar to the Simplified Marconato Model, this model neglects the derivative of stator fluxes (``\dot{\psi}_d`` and  ``\dot{\psi}_q``) and assume that the rotor speed stays close to 1 pu (``\omega \psi_d = \psi_d`` and ``\omega \psi_q = \psi_q``) that allows to remove the stator fluxes variables from the model:
 
@@ -135,7 +135,7 @@ p_e \approx \tau_e &= (v_q + r_a i_q)i_q + (v_d + r_ai_d)i_d \tag{6f}
 \end{align}
 ```
 
-### Rotor Fluxes Model (5th Order)
+### Rotor Fluxes Model (5th Order) ```[PSY.FullMachine]```
 
 This models describes a machine model using 2 stator fluxes ``\psi_d`` and ``\psi_q``, the rotor field flux ``\psi_f``, the d-axis damping ``\psi_{1d}`` and only one q-axis damping circuit ``\psi_{1q}``:
 
@@ -157,7 +157,7 @@ This models describes a machine model using 2 stator fluxes ``\psi_d`` and ``\ps
 
 The shaft component defines the rotating mass of the synchronous generator.
 
-### Rotor Mass Shaft
+### Rotor Mass Shaft ```[PSY.SingleMass]```
 
 This is the standard model, on which one single mass (typically the rotor) is used to model the entire inertia of the synchronous generator. Each generator's rotating frame use a reference frequency ``\omega_s``, that typically is the synchronous one (i.e. ``\omega_s = 1.0``). The model defines two differential equations for the rotor angle ``\delta`` and the rotor speed ``\omega``:
 
@@ -169,7 +169,7 @@ This is the standard model, on which one single mass (typically the rotor) is us
 ```
 
 
-### Five-Mass Shaft
+### Five-Mass Shaft ```[PSY.FiveMassShaft]```
 
 This model describes model connecting a high-pressure (hp) steam turbine, intermediate-pressure (ip) steam turbine, low-pressure (lp) steam pressure, rotor and exciter (ex) connected in series (in that order) in the same shaft using a spring-mass model:
 
@@ -192,11 +192,11 @@ This model describes model connecting a high-pressure (hp) steam turbine, interm
 
 AVR are used to determine the voltage in the field winding ``v_f`` in the model.
 
-### Fixed AVR
+### Fixed AVR ```[PSY.AVRFixed]```
 
 This is a simple model that set the field voltage to be equal to a desired constant value ``v_f = v_{\text{fix}}``.
 
-### Simple AVR
+### Simple AVR ```[PSY.AVRSimple]```
 
 This depicts the most basic AVR, on which the field voltage is an integrator over the difference of the measured voltage and a reference:
 
@@ -206,7 +206,7 @@ This depicts the most basic AVR, on which the field voltage is an integrator ove
 \end{align}
 ```
 
-### AVR Type I
+### AVR Type I ```[PSY.AVRTypeI]```
 
 This AVR is a simplified version of the IEEE DC1 AVR model:
 
@@ -227,7 +227,7 @@ S_e(v_f) = A_e \exp(B_e|v_f|)
 \end{align*}
 ```
 
-### AVR Type II
+### AVR Type II ```[PSY.AVRTypeII]```
 
 This model represents a static exciter with higher gains and faster response than the Type I:
 
@@ -254,11 +254,11 @@ S_e(v_f) &= A_e \exp(B_e|v_f|)
 
 PSS are used to add an additional signal ``v_s`` to the field voltage: ``v_f = v_f^{\text{avr}} + v_s``.
 
-### Fixed PSS
+### Fixed PSS ```[PSY.PSSFixed]```
 
 This is a simple model that set the stabilization signal to be equal to a desired constant value ``v_s = v_{s}^{\text{fix}}``. The absence of PSS can be modelled using this component with ``v_s^{\text{fix}} = 0``.
 
-### Simple PSS
+### Simple PSS ```[PSY.PSSSimple]```
 
 This is the most basic PSS that can be implemented, on which the stabilization signal is simply a proportional controller over the frequency and electrical power:
 
@@ -272,11 +272,11 @@ v_s = K_{\omega}(\omega - \omega_s) + K_p(\omega \tau_e - P_{\text{ref}}) \tag{1
 
 This section describes how mechanical power is modified to provide primary frequency control with synchronous generators. It is assumed that ``\tau_{\text{ref}} = P_{\text{ref}}`` since they are decided at nominal frequency ``\omega = 1``.
 
-### Fixed TG
+### Fixed TG ```[PSY.TGFixed]```
 
 This a simple model that set the mechanical torque to be equal to a proportion of the desired reference ``\tau_m = \eta P_{\text{ref}}``. To set the mechanical torque to be equal to the desired power, the value of ``\eta`` is set to 1.
 
-### TG Type I
+### TG Type I ```[PSY.TGTypeI]```
 
 This turbine governor is described by a droop controller and a low-pass filter to model the governor and two lead-lag blocks to model the servo and reheat of the turbine governor.
 
@@ -297,7 +297,7 @@ p_{\text{in}} = P_{\text{ref}} + \frac{1}{R}(\omega_s - 1)
 \end{align*}
 ```
 
-### TG Type II
+### TG Type II ```[PSY.TGTypeII]```
 
 This turbine governor is a simplified model of the Type I.
 
@@ -311,23 +311,4 @@ This turbine governor is a simplified model of the Type I.
 
 ## Reference
 
-```@docs
-LITS.BaseMachine
-LITS.OneDOneQMachine
-LITS.MarconatoMachine
-LITS.SimpleMarconatoMachine
-LITS.AndersonFouadMachine
-LITS.SimpleAFMachine
-LITS.FullMachine
-LITS.SingleMass
-LITS.FiveMassShaft
-LITS.AVRFixed
-LITS.AVRSimple
-LITS.AVRTypeI
-LITS.AVRTypeII
-LITS.PSSFixed
-LITS.PSSSimple
-LITS.TGFixed
-LITS.TGTypeI
-LITS.TGTypeII
-```
+For constructors check the API on [PowerSystems.jl documentation](https://nrel.github.io/PowerSystems.jl/latest/api/PowerSystems/)

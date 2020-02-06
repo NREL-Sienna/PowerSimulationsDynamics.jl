@@ -1,34 +1,28 @@
-function mdl_tg_ode!(device_states,
-                    output_ode,
-                    device::DynGenerator{M, S, A, TGFixed, P})  where {M <: Machine,
-                                                                       S <: Shaft,
-                                                                       A <: AVR,
-                                                                       P <: PSS}
+function mdl_tg_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Update inner vars
-    device.inner_vars[τm_var] = get_P_ref(device) * device.tg.efficiency
-    #@show device
-    #@show device.inner_vars[τm_var]
-
+    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
+    get_inner_vars(device)[τm_var] = P_ref * PSY.get_efficiency(PSY.get_tg(device))
 
     return
-
 end
 
-
-function mdl_tg_ode!(device_states,
-                    output_ode,
-                    device::DynGenerator{M, S, A, TGTypeI, P})  where {M <: Machine,
-                                                                       S <: Shaft,
-                                                                       A <: AVR,
-                                                                       P <: PSS}
+function mdl_tg_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = get_ω_ref(device)
-    P_ref = get_P_ref(device)
+    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
+    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
 
     #Obtain indices for component w/r to device
-    local_ix = device.local_state_ix[device.tg]
+    local_ix = get_local_state_ix(device, PSY.TGTypeI)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -37,23 +31,24 @@ function mdl_tg_ode!(device_states,
     x_g3 = internal_states[3]
 
     #Obtain external states inputs for component
-    external_ix = device.input_port_mapping[device.tg]
+    external_ix = get_input_port_ix(device, PSY.TGTypeI)
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    R = device.tg.R
-    Ts = device.tg.Ts
-    Tc = device.tg.Tc
-    T3 = device.tg.T3
-    T4 = device.tg.T4
-    T5 = device.tg.T5
-    P_min = device.tg.P_min
-    P_max = device.tg.P_max
+    tg = PSY.get_tg(device)
+    R = PSY.get_R(tg)
+    Ts = PSY.get_Ts(tg)
+    Tc = PSY.get_Tc(tg)
+    T3 = PSY.get_T3(tg)
+    T4 = PSY.get_T4(tg)
+    T5 = PSY.get_T5(tg)
+    P_min = PSY.get_P_min(tg)
+    P_max = PSY.get_P_max(tg)
 
     #Compute auxiliary parameters
-    P_in = P_ref + (1.0/R)*(ω_ref - ω[1])
+    P_in = P_ref + (1.0 / R) * (ω_ref - ω[1])
 
-    #Set anti-windup for P_in. NOT WORKING
+    #Set anti-windup for P_in. #TODO in callbacks
     #if P_in > P_max
     #    P_in = P_max
     #elseif P_in < P_min
@@ -61,50 +56,48 @@ function mdl_tg_ode!(device_states,
     #end
 
     #Compute 3 States TG ODE:
-    output_ode[local_ix[1]] = (1.0/Ts)*(P_in - x_g1)
-    output_ode[local_ix[2]] = (1.0/Tc)*((1.0 - T3/Tc)*x_g1 - x_g2)
-    output_ode[local_ix[3]] = (1.0/T5)*((1.0 - T4/T5)*(x_g2 + (T3/Tc)*x_g1) - x_g3)
+    output_ode[local_ix[1]] = (1.0 / Ts) * (P_in - x_g1)
+    output_ode[local_ix[2]] = (1.0 / Tc) * ((1.0 - T3 / Tc) * x_g1 - x_g2)
+    output_ode[local_ix[3]] =
+        (1.0 / T5) * ((1.0 - T4 / T5) * (x_g2 + (T3 / Tc) * x_g1) - x_g3)
 
     #Update mechanical torque
-    device.inner_vars[τm_var] = x_g3 + (T4/T5)*(x_g2 + (T3/Tc)*x_g1)
+    get_inner_vars(device)[τm_var] = x_g3 + (T4 / T5) * (x_g2 + (T3 / Tc) * x_g1)
 
     return
 end
 
-
-
-
-function mdl_tg_ode!(device_states,
-                    output_ode,
-                    device::DynGenerator{M, S, A, TGTypeII, P})  where {M <: Machine,
-                                                                       S <: Shaft,
-                                                                       A <: AVR,
-                                                                       P <: PSS}
+function mdl_tg_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = get_ω_ref(device)
-    P_ref = get_P_ref(device)
+    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
+    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
 
     #Obtain indices for component w/r to device
-    local_ix = device.local_state_ix[device.tg]
+    local_ix = get_local_state_ix(device, PSY.TGTypeII)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
     xg = internal_states[1]
 
     #Obtain external states inputs for component
-    external_ix = device.input_port_mapping[device.tg]
+    external_ix = get_input_port_ix(device, PSY.TGTypeII)
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    R = device.tg.R
-    T1 = device.tg.T1
-    T2 = device.tg.T2
-    τ_min = device.tg.τ_min
-    τ_max = device.tg.τ_max
+    tg = PSY.get_tg(device)
+    R = PSY.get_R(tg)
+    T1 = PSY.get_T1(tg)
+    T2 = PSY.get_T2(tg)
+    τ_min = PSY.get_τ_min(tg)
+    τ_max = PSY.get_τ_max(tg)
 
     #Compute auxiliary parameters
-    τ_m = xg + (1.0/R)*(ω_ref - ω[1]) + P_ref/1.0
+    τ_m = xg + (1.0 / R) * (ω_ref - ω[1]) + P_ref / 1.0
 
     #Set anti-windup for τ_m. NOT WORKING
     #if τ_m > τ_max
@@ -114,10 +107,10 @@ function mdl_tg_ode!(device_states,
     #end
 
     #Compute 1 State TG ODE:
-    output_ode[local_ix[1]] = (1.0/T2)*( (1.0/R)*(1- T2/T1)*(ω_ref - ω[1]) - xg )
+    output_ode[local_ix[1]] = (1.0 / T2) * ((1.0 / R) * (1 - T2 / T1) * (ω_ref - ω[1]) - xg)
 
     #Update mechanical torque
-    device.inner_vars[τm_var] = τ_m
+    get_inner_vars(device)[τm_var] = τ_m
 
     return
 end

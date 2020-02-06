@@ -1,7 +1,8 @@
-function Base.show(io::IO, op_model::DynamicSystem)
-    println(io, "System()")
+function Base.show(io::IO, ::Simulation)
+    println(io, "Simulation()")
 end
 
-function Base.show(io::IO, op_model::DynamicSimulation)
-    println(io, "Simulation()")
+function Base.show(io::IO, smr::SmallSignalOutput)
+    val = smr.stable ? "is" : "is not"
+    println(io, "The system $(val) small signal stable")
 end

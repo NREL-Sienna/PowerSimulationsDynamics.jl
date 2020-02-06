@@ -1,46 +1,40 @@
-function mdl_pss_ode!(device_states,
-                     output_ode,
-                     device::DynGenerator{M, S, A, TG, PSSFixed})  where {M <: Machine,
-                                                                        S <: Shaft,
-                                                                        A <: AVR,
-                                                                        TG <: TurbineGov}
+function mdl_pss_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
-    #Compute Vs update
-    device.inner_vars[V_pss_var] = device.pss.Vs
+    #Update V_pss on inner vars
+    get_inner_vars(device)[V_pss_var] = PSY.get_V_pss(PSY.get_pss(device))
 
     return
 end
 
-
-
-function mdl_pss_ode!(device_states,
-                     output_ode,
-                     device::DynGenerator{M, S, A, TG, PSSSimple})  where {M <: Machine,
-                                                                        S <: Shaft,
-                                                                        A <: AVR,
-                                                                        TG <: TurbineGov}
+function mdl_pss_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSSimple},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
     #Get references
-    ω_ref = get_ω_ref(device)
-    P_ref = get_P_ref(device)
+    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
+    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
 
     #Obtain external states for device
-    external_ix = device.input_port_mapping[device.tg]
+    external_ix = get_input_port_ix(device, PSY.PSSSimple)
     ω = @view device_states[external_ix]
 
     #Define external inner vars for component
-    V_th = device.inner_vars[Vh_var]
-    τe = device.inner_vars[τe_var]
+    V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
+    τe = get_inner_vars(device)[τe_var]
 
     #Get parameters
-    K_ω = device.pss.K_ω
-    K_p = device.pss.K_p
+    pss = PSY.get_pss(device)
+    K_ω = PSY.get_K_ω(pss)
+    K_p = PSY.get_K_p(pss)
 
-    #Update inner vars
-    device.inner_vars[V_pss_var] = K_ω*(ω-ω_ref) + K_p*(ω*τe - P_ref)
-
-
-
+    #Update V_pss on inner vars
+    get_inner_vars(device)[V_pss_var] = K_ω * (ω - ω_ref) + K_p * (ω * τe - P_ref)
 
     return
 end

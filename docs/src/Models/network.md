@@ -22,10 +22,10 @@ Each line is defined using a ``\pi`` model connecting two buses ``(n,m)``, with 
 
 ```math
 \begin{align}
-Y_{nn} &+= \frac{1}{r+jx} + jc_n \\
-Y_{nm} &+= \frac{-1}{r+jx} \\
-Y_{mm} &+= \frac{1}{r+jx} + jc_m \\
-Y_{mn} &+= \frac{-1}{r+jx} \\
+Y_{nn} &+\!= \frac{1}{r+jx} + jc_n \\
+Y_{nm} &+\!= \frac{-1}{r+jx} \\
+Y_{mm} &+\!= \frac{1}{r+jx} + jc_m \\
+Y_{mn} &+\!= \frac{-1}{r+jx} \\
 \end{align}
 ```
 
