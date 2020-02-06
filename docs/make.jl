@@ -1,6 +1,5 @@
 using Documenter, LITS
 const PSYPATH = dirname(pathof(LITS))
-const PSY = PowerSystems
 
 makedocs(
     modules = [LITS],
