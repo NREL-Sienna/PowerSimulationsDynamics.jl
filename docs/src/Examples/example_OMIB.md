@@ -250,7 +250,7 @@ on which ``v_r`` is the vector of real voltages of all buses, ``v_i`` is the vec
 ext = PSY.get_ext(sim.system) #Obtain ext information of the system
 ext["global_index"] #Showcase the global indexing of z
 ```
-In this system, ``\delta`` of the generator is state 5 and ``\omega`` is state 6 (since the first 4 states are the bus voltages). In addition, ``ext["lits_counts"]`` has information on the total variables and total states (differential variables).
+In this system, ``\delta`` of the generator is state 5 and ``\omega`` is state 6 (since the first 4 states are the bus voltages). In addition, `ext["lits_counts"]` has information on the total variables and total states (differential variables).
 
 The next step consists in finding an initial condition for the states. In this case simply running
 ```julia
@@ -261,7 +261,7 @@ sim = Simulation(
     perturbation_Ybus, #Type of perturbation
 )
 ```
-will correctly initialize the system. If no initial guess is provided, the system will use a flat start guess, assuming that all real voltages are equal to one, while imaginary voltages are equal to zero. Differential variables (states) will be guessed as zero too. The initial values can be obtained using ``sim.x0_init``. However, for most systems if a bad initial guess is used, the non-linear solver may fail in correctly initializing the system. For such purposes, an initial guess can be provided to the simulation as follows:
+will correctly initialize the system. If no initial guess is provided, the system will use a flat start guess, assuming that all real voltages are equal to one, while imaginary voltages are equal to zero. Differential variables (states) will be guessed as zero too. The initial values can be obtained using `sim.x0_init`. However, for most systems if a bad initial guess is used, the non-linear solver may fail in correctly initializing the system. For such purposes, an initial guess can be provided to the simulation as follows:
 
 ```julia
 #Initial guess
@@ -295,6 +295,7 @@ run_simulation!(sim, #simulation structure
                 IDA(), #Sundials DAE Solver
                 dtmax=0.02); #Arguments: Maximum timestep allowed
 ```
+In some cases, the dynamic time step used for the simulation may fail. In such case, the keyword argument `dtmax` can be used to limit the maximum time step allowed for the simulation.
 
 ## Step 5: Exploring the solution
 
@@ -319,3 +320,19 @@ plot(volt, xlabel="time", ylabel="Voltage [pu]", label="V_2")
 ```@raw html
 <img src="../../assets/voltage_OMIB.png" width="75%"/>
 ``` ⠀
+
+## Optional: Small Signal Analysis
+
+`LITS 0.3.0` uses automatic differentiation to compute the reduced Jacobian of the system for the differential states. This can be used to analyze the local stability of the linearized system.
+
+```julia
+small_sig = small_signal_analysis(sim)
+```
+
+The `small_sig` result can report the reduced jacobian for ``\delta`` and ``\omega``, and can also be used to report the eigenvalues of the reduced linearized system.
+
+```julia
+small_sig.reduced_jacobian
+
+small_sig.eigenvalues
+```
