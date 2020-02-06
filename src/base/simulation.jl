@@ -18,14 +18,17 @@ function Simulation(
     initialize_simulation::Bool = true,
     kwargs...,
 )
-
+    check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
     DAE_vector = _index_dynamic_system!(system)
     var_count = get_variable_count(system)
 
     if initialize_simulation
         @info("Initializing Simulation States")
-        x0_guess = get(kwargs, :initial_guess, zeros(var_count))
+        flat_start = zeros(var_count)
+        bus_count = length(PSY.get_components(PSY.Bus, system))
+        flat_start[1:bus_count] .= 1.0
+        x0_guess = get(kwargs, :initial_guess, flat_start)
         x0_init, initialized = _calculate_initial_conditions(system, x0_guess)
     else
         x0_init = zeros(var_count)
@@ -34,7 +37,7 @@ function Simulation(
     dx0 = zeros(var_count)
     callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
     prob = DiffEqBase.DAEProblem(
-        system_model!,
+        system!,
         dx0,
         x0_init,
         tspan,
@@ -93,7 +96,7 @@ function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Fl
     # TODO: Code to refine initial_guess
     var_count = get_variable_count(sys)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    inif! = (out, x) -> system_model!(
+    inif! = (out, x) -> system!(
         out,    #output of the function
         dx0,    #derivatives equal to zero
         x,      #states
@@ -190,17 +193,35 @@ function _make_device_index!(device::PSY.DynamicInjection)
     return
 end
 
+function _add_states_to_global!(
+    global_state_index::Dict{String, Dict{Symbol, Int64}},
+    state_space_ix::Vector{Int64},
+    device::PSY.Device,
+)
+    device_state_ix = Dict{Symbol, Int}()
+    for s in PSY.get_states(device)
+        state_space_ix[1] += 1
+        device_state_ix[s] = state_space_ix[1]
+    end
+    global_state_index[PSY.get_name(device)] = device_state_ix
+    return
+end
+
 function _index_dynamic_system!(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     DAE_vector = collect(falses(n_buses * 2))
     global_state_index = Dict{String, Dict{Symbol, Int64}}()
     n_buses = length(PSY.get_components(PSY.Bus, sys))
-    state_space_ix = n_buses * 2
+    state_space_ix = [n_buses * 2]
     total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
+    static_bus_vars = 2 * n_buses
 
-    for d in PSY.get_components(PSY.DynamicInjection, sys)
+    dynamic_injection = PSY.get_components(PSY.DynamicInjection, sys)
+    isempty(dynamic_injection) &&
+    error("System doesn't contain any DynamicInjection devices")
+    for d in dynamic_injection
         if !(:states in fieldnames(typeof(d)))
             continue
         end
@@ -208,46 +229,39 @@ function _index_dynamic_system!(sys::PSY.System)
         device_n_states = PSY.get_n_states(d)
         DAE_vector = vcat(DAE_vector, collect(trues(device_n_states)))
         total_states += device_n_states
-        state_ix = Dict{Symbol, Int}()
-        for s in PSY.get_states(d)
-            state_space_ix += 1
-            state_ix[s] = state_space_ix
-        end
-        global_state_index[PSY.get_name(d)] = state_ix
+        _add_states_to_global!(global_state_index, state_space_ix, d)
     end
-    injection_n_states = state_space_ix - n_buses * 2
+    injection_n_states = state_space_ix[1] - n_buses * 2
 
-    #=
-        if !(isnothing(sys.dyn_branch))
-            first_dyn_branch_point =  state_space_ix + 1
-            for br in sys.dyn_branch
-                arc = br.arc
-                from_bus_number = PSY.get_number(arc.from)
-                to_bus_number = PSY.get_number(arc.to)
-                sys.DAE_vector[from_bus_number] = sys.DAE_vector[from_bus_number+n_buses] = true
-                sys.DAE_vector[to_bus_number] = sys.DAE_vector[to_bus_number+n_buses] = true
-                sys.DAE_vector = vcat(sys.DAE_vector, collect(trues(br.n_states)))
-                total_states += br.n_states
-                state_ix = Dict{Symbol, Int}()
-                for (ix, s) in enumerate(getfield(br, :states))
-                    state_space_ix += 1
-                    state_ix[s] = state_space_ix
-                end
-                sys.global_state_index[getfield(br, :name)] = state_ix
-            end
-
-            for (ix, val) in enumerate(sys.DAE_vector[1:n_buses])
-                if val
-                    sys.global_state_index[Symbol("V_$(ix)")] = Dict(:R => ix,
-                                                                    :I => ix + n_buses)
-                    total_states += 2
-                    state_space_ix += 2
-                end
-            end
-            branches_n_states = state_space_ix - injection_n_states - n_buses*2
+    dyn_branches = PSY.get_components(DynamicLine, sys)
+    if !(isempty(dyn_branches))
+        first_dyn_branch_point = state_space_ix[1] + 1
+        for br in dyn_branches
+            arc = PSY.get_arc(br)
+            n_states = PSY.get_n_states(br)
+            from_bus_number = PSY.get_number(arc.from)
+            to_bus_number = PSY.get_number(arc.to)
+            DAE_vector[from_bus_number] = DAE_vector[from_bus_number + n_buses] = true
+            DAE_vector[to_bus_number] = DAE_vector[to_bus_number + n_buses] = true
+            DAE_vector = vcat(DAE_vector, collect(trues(n_states)))
+            total_states += n_states
+            _add_states_to_global!(global_state_index, state_space_ix, br)
         end
-    =#
-    @assert total_states == state_space_ix - n_buses * 2
+
+        for (ix, val) in enumerate(DAE_vector[1:n_buses])
+            if val
+                global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
+                total_states += 2
+                state_space_ix[1] += 2
+                static_bus_vars -= 2
+                @assert static_bus_vars >= 0
+            end
+        end
+        branches_n_states = state_space_ix[1] - injection_n_states - n_buses * 2
+    else
+        @debug("System doesn't contain Dynamic Branches")
+    end
+    @assert total_states == state_space_ix[1] - n_buses * 2
 
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
         Ybus = PSY.Ybus(sys)[:, :]
@@ -261,7 +275,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :branches_n_states => branches_n_states,
         :first_dyn_injection_pointer => 2 * n_buses + 1,
         :first_dyn_branch_point => first_dyn_branch_point,
-        :total_variables => total_states + 2 * n_buses,
+        :total_variables => total_states + static_bus_vars,
     )
 
     sys_ext[LITS_COUNTS] = counts
@@ -342,10 +356,16 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     if sim.reset
         @error("Reset the simulation")
     end
+
+    dyn_branches = PSY.get_components(DynamicLine, sim.system)
+    if !(isempty(dyn_branches))
+        @error("Small Signal Analysis is not currently supported for models with DynamicLines")
+    end
+
     _change_vector_type(sim.system)
     var_count = LITS.get_variable_count(sim.system)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    sysf! = (out, x) -> LITS.system_model!(
+    sysf! = (out, x) -> LITS.system!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
         x,              #states

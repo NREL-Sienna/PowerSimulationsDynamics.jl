@@ -1,4 +1,4 @@
-function device_model!(
+function device!(
     x,
     output_ode::Vector{T},
     voltage_r,
@@ -49,7 +49,7 @@ function device_model!(
 
 end
 
-function device_model!(
+function device!(
     voltage_r,
     voltage_i,
     current_r,
@@ -63,7 +63,7 @@ function device_model!(
     return
 end
 
-function device_model!(
+function device!(
     voltage_r,
     voltage_i,
     current_r,
@@ -77,7 +77,7 @@ function device_model!(
     return
 end
 
-function device_model!(
+function device!(
     x,
     output_ode::Vector{T},
     voltage_r,
