@@ -25,7 +25,10 @@ function Simulation(
 
     if initialize_simulation
         @info("Initializing Simulation States")
-        x0_guess = get(kwargs, :initial_guess, zeros(var_count))
+        flat_start = zeros(var_count)
+        bus_count = length(PSY.get_components(PSY.Bus, system))
+        flat_start[1:bus_count] .= 1.0
+        x0_guess = get(kwargs, :initial_guess, flat_start)
         x0_init, initialized = _calculate_initial_conditions(system, x0_guess)
     else
         x0_init = zeros(var_count)

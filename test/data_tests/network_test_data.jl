@@ -304,6 +304,84 @@ branches_3lines_case8_fault(nodes_3bus) = [
     ),
 ]
 
+branch_3bus_case9(nodes) = [
+    PSY.Line(
+        "Line1",
+        true,
+        0.0,
+        0.0,
+        Arc(from = nodes[1], to = nodes[3]),
+        0.01,
+        0.12,
+        (from = 0.1, to = 0.1),
+        100,
+        1.04,
+    ),
+    PSY.Line(
+        "Line2",
+        true,
+        0.0,
+        0.0,
+        Arc(from = nodes[1], to = nodes[2]),
+        0.01,
+        0.12,
+        (from = 0.1, to = 0.1),
+        100,
+        1.04,
+    ),
+    PSY.Line(
+        "Line3",
+        true,
+        0.0,
+        0.0,
+        Arc(from = nodes[2], to = nodes[3]),
+        0.02,
+        0.9,
+        (from = 0.5, to = 0.5),
+        100,
+        1.04,
+    ),
+]
+
+branch_3bus_case9_fault(nodes) = [
+    PSY.Line(
+        "Line1",
+        true,
+        0.0,
+        0.0,
+        Arc(from = nodes[1], to = nodes[3]),
+        0.03,
+        0.36,
+        (from = 0.03, to = 0.03),
+        100,
+        1.04,
+    ),
+    PSY.Line(
+        "Line2",
+        true,
+        0.0,
+        0.0,
+        Arc(from = nodes[1], to = nodes[2]),
+        0.01,
+        0.12,
+        (from = 0.1, to = 0.1),
+        100,
+        1.04,
+    ),
+    PSY.Line(
+        "Line3",
+        true,
+        0.0,
+        0.0,
+        Arc(from = nodes[2], to = nodes[3]),
+        0.02,
+        0.9,
+        (from = 0.5, to = 0.5),
+        100,
+        1.04,
+    ),
+]
+
 ############### Load Data ########################
 
 loads_OMIB(nodes_OMIB) = [PSY.PowerLoad(
@@ -338,6 +416,12 @@ loads_3bus_case8(nodes_3bus) = [
     PSY.PowerLoad("Bus1", true, nodes_3bus[1], PSY.ConstantPower, 0.5, 0.1, 1.5, 0.8),
     PSY.PowerLoad("Bus2", true, nodes_3bus[2], PSY.ConstantPower, 1.0, 0.3, 1.5, 0.8),
     PSY.PowerLoad("Bus3", true, nodes_3bus[3], PSY.ConstantPower, 0.3, 0.1, 0.5, 0.3),
+]
+
+loads_3bus_case9(nodes) = [
+    PowerLoad("Bus1", true, nodes[1], PowerSystems.ConstantPower, 0.5, 0.1, 1.5, 0.8),
+    PowerLoad("Bus2", true, nodes[2], PowerSystems.ConstantPower, 1.0, 0.3, 1.5, 0.8),
+    PowerLoad("Bus3", true, nodes[3], PowerSystems.ConstantPower, 0.3, 0.1, 0.5, 0.3),
 ]
 
 ############### Infinite Sources Data ########################
@@ -381,5 +465,22 @@ function get_admittance_matrix(nodes, branches)
     for lines in branches
         PSY.add_component!(sys2, lines)
     end
+    return PSY.Ybus(sys2)[:, :]
+end
+
+function get_admittance_matrix_case9(nodes, branches)
+    sys2 = PSY.System(100.0, frequency = 60.0)
+    for bus in nodes
+        PSY.add_component!(sys2, bus)
+    end
+
+    #Add lines
+    for lines in branches
+        PSY.add_component!(sys2, lines)
+    end
+
+    #Make line 3 the dynamic line
+    make_dynamic_branch!(branches[3], sys2)
+
     return PSY.Ybus(sys2)[:, :]
 end
