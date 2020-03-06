@@ -11,21 +11,23 @@ nodes_OMIB() = [
         0, #Angle in radians
         1.05, #Voltage in pu
         (min = 0.94, max = 1.06), #Voltage limits in pu
-        69,
-    ), #Base voltage in kV
-    PSY.Bus(2, "Bus 2", "PV", 0, 1.0, (min = 0.94, max = 1.06), 69),
+        69, #Base voltage in kV
+        nothing,
+        nothing,
+    ),
+    PSY.Bus(2, "Bus 2", "PV", 0, 1.0, (min = 0.94, max = 1.06), 69, nothing, nothing),
 ]
 
 nodes_3bus() = [
-    PSY.Bus(1, "Bus 1", "REF", 0, 1.02, (min = 0.94, max = 1.06), 138),
-    PSY.Bus(2, "Bus 2", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138),
-    PSY.Bus(3, "Bus 3", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138),
+    PSY.Bus(1, "Bus 1", "REF", 0, 1.02, (min = 0.94, max = 1.06), 138, nothing, nothing),
+    PSY.Bus(2, "Bus 2", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138, nothing, nothing),
+    PSY.Bus(3, "Bus 3", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138, nothing, nothing),
 ]
 
 nodes_3bus_case5() = [
-    PSY.Bus(1, "Bus 1", "REF", 0, 1.05, (min = 0.94, max = 1.06), 138),
-    PSY.Bus(2, "Bus 2", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138),
-    PSY.Bus(3, "Bus 3", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138),
+    PSY.Bus(1, "Bus 1", "REF", 0, 1.05, (min = 0.94, max = 1.06), 138, nothing, nothing)
+    PSY.Bus(2, "Bus 2", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138, nothing, nothing)
+    PSY.Bus(3, "Bus 3", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138, nothing, nothing)
 ]
 
 nodes_DArco_IB() = [
@@ -36,9 +38,11 @@ nodes_DArco_IB() = [
         0, #Angle in radians
         1.04, #Voltage in pu
         (min = 0.94, max = 1.06), #Voltage limits in pu
-        0.69,
-    ),  #Base voltage in kV
-    PSY.Bus(2, "Bus 2", "PV", 0, 1.0, (min = 0.94, max = 1.06), 0.69),
+        0.69, #Base voltage in kV
+        nothing,
+        nothing,
+    ),
+    PSY.Bus(2, "Bus 2", "PV", 0, 1.0, (min = 0.94, max = 1.06), 0.69, nothing, nothing),
 ]
 
 ############### Branches Data ########################
@@ -388,7 +392,7 @@ loads_OMIB(nodes_OMIB) = [PSY.PowerLoad(
     "LBus1", #name
     true, #availability
     nodes_OMIB[2], #bus
-    PSY.ConstantPower, #type
+    PSY.LoadModels.ConstantPower, #type
     0.3, #P
     0.01, #Q
     0.3, #P_max
@@ -396,32 +400,131 @@ loads_OMIB(nodes_OMIB) = [PSY.PowerLoad(
 )] #Q_max
 
 loads_3bus(nodes_3bus) = [
-    PSY.PowerLoad("Bus1", true, nodes_3bus[1], PSY.ConstantPower, 1.5, 0.8, 1.5, 0.8),
-    PSY.PowerLoad("Bus2", true, nodes_3bus[2], PSY.ConstantPower, 1.5, 0.7, 1.5, 0.8),
-    PSY.PowerLoad("Bus3", true, nodes_3bus[3], PSY.ConstantPower, 0.5, 0.3, 0.5, 0.3),
+    PSY.PowerLoad(
+        "Bus1",
+        true,
+        nodes_3bus[1],
+        PSY.LoadModels.ConstantPower,
+        1.5,
+        0.8,
+        1.5,
+        0.8,
+    ),
+    PSY.PowerLoad(
+        "Bus2",
+        true,
+        nodes_3bus[2],
+        PSY.LoadModels.ConstantPower,
+        1.5,
+        0.7,
+        1.5,
+        0.8,
+    ),
+    PSY.PowerLoad(
+        "Bus3",
+        true,
+        nodes_3bus[3],
+        PSY.LoadModels.ConstantPower,
+        0.5,
+        0.3,
+        0.5,
+        0.3,
+    ),
 ]
 
 loads_3bus_case5(nodes_3bus) = [
-    PSY.PowerLoad("Bus2", true, nodes_3bus[2], PSY.ConstantPower, 0.3, 0.05, 0.3, 0.05),
-    PSY.PowerLoad("Bus3", true, nodes_3bus[3], PSY.ConstantPower, 0.3, 0.05, 0.3, 0.05),
+    PSY.PowerLoad(
+        "Bus2",
+        true,
+        nodes_3bus[2],
+        PSY.LoadModels.ConstantPower,
+        0.3,
+        0.05,
+        0.3,
+        0.05,
+    ),
+    PSY.PowerLoad(
+        "Bus3",
+        true,
+        nodes_3bus[3],
+        PSY.LoadModels.ConstantPower,
+        0.3,
+        0.05,
+        0.3,
+        0.05,
+    ),
 ]
 
 loads_3bus_case7(nodes_3bus) = [
-    PSY.PowerLoad("Bus1", true, nodes_3bus[1], PSY.ConstantPower, 0.5, 0.1, 1.5, 0.8),
-    PSY.PowerLoad("Bus2", true, nodes_3bus[2], PSY.ConstantPower, 1.0, 0.3, 1.5, 0.8),
-    PSY.PowerLoad("Bus3", true, nodes_3bus[3], PSY.ConstantPower, 0.3, 0.1, 0.5, 0.3),
+    PSY.PowerLoad(
+        "Bus1",
+        true,
+        nodes_3bus[1],
+        PSY.LoadModels.ConstantPower,
+        0.5,
+        0.1,
+        1.5,
+        0.8,
+    ),
+    PSY.PowerLoad(
+        "Bus2",
+        true,
+        nodes_3bus[2],
+        PSY.LoadModels.ConstantPower,
+        1.0,
+        0.3,
+        1.5,
+        0.8,
+    ),
+    PSY.PowerLoad(
+        "Bus3",
+        true,
+        nodes_3bus[3],
+        PSY.LoadModels.ConstantPower,
+        0.3,
+        0.1,
+        0.5,
+        0.3,
+    ),
 ]
 
 loads_3bus_case8(nodes_3bus) = [
-    PSY.PowerLoad("Bus1", true, nodes_3bus[1], PSY.ConstantPower, 0.5, 0.1, 1.5, 0.8),
-    PSY.PowerLoad("Bus2", true, nodes_3bus[2], PSY.ConstantPower, 1.0, 0.3, 1.5, 0.8),
-    PSY.PowerLoad("Bus3", true, nodes_3bus[3], PSY.ConstantPower, 0.3, 0.1, 0.5, 0.3),
+    PSY.PowerLoad(
+        "Bus1",
+        true,
+        nodes_3bus[1],
+        PSY.LoadModels.ConstantPower,
+        0.5,
+        0.1,
+        1.5,
+        0.8,
+    ),
+    PSY.PowerLoad(
+        "Bus2",
+        true,
+        nodes_3bus[2],
+        PSY.LoadModels.ConstantPower,
+        1.0,
+        0.3,
+        1.5,
+        0.8,
+    ),
+    PSY.PowerLoad(
+        "Bus3",
+        true,
+        nodes_3bus[3],
+        PSY.LoadModels.ConstantPower,
+        0.3,
+        0.1,
+        0.5,
+        0.3,
+    ),
 ]
 
 loads_3bus_case9(nodes) = [
-    PowerLoad("Bus1", true, nodes[1], PowerSystems.ConstantPower, 0.5, 0.1, 1.5, 0.8),
-    PowerLoad("Bus2", true, nodes[2], PowerSystems.ConstantPower, 1.0, 0.3, 1.5, 0.8),
-    PowerLoad("Bus3", true, nodes[3], PowerSystems.ConstantPower, 0.3, 0.1, 0.5, 0.3),
+    PowerLoad("Bus1", true, nodes[1], PSY.LoadModels.ConstantPower, 0.5, 0.1, 1.5, 0.8),
+    PowerLoad("Bus2", true, nodes[2], PSY.LoadModels.ConstantPower, 1.0, 0.3, 1.5, 0.8),
+    PowerLoad("Bus3", true, nodes[3], PSY.LoadModels.ConstantPower, 0.3, 0.1, 0.5, 0.3),
 ]
 
 ############### Infinite Sources Data ########################
