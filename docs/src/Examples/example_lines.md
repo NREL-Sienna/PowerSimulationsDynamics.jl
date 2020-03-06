@@ -115,9 +115,9 @@ branch_case9_fault = [
 
 ```julia
 loads_case9 = [
-    PowerLoad("Bus1", true, nodes_case9[1], PowerSystems.ConstantPower, 0.5, 0.1, 1.5, 0.8),
-    PowerLoad("Bus2", true, nodes_case9[2], PowerSystems.ConstantPower, 1.0, 0.3, 1.5, 0.8),
-    PowerLoad("Bus3", true, nodes_case9[3], PowerSystems.ConstantPower, 0.3, 0.1, 0.5, 0.3),
+    PowerLoad("Bus1", true, nodes_case9[1], PSY.LoadModels.ConstantPower, 0.5, 0.1, 1.5, 0.8),
+    PowerLoad("Bus2", true, nodes_case9[2], PSY.LoadModels.ConstantPower, 1.0, 0.3, 1.5, 0.8),
+    PowerLoad("Bus3", true, nodes_case9[3], PSY.LoadModels.ConstantPower, 0.3, 0.1, 0.5, 0.3),
 ]
 
 inf_gen_case9 = [PSY.Source(
