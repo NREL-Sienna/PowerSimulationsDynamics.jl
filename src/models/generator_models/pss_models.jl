@@ -1,6 +1,7 @@
 function mdl_pss_ode!(
     device_states,
     output_ode,
+    ω_sys,
     device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
@@ -13,11 +14,11 @@ end
 function mdl_pss_ode!(
     device_states,
     output_ode,
+    ω_sys,
     device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSSimple},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
     #Get references
-    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
     P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
 
     #Obtain external states for device
@@ -34,7 +35,7 @@ function mdl_pss_ode!(
     K_p = PSY.get_K_p(pss)
 
     #Update V_pss on inner vars
-    get_inner_vars(device)[V_pss_var] = K_ω * (ω - ω_ref) + K_p * (ω * τe - P_ref)
+    get_inner_vars(device)[V_pss_var] = K_ω * (ω - ω_sys) + K_p * (ω * τe - P_ref)
 
     return
 end

@@ -2,6 +2,7 @@ function mdl_freq_estimator_ode!(
     device_states,
     output_ode,
     f0,
+    ω_sys,
     device::PSY.DynamicInverter{C, O, VC, DC, PSY.PLL, F},
 ) where {
     C <: PSY.Converter,
@@ -28,7 +29,6 @@ function mdl_freq_estimator_ode!(
     kp_pll = PSY.get_kp_pll(pll_control)
     ki_pll = PSY.get_ki_pll(pll_control)
     ωb = 2.0 * pi * f0
-    ωg = 1.0 #TODO:  create getter later
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.PLL)
@@ -64,6 +64,5 @@ function mdl_freq_estimator_ode!(
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
     get_inner_vars(device)[ω_freq_estimator_var] =
-        (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + ωg)
-    #TODO: replace 1.0 w/ grid getter, or not needed if PCC?
+        (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + ω_sys)
 end

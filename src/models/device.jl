@@ -16,7 +16,8 @@ function device!(
 
     #Obtain references
     sys_Sbase = PSY.get_basepower(sys)
-    sys_f = PSY.get_frequency(sys)
+    sys_f0 = PSY.get_frequency(sys)
+    sys_ω = get_ω_sys(sys)
 
     #Update Voltage data
     get_inner_vars(device)[VR_gen_var] = voltage_r[1]
@@ -26,7 +27,7 @@ function device!(
     mdl_tg_ode!(device_states, view(output_ode, ode_range), device)
 
     #Obtain ODEs for AVR
-    mdl_pss_ode!(device_states, view(output_ode, ode_range), device)
+    mdl_pss_ode!(device_states, view(output_ode, ode_range), sys_ω, device)
 
     #Obtain ODEs for AVR
     mdl_avr_ode!(device_states, view(output_ode, ode_range), device)
@@ -38,12 +39,12 @@ function device!(
         current_r,
         current_i,
         sys_Sbase,
-        sys_f,
+        sys_f0,
         device,
     )
 
     #Obtain ODEs for PSY.Shaft
-    mdl_shaft_ode!(device_states, view(output_ode, ode_range), sys_f, device)
+    mdl_shaft_ode!(device_states, view(output_ode, ode_range), sys_f0, sys_ω, device)
 
     return
 
@@ -96,7 +97,8 @@ function device!(
 
     #Obtain references
     Sbase = PSY.get_basepower(sys)
-    sys_f = PSY.get_frequency(sys)
+    sys_f0 = PSY.get_frequency(sys)
+    sys_ω = get_ω_sys(sys)
 
     #Update Voltage data
     get_inner_vars(device)[VR_inv_var] = voltage_r[1]
@@ -110,10 +112,16 @@ function device!(
     mdl_DCside_ode!(device)
 
     #Obtain ODEs for OuterLoop
-    mdl_outer_ode!(device_states, view(output_ode, ode_range), sys_f, device)
+    mdl_outer_ode!(device_states, view(output_ode, ode_range), sys_f0, sys_ω, device)
 
     #Obtain ODEs for PLL
-    mdl_freq_estimator_ode!(device_states, view(output_ode, ode_range), sys_f, device)
+    mdl_freq_estimator_ode!(
+        device_states,
+        view(output_ode, ode_range),
+        sys_f0,
+        sys_ω,
+        device,
+    )
 
     #Obtain inner controller ODEs and modulation commands
     mdl_VScontrol_ode!(device_states, view(output_ode, ode_range), device)
@@ -128,7 +136,8 @@ function device!(
         current_r,
         current_i,
         Sbase,
-        sys_f,
+        sys_f0,
+        sys_ω,
         device,
     )
 
