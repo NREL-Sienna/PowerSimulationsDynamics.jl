@@ -2,6 +2,7 @@ function mdl_outer_ode!(
     device_states,
     output_ode,
     f0,
+    ω_sys,
     device::PSY.DynamicInverter{
         C,
         PSY.VirtualInertiaQdroop{PSY.VirtualInertia, PSY.ReactivePowerDroop},
@@ -55,7 +56,6 @@ function mdl_outer_ode!(
     ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
     V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
     q_ref = PSY.get_ext(device)[CONTROL_REFS][Q_ref_index]
-    ωg = 1.0
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -75,7 +75,7 @@ function mdl_outer_ode!(
         kd * kp_pll * atan(vpll_q / vpll_d) / Ta +
         kd * ki_pll * ϵ_pll / Ta - (kd + kω) * δω_vsm / Ta +
         p_ref / Ta +
-        kω * ω_ref / Ta - kω * ωg / Ta
+        kω * ω_ref / Ta - kω * ω_sys / Ta
     )
     output_ode[local_ix[2]] = ωb * δω_vsm
     output_ode[local_ix[3]] = (-ωf * ioq * vod + ωf * iod * voq - ωf * qm)

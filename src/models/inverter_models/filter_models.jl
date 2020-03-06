@@ -5,6 +5,7 @@ function mdl_filter_ode!(
     current_i,
     sys_Sbase,
     f0,
+    ω_sys,
     device::PSY.DynamicInverter{C, O, VC, DC, P, PSY.LCLFilter},
 ) where {
     C <: PSY.Converter,
@@ -37,7 +38,6 @@ function mdl_filter_ode!(
     lg = PSY.get_lg(filter)
     rg = PSY.get_rg(filter)
     MVABase = PSY.get_inverter_Sbase(device)
-    ωg = 1.0 #TODO: create getter later
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -61,22 +61,22 @@ function mdl_filter_ode!(
     #Inverter Output Inductor (internal state)
     #𝜕id_c/𝜕t
     output_ode[local_ix[1]] =
-        (ωb / lf * vcvd - ωb / lf * vod - ωb * rf / lf * icvd + ωb * ωg * icvq)
+        (ωb / lf * vcvd - ωb / lf * vod - ωb * rf / lf * icvd + ωb * ω_sys * icvq)
     #𝜕iq_c/𝜕t
     output_ode[local_ix[2]] =
-        (ωb / lf * vcvq - ωb / lf * voq - ωb * rf / lf * icvq - ωb * ωg * icvd)
+        (ωb / lf * vcvq - ωb / lf * voq - ωb * rf / lf * icvq - ωb * ω_sys * icvd)
     #LCL Capacitor (internal state)
     #𝜕vd_o/𝜕t
-    output_ode[local_ix[3]] = (ωb / cf * icvd - ωb / cf * iod + ωb * ωg * voq)
+    output_ode[local_ix[3]] = (ωb / cf * icvd - ωb / cf * iod + ωb * ω_sys * voq)
     #𝜕vq_o/𝜕t
-    output_ode[local_ix[4]] = (ωb / cf * icvq - ωb / cf * ioq - ωb * ωg * vod)
+    output_ode[local_ix[4]] = (ωb / cf * icvq - ωb / cf * ioq - ωb * ω_sys * vod)
     #Grid Inductance (internal state)
     #𝜕id_o/𝜕t
     output_ode[local_ix[5]] =
-        (ωb / lg * vod - ωb / lg * V_dq[2] - ωb * rg / lg * iod + ωb * ωg * ioq)
+        (ωb / lg * vod - ωb / lg * V_dq[2] - ωb * rg / lg * iod + ωb * ω_sys * ioq)
     #𝜕iq_o/𝜕t
     output_ode[local_ix[6]] =
-        (ωb / lg * voq + ωb / lg * V_dq[1] - ωb * rg / lg * ioq - ωb * ωg * iod)
+        (ωb / lg * voq + ωb / lg * V_dq[1] - ωb * rg / lg * ioq - ωb * ω_sys * iod)
 
     #Update inner_vars
     get_inner_vars(device)[Vdo_var] = vod

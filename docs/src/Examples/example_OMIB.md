@@ -102,7 +102,7 @@ loads_OMIB = [PSY.PowerLoad(
     "LBus1", #name
     true, #availability
     nodes_OMIB[2], #bus
-    PSY.ConstantPower, #type
+    PSY.LoadModels.ConstantPower, #type
     0.3, #P
     0.01, #Q
     0.3, #P_max

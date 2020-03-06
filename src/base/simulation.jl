@@ -277,10 +277,14 @@ function _index_dynamic_system!(sys::PSY.System)
         :first_dyn_branch_point => first_dyn_branch_point,
         :total_variables => total_states + static_bus_vars,
     )
-
+    global_vars = Dict{Symbol, Number}(
+        :ω_sys => 1.0,
+        :ω_sys_ref => -1, #To define 0 if infinite source, bus_number otherwise,
+    )
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
     sys_ext[YBUS] = Ybus
+    sys_ext[GLOBAL_VARS] = global_vars
     sys.internal.ext = sys_ext
 
     return DAE_vector
@@ -298,6 +302,7 @@ get_device_index(sys::PSY.System, device::D) where {D <: PSY.DynamicInjection} =
     PSY.get_ext(sys)[GLOBAL_INDEX][device.name]
 
 get_inner_vars(device::PSY.DynamicInjection) = device.ext[INNER_VARS]
+get_ω_sys(sys::PSY.System) = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys]
 
 function _get_internal_mapping(
     device::PSY.DynamicInjection,
