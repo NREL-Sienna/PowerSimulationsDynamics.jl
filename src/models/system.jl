@@ -40,6 +40,19 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
         out[ix_range] = injection_ode[ode_range] - dx[ix_range]
     end
 
+    for d in PSY.get_components(PSY.StaticInjection, sys)
+        bus_n = PSY.get_number(PSY.get_bus(d))
+
+        device!(
+            view(V_r, bus_n),
+            view(V_i, bus_n),
+            view(I_injections_r, bus_n),
+            view(I_injections_i, bus_n),
+            d,
+            sys,
+        )
+    end
+
     dyn_branches = PSY.get_components(DynamicLine, sys)
     if !(isempty(dyn_branches))
         for br in dyn_branches
@@ -78,19 +91,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
             )
             out[ix_range] = branches_ode[ode_range] - dx[ix_range]
         end
-    end
-
-    for d in PSY.get_components(PSY.StaticInjection, sys)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-
-        device!(
-            view(V_r, bus_n),
-            view(V_i, bus_n),
-            view(I_injections_r, bus_n),
-            view(I_injections_i, bus_n),
-            d,
-            sys,
-        )
     end
 
     out[bus_range] = kcl(PSY.get_ext(sys)[YBUS], V_r, V_i, I_injections_r, I_injections_i)
