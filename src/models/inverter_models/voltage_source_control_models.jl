@@ -80,11 +80,11 @@ function mdl_VScontrol_ode!(
     #References for Converter Output Voltage
     vcvd_ref = (
         kpc * (icvd_ref - icvd) + kic * γ_d - ω_vsm * lf * icvq + kffv * vod -
-            kad * (vod - ϕ_d)
+        kad * (vod - ϕ_d)
     )
     vcvq_ref = (
         kpc * (icvq_ref - icvq) + kic * γ_q + ω_vsm * lf * icvd + kffv * voq -
-            kad * (voq - ϕ_q)
+        kad * (voq - ϕ_q)
     )
     #Modulation Commands to Converter
     #md = vcvd_ref/vdc

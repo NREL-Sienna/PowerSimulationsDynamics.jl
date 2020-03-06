@@ -47,12 +47,12 @@ function mdl_freq_estimator_ode!(
     #𝜕vpll_d/𝜕t, D'Arco ESPR122 eqn. 12
     output_ode[local_ix[1]] = (
         ω_lp * vod * cos(δθ_pll - δθ_vsm) + ω_lp * voq * sin(δθ_pll - δθ_vsm) -
-            ω_lp * vpll_d
+        ω_lp * vpll_d
     )
     #𝜕vpll_q/𝜕t, D'Arco ESPR122 eqn. 12
     output_ode[local_ix[2]] = (
         -ω_lp * vod * sin(δθ_pll - δθ_vsm) + ω_lp * voq * cos(δθ_pll - δθ_vsm) -
-            ω_lp * vpll_q
+        ω_lp * vpll_q
     )
     #PI Integrator (internal state)
     #𝜕dϵ_pll/𝜕t, D'Arco ESPR122 eqn. 13
