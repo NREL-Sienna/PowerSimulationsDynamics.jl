@@ -1,3 +1,10 @@
+function update_global_vars!(sys::PSY.System, x::AbstractArray)
+    index = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys_index]
+    index == 0 && return
+    PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys] = x[index]
+    return
+end
+
 function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
 
     #Index Setup
@@ -8,6 +15,7 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
     injection_count = 1
     branches_start = get_branches_pointer(sys)
     branches_count = 1
+    update_global_vars!(sys, x)
 
     #Network quantities
     V_r = @view x[1:bus_size]

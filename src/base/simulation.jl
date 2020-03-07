@@ -217,6 +217,22 @@ function _index_dynamic_system!(sys::PSY.System)
     first_dyn_branch_point = -1
     branches_n_states = 0
     static_bus_vars = 2 * n_buses
+    global_vars = Dict{Symbol, Number}(
+        :ω_sys => 1.0,
+        :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
+    )
+    found_ref_bus = false
+
+    sources = PSY.get_components(PSY.Source, sys)
+    for s in sources
+        btype = PSY.get_bustype(PSY.get_bus(s))
+        if (btype == PSY.BusTypes.REF) && found_ref_bus
+            throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
+        end
+        btype != PSY.BusTypes.REF && continue
+        global_vars[:ω_sys_index] = 0 #To define 0 if infinite source, bus_number otherwise,
+        found_ref_bus = true
+    end
 
     dynamic_injection = PSY.get_components(PSY.DynamicInjection, sys)
     isempty(dynamic_injection) &&
@@ -225,11 +241,18 @@ function _index_dynamic_system!(sys::PSY.System)
         if !(:states in fieldnames(typeof(d)))
             continue
         end
+        btype = PSY.get_bustype(PSY.get_bus(d))
+        if (btype == PSY.BusTypes.REF) && found_ref_bus
+            throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
+        end
         _make_device_index!(d)
         device_n_states = PSY.get_n_states(d)
         DAE_vector = vcat(DAE_vector, collect(trues(device_n_states)))
         total_states += device_n_states
         _add_states_to_global!(global_state_index, state_space_ix, d)
+        btype != PSY.BusTypes.REF && continue
+        global_vars[:ω_sys_index] = global_state_index[d][:ω] #To define 0 if infinite source, bus_number otherwise,
+        found_ref_bus = true
     end
     injection_n_states = state_space_ix[1] - n_buses * 2
 
@@ -277,16 +300,12 @@ function _index_dynamic_system!(sys::PSY.System)
         :first_dyn_branch_point => first_dyn_branch_point,
         :total_variables => total_states + static_bus_vars,
     )
-    global_vars = Dict{Symbol, Number}(
-        :ω_sys => 1.0,
-        :ω_sys_ref => -1, #To define 0 if infinite source, bus_number otherwise,
-    )
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
     sys_ext[YBUS] = Ybus
     sys_ext[GLOBAL_VARS] = global_vars
+    @assert sys_ext[GLOBAL_VARS][:ω_sys_index] != -1
     sys.internal.ext = sys_ext
-
     return DAE_vector
 end
 
