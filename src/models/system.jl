@@ -101,6 +101,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
         end
     end
 
-    out[bus_range] = kcl(PSY.get_ext(sys)[YBUS], V_r, V_i, I_injections_r, I_injections_i)
+    out[bus_range] = kirchoff_laws(sys, V_r, V_i, I_injections_r, I_injections_i)
 
 end

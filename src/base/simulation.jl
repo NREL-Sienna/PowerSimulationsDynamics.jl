@@ -212,6 +212,8 @@ function _index_dynamic_system!(sys::PSY.System)
     global_state_index = Dict{String, Dict{Symbol, Int64}}()
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     state_space_ix = [n_buses * 2]
+    #current_buses_ix = Vector{Int}() # not needed for now
+    voltage_buses_ix = Vector{Int}()
     total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
@@ -240,12 +242,14 @@ function _index_dynamic_system!(sys::PSY.System)
         if !(:states in fieldnames(typeof(d)))
             continue
         end
-        btype = PSY.get_bustype(PSY.get_bus(d))
+        device_bus = PSY.get_bus(d)
+        btype = PSY.get_bustype(device_bus)
         if (btype == PSY.BusTypes.REF) && found_ref_bus
             throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
         end
         _make_device_index!(d)
         device_n_states = PSY.get_n_states(d)
+        # TODO: Don't run a vcat here
         DAE_vector = vcat(DAE_vector, collect(trues(device_n_states)))
         total_states += device_n_states
         _add_states_to_global!(global_state_index, state_space_ix, d)
@@ -276,6 +280,7 @@ function _index_dynamic_system!(sys::PSY.System)
                 total_states += 2
                 state_space_ix[1] += 2
                 static_bus_vars -= 2
+                push!(voltage_buses_ix, ix)
                 @assert static_bus_vars >= 0
             end
         end
@@ -301,6 +306,7 @@ function _index_dynamic_system!(sys::PSY.System)
     )
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
+    !isempty(voltage_buses_ix) && (sys_ext["voltage_buses_ix"] = voltage_buses_ix)
     sys_ext[YBUS] = Ybus
     sys_ext[GLOBAL_VARS] = global_vars
     @assert sys_ext[GLOBAL_VARS][:ω_sys_index] != -1
