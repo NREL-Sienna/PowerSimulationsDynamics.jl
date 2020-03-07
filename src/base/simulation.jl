@@ -226,10 +226,10 @@ function _index_dynamic_system!(sys::PSY.System)
     sources = PSY.get_components(PSY.Source, sys)
     for s in sources
         btype = PSY.get_bustype(PSY.get_bus(s))
-        if (btype == BusType.REF) && found_ref_bus
+        if (btype == PSY.BusTypes.REF) && found_ref_bus
             throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
         end
-        btype != PSY.BusType.REF && continue
+        btype != PSY.BusTypes.REF && continue
         global_vars[:ω_sys_index] = 0 #To define 0 if infinite source, bus_number otherwise,
         found_ref_bus = true
     end
@@ -242,7 +242,7 @@ function _index_dynamic_system!(sys::PSY.System)
             continue
         end
         btype = PSY.get_bustype(PSY.get_bus(d))
-        if (btype == BusType.REF) && found_ref_bus
+        if (btype == PSY.BusTypes.REF) && found_ref_bus
             throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
         end
         _make_device_index!(d)
@@ -250,7 +250,7 @@ function _index_dynamic_system!(sys::PSY.System)
         DAE_vector = vcat(DAE_vector, collect(trues(device_n_states)))
         total_states += device_n_states
         _add_states_to_global!(global_state_index, state_space_ix, d)
-        btype != PSY.BusType.REF && continue
+        btype != PSY.BusTypes.REF && continue
         global_vars[:ω_sys_index] = global_state_index[d][:ω] #To define 0 if infinite source, bus_number otherwise,
         found_ref_bus = true
     end
