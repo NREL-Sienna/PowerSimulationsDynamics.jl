@@ -1,5 +1,5 @@
 function update_global_vars!(sys::PSY.System, x::AbstractArray)
-    index = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys_ref]
+    index = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys_index]
     index == 0 && return
     PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys] = x[index]
     return
