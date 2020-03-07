@@ -11,7 +11,6 @@ NLsolve = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
 PowerSystems = "bcd98974-b02a-5e2f-9ee0-a103f5c450dd"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
-
 [compat]
 DiffEqBase = "6"
 ForwardDiff = "~v0.10"
