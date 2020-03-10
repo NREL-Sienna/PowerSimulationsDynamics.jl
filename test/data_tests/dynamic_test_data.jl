@@ -105,6 +105,20 @@ machine_full_kundur() = PSY.FullMachine(
     555.0,
 ) #MVABase
 
+machine_multi_ref() = BaseMachine(
+    0.0, #R
+    0.2995, #Xd_p
+    1.0901, #eq_p
+    100.0,
+)  #MVABase
+
+machine_multi() = BaseMachine(
+    0.0, #R
+    0.2995, #Xd_p
+    0.9516, #eq_p
+    100.0,
+)  #MVABase
+
 ######## Shaft Data #########
 
 shaft_damping() = PSY.SingleMass(
@@ -159,8 +173,8 @@ tg_type1() = PSY.TGTypeI(
 
 tg_type2() = PSY.TGTypeII(
     0.05, #R
-    1.0, #T1
-    2.0, #T2
+    2.0, #T1
+    1.0, #T2
     1.5, #τ_max
     0.1,
 ) #τ_min
@@ -390,6 +404,40 @@ function dyn_gen_case9(nodes)
     ) #pss
 end
 
+function dyn_gen_case10_ref(nodes)
+    return PSY.DynamicGenerator(
+        1, #Number
+        "Case10Gen1",
+        nodes[1], #bus
+        1.0, # ω_ref,
+        1.0, #V_ref
+        0.41, #P_ref
+        0.0, #Q_ref
+        machine_multi_ref(), #machine
+        shaft_damping(), #shaft
+        avr_none(), #avr
+        tg_none(), #tg
+        pss_none(),
+    ) #pss
+end
+
+function dyn_gen_case10_2(nodes)
+    return PSY.DynamicGenerator(
+        1, #Number
+        "Case10Gen2",
+        nodes[3], #bus
+        1.0, # ω_ref,
+        1.0, #V_ref
+        0.4, #P_ref
+        0.0, #Q_ref
+        machine_multi(), #machine
+        shaft_damping(), #shaft
+        avr_none(), #avr
+        tg_type2(), #tg
+        pss_none(),
+    ) #pss
+end
+
 ######################################
 ############# Inverters ##############
 ######################################
@@ -528,6 +576,32 @@ function system_no_inv(nodes, branches, loads, sources, gens)
     #Add infinite source
     for source in sources
         PSY.add_component!(sys, source)
+    end
+
+    #Add generator
+    for gen in gens
+        PSY.add_component!(sys, gen)
+    end
+    return sys
+end
+
+function system_no_inv_no_sources(nodes, branches, loads, gens)
+    #Create system with BasePower = 100 MVA and nominal frequency 60 Hz.
+    sys = PSY.System(100.0, frequency = 60.0)
+
+    #Add buses
+    for bus in nodes
+        PSY.add_component!(sys, bus)
+    end
+
+    #Add lines
+    for lines in branches
+        PSY.add_component!(sys, lines)
+    end
+
+    #Add loads
+    for load in loads
+        PSY.add_component!(sys, load)
     end
 
     #Add generator
