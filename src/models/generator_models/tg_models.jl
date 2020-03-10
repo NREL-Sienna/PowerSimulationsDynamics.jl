@@ -97,7 +97,7 @@ function mdl_tg_ode!(
     τ_max = PSY.get_τ_max(tg)
 
     #Compute auxiliary parameters
-    τ_m = xg + (1.0 / R) * (ω_ref - ω[1]) + P_ref / 1.0
+    τ_m = (1.0 / R) * (T1 / T2) * (ω_ref - ω[1]) + P_ref / 1.0 + xg
 
     #Set anti-windup for τ_m. NOT WORKING
     #if τ_m > τ_max
