@@ -30,7 +30,7 @@ function Simulation(
 
     if initialize_simulation
         @info("Initializing Simulation States")
-        x0_init, initialized = _calculate_initial_conditions!(system, x0_init)
+        initialized = _calculate_initial_conditions!(system, x0_init)
     end
 
     dx0 = zeros(var_count)
@@ -112,8 +112,8 @@ function _calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{F
     if !NLsolve.converged(sys_solve)
         @warn("Initialization failed, initial conditions do not meet conditions for an stable equilibrium")
     end
-
-    return sys_solve.zero, NLsolve.converged(sys_solve)
+    initial_guess .= sys_solve.zero
+    return NLsolve.converged(sys_solve)
 end
 
 function _index_local_states!(
