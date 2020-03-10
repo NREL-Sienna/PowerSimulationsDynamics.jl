@@ -13,4 +13,6 @@ To install and develop run the following:
 julia> ] add LITS
 ```
 
-The use examples can be found in the [LITS-Examples](https://github.com/Energy-MAC/LITS-Examples) repository
+The use examples can be found in the [LITS-Examples](https://github.com/Energy-MAC/LITS-Examples) repository.
+
+The pre-print paper can be found in our [arXiv preprint](https://arxiv.org/abs/2003.02957).
