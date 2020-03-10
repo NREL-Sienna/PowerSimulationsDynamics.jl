@@ -23,15 +23,14 @@ function Simulation(
     DAE_vector = _index_dynamic_system!(system)
     var_count = get_variable_count(system)
 
+    flat_start = zeros(var_count)
+    bus_count = length(PSY.get_components(PSY.Bus, system))
+    flat_start[1:bus_count] .= 1.0
+    x0_init = get(kwargs, :initial_guess, flat_start)
+
     if initialize_simulation
         @info("Initializing Simulation States")
-        flat_start = zeros(var_count)
-        bus_count = length(PSY.get_components(PSY.Bus, system))
-        flat_start[1:bus_count] .= 1.0
-        x0_guess = get(kwargs, :initial_guess, flat_start)
-        x0_init, initialized = _calculate_initial_conditions(system, x0_guess)
-    else
-        x0_init = zeros(var_count)
+        x0_init, initialized = _calculate_initial_conditions!(system, x0_init)
     end
 
     dx0 = zeros(var_count)
@@ -92,7 +91,7 @@ function _build_perturbations(perturbations::Vector{<:Perturbation})
     return callback_set, tstops
 end
 
-function _calculate_initial_conditions(sys::PSY.System, initial_guess::Vector{Float64})
+function _calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Float64})
     # TODO: Code to refine initial_guess
     var_count = get_variable_count(sys)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
@@ -251,7 +250,7 @@ function _index_dynamic_system!(sys::PSY.System)
         total_states += device_n_states
         _add_states_to_global!(global_state_index, state_space_ix, d)
         btype != PSY.BusTypes.REF && continue
-        global_vars[:ω_sys_index] = global_state_index[d][:ω] #To define 0 if infinite source, bus_number otherwise,
+        global_vars[:ω_sys_index] = global_state_index[d.name][:ω] #To define 0 if infinite source, bus_number otherwise,
         found_ref_bus = true
     end
     injection_n_states = state_space_ix[1] - n_buses * 2
