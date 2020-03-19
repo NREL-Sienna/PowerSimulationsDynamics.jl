@@ -253,7 +253,7 @@ function _index_dynamic_system!(sys::PSY.System)
     else
         @debug("System doesn't contain Dynamic Branches")
     end
-
+    unique!(voltage_buses_ix)
     sources = PSY.get_components(PSY.Source, sys)
     for s in sources
         btype = PSY.get_bustype(PSY.get_bus(s))
