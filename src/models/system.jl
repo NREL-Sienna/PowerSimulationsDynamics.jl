@@ -21,6 +21,7 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
     V_r = @view x[1:bus_size]
     V_i = @view x[(bus_size + 1):bus_vars_count]
     Sbase = PSY.get_basepower(sys)
+    # TODO: Don't create this matrices here every iteration
     I_injections_r = zeros(T, bus_size)
     I_injections_i = zeros(T, bus_size)
     injection_ode = zeros(T, get_n_injection_states(sys))
