@@ -22,7 +22,7 @@ function kirchoff_laws(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
     for bus_no in voltage_buses
         shunt_multiplier = PSY.get_ext(sys)["total_shunts"][bus_no]
         I_balance[bus_no] = -ω_b*I_balance[bus_no]*shunt_multiplier + ω_b*V_i[bus_no] - dx[bus_no]
-        I_balance[bus_no + n_buses] = -ω_b*I_balance[bus_no+n_buses]*shunt_multiplier - ω_b*V_i[bus_no+n_buses] - dx[bus_no+n_buses]
+        I_balance[bus_no + n_buses] = -ω_b*I_balance[bus_no+n_buses]*shunt_multiplier - ω_b*V_r[bus_no] - dx[bus_no+n_buses]
     end
 
     return I_balance
