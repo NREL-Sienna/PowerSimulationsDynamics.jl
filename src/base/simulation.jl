@@ -211,8 +211,8 @@ function _index_dynamic_system!(sys::PSY.System)
     DAE_vector = collect(falses(n_buses * 2))
     global_state_index = Dict{String, Dict{Symbol, Int64}}()
     state_space_ix = [n_buses * 2]
-    current_buses_ix = collect(1:n_buses * 2)
-    static_bus_vars = length(current_buses_ix)
+    current_buses_ix = collect(1:n_buses)
+    static_bus_var_count= 2*length(current_buses_ix)
     voltage_buses_ix = Vector{Int}()
     total_states = 0
     first_dyn_branch_point = -1
@@ -221,6 +221,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :ω_sys => 1.0,
         :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
     )
+    total_shunts = Dict{Int, Float64}()
     found_ref_bus = false
 
     dyn_branches = PSY.get_components(DynamicLine, sys)
@@ -231,7 +232,10 @@ function _index_dynamic_system!(sys::PSY.System)
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
             to_bus_number = PSY.get_number(arc.to)
-            push!(voltage_buses_ix, from_bus_number, to_bus_number, from_bus_number + n_buses, to_bus_number + n_buses)
+            merge!(+, total_shunts,
+            Dict(from_bus_number => 1/PSY.get_b(br).from,
+                 to_bus_number => 1/PSY.get_b(br).to))
+            push!(voltage_buses_ix, from_bus_number, to_bus_number)
             DAE_vector[from_bus_number] = DAE_vector[from_bus_number + n_buses] = true
             DAE_vector[to_bus_number] = DAE_vector[to_bus_number + n_buses] = true
             DAE_vector = push!(DAE_vector, collect(trues(n_states))...)
@@ -243,9 +247,9 @@ function _index_dynamic_system!(sys::PSY.System)
             if val
                 global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
                 total_states += 2
-                static_bus_vars -= 2
+                static_bus_var_count-= 2
                 push!(voltage_buses_ix, ix)
-                @assert static_bus_vars >= 0
+                @assert static_bus_var_count>= 0
             end
         end
         branches_n_states = state_space_ix[1] - n_buses * 2
@@ -285,7 +289,7 @@ function _index_dynamic_system!(sys::PSY.System)
         found_ref_bus = true
     end
     injection_n_states = state_space_ix[1] - branches_n_states - n_buses * 2
-    @assert total_states == state_space_ix[1] - static_bus_vars
+    @assert total_states == state_space_ix[1] - static_bus_var_count
     @debug total_states
     setdiff!(current_buses_ix, voltage_buses_ix)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
@@ -300,13 +304,15 @@ function _index_dynamic_system!(sys::PSY.System)
         :branches_n_states => branches_n_states,
         :first_dyn_injection_pointer => 2 * n_buses + branches_n_states + 1,
         :first_dyn_branch_point => first_dyn_branch_point,
-        :total_variables => total_states + static_bus_vars
+        :total_variables => total_states + static_bus_var_count
     )
+    # TODO: Make these keys consts
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
-    !isempty(voltage_buses_ix) && (sys_ext["voltage_buses_ix"] = voltage_buses_ix)
+    sys_ext["voltage_buses_ix"] = voltage_buses_ix
     sys_ext["current_buses_ix"] = current_buses_ix
     sys_ext[YBUS] = Ybus
+    sys_ext["total_shunts"] = total_shunts
     sys_ext[GLOBAL_VARS] = global_vars
     @assert sys_ext[GLOBAL_VARS][:ω_sys_index] != -1
     sys.internal.ext = sys_ext
