@@ -67,7 +67,7 @@ function branch!(
     ode_range::UnitRange{Int64},
     branch::DynamicLine{PSY.Line},
     sys::PSY.System,
-) where T <: Real
+) where {T <: Real}
 
     #Obtain local device states
     n_states = PSY.get_n_states(branch)
