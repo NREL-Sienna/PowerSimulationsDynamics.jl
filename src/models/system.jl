@@ -69,12 +69,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
             to_bus_number = PSY.get_number(arc.to)
-            ix_dx = [
-                from_bus_number,
-                from_bus_number + bus_size,
-                to_bus_number,
-                to_bus_number + bus_size,
-            ]
             ix_range = range(branches_start, length = n_states)
             ode_range = range(branches_count, length = n_states)
             branches_count = branches_count + n_states
@@ -93,7 +87,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
                 view(I_injections_r, to_bus_number),
                 view(I_injections_i, to_bus_number),
                 ix_range,
-                ix_dx,
                 ode_range,
                 br,
                 sys,
@@ -102,6 +95,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
         end
     end
 
-    out[bus_range] = kirchoff_laws(sys, V_r, V_i, I_injections_r, I_injections_i)
+    out[bus_range] = kirchoff_laws(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
 
 end
