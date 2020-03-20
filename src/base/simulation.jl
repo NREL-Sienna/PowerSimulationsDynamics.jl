@@ -314,10 +314,10 @@ function _index_dynamic_system!(sys::PSY.System)
     # TODO: Make these keys consts
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
-    sys_ext["voltage_buses_ix"] = voltage_buses_ix
-    sys_ext["current_buses_ix"] = current_buses_ix
+    sys_ext[VOLTAGE_BUSES_IX] = voltage_buses_ix
+    sys_ext[CURRENT_BUSES_IX] = current_buses_ix
     sys_ext[YBUS] = Ybus
-    sys_ext["total_shunts"] = total_shunts
+    sys_ext[TOTAL_SHUNTS] = total_shunts
     sys_ext[GLOBAL_VARS] = global_vars
     @assert sys_ext[GLOBAL_VARS][:ω_sys_index] != -1
     sys.internal.ext = sys_ext
