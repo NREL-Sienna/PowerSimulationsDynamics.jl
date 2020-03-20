@@ -303,7 +303,7 @@ function _index_dynamic_system!(sys::PSY.System)
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
     end
     sys_ext = Dict{String, Any}()
-    counts = Dict{Symbol, Int64}(
+    counts = Base.ImmutableDict(
         :total_states => total_states,
         :injection_n_states => injection_n_states,
         :branches_n_states => branches_n_states,
@@ -397,10 +397,6 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     end
 
     dyn_branches = PSY.get_components(DynamicLine, sim.system)
-    if !(isempty(dyn_branches))
-        @error("Small Signal Analysis is not currently supported for models with DynamicLines")
-    end
-
     _change_vector_type(sim.system)
     var_count = LITS.get_variable_count(sim.system)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
