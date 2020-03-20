@@ -212,11 +212,11 @@ function _index_dynamic_system!(sys::PSY.System)
     global_state_index = Dict{String, Dict{Symbol, Int64}}()
     state_space_ix = [n_buses * 2]
     current_buses_ix = collect(1:n_buses * 2)
+    static_bus_vars = length(current_buses_ix)
     voltage_buses_ix = Vector{Int}()
     total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
-    static_bus_vars = 2 * n_buses
     global_vars = Dict{Symbol, Number}(
         :ω_sys => 1.0,
         :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
@@ -243,7 +243,6 @@ function _index_dynamic_system!(sys::PSY.System)
             if val
                 global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
                 total_states += 2
-                state_space_ix[1] += 2
                 static_bus_vars -= 2
                 push!(voltage_buses_ix, ix)
                 @assert static_bus_vars >= 0
@@ -264,7 +263,6 @@ function _index_dynamic_system!(sys::PSY.System)
         global_vars[:ω_sys_index] = 0 #To define 0 if infinite source, bus_number otherwise,
         found_ref_bus = true
     end
-
     dynamic_injection = PSY.get_components(PSY.DynamicInjection, sys)
     isempty(dynamic_injection) &&
     error("System doesn't contain any DynamicInjection devices")
@@ -287,8 +285,8 @@ function _index_dynamic_system!(sys::PSY.System)
         found_ref_bus = true
     end
     injection_n_states = state_space_ix[1] - branches_n_states - n_buses * 2
-    @assert total_states == state_space_ix[1] - n_buses * 2
-
+    @assert total_states == state_space_ix[1] - static_bus_vars * 2
+    @debug total_states
     setdiff!(current_buses_ix, voltage_buses_ix)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
         Ybus = PSY.Ybus(sys)[:, :]
@@ -300,7 +298,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :total_states => total_states,
         :injection_n_states => injection_n_states,
         :branches_n_states => branches_n_states,
-        :first_dyn_injection_pointer => 2 * n_buses + 1,
+        :first_dyn_injection_pointer => 2 * n_buses + branches_n_states + 1,
         :first_dyn_branch_point => first_dyn_branch_point,
         :total_variables => total_states + static_bus_vars
     )
