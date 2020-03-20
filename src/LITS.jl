@@ -27,6 +27,7 @@ import SparseArrays: SparseMatrixCSC
 import LinearAlgebra: eigen
 import Base.to_index
 import NLsolve
+import Base.ImmutableDict
 import PowerSystems
 const PSY = PowerSystems
 const IS = InfrastructureSystems
@@ -69,6 +70,7 @@ include("models/system.jl")
 
 #Utils
 include("utils/plot_utils.jl")
+include("utils/immutable_dicts.jl")
 include("utils/print.jl")
 include("utils/kwargs_check.jl")
 

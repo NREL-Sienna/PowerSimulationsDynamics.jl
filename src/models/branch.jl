@@ -54,7 +54,7 @@ end
 function branch!(
     x,
     dx,
-    output_ode::Vector{Float64},
+    output_ode::Vector{T},
     V_r_from,
     V_i_from,
     V_r_to,
@@ -67,7 +67,7 @@ function branch!(
     ode_range::UnitRange{Int64},
     branch::DynamicLine{PSY.Line},
     sys::PSY.System,
-)
+) where T <: Real
 
     #Obtain local device states
     n_states = PSY.get_n_states(branch)
