@@ -285,7 +285,7 @@ function _index_dynamic_system!(sys::PSY.System)
         found_ref_bus = true
     end
     injection_n_states = state_space_ix[1] - branches_n_states - n_buses * 2
-    @assert total_states == state_space_ix[1] - static_bus_vars * 2
+    @assert total_states == state_space_ix[1] - static_bus_vars
     @debug total_states
     setdiff!(current_buses_ix, voltage_buses_ix)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
