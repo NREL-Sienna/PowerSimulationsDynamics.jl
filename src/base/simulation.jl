@@ -212,7 +212,7 @@ function _index_dynamic_system!(sys::PSY.System)
     global_state_index = Dict{String, Dict{Symbol, Int64}}()
     state_space_ix = [n_buses * 2]
     current_buses_ix = collect(1:n_buses)
-    static_bus_var_count= 2*length(current_buses_ix)
+    static_bus_var_count = 2 * length(current_buses_ix)
     voltage_buses_ix = Vector{Int}()
     total_states = 0
     first_dyn_branch_point = -1
@@ -232,9 +232,14 @@ function _index_dynamic_system!(sys::PSY.System)
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
             to_bus_number = PSY.get_number(arc.to)
-            merge!(+, total_shunts,
-            Dict(from_bus_number => 1/PSY.get_b(br).from,
-                 to_bus_number => 1/PSY.get_b(br).to))
+            merge!(
+                +,
+                total_shunts,
+                Dict(
+                    from_bus_number => 1 / PSY.get_b(br).from,
+                    to_bus_number => 1 / PSY.get_b(br).to,
+                ),
+            )
             push!(voltage_buses_ix, from_bus_number, to_bus_number)
             DAE_vector[from_bus_number] = DAE_vector[from_bus_number + n_buses] = true
             DAE_vector[to_bus_number] = DAE_vector[to_bus_number + n_buses] = true
@@ -247,9 +252,9 @@ function _index_dynamic_system!(sys::PSY.System)
             if val
                 global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
                 total_states += 2
-                static_bus_var_count-= 2
+                static_bus_var_count -= 2
                 push!(voltage_buses_ix, ix)
-                @assert static_bus_var_count>= 0
+                @assert static_bus_var_count >= 0
             end
         end
         branches_n_states = state_space_ix[1] - n_buses * 2
@@ -304,7 +309,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :branches_n_states => branches_n_states,
         :first_dyn_injection_pointer => 2 * n_buses + branches_n_states + 1,
         :first_dyn_branch_point => first_dyn_branch_point,
-        :total_variables => total_states + static_bus_var_count
+        :total_variables => total_states + static_bus_var_count,
     )
     # TODO: Make these keys consts
     sys_ext[LITS_COUNTS] = counts
