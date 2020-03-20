@@ -27,11 +27,3 @@ function kirchoff_laws(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
 
     return I_balance
 end
-#=
-            ix_dx = [
-                from_bus_number,
-                from_bus_number + bus_size,
-                to_bus_number,
-                to_bus_number + bus_size,
-            ]
-            =#
