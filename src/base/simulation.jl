@@ -412,14 +412,35 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     jacobian = ForwardDiff.jacobian(sysf!, out, x_eval)
     first_dyn_injection_pointer =
         PSY.get_ext(sim.system)[LITS_COUNTS][:first_dyn_injection_pointer]
+    first_dyn_branch_pointer = PSY.get_ext(sim.system)[LITS_COUNTS][:first_dyn_branch_point]
     bus_size = length(PSY.get_components(PSY.Bus, sim.system))
-    alg_states = 1:(2 * bus_size)
-    diff_states = first_dyn_injection_pointer:var_count
-    fx = jacobian[diff_states, diff_states]
-    gy = jacobian[alg_states, alg_states]
-    fy = jacobian[diff_states, alg_states]
-    gx = jacobian[alg_states, diff_states]
-    reduced_jacobian = fx - fy * inv(gy) * gx
+
+    #Initialize algebraic states indices
+    alg_states = copy(PSY.get_ext(sim.system)[CURRENT_BUSES_IX])
+    #Add imaginary voltages
+    append!(alg_states, alg_states .+ bus_size)
+
+    #Initialize differential states indices
+    diff_states = copy(PSY.get_ext(sim.system)[VOLTAGE_BUSES_IX])
+    #Add imaginary voltages
+    append!(diff_states, diff_states .+ bus_size)
+
+    if first_dyn_branch_pointer == -1
+        append!(diff_states, collect(first_dyn_injection_pointer:var_count))
+    else
+        append!(diff_states, collect(first_dyn_branch_pointer:var_count))
+    end
+
+    #Compute reduced jacobian
+    if isempty(alg_states)
+        reduced_jacobian = jacobian
+    else
+        fx = jacobian[diff_states, diff_states]
+        gy = jacobian[alg_states, alg_states]
+        fy = jacobian[diff_states, alg_states]
+        gx = jacobian[alg_states, diff_states]
+        reduced_jacobian = fx - fy * inv(gy) * gx
+    end
     vals, vect = eigen(reduced_jacobian)
     return SmallSignalOutput(
         reduced_jacobian,
