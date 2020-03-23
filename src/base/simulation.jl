@@ -211,9 +211,9 @@ function _index_dynamic_system!(sys::PSY.System)
     DAE_vector = collect(falses(n_buses * 2))
     global_state_index = Dict{String, Dict{Symbol, Int64}}()
     state_space_ix = [n_buses * 2]
-    current_buses_ix = collect(1:n_buses)
-    static_bus_var_count = 2 * length(current_buses_ix)
-    voltage_buses_ix = Vector{Int}()
+    current_buses_no = collect(1:n_buses)
+    static_bus_var_count = 2 * length(current_buses_no)
+    voltage_buses_no = Vector{Int}()
     total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
@@ -240,7 +240,7 @@ function _index_dynamic_system!(sys::PSY.System)
                     to_bus_number => 1 / PSY.get_b(br).to,
                 ),
             )
-            push!(voltage_buses_ix, from_bus_number, to_bus_number)
+            push!(voltage_buses_no, from_bus_number, to_bus_number)
             DAE_vector[from_bus_number] = DAE_vector[from_bus_number + n_buses] = true
             DAE_vector[to_bus_number] = DAE_vector[to_bus_number + n_buses] = true
             DAE_vector = push!(DAE_vector, collect(trues(n_states))...)
@@ -253,7 +253,7 @@ function _index_dynamic_system!(sys::PSY.System)
                 global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
                 total_states += 2
                 static_bus_var_count -= 2
-                push!(voltage_buses_ix, ix)
+                push!(voltage_buses_no, ix)
                 @assert static_bus_var_count >= 0
             end
         end
@@ -261,7 +261,7 @@ function _index_dynamic_system!(sys::PSY.System)
     else
         @debug("System doesn't contain Dynamic Branches")
     end
-    unique!(voltage_buses_ix)
+    unique!(voltage_buses_no)
     sources = PSY.get_components(PSY.Source, sys)
     for s in sources
         btype = PSY.get_bustype(PSY.get_bus(s))
@@ -296,7 +296,7 @@ function _index_dynamic_system!(sys::PSY.System)
     injection_n_states = state_space_ix[1] - branches_n_states - n_buses * 2
     @assert total_states == state_space_ix[1] - static_bus_var_count
     @debug total_states
-    setdiff!(current_buses_ix, voltage_buses_ix)
+    setdiff!(current_buses_no, voltage_buses_no)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
         Ybus = PSY.Ybus(sys)[:, :]
     else
@@ -311,11 +311,11 @@ function _index_dynamic_system!(sys::PSY.System)
         :first_dyn_branch_point => first_dyn_branch_point,
         :total_variables => total_states + static_bus_var_count,
     )
-    # TODO: Make these keys consts
+
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
-    sys_ext[VOLTAGE_BUSES_IX] = voltage_buses_ix
-    sys_ext[CURRENT_BUSES_IX] = current_buses_ix
+    sys_ext[VOLTAGE_BUSES_NO] = voltage_buses_no
+    sys_ext[CURRENT_BUSES_NO] = current_buses_no
     sys_ext[YBUS] = Ybus
     sys_ext[TOTAL_SHUNTS] = total_shunts
     sys_ext[GLOBAL_VARS] = global_vars
@@ -334,9 +334,11 @@ get_system_state_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_s
 get_variable_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_variables]
 get_device_index(sys::PSY.System, device::D) where {D <: PSY.DynamicInjection} =
     PSY.get_ext(sys)[GLOBAL_INDEX][device.name]
-
 get_inner_vars(device::PSY.DynamicInjection) = device.ext[INNER_VARS]
 get_ω_sys(sys::PSY.System) = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys]
+get_current_bus_no(sys::PSY.System) = PSY.get_ext(sys)[CURRENT_BUSES_NO]
+get_voltage_bus_no(sys::PSY.System) = PSY.get_ext(sys)[VOLTAGE_BUSES_NO]
+get_total_shunts(sys::PSY.System) = PSY.get_ext(sys)[TOTAL_SHUNTS]
 
 function _get_internal_mapping(
     device::PSY.DynamicInjection,
@@ -396,7 +398,6 @@ function small_signal_analysis(sim::Simulation; kwargs...)
         @error("Reset the simulation")
     end
 
-    dyn_branches = PSY.get_components(DynamicLine, sim.system)
     _change_vector_type(sim.system)
     var_count = LITS.get_variable_count(sim.system)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
@@ -410,37 +411,20 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     out = zeros(var_count) #Define a vector of zeros for the output
     x_eval = get(kwargs, :operating_point, sim.x0_init)
     jacobian = ForwardDiff.jacobian(sysf!, out, x_eval)
-    first_dyn_injection_pointer =
-        PSY.get_ext(sim.system)[LITS_COUNTS][:first_dyn_injection_pointer]
-    first_dyn_branch_pointer = PSY.get_ext(sim.system)[LITS_COUNTS][:first_dyn_branch_point]
-    bus_size = length(PSY.get_components(PSY.Bus, sim.system))
-
-    #Initialize algebraic states indices
-    alg_states = copy(PSY.get_ext(sim.system)[CURRENT_BUSES_IX])
-    #Add imaginary voltages
-    append!(alg_states, alg_states .+ bus_size)
-
-    #Initialize differential states indices
-    diff_states = copy(PSY.get_ext(sim.system)[VOLTAGE_BUSES_IX])
-    #Add imaginary voltages
-    append!(diff_states, diff_states .+ bus_size)
-
-    if first_dyn_branch_pointer == -1
-        append!(diff_states, collect(first_dyn_injection_pointer:var_count))
-    else
-        append!(diff_states, collect(first_dyn_branch_pointer:var_count))
+    n_buses = length(PSY.get_components(PSY.Bus, sim.system))
+    diff_states = collect(trues(var_count))
+    diff_states[1:2*n_buses] .= false
+    for b_no in get_voltage_bus_no(sim.system)
+        diff_states[b_no] = true
+        diff_states[b_no + n_buses] = true
     end
-
-    #Compute reduced jacobian
-    if isempty(alg_states)
-        reduced_jacobian = jacobian
-    else
-        fx = jacobian[diff_states, diff_states]
-        gy = jacobian[alg_states, alg_states]
-        fy = jacobian[diff_states, alg_states]
-        gx = jacobian[alg_states, diff_states]
-        reduced_jacobian = fx - fy * inv(gy) * gx
-    end
+    alg_states = .!diff_states
+    fx = @view jacobian[diff_states, diff_states]
+    gy = jacobian[alg_states, alg_states]
+    fy = @view jacobian[diff_states, alg_states]
+    gx = @view jacobian[alg_states, diff_states]
+    # TODO: Make operation using BLAS!
+    reduced_jacobian = fx - fy * inv(gy) * gx
     vals, vect = eigen(reduced_jacobian)
     return SmallSignalOutput(
         reduced_jacobian,
