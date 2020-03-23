@@ -21,6 +21,7 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
     V_r = @view x[1:bus_size]
     V_i = @view x[(bus_size + 1):bus_vars_count]
     Sbase = PSY.get_basepower(sys)
+    # TODO: Don't create this matrices here every iteration
     I_injections_r = zeros(T, bus_size)
     I_injections_i = zeros(T, bus_size)
     injection_ode = zeros(T, get_n_injection_states(sys))
@@ -48,6 +49,19 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
         out[ix_range] = injection_ode[ode_range] - dx[ix_range]
     end
 
+    for d in PSY.get_components(PSY.StaticInjection, sys)
+        bus_n = PSY.get_number(PSY.get_bus(d))
+
+        device!(
+            view(V_r, bus_n),
+            view(V_i, bus_n),
+            view(I_injections_r, bus_n),
+            view(I_injections_i, bus_n),
+            d,
+            sys,
+        )
+    end
+
     dyn_branches = PSY.get_components(DynamicLine, sys)
     if !(isempty(dyn_branches))
         for br in dyn_branches
@@ -55,12 +69,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
             to_bus_number = PSY.get_number(arc.to)
-            ix_dx = [
-                from_bus_number,
-                from_bus_number + bus_size,
-                to_bus_number,
-                to_bus_number + bus_size,
-            ]
             ix_range = range(branches_start, length = n_states)
             ode_range = range(branches_count, length = n_states)
             branches_count = branches_count + n_states
@@ -79,7 +87,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
                 view(I_injections_r, to_bus_number),
                 view(I_injections_i, to_bus_number),
                 ix_range,
-                ix_dx,
                 ode_range,
                 br,
                 sys,
@@ -88,19 +95,6 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
         end
     end
 
-    for d in PSY.get_components(PSY.StaticInjection, sys)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-
-        device!(
-            view(V_r, bus_n),
-            view(V_i, bus_n),
-            view(I_injections_r, bus_n),
-            view(I_injections_i, bus_n),
-            d,
-            sys,
-        )
-    end
-
-    out[bus_range] = kcl(PSY.get_ext(sys)[YBUS], V_r, V_i, I_injections_r, I_injections_i)
+    out[bus_range] = kirchoff_laws(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
 
 end

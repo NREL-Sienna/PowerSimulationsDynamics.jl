@@ -4,7 +4,7 @@ module LITS
 ####################################### Structs Exports ####################################
 
 # Base Exports
-export DynBranch
+export DynamicLine
 export Simulation
 export run_simulation!
 export ThreePhaseFault
@@ -23,10 +23,11 @@ import InfrastructureSystems
 import DiffEqBase
 import ForwardDiff
 import SparseArrays: SparseMatrixCSC
-import LinearAlgebra: BLAS
+#import LinearAlgebra: BLAS
 import LinearAlgebra: eigen
 import Base.to_index
 import NLsolve
+import Base.ImmutableDict
 import PowerSystems
 const PSY = PowerSystems
 const IS = InfrastructureSystems
@@ -41,7 +42,7 @@ include("base/simulation.jl")
 #Common Models
 include("models/branch.jl")
 include("models/device.jl")
-include("models/kcl.jl")
+include("models/kirchoff_laws.jl")
 include("models/dynline_model.jl")
 include("models/ref_transformations.jl")
 
@@ -69,6 +70,7 @@ include("models/system.jl")
 
 #Utils
 include("utils/plot_utils.jl")
+include("utils/immutable_dicts.jl")
 include("utils/print.jl")
 include("utils/kwargs_check.jl")
 

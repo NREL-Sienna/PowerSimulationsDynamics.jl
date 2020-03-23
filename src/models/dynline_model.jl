@@ -9,8 +9,6 @@ function mdl_line_ode!(
     current_i_from,
     current_r_to,
     current_i_to,
-    dv_from,
-    dv_to,
     sys_f,
     branch::DynamicLine{PSY.Line},
 )
@@ -18,13 +16,6 @@ function mdl_line_ode!(
     L = PSY.get_x(branch)
     R = PSY.get_r(branch)
     ω_b = sys_f * 2 * π
-    c_from = PSY.get_b(branch).from
-    c_to = PSY.get_b(branch).to
-
-    current_r_from[1] -= (1.0 / ω_b) * c_from * dv_from[1] - c_from * V_i_from[1]
-    current_i_from[1] -= (1.0 / ω_b) * c_from * dv_from[2] + c_from * V_r_from[1]
-    current_r_to[1] -= (1.0 / ω_b) * c_to * dv_to[1] - c_to * V_i_to[1]
-    current_i_to[1] -= (1.0 / ω_b) * c_to * dv_to[2] + c_to * V_r_to[1]
 
     Il_r = device_states[1]
     Il_i = device_states[2]

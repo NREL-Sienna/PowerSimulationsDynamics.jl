@@ -550,6 +550,25 @@ function inv_case78(nodes)
     ) #filter
 end
 
+function inv_case9(nodes)
+    return PSY.DynamicInverter(
+        1, #Number
+        "DARCO", #name
+        nodes[3], #bus
+        1.0, # ω_ref,
+        0.8, #V_ref
+        0.5, #P_ref
+        -0.3, #Q_ref
+        100.0, #MVABase
+        converter_case78(), #converter
+        outer_control_test(), #outer control
+        vsc_test(), #inner control voltage source
+        dc_source_case78(), #dc source
+        pll_test(), #pll
+        filter_test(),
+    ) #filter
+end
+
 ######################################
 ######## System Constructors #########
 ######################################

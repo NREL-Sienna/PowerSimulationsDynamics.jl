@@ -29,7 +29,7 @@ case8_gen = dyn_gen_case8(nodes_case8)
 
 ############### Inverter Data ########################
 
-case8_inv = inv_case78(nodes_case8)
+case8_inv = inv_case9(nodes_case8)
 
 ######################### Dynamical System ########################
 

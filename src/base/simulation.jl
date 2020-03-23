@@ -210,18 +210,58 @@ function _index_dynamic_system!(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     DAE_vector = collect(falses(n_buses * 2))
     global_state_index = Dict{String, Dict{Symbol, Int64}}()
-    n_buses = length(PSY.get_components(PSY.Bus, sys))
     state_space_ix = [n_buses * 2]
+    current_buses_no = collect(1:n_buses)
+    static_bus_var_count = 2 * length(current_buses_no)
+    voltage_buses_no = Vector{Int}()
     total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
-    static_bus_vars = 2 * n_buses
     global_vars = Dict{Symbol, Number}(
         :ω_sys => 1.0,
         :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
     )
+    total_shunts = Dict{Int, Float64}()
     found_ref_bus = false
 
+    dyn_branches = PSY.get_components(DynamicLine, sys)
+    if !(isempty(dyn_branches))
+        first_dyn_branch_point = state_space_ix[1] + 1
+        for br in dyn_branches
+            arc = PSY.get_arc(br)
+            n_states = PSY.get_n_states(br)
+            from_bus_number = PSY.get_number(arc.from)
+            to_bus_number = PSY.get_number(arc.to)
+            merge!(
+                +,
+                total_shunts,
+                Dict(
+                    from_bus_number => 1 / PSY.get_b(br).from,
+                    to_bus_number => 1 / PSY.get_b(br).to,
+                ),
+            )
+            push!(voltage_buses_no, from_bus_number, to_bus_number)
+            DAE_vector[from_bus_number] = DAE_vector[from_bus_number + n_buses] = true
+            DAE_vector[to_bus_number] = DAE_vector[to_bus_number + n_buses] = true
+            DAE_vector = push!(DAE_vector, collect(trues(n_states))...)
+            total_states += n_states
+            _add_states_to_global!(global_state_index, state_space_ix, br)
+        end
+
+        for (ix, val) in enumerate(DAE_vector[1:n_buses])
+            if val
+                global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
+                total_states += 2
+                static_bus_var_count -= 2
+                push!(voltage_buses_no, ix)
+                @assert static_bus_var_count >= 0
+            end
+        end
+        branches_n_states = state_space_ix[1] - n_buses * 2
+    else
+        @debug("System doesn't contain Dynamic Branches")
+    end
+    unique!(voltage_buses_no)
     sources = PSY.get_components(PSY.Source, sys)
     for s in sources
         btype = PSY.get_bustype(PSY.get_bus(s))
@@ -232,7 +272,6 @@ function _index_dynamic_system!(sys::PSY.System)
         global_vars[:ω_sys_index] = 0 #To define 0 if infinite source, bus_number otherwise,
         found_ref_bus = true
     end
-
     dynamic_injection = PSY.get_components(PSY.DynamicInjection, sys)
     isempty(dynamic_injection) &&
     error("System doesn't contain any DynamicInjection devices")
@@ -240,68 +279,45 @@ function _index_dynamic_system!(sys::PSY.System)
         if !(:states in fieldnames(typeof(d)))
             continue
         end
-        btype = PSY.get_bustype(PSY.get_bus(d))
+        device_bus = PSY.get_bus(d)
+        btype = PSY.get_bustype(device_bus)
         if (btype == PSY.BusTypes.REF) && found_ref_bus
             throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
         end
         _make_device_index!(d)
         device_n_states = PSY.get_n_states(d)
-        DAE_vector = vcat(DAE_vector, collect(trues(device_n_states)))
+        DAE_vector = push!(DAE_vector, collect(trues(device_n_states))...)
         total_states += device_n_states
         _add_states_to_global!(global_state_index, state_space_ix, d)
         btype != PSY.BusTypes.REF && continue
         global_vars[:ω_sys_index] = global_state_index[d.name][:ω] #To define 0 if infinite source, bus_number otherwise,
         found_ref_bus = true
     end
-    injection_n_states = state_space_ix[1] - n_buses * 2
-
-    dyn_branches = PSY.get_components(DynamicLine, sys)
-    if !(isempty(dyn_branches))
-        first_dyn_branch_point = state_space_ix[1] + 1
-        for br in dyn_branches
-            arc = PSY.get_arc(br)
-            n_states = PSY.get_n_states(br)
-            from_bus_number = PSY.get_number(arc.from)
-            to_bus_number = PSY.get_number(arc.to)
-            DAE_vector[from_bus_number] = DAE_vector[from_bus_number + n_buses] = true
-            DAE_vector[to_bus_number] = DAE_vector[to_bus_number + n_buses] = true
-            DAE_vector = vcat(DAE_vector, collect(trues(n_states)))
-            total_states += n_states
-            _add_states_to_global!(global_state_index, state_space_ix, br)
-        end
-
-        for (ix, val) in enumerate(DAE_vector[1:n_buses])
-            if val
-                global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
-                total_states += 2
-                state_space_ix[1] += 2
-                static_bus_vars -= 2
-                @assert static_bus_vars >= 0
-            end
-        end
-        branches_n_states = state_space_ix[1] - injection_n_states - n_buses * 2
-    else
-        @debug("System doesn't contain Dynamic Branches")
-    end
-    @assert total_states == state_space_ix[1] - n_buses * 2
-
+    injection_n_states = state_space_ix[1] - branches_n_states - n_buses * 2
+    @assert total_states == state_space_ix[1] - static_bus_var_count
+    @debug total_states
+    setdiff!(current_buses_no, voltage_buses_no)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
         Ybus = PSY.Ybus(sys)[:, :]
     else
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
     end
-    sys_ext = Dict{String, Any}() #I change it to be Any
-    counts = Dict{Symbol, Int64}(
+    sys_ext = Dict{String, Any}()
+    counts = Base.ImmutableDict(
         :total_states => total_states,
         :injection_n_states => injection_n_states,
         :branches_n_states => branches_n_states,
-        :first_dyn_injection_pointer => 2 * n_buses + 1,
+        :first_dyn_injection_pointer => 2 * n_buses + branches_n_states + 1,
         :first_dyn_branch_point => first_dyn_branch_point,
-        :total_variables => total_states + static_bus_vars,
+        :total_variables => total_states + static_bus_var_count,
     )
+
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
+    sys_ext[VOLTAGE_BUSES_NO] = voltage_buses_no
+    sys_ext[CURRENT_BUSES_NO] = current_buses_no
     sys_ext[YBUS] = Ybus
+    sys_ext[TOTAL_SHUNTS] = total_shunts
     sys_ext[GLOBAL_VARS] = global_vars
     @assert sys_ext[GLOBAL_VARS][:ω_sys_index] != -1
     sys.internal.ext = sys_ext
@@ -318,9 +334,11 @@ get_system_state_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_s
 get_variable_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_variables]
 get_device_index(sys::PSY.System, device::D) where {D <: PSY.DynamicInjection} =
     PSY.get_ext(sys)[GLOBAL_INDEX][device.name]
-
 get_inner_vars(device::PSY.DynamicInjection) = device.ext[INNER_VARS]
 get_ω_sys(sys::PSY.System) = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys]
+get_current_bus_no(sys::PSY.System) = PSY.get_ext(sys)[CURRENT_BUSES_NO]
+get_voltage_bus_no(sys::PSY.System) = PSY.get_ext(sys)[VOLTAGE_BUSES_NO]
+get_total_shunts(sys::PSY.System) = PSY.get_ext(sys)[TOTAL_SHUNTS]
 
 function _get_internal_mapping(
     device::PSY.DynamicInjection,
@@ -380,11 +398,6 @@ function small_signal_analysis(sim::Simulation; kwargs...)
         @error("Reset the simulation")
     end
 
-    dyn_branches = PSY.get_components(DynamicLine, sim.system)
-    if !(isempty(dyn_branches))
-        @error("Small Signal Analysis is not currently supported for models with DynamicLines")
-    end
-
     _change_vector_type(sim.system)
     var_count = LITS.get_variable_count(sim.system)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
@@ -398,15 +411,19 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     out = zeros(var_count) #Define a vector of zeros for the output
     x_eval = get(kwargs, :operating_point, sim.x0_init)
     jacobian = ForwardDiff.jacobian(sysf!, out, x_eval)
-    first_dyn_injection_pointer =
-        PSY.get_ext(sim.system)[LITS_COUNTS][:first_dyn_injection_pointer]
-    bus_size = length(PSY.get_components(PSY.Bus, sim.system))
-    alg_states = 1:(2 * bus_size)
-    diff_states = first_dyn_injection_pointer:var_count
-    fx = jacobian[diff_states, diff_states]
+    n_buses = length(PSY.get_components(PSY.Bus, sim.system))
+    diff_states = collect(trues(var_count))
+    diff_states[1:(2 * n_buses)] .= false
+    for b_no in get_voltage_bus_no(sim.system)
+        diff_states[b_no] = true
+        diff_states[b_no + n_buses] = true
+    end
+    alg_states = .!diff_states
+    fx = @view jacobian[diff_states, diff_states]
     gy = jacobian[alg_states, alg_states]
-    fy = jacobian[diff_states, alg_states]
-    gx = jacobian[alg_states, diff_states]
+    fy = @view jacobian[diff_states, alg_states]
+    gx = @view jacobian[alg_states, diff_states]
+    # TODO: Make operation using BLAS!
     reduced_jacobian = fx - fy * inv(gy) * gx
     vals, vect = eigen(reduced_jacobian)
     return SmallSignalOutput(

@@ -54,7 +54,7 @@ end
 function branch!(
     x,
     dx,
-    output_ode::Vector{Float64},
+    output_ode::Vector{T},
     V_r_from,
     V_i_from,
     V_r_to,
@@ -64,17 +64,14 @@ function branch!(
     current_r_to,
     current_i_to,
     ix_range::UnitRange{Int64},
-    ix_dx::Vector{Int64},
     ode_range::UnitRange{Int64},
     branch::DynamicLine{PSY.Line},
     sys::PSY.System,
-)
+) where {T <: Real}
 
     #Obtain local device states
     n_states = PSY.get_n_states(branch)
     device_states = @view x[ix_range]
-    dv_from = view(dx, ix_dx[1:2])
-    dv_to = view(dx, ix_dx[3:4])
 
     #Obtain references
     Sbase = PSY.get_basepower(sys)
@@ -92,8 +89,6 @@ function branch!(
         current_i_from,
         current_r_to,
         current_i_to,
-        dv_from,
-        dv_to,
         sys_f,
         branch,
     )

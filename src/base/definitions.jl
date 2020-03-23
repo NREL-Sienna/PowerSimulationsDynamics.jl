@@ -84,5 +84,8 @@ const INNER_VARS = "inner_vars"
 const YBUS = "Ybus"
 const CONTROL_REFS = "control_refs"
 const GLOBAL_VARS = "global_vars"
+const VOLTAGE_BUSES_NO = "voltage_buses_no"
+const CURRENT_BUSES_NO = "current_buses_no"
+const TOTAL_SHUNTS = "total_shunts"
 
 const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation]
