@@ -413,7 +413,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     jacobian = ForwardDiff.jacobian(sysf!, out, x_eval)
     n_buses = length(PSY.get_components(PSY.Bus, sim.system))
     diff_states = collect(trues(var_count))
-    diff_states[1:2*n_buses] .= false
+    diff_states[1:(2 * n_buses)] .= false
     for b_no in get_voltage_bus_no(sim.system)
         diff_states[b_no] = true
         diff_states[b_no + n_buses] = true
