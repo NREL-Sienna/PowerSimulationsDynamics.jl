@@ -5,12 +5,18 @@ function update_global_vars!(sys::PSY.System, x::AbstractArray)
     return
 end
 
-function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
+function system!(out::Vector{<:Real}, dx, x, input::Tuple, t::Float64)
+
+    sys = input[1]
+    I_injections_r = input[2][1]
+    I_injections_i = input[2][2]
+    injection_ode = input[2][3]
+    branches_ode = input[2][4]
 
     #Index Setup
-    bus_size = length(PSY.get_components(PSY.Bus, sys))
-    bus_range = 1:(2 * bus_size)
-    bus_vars_count = length(bus_range)
+    bus_size = get_bus_count(sys)
+    bus_vars_count = 2 * bus_size
+    bus_range = 1:bus_vars_count
     injection_start = get_injection_pointer(sys)
     injection_count = 1
     branches_start = get_branches_pointer(sys)
@@ -21,11 +27,8 @@ function system!(out::Vector{T}, dx, x, sys, t) where {T <: Real}
     V_r = @view x[1:bus_size]
     V_i = @view x[(bus_size + 1):bus_vars_count]
     Sbase = PSY.get_basepower(sys)
-    # TODO: Don't create this matrices here every iteration
-    I_injections_r = zeros(T, bus_size)
-    I_injections_i = zeros(T, bus_size)
-    injection_ode = zeros(T, get_n_injection_states(sys))
-    branches_ode = zeros(T, get_n_branches_states(sys))
+    fill!(I_injections_r, 0.0)
+    fill!(I_injections_i, 0.0)
 
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         bus_n = PSY.get_number(PSY.get_bus(d)) # TODO: This requires that the bus numbers are indexed 1-N
