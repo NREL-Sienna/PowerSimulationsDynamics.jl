@@ -6,7 +6,7 @@ struct ThreePhaseFault <: Perturbation
 end
 
 get_affect(pert::ThreePhaseFault) =
-    (integrator) -> PSY.get_ext(integrator.p)["Ybus"] = pert.Ybus
+    (integrator) -> PSY.get_ext(integrator.p[1])["Ybus"] = pert.Ybus
 
 struct ControlReferenceChange <: Perturbation
     time::Float64
