@@ -12,17 +12,17 @@ function mdl_inner_ode!(
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.CurrentControl)
-    iod = device_states[external_ix[1]] #TODO: Should be var referemce?
-    ioq = device_states[external_ix[2]] #TODO: Should be state reference?
-    icvd = device_states[external_ix[3]]
-    icvq = device_states[external_ix[4]]
-    vod = device_states[external_ix[5]]
-    voq = device_states[external_ix[6]]
+    Id_filter = device_states[external_ix[1]]
+    Iq_filter = device_states[external_ix[2]]
+    Id_cnv = device_states[external_ix[3]]
+    Iq_cnv = device_states[external_ix[4]]
+    Vd_filter = device_states[external_ix[5]] #TODO: Should be inner reference after initialization
+    Vq_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
 
     #Obtain inner variables for component
-    #vod = get_inner_vars(device)[Vd_filter_var] #TODO: Should be state reference?
-    #voq = get_inner_vars(device)[Vq_filter_var] #TODO: Should be state reference?
-    ω_vsm = get_inner_vars(device)[ω_oc_var]
+    #Vd_filter = get_inner_vars(device)[Vd_filter_var]
+    #Vq_filter = get_inner_vars(device)[Vq_filter_var]
+    ω_oc = get_inner_vars(device)[ω_oc_var]
     v_refr = get_inner_vars(device)[V_oc_var]
     vdc = get_inner_vars(device)[Vdc_var]
 
@@ -62,43 +62,43 @@ function mdl_inner_ode!(
     ## SRF Voltage Control w/ Virtual Impedance ##
     #Virtual Impedance - Computation but not DAE
     #v_refr = V_ref + kq*(q_ref - qm)
-    vod_ref = (v_refr - rv * iod + ω_vsm * lv * ioq)
-    voq_ref = (-rv * ioq - ω_vsm * lv * iod)
+    Vd_filter_ref = (v_refr - rv * Id_filter + ω_oc * lv * Iq_filter)
+    Vq_filter_ref = (-rv * Iq_filter - ω_oc * lv * Id_filter)
     #Output Control Signal - Links to SRF Current Controller
-    icvd_ref = (kpv * (vod_ref - vod) + kiv * ξ_d - cf * ω_vsm * voq + kffi * iod)
+    Id_cnv_ref = (kpv * (Vd_filter_ref - Vd_filter) + kiv * ξ_d - cf * ω_oc * Vq_filter + kffi * Id_filter)
 
-    icvq_ref = (kpv * (voq_ref - voq) + kiv * ξ_q + cf * ω_vsm * vod + kffi * ioq)
+    Iq_cnv_ref = (kpv * (Vq_filter_ref - Vq_filter) + kiv * ξ_q + cf * ω_oc * Vd_filter + kffi * Iq_filter)
     #Voltage Control ODEs
     #PI Integrator (internal state)
-    output_ode[local_ix[1]] = (vod_ref - vod)
-    output_ode[local_ix[2]] = (voq_ref - voq)
+    output_ode[local_ix[1]] = (Vd_filter_ref - Vd_filter)
+    output_ode[local_ix[2]] = (Vq_filter_ref - Vq_filter)
 
     ## SRF Current Control ##
     #Active Damping
-    #vad_d = kad*(vod-ϕ_d)
-    #vad_q = kad*(voq-ϕ_q)
+    #vad_d = kad*(Vd_filter-ϕ_d)
+    #vad_q = kad*(Vq_filter-ϕ_q)
     #References for Converter Output Voltage
-    vcvd_ref = (
-        kpc * (icvd_ref - icvd) + kic * γ_d - ω_vsm * lf * icvq + kffv * vod -
-        kad * (vod - ϕ_d)
+    Vd_cnv_ref = (
+        kpc * (Id_cnv_ref - Id_cnv) + kic * γ_d - ω_oc * lf * Iq_cnv + kffv * Vd_filter -
+        kad * (Vd_filter - ϕ_d)
     )
-    vcvq_ref = (
-        kpc * (icvq_ref - icvq) + kic * γ_q + ω_vsm * lf * icvd + kffv * voq -
-        kad * (voq - ϕ_q)
+    Vq_cnv_ref = (
+        kpc * (Iq_cnv_ref - Iq_cnv) + kic * γ_q + ω_oc * lf * Id_cnv + kffv * Vq_filter -
+        kad * (Vq_filter - ϕ_q)
     )
     #Modulation Commands to Converter
-    #md = vcvd_ref/vdc
-    #mq = vcvq_ref/vdc
+    #md = Vd_cnv_ref/vdc
+    #mq = Vq_cnv_ref/vdc
     #Current Control ODEs
     #PI Integrator (internal state)
-    output_ode[local_ix[3]] = icvd_ref - icvd
-    output_ode[local_ix[4]] = icvq_ref - icvq
+    output_ode[local_ix[3]] = Id_cnv_ref - Id_cnv
+    output_ode[local_ix[4]] = Iq_cnv_ref - Iq_cnv
     #Active Damping LPF (internal state)
-    output_ode[local_ix[5]] = ωad * vod - ωad * ϕ_d
-    output_ode[local_ix[6]] = ωad * voq - ωad * ϕ_q
+    output_ode[local_ix[5]] = ωad * Vd_filter - ωad * ϕ_d
+    output_ode[local_ix[6]] = ωad * Vq_filter - ωad * ϕ_q
 
     #Update inner_vars
-    get_inner_vars(device)[md_var] = vcvd_ref / vdc
-    get_inner_vars(device)[mq_var] = vcvq_ref / vdc
+    get_inner_vars(device)[md_var] = Vd_cnv_ref / vdc
+    get_inner_vars(device)[mq_var] = Vq_cnv_ref / vdc
 
 end
