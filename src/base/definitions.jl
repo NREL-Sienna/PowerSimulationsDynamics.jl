@@ -61,7 +61,7 @@ Vq_cnv_var :: Voltage supplied from the converter in the q-component
     ω_freq_estimator_var = 6
     V_oc_var = 7
     ω_oc_var = 8
-    θ_oc = 9
+    θ_oc_var = 9
     VR_inv_var = 10
     VI_inv_var = 11
     Vd_cnv_var = 12

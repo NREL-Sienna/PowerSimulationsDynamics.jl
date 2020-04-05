@@ -61,7 +61,7 @@ function Ports(::PSY.Filter)
     #TODO: If converter has dynamics, need to connect state_input
     state_input = [:θ_oc] #[:Vd_c, :Vq_c] #, :Id_c, :Iq_c]
     inner_input =
-        [VR_inv_var, VI_inv_var, Vd_cnv_var, Vq_cnv_var, θ_oc, Vd_filter_var, Vq_filter_var]
+        [VR_inv_var, VI_inv_var, Vd_cnv_var, Vq_cnv_var, θ_oc_var, Vd_filter_var, Vq_filter_var]
     return Ports(state_input, inner_input)
 end
 
@@ -70,7 +70,7 @@ end
 function Ports(::PSY.FrequencyEstimator)
     state_input = [:vd_filter, :vq_filter, :θ_oc]
     #TODO: Move PLL to PCC, i.e. move v_cap (D'Arco v_o), to inner inputs
-    inner_input = [Vd_filter_var, Vq_filter_var, θ_oc, ω_freq_estimator_var]
+    inner_input = [Vd_filter_var, Vq_filter_var, θ_oc_var, ω_freq_estimator_var]
     return Ports(state_input, inner_input)
 end
 
