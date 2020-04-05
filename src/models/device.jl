@@ -111,17 +111,17 @@ function device!(
     #Obtain ODES for DC side
     mdl_DCside_ode!(device)
 
-    #Obtain ODEs for OuterLoop
-    mdl_outer_ode!(device_states, view(output_ode, ode_range), sys_f0, sys_ω, device)
-
     #Obtain ODEs for PLL
-    mdl_freq_estimator_ode!(
+     mdl_freq_estimator_ode!(
         device_states,
         view(output_ode, ode_range),
         sys_f0,
         sys_ω,
         device,
     )
+
+    #Obtain ODEs for OuterLoop
+    mdl_outer_ode!(device_states, view(output_ode, ode_range), sys_f0, sys_ω, device)
 
     #Obtain inner controller ODEs and modulation commands
     mdl_inner_ode!(device_states, view(output_ode, ode_range), device)
