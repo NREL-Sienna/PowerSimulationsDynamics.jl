@@ -1,7 +1,7 @@
-function mdl_VScontrol_ode!(
+function mdl_inner_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicInverter{C, O, PSY.CombinedVIwithVZ, DC, P, F},
+    device::PSY.DynamicInverter{C, O, PSY.CurrentControl, DC, P, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -11,7 +11,7 @@ function mdl_VScontrol_ode!(
 }
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.CombinedVIwithVZ)
+    external_ix = get_input_port_ix(device, PSY.CurrentControl)
     iod = device_states[external_ix[1]] #TODO: Should be var referemce?
     ioq = device_states[external_ix[2]] #TODO: Should be state reference?
     icvd = device_states[external_ix[3]]
@@ -20,32 +20,32 @@ function mdl_VScontrol_ode!(
     voq = device_states[external_ix[6]]
 
     #Obtain inner variables for component
-    #vod = get_inner_vars(device)[Vdo_var] #TODO: Should be state reference?
-    #voq = get_inner_vars(device)[Vqo_var] #TODO: Should be state reference?
-    ω_vsm = get_inner_vars(device)[ω_control_var]
-    v_refr = get_inner_vars(device)[v_control_var]
+    #vod = get_inner_vars(device)[Vd_filter_var] #TODO: Should be state reference?
+    #voq = get_inner_vars(device)[Vq_filter_var] #TODO: Should be state reference?
+    ω_vsm = get_inner_vars(device)[ω_oc_var]
+    v_refr = get_inner_vars(device)[V_oc_var]
     vdc = get_inner_vars(device)[Vdc_var]
 
     #Get Voltage Controller parameters
-    vscontrol = PSY.get_vscontrol(device)
+    inner_control = PSY.get_vscontrol(device)
     filter = PSY.get_filter(device)
-    kpv = PSY.get_kpv(vscontrol)
-    kiv = PSY.get_kiv(vscontrol)
-    kffi = PSY.get_kffi(vscontrol)
+    kpv = PSY.get_kpv(inner_control)
+    kiv = PSY.get_kiv(inner_control)
+    kffi = PSY.get_kffi(inner_control)
     cf = PSY.get_cf(filter)
-    rv = PSY.get_rv(vscontrol)
-    lv = PSY.get_lv(vscontrol)
+    rv = PSY.get_rv(inner_control)
+    lv = PSY.get_lv(inner_control)
 
     #Get Current Controller parameters
-    kpc = PSY.get_kpc(vscontrol)
-    kic = PSY.get_kic(vscontrol)
-    kffv = PSY.get_kffv(vscontrol)
+    kpc = PSY.get_kpc(inner_control)
+    kic = PSY.get_kic(inner_control)
+    kffv = PSY.get_kffv(inner_control)
     lf = PSY.get_lf(filter)
-    ωad = PSY.get_ωad(vscontrol)
-    kad = PSY.get_kad(vscontrol)
+    ωad = PSY.get_ωad(inner_control)
+    kad = PSY.get_kad(inner_control)
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.CombinedVIwithVZ)
+    local_ix = get_local_state_ix(device, PSY.CurrentControl)
 
     #Define internal states for frequency estimator
     internal_states = @view device_states[local_ix]

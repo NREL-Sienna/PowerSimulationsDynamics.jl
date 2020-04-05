@@ -6,11 +6,11 @@ function mdl_filter_ode!(
     sys_Sbase,
     f0,
     ω_sys,
-    device::PSY.DynamicInverter{C, O, VC, DC, P, PSY.LCLFilter},
+    device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
-    VC <: PSY.VSControl,
+    IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
 }
@@ -26,8 +26,8 @@ function mdl_filter_ode!(
     #Obtain inner variables for component
     V_tR = get_inner_vars(device)[VR_inv_var]
     V_tI = get_inner_vars(device)[VI_inv_var]
-    vcvd = get_inner_vars(device)[Vdcnv_var]
-    vcvq = get_inner_vars(device)[Vqcnv_var]
+    vcvd = get_inner_vars(device)[Vd_cnv_var]
+    vcvq = get_inner_vars(device)[Vq_cnv_var]
 
     #Get parameters
     filter = PSY.get_filter(device)
@@ -79,11 +79,11 @@ function mdl_filter_ode!(
         (ωb / lg * voq + ωb / lg * V_dq[1] - ωb * rg / lg * ioq - ωb * ω_sys * iod)
 
     #Update inner_vars
-    get_inner_vars(device)[Vdo_var] = vod
-    get_inner_vars(device)[Vqo_var] = voq
+    get_inner_vars(device)[Vd_filter_var] = vod
+    get_inner_vars(device)[Vq_filter_var] = voq
     #TODO: If PLL models at PCC, need to update inner vars:
-    #get_inner_vars(device)[Vdo_var] = V_dq[q::dq_ref]
-    #get_inner_vars(device)[Vqo_var] = V_dq[q::dq_ref]
+    #get_inner_vars(device)[Vd_filter_var] = V_dq[q::dq_ref]
+    #get_inner_vars(device)[Vq_filter_var] = V_dq[q::dq_ref]
 
     #Compute current from the generator to the grid
     I_RI = (MVABase / sys_Sbase) * dq_ri(δ) * [iod; ioq]

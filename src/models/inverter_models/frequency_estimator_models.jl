@@ -3,25 +3,25 @@ function mdl_freq_estimator_ode!(
     output_ode,
     f0,
     ω_sys,
-    device::PSY.DynamicInverter{C, O, VC, DC, PSY.PLL, F},
+    device::PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
-    VC <: PSY.VSControl,
+    IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
 }
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.PLL)
+    external_ix = get_input_port_ix(device, PSY.KauraPLL)
     vod = device_states[external_ix[1]]
     voq = device_states[external_ix[2]]
     δθ_vsm = device_states[external_ix[3]]
 
     #Obtain inner variables for component
-    #vod = device.inner_vars[Vdo_var]
-    #voq = device.inner_vars[Vqo_var]
-    #δθ_vsm = device.inner_vars[δdqRI_var]
+    #vod = device.inner_vars[Vd_filter_var]
+    #voq = device.inner_vars[Vq_filter_var]
+    #δθ_vsm = device.inner_vars[θ_oc]
 
     #Get parameters
     pll_control = PSY.get_freq_estimator(device)
@@ -31,7 +31,7 @@ function mdl_freq_estimator_ode!(
     ωb = 2.0 * pi * f0
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.PLL)
+    local_ix = get_local_state_ix(device, PSY.KauraPLL)
 
     #Define internal states for frequency estimator
     internal_states = @view device_states[local_ix]

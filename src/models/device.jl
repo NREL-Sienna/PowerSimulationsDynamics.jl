@@ -106,7 +106,7 @@ function device!(
 
     #Update V_ref
     V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
-    get_inner_vars(device)[v_control_var] = V_ref
+    get_inner_vars(device)[V_oc_var] = V_ref
 
     #Obtain ODES for DC side
     mdl_DCside_ode!(device)
@@ -124,7 +124,7 @@ function device!(
     )
 
     #Obtain inner controller ODEs and modulation commands
-    mdl_VScontrol_ode!(device_states, view(output_ode, ode_range), device)
+    mdl_inner_ode!(device_states, view(output_ode, ode_range), device)
 
     #Obtain converter relations
     mdl_converter_ode!(device)

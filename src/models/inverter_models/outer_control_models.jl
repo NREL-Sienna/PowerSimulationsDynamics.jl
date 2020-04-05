@@ -5,15 +5,15 @@ function mdl_outer_ode!(
     ω_sys,
     device::PSY.DynamicInverter{
         C,
-        PSY.VirtualInertiaQdroop{PSY.VirtualInertia, PSY.ReactivePowerDroop},
-        VC,
+        PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
+        IC,
         DC,
         P,
         F,
     },
 ) where {
     C <: PSY.Converter,
-    VC <: PSY.VSControl,
+    IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
@@ -22,7 +22,7 @@ function mdl_outer_ode!(
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(
         device,
-        PSY.VirtualInertiaQdroop{PSY.VirtualInertia, PSY.ReactivePowerDroop},
+        PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
     vpll_d = device_states[external_ix[1]]
     vpll_q = device_states[external_ix[2]]
@@ -60,7 +60,7 @@ function mdl_outer_ode!(
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
         device,
-        PSY.VirtualInertiaQdroop{PSY.VirtualInertia, PSY.ReactivePowerDroop},
+        PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
 
     #Define internal states for frequency estimator
@@ -81,7 +81,7 @@ function mdl_outer_ode!(
     output_ode[local_ix[3]] = (-ωf * ioq * vod + ωf * iod * voq - ωf * qm)
 
     #Update inner vars
-    get_inner_vars(device)[δdqRI_var] = δθ_vsm
-    get_inner_vars(device)[ω_control_var] = δω_vsm + 1.0
-    get_inner_vars(device)[v_control_var] = V_ref + kq * (q_ref - qm)
+    get_inner_vars(device)[θ_oc] = δθ_vsm
+    get_inner_vars(device)[ω_oc_var] = δω_vsm + 1.0
+    get_inner_vars(device)[V_oc_var] = V_ref + kq * (q_ref - qm)
 end
