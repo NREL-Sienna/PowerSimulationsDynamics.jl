@@ -45,7 +45,7 @@ Vq_filter_var :: Voltage seen in the capacitor of the filter in the q-component
 ω_freq_estimator_var :: Frequency estimated by the frequency estimator.
 V_oc_var :: Control voltage supplied from the outer loop control to the inner loop
 ω_oc_var :: Control frequency supplied from the outer loop control the inner loop
-θ_oc :: Variation of the angle (PLL or VSM) of the inverter
+θ_oc_var :: Variation of the angle (PLL or VSM) of the inverter
 VR_inv_var :: Real terminal voltage on the inverter
 VI_inv_var :: Imaginary terminal voltage on the inverter
 Vd_cnv_var :: Voltage supplied from the converter in the d-component
