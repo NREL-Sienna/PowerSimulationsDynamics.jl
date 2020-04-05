@@ -492,8 +492,7 @@ reactive_droop_test() = PSY.ReactivePowerDroop(
     1000.0,
 ) #ωf:: Reactive power cut-off low pass filter frequency
 
-outer_control_test() =
-    PSY.OuterControl(virtual_inertia_test(), reactive_droop_test())
+outer_control_test() = PSY.OuterControl(virtual_inertia_test(), reactive_droop_test())
 
 ######## Inner Control ######
 

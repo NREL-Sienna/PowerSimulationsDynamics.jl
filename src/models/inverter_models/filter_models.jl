@@ -60,23 +60,33 @@ function mdl_filter_ode!(
     #Compute 6 states ODEs (D'Arco EPSR122 Model)
     #Inverter Output Inductor (internal state)
     #𝜕id_c/𝜕t
-    output_ode[local_ix[1]] =
-        (ωb / lf * Vd_cnv - ωb / lf * Vd_filter - ωb * rf / lf * Id_cnv + ωb * ω_sys * Iq_cnv)
+    output_ode[local_ix[1]] = (
+        ωb / lf * Vd_cnv - ωb / lf * Vd_filter - ωb * rf / lf * Id_cnv +
+        ωb * ω_sys * Iq_cnv
+    )
     #𝜕iq_c/𝜕t
-    output_ode[local_ix[2]] =
-        (ωb / lf * Vq_cnv - ωb / lf * Vq_filter - ωb * rf / lf * Iq_cnv - ωb * ω_sys * Id_cnv)
+    output_ode[local_ix[2]] = (
+        ωb / lf * Vq_cnv - ωb / lf * Vq_filter - ωb * rf / lf * Iq_cnv -
+        ωb * ω_sys * Id_cnv
+    )
     #LCL Capacitor (internal state)
     #𝜕vd_o/𝜕t
-    output_ode[local_ix[3]] = (ωb / cf * Id_cnv - ωb / cf * Id_filter + ωb * ω_sys * Vq_filter)
+    output_ode[local_ix[3]] =
+        (ωb / cf * Id_cnv - ωb / cf * Id_filter + ωb * ω_sys * Vq_filter)
     #𝜕vq_o/𝜕t
-    output_ode[local_ix[4]] = (ωb / cf * Iq_cnv - ωb / cf * Iq_filter - ωb * ω_sys * Vd_filter)
+    output_ode[local_ix[4]] =
+        (ωb / cf * Iq_cnv - ωb / cf * Iq_filter - ωb * ω_sys * Vd_filter)
     #Grid Inductance (internal state)
     #𝜕id_o/𝜕t
-    output_ode[local_ix[5]] =
-        (ωb / lg * Vd_filter - ωb / lg * V_dq[2] - ωb * rg / lg * Id_filter + ωb * ω_sys * Iq_filter)
+    output_ode[local_ix[5]] = (
+        ωb / lg * Vd_filter - ωb / lg * V_dq[2] - ωb * rg / lg * Id_filter +
+        ωb * ω_sys * Iq_filter
+    )
     #𝜕iq_o/𝜕t
-    output_ode[local_ix[6]] =
-        (ωb / lg * Vq_filter + ωb / lg * V_dq[1] - ωb * rg / lg * Iq_filter - ωb * ω_sys * Id_filter)
+    output_ode[local_ix[6]] = (
+        ωb / lg * Vq_filter + ωb / lg * V_dq[1] - ωb * rg / lg * Iq_filter -
+        ωb * ω_sys * Id_filter
+    )
 
     #Update inner_vars
     get_inner_vars(device)[Vd_filter_var] = Vd_filter

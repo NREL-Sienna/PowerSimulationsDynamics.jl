@@ -112,7 +112,7 @@ function device!(
     mdl_DCside_ode!(device)
 
     #Obtain ODEs for PLL
-     mdl_freq_estimator_ode!(
+    mdl_freq_estimator_ode!(
         device_states,
         view(output_ode, ode_range),
         sys_f0,

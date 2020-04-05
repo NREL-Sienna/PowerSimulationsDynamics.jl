@@ -65,9 +65,17 @@ function mdl_inner_ode!(
     Vd_filter_ref = (v_refr - rv * Id_filter + ω_oc * lv * Iq_filter)
     Vq_filter_ref = (-rv * Iq_filter - ω_oc * lv * Id_filter)
     #Output Control Signal - Links to SRF Current Controller
-    Id_cnv_ref = (kpv * (Vd_filter_ref - Vd_filter) + kiv * ξ_d - cf * ω_oc * Vq_filter + kffi * Id_filter)
+    Id_cnv_ref = (
+        kpv * (Vd_filter_ref - Vd_filter) + kiv * ξ_d - cf * ω_oc * Vq_filter +
+        kffi * Id_filter
+    )
 
-    Iq_cnv_ref = (kpv * (Vq_filter_ref - Vq_filter) + kiv * ξ_q + cf * ω_oc * Vd_filter + kffi * Iq_filter)
+    Iq_cnv_ref = (
+        kpv * (Vq_filter_ref - Vq_filter) +
+        kiv * ξ_q +
+        cf * ω_oc * Vd_filter +
+        kffi * Iq_filter
+    )
     #Voltage Control ODEs
     #PI Integrator (internal state)
     output_ode[local_ix[1]] = (Vd_filter_ref - Vd_filter)
@@ -79,12 +87,10 @@ function mdl_inner_ode!(
     #vad_q = kad*(Vq_filter-ϕ_q)
     #References for Converter Output Voltage
     Vd_cnv_ref = (
-        kpc * (Id_cnv_ref - Id_cnv) + kic * γ_d - ω_oc * lf * Iq_cnv + kffv * Vd_filter -
-        kad * (Vd_filter - ϕ_d)
+        kpc * (Id_cnv_ref - Id_cnv) + kic * γ_d - ω_oc * lf * Iq_cnv + kffv * Vd_filter - kad * (Vd_filter - ϕ_d)
     )
     Vq_cnv_ref = (
-        kpc * (Iq_cnv_ref - Iq_cnv) + kic * γ_q + ω_oc * lf * Id_cnv + kffv * Vq_filter -
-        kad * (Vq_filter - ϕ_q)
+        kpc * (Iq_cnv_ref - Iq_cnv) + kic * γ_q + ω_oc * lf * Id_cnv + kffv * Vq_filter - kad * (Vq_filter - ϕ_q)
     )
     #Modulation Commands to Converter
     #md = Vd_cnv_ref/vdc

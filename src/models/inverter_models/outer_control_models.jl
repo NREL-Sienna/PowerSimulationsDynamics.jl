@@ -73,21 +73,21 @@ function mdl_outer_ode!(
     p_elec_out = Id_filter * Vd_filter + Iq_filter * Vq_filter
 
     #Compute 3 states ODEs
-    output_ode[local_ix[1]] = (
-        p_ref / Ta - p_elec_out / Ta - kd * (ω_oc - ω_pll) / Ta - kω * (ω_oc - ω_ref) / Ta
-    )
+    output_ode[local_ix[1]] =
+        (p_ref / Ta - p_elec_out / Ta - kd * (ω_oc - ω_pll) / Ta - kω * (ω_oc - ω_ref) / Ta)
     output_ode[local_ix[2]] = ωb * (ω_oc - ω_sys)
-    output_ode[local_ix[3]] = (-ωf * Iq_filter * Vd_filter + ωf * Id_filter * Vq_filter - ωf * qm)
+    output_ode[local_ix[3]] =
+        (-ωf * Iq_filter * Vd_filter + ωf * Id_filter * Vq_filter - ωf * qm)
 
     #Update inner vars
     get_inner_vars(device)[θ_oc_var] = θ_oc
     get_inner_vars(device)[ω_oc_var] = ω_oc
     get_inner_vars(device)[V_oc_var] = V_ref + kq * (q_ref - qm)
 end
- #output_ode[local_ix[1]] = (
-    #    -Id_filter * Vd_filter / Ta - Iq_filter * Vq_filter / Ta +
-    #    kd * kp_pll * atan(vpll_q / vpll_d) / Ta +
-    #    kd * ki_pll * ϵ_pll / Ta - (kd + kω) * (ω_oc - ω_sys) / Ta +
-    #    p_ref / Ta +
-    #    kω * ω_ref / Ta - kω * ω_sys / Ta
-    #)
+#output_ode[local_ix[1]] = (
+#    -Id_filter * Vd_filter / Ta - Iq_filter * Vq_filter / Ta +
+#    kd * kp_pll * atan(vpll_q / vpll_d) / Ta +
+#    kd * ki_pll * ϵ_pll / Ta - (kd + kω) * (ω_oc - ω_sys) / Ta +
+#    p_ref / Ta +
+#    kω * ω_ref / Ta - kω * ω_sys / Ta
+#)
