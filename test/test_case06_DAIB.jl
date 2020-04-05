@@ -40,8 +40,8 @@ x0_guess = [
     1.0648, #V2_R
     0.0, #V1_I
     0.001, #V2_I
-    0.0, #δω_vsm
-    0.2, #δθ_vsm
+    1.0, #ω_oc
+    0.2, #θ_oc
     0.025, #qm
     0.0015, #ξ_d
     -0.07, #ξ_q
@@ -52,14 +52,14 @@ x0_guess = [
     1.004, #vpll_d
     0.0, #vpll_q
     0.0, #ε_pll
-    0.1, #δθ_pll
+    0.1, #θ_pll
     0.5, #id_cv
     0.0, #iq_cv
-    0.95, #vod
-    -0.1, #voq
-    0.49, #iod
+    0.95, #Vd_filter
+    -0.1, #Vq_filter
+    0.49, #Id_filter
     -0.1,
-] #ioq
+] #Iq_filter
 
 #Define Fault using Callbacks
 Pref_change = LITS.ControlReferenceChange(1.0, Darco_Inverter, LITS.P_ref_index, 0.7)
@@ -71,6 +71,6 @@ sim = LITS.Simulation(sys, tspan, Pref_change, initial_guess = x0_guess)
 run_simulation!(sim, Sundials.IDA());
 
 #Obtain data for angles
-series = get_state_series(sim, ("DARCO", :δω_vsm))
+series = get_state_series(sim, ("DARCO", :ω_oc))
 
 @test sim.solution.retcode == :Success
