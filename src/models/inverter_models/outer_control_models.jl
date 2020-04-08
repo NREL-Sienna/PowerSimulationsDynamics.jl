@@ -36,7 +36,7 @@ function mdl_outer_ode!(
     ω_pll = get_inner_vars(device)[ω_freq_estimator_var]
 
     #Get Active Power Controller parameters
-    outer_control = PSY.get_outercontrol(device)
+    outer_control = PSY.get_outer_control(device)
     active_power_control = PSY.get_active_power(outer_control)
     Ta = PSY.get_Ta(active_power_control) #VSM Inertia constant
     kd = PSY.get_kd(active_power_control) #VSM damping constant

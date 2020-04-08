@@ -27,7 +27,7 @@ function mdl_inner_ode!(
     vdc = get_inner_vars(device)[Vdc_var]
 
     #Get Voltage Controller parameters
-    inner_control = PSY.get_vscontrol(device)
+    inner_control = PSY.get_inner_control(device)
     filter = PSY.get_filter(device)
     kpv = PSY.get_kpv(inner_control)
     kiv = PSY.get_kiv(inner_control)
