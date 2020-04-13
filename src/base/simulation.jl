@@ -35,19 +35,14 @@ function Simulation(
 
     dx0 = zeros(var_count)
     callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
-    aux_arrays = ImmutableDict(
-        1 => collect(zeros(bus_count)),
-        2 => collect(zeros(bus_count)),
-        3 => collect(zeros(get_n_injection_states(system))),
-        4 => collect(zeros(get_n_branches_states(system)))
-    )
+
+    _add_aux_arrays!(system)
     prob = DiffEqBase.DAEProblem(
         system!,
         dx0,
         x0_init,
         tspan,
-        (system,
-        aux_arrays),
+        system,
         differential_vars = DAE_vector;
         kwargs...,
     )
@@ -82,6 +77,18 @@ function Simulation(
     )
 end
 
+function _add_aux_arrays!(system::PSY.System)
+    bus_count = get_bus_count(system)
+    aux_arrays = ImmutableDict(
+        1 => collect(zeros(bus_count)),
+        2 => collect(zeros(bus_count)),
+        3 => collect(zeros(get_n_injection_states(system))),
+        4 => collect(zeros(get_n_branches_states(system)))
+    )
+    system.ext[AUX_ARRAYS] = aux_arrays
+    return
+end
+
 function _build_perturbations(perturbations::Vector{<:Perturbation})
     isempty(perturbations) && return DiffEqBase.CallbackSet(), [0.0]
     perturbations_count = length(perturbations)
@@ -113,10 +120,9 @@ function _calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{F
         out,    #output of the function
         dx0,    #derivatives equal to zero
         x,      #states
-        (sys,aux_arrays),
-            #Parameters
-        0.0,
-    )    #time equals to zero.
+        sys,    #Parameters
+        0.0,    #time equals to zero.
+    )
     sys_solve = NLsolve.nlsolve(
         inif!,
         initial_guess,
@@ -419,18 +425,11 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     var_count = LITS.get_variable_count(sim.system)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     bus_count = length(PSY.get_components(PSY.Bus, sim.system))
-    aux_arrays = ImmutableDict(
-    1 => collect(zeros(Real, bus_count)),
-    2 => collect(zeros(Real, bus_count)),
-    3 => collect(zeros(Real, get_n_injection_states(sim.system))),
-    4 => collect(zeros(Real, get_n_branches_states(sim.system))))
-
     sysf! = (out, x) -> LITS.system!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
         x,              #states
-        (sim.system,
-        aux_arrays),     #Parameters
+        sim.system,     #Parameters
         0.0,            #time equals to zero.
     )
     out = zeros(var_count) #Define a vector of zeros for the output
