@@ -5,13 +5,12 @@ function update_global_vars!(sys::PSY.System, x::AbstractArray)
     return
 end
 
-function system!(out::Vector{<:Real}, dx, x, input::Tuple, t::Float64)
+function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
 
-    sys = input[1]
-    I_injections_r = input[2][1]
-    I_injections_i = input[2][2]
-    injection_ode = input[2][3]
-    branches_ode = input[2][4]
+    I_injections_r = PSY.get_ext(sys)[AUX_ARRAYS][1]
+    I_injections_i = PSY.get_ext(sys)[AUX_ARRAYS][2]
+    injection_ode = PSY.get_ext(sys)[AUX_ARRAYS][3]
+    branches_ode = PSY.get_ext(sys)[AUX_ARRAYS][4]
 
     #Index Setup
     bus_size = get_bus_count(sys)
