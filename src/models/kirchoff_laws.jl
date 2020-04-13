@@ -16,7 +16,7 @@ function kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
     bus_count = get_bus_count(sys)
     for n in 1:bus_count
         I_balance[n] = real(I_bus[n]) - I_injections_r[n]
-        I_balance[n+bus_count] = imag(I_bus[n]) - I_injections_i[n]
+        I_balance[n + bus_count] = imag(I_bus[n]) - I_injections_i[n]
     end
 
     voltage_buses = get_voltage_bus_no(sys)

@@ -85,7 +85,7 @@ function _add_aux_arrays!(system::PSY.System, T)
         3 => collect(zeros(T, get_n_injection_states(system))),  #injection_ode
         4 => collect(zeros(T, get_n_branches_states(system))),   #branches_ode
         5 => collect(zeros(Complex{T}, bus_count)),              #I_bus
-        6 => collect(zeros(T, 2*bus_count))                      #I_balance
+        6 => collect(zeros(T, 2 * bus_count)),                      #I_balance
     )
     system.internal.ext[AUX_ARRAYS] = aux_arrays
     return
@@ -328,7 +328,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :first_dyn_injection_pointer => 2 * n_buses + branches_n_states + 1,
         :first_dyn_branch_point => first_dyn_branch_point,
         :total_variables => total_states + static_bus_var_count,
-        :bus_count => n_buses
+        :bus_count => n_buses,
     )
 
     sys_ext[LITS_COUNTS] = counts
