@@ -97,6 +97,8 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
         end
     end
 
-    out[bus_range] = kirchoff_laws(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
+    kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
+    out[bus_range] = PSY.get_ext(sys)[AUX_ARRAYS][6]
+
 
 end
