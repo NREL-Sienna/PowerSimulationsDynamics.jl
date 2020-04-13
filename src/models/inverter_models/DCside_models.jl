@@ -1,9 +1,9 @@
 function mdl_DCside_ode!(
-    device::PSY.DynamicInverter{C, O, VC, PSY.FixedDCSource, P, F},
+    device::PSY.DynamicInverter{C, O, IC, PSY.FixedDCSource, P, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
-    VC <: PSY.VSControl,
+    IC <: PSY.InnerControl,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
 }

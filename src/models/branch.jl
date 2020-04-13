@@ -1,7 +1,7 @@
 mutable struct DynamicLine{T <: PSY.ACBranch} <: PSY.Device
     branch_data::T
     n_states::Int64
-    states
+    states::Any
 
     function DynamicLine(branch::T) where {T <: PSY.ACBranch}
         n_states = 2
@@ -77,7 +77,6 @@ function branch!(
     Sbase = PSY.get_basepower(sys)
     sys_f = PSY.get_frequency(sys)
 
-    #Obtain ODEs and Mechanical Power for Turbine Governor
     mdl_line_ode!(
         device_states,
         view(output_ode, ode_range),
@@ -94,5 +93,4 @@ function branch!(
     )
 
     return
-
 end

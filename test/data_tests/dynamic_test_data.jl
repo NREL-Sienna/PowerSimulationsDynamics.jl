@@ -444,12 +444,12 @@ end
 
 ###### Converter Data ######
 
-converter_DAIB() = PSY.AvgCnvFixedDC(
+converter_DAIB() = PSY.AverageConverter(
     690.0, #Rated Voltage
     2.75,
 ) #Rated MVA
 
-converter_case78() = PSY.AvgCnvFixedDC(
+converter_case78() = PSY.AverageConverter(
     138.0, #Rated Voltage
     100.0,
 ) #Rated MVA
@@ -472,7 +472,7 @@ filter_test() = PSY.LCLFilter(
 
 ###### PLL Data ######
 
-pll_test() = PSY.PLL(
+pll_test() = PSY.KauraPLL(
     500.0, #ω_lp: Cut-off frequency for LowPass filter of PLL filter.
     0.084, #k_p: PLL proportional gain
     4.69,
@@ -492,12 +492,11 @@ reactive_droop_test() = PSY.ReactivePowerDroop(
     1000.0,
 ) #ωf:: Reactive power cut-off low pass filter frequency
 
-outer_control_test() =
-    PSY.VirtualInertiaQdroop(virtual_inertia_test(), reactive_droop_test())
+outer_control_test() = PSY.OuterControl(virtual_inertia_test(), reactive_droop_test())
 
 ######## Inner Control ######
 
-vsc_test() = PSY.CombinedVIwithVZ(
+vsc_test() = PSY.CurrentControl(
     0.59, #kpv:: Voltage controller proportional gain
     736.0, #kiv:: Voltage controller integral gain
     0.0, #kffv:: Binary variable enabling the voltage feed-forward in output of current controllers

@@ -45,7 +45,7 @@ end
 #### Converter Ports ####
 function Ports(::PSY.Converter)
     state_input = Vector{Symbol}()
-    inner_input = [md_var, mq_var, Vdc_var, Vdcnv_var, Vqcnv_var]
+    inner_input = [md_var, mq_var, Vdc_var, Vd_cnv_var, Vq_cnv_var]
     return Ports(state_input, inner_input)
 end
 
@@ -59,31 +59,38 @@ end
 #### Filter Ports ####
 function Ports(::PSY.Filter)
     #TODO: If converter has dynamics, need to connect state_input
-    state_input = [:δθ_vsm] #[:Vd_c, :Vq_c] #, :Id_c, :Iq_c]
-    inner_input =
-        [VR_inv_var, VI_inv_var, Vdcnv_var, Vqcnv_var, δdqRI_var, Vdo_var, Vqo_var]
+    state_input = [:θ_oc] #[:Vd_c, :Vq_c] #, :Id_c, :Iq_c]
+    inner_input = [
+        VR_inv_var,
+        VI_inv_var,
+        Vd_cnv_var,
+        Vq_cnv_var,
+        θ_oc_var,
+        Vd_filter_var,
+        Vq_filter_var,
+    ]
     return Ports(state_input, inner_input)
 end
 
 #### Freq. Estimator Ports ####
 
 function Ports(::PSY.FrequencyEstimator)
-    state_input = [:vd_cap, :vq_cap, :δθ_vsm]
+    state_input = [:vd_filter, :vq_filter, :θ_oc]
     #TODO: Move PLL to PCC, i.e. move v_cap (D'Arco v_o), to inner inputs
-    inner_input = [Vdo_var, Vqo_var, δdqRI_var, ω_freq_estimator_var]
+    inner_input = [Vd_filter_var, Vq_filter_var, θ_oc_var, ω_freq_estimator_var]
     return Ports(state_input, inner_input)
 end
 
 #### Outer Control Ports ####
 function Ports(::PSY.OuterControl)
-    state_input = [:vpll_d, :vpll_q, :ε_pll, :vd_cap, :vq_cap, :id_o, :iq_o]
-    inner_input = [Vdo_var, Vqo_var, ω_freq_estimator_var]
+    state_input = [:vd_pll, :vq_pll, :ε_pll, :vd_filter, :vq_filter, :id_filter, :iq_filter]
+    inner_input = [Vd_filter_var, Vq_filter_var, ω_freq_estimator_var]
     return Ports(state_input, inner_input)
 end
 
 #### Inner Control Ports ####
-function Ports(::PSY.VSControl)
-    state_input = [:id_o, :iq_o, :id_c, :iq_c, :vd_cap, :vq_cap]
-    inner_input = [Vdo_var, Vqo_var, v_control_var, ω_control_var]
+function Ports(::PSY.InnerControl)
+    state_input = [:id_filter, :iq_filter, :id_cnv, :iq_cnv, :vd_filter, :vq_filter]
+    inner_input = [Vd_filter_var, Vq_filter_var, V_oc_var, ω_oc_var]
     return Ports(state_input, inner_input)
 end
