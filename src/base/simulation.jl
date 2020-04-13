@@ -21,6 +21,7 @@ function Simulation(
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
     DAE_vector = _index_dynamic_system!(system)
+    _add_aux_arrays!(system)
     var_count = get_variable_count(system)
 
     flat_start = zeros(var_count)
@@ -36,7 +37,6 @@ function Simulation(
     dx0 = zeros(var_count)
     callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
 
-    _add_aux_arrays!(system)
     prob = DiffEqBase.DAEProblem(
         system!,
         dx0,
@@ -80,12 +80,12 @@ end
 function _add_aux_arrays!(system::PSY.System)
     bus_count = get_bus_count(system)
     aux_arrays = ImmutableDict(
-        1 => collect(zeros(bus_count)),
-        2 => collect(zeros(bus_count)),
-        3 => collect(zeros(get_n_injection_states(system))),
-        4 => collect(zeros(get_n_branches_states(system)))
+        1 => collect(zeros(Real, bus_count)),
+        2 => collect(zeros(Real, bus_count)),
+        3 => collect(zeros(Real, get_n_injection_states(system))),
+        4 => collect(zeros(Real, get_n_branches_states(system)))
     )
-    system.ext[AUX_ARRAYS] = aux_arrays
+    system.internal.ext[AUX_ARRAYS] = aux_arrays
     return
 end
 
@@ -155,7 +155,7 @@ end
 
 function _attach_inner_vars!(
     device::PSY.DynamicGenerator,
-    ::Type{T} = Real,
+    ::Type{T} = Float64,
 ) where {T <: Real}
     device.ext[INNER_VARS] = zeros(T, 8)
     return
@@ -163,7 +163,7 @@ end
 
 function _attach_inner_vars!(
     device::PSY.DynamicInverter,
-    ::Type{T} = Real,
+    ::Type{T} = Float64,
 ) where {T <: Real}
     device.ext[INNER_VARS] = zeros(T, 13)
     return
