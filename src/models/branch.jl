@@ -1,7 +1,7 @@
 mutable struct DynamicLine{T <: PSY.ACBranch} <: PSY.Device
     branch_data::T
     n_states::Int64
-    states
+    states::Any
 
     function DynamicLine(branch::T) where {T <: PSY.ACBranch}
         n_states = 2
