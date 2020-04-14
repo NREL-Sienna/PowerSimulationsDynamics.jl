@@ -152,7 +152,7 @@ end
 
 function _attach_inner_vars!(
     device::PSY.DynamicGenerator,
-    ::Type{T} = Float64,
+    ::Type{T} = Real,
 ) where {T <: Real}
     device.ext[INNER_VARS] = zeros(T, 8)
     return
@@ -160,7 +160,7 @@ end
 
 function _attach_inner_vars!(
     device::PSY.DynamicInverter,
-    ::Type{T} = Float64,
+    ::Type{T} = Real,
 ) where {T <: Real}
     device.ext[INNER_VARS] = zeros(T, 13)
     return
