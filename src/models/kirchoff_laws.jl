@@ -6,14 +6,21 @@
                 It is zero if no generator is connected at bus j.
 
 """
-function kirchoff_laws(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
+function kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
     Ybus = PSY.get_ext(sys)[YBUS]
-    # TODO: Make more efficent calculation here. Note: BLAS doesn't work because the the type of Vr and Vi is not Matrix of Complex
-    I_bus = Ybus * (V_r + V_i .* 1im)
-    I_balance = [real(I_bus) - I_injections_r; imag(I_bus) - I_injections_i]
+    # TODO: Make more efficent calculation here.
+    # Note: BLAS doesn't work because the the type of Vr and Vi is not Matrix of Complex
+    I_bus = PSY.get_ext(sys)[AUX_ARRAYS][5]
+    I_balance = PSY.get_ext(sys)[AUX_ARRAYS][6]
+    LinearAlgebra.mul!(I_bus, Ybus, (V_r + V_i .* 1im))
+    bus_count = get_bus_count(sys)
+    for n in 1:bus_count
+        I_balance[n] = real(I_bus[n]) - I_injections_r[n]
+        I_balance[n + bus_count] = imag(I_bus[n]) - I_injections_i[n]
+    end
 
     voltage_buses = get_voltage_bus_no(sys)
-    isempty(voltage_buses) && return I_balance
+    isempty(voltage_buses) && return
 
     sys_f = PSY.get_frequency(sys)
     ω_b = 2.0 * π * sys_f
@@ -28,5 +35,5 @@ function kirchoff_laws(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
             dx[bus_no + n_buses]
     end
 
-    return I_balance
+    return
 end

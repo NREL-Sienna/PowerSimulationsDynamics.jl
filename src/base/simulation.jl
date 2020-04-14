@@ -35,6 +35,8 @@ function Simulation(
 
     dx0 = zeros(var_count)
     callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
+
+    _add_aux_arrays!(system, Float64)
     prob = DiffEqBase.DAEProblem(
         system!,
         dx0,
@@ -75,6 +77,20 @@ function Simulation(
     )
 end
 
+function _add_aux_arrays!(system::PSY.System, T)
+    bus_count = get_bus_count(system)
+    aux_arrays = Dict(
+        1 => collect(zeros(T, bus_count)),                       #I_injections_r
+        2 => collect(zeros(T, bus_count)),                       #I_injections_i
+        3 => collect(zeros(T, get_n_injection_states(system))),  #injection_ode
+        4 => collect(zeros(T, get_n_branches_states(system))),   #branches_ode
+        5 => collect(zeros(Complex{T}, bus_count)),              #I_bus
+        6 => collect(zeros(T, 2 * bus_count)),                      #I_balance
+    )
+    system.internal.ext[AUX_ARRAYS] = aux_arrays
+    return
+end
+
 function _build_perturbations(perturbations::Vector{<:Perturbation})
     isempty(perturbations) && return DiffEqBase.CallbackSet(), [0.0]
     perturbations_count = length(perturbations)
@@ -93,6 +109,8 @@ end
 
 function _calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Float64})
     # TODO: Code to refine initial_guess
+    _add_aux_arrays!(sys, Real)
+    bus_count = length(PSY.get_components(PSY.Bus, sys))
     var_count = get_variable_count(sys)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     inif! = (out, x) -> system!(
@@ -100,8 +118,8 @@ function _calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{F
         dx0,    #derivatives equal to zero
         x,      #states
         sys,    #Parameters
-        0.0,
-    )    #time equals to zero.
+        0.0,    #time equals to zero.
+    )
     sys_solve = NLsolve.nlsolve(
         inif!,
         initial_guess,
@@ -310,6 +328,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :first_dyn_injection_pointer => 2 * n_buses + branches_n_states + 1,
         :first_dyn_branch_point => first_dyn_branch_point,
         :total_variables => total_states + static_bus_var_count,
+        :bus_count => n_buses,
     )
 
     sys_ext[LITS_COUNTS] = counts
@@ -339,6 +358,7 @@ get_ω_sys(sys::PSY.System) = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys]
 get_current_bus_no(sys::PSY.System) = PSY.get_ext(sys)[CURRENT_BUSES_NO]
 get_voltage_bus_no(sys::PSY.System) = PSY.get_ext(sys)[VOLTAGE_BUSES_NO]
 get_total_shunts(sys::PSY.System) = PSY.get_ext(sys)[TOTAL_SHUNTS]
+get_bus_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:bus_count]
 
 function _get_internal_mapping(
     device::PSY.DynamicInjection,
@@ -397,10 +417,11 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     if sim.reset
         @error("Reset the simulation")
     end
-
     _change_vector_type(sim.system)
+    _add_aux_arrays!(sim.system, Real)
     var_count = LITS.get_variable_count(sim.system)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
+    bus_count = length(PSY.get_components(PSY.Bus, sim.system))
     sysf! = (out, x) -> LITS.system!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
@@ -425,7 +446,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     gx = @view jacobian[alg_states, diff_states]
     # TODO: Make operation using BLAS!
     reduced_jacobian = fx - fy * inv(gy) * gx
-    vals, vect = eigen(reduced_jacobian)
+    vals, vect = LinearAlgebra.eigen(reduced_jacobian)
     return SmallSignalOutput(
         reduced_jacobian,
         vals,

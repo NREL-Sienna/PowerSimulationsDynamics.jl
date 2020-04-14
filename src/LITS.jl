@@ -23,8 +23,7 @@ import InfrastructureSystems
 import DiffEqBase
 import ForwardDiff
 import SparseArrays: SparseMatrixCSC
-#import LinearAlgebra: BLAS
-import LinearAlgebra: eigen
+import LinearAlgebra
 import Base.to_index
 import NLsolve
 import Base.ImmutableDict
