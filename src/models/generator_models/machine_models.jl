@@ -29,7 +29,7 @@ function mdl_machine_ode!(
     BaseMVA = PSY.get_MVABase(machine)
 
     #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
+    V_dq = ri_dq_gen(δ) * [V_tR; V_tI]
 
     #Obtain electric variables
     i_d = (1.0 / (R^2 + Xd_p^2)) * (Xd_p * (eq_p - V_dq[2]) - R * V_dq[1])  #15.36
@@ -40,7 +40,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = Pe #Model assume ω approx 1.0
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = (BaseMVA / Sbase) * dq_ri_gen(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -93,7 +93,7 @@ function mdl_machine_ode!(
     BaseMVA = PSY.get_MVABase(machine)
 
     #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
+    V_dq = ri_dq_gen(δ) * [V_tR; V_tI]
 
     #Obtain electric variables
     i_d = (1.0 / (R^2 + Xd_p * Xq_p)) * (Xq_p * (eq_p - V_dq[2]) + R * (ed_p - V_dq[1]))  #15.32
@@ -108,7 +108,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = Pe #Model assume ω approx 1.0
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = (BaseMVA / Sbase) * dq_ri_gen(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -173,7 +173,7 @@ function mdl_machine_ode!(
     BaseMVA = PSY.get_MVABase(machine)
 
     #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
+    V_dq = ri_dq_gen(δ) * [V_tR; V_tI]
 
     #Obtain electric variables
     i_d = (1.0 / Xd_pp) * (eq_pp - ψd)      #15.18
@@ -194,7 +194,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = (BaseMVA / Sbase) * dq_ri_gen(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -257,7 +257,7 @@ function mdl_machine_ode!(
     BaseMVA = PSY.get_MVABase(machine)
 
     #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
+    V_dq = ri_dq_gen(δ) * [V_tR; V_tI]
 
     #Obtain electric variables
     #i_dq = inv([[R -Xq_pp]; [Xq_pp R]])*[ed_pp - V_dq[1]; eq_pp - V_dq[2]]
@@ -279,7 +279,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = (BaseMVA / Sbase) * dq_ri_gen(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -341,7 +341,7 @@ function mdl_machine_ode!(
     BaseMVA = PSY.get_MVABase(machine)
 
     #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
+    V_dq = ri_dq_gen(δ) * [V_tR; V_tI]
 
     #Obtain electric variables
     i_d = (1.0 / Xd_pp) * (eq_pp - ψd)      #15.18
@@ -360,7 +360,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = (BaseMVA / Sbase) * dq_ri_gen(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -420,7 +420,7 @@ function mdl_machine_ode!(
     BaseMVA = PSY.get_MVABase(machine)
 
     #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
+    V_dq = ri_dq_gen(δ) * [V_tR; V_tI]
 
     #Obtain electric variables
     i_d =
@@ -439,7 +439,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = (BaseMVA / Sbase) * dq_ri_gen(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -498,7 +498,7 @@ function mdl_machine_ode!(
     BaseMVA = PSY.get_MVABase(machine)
 
     #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
+    V_dq = ri_dq_gen(δ) * [V_tR; V_tI]
 
     #Obtain electric currents] using Flux Linkage equations
     i_df1d = inv_d_fluxlink * [ψd; ψf; ψ1d]  #11.18 in Machowski (3.127, 3.130 and 3.131 in Kundur)
@@ -522,7 +522,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[ψq_var] = ψq
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_df1d[1]; i_q1q[1]]
+    I_RI = (BaseMVA / Sbase) * dq_ri_gen(δ) * [i_df1d[1]; i_q1q[1]]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -579,7 +579,7 @@ function mdl_machine_ode!(
     BaseMVA = PSY.get_MVABase(machine)
 
     #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
+    V_dq = ri_dq_gen(δ) * [V_tR; V_tI]
 
     #Obtain electric currents] using Flux Linkage equations
     i_df1d = inv_d_fluxlink * [ψd; ψf; ψ1d]  #11.18 in Machowski (3.127, 3.130 and 3.131 in Kundur)
@@ -601,7 +601,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[ψq_var] = ψq
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_df1d[1]; i_q1q[1]]
+    I_RI = (BaseMVA / Sbase) * dq_ri_gen(δ) * [i_df1d[1]; i_q1q[1]]
 
     #Update current
     current_r[1] += I_RI[1]
