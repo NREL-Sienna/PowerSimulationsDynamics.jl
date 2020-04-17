@@ -40,7 +40,7 @@ function mdl_filter_ode!(
     MVABase = PSY.get_inverter_Sbase(device)
 
     #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
+    V_dq = ri_dq(δ + pi / 2) * [V_tR; V_tI]
     V_g = sqrt(V_tR^2 + V_tI^2)
 
     #Obtain indices for component w/r to device
@@ -79,12 +79,12 @@ function mdl_filter_ode!(
     #Grid Inductance (internal state)
     #𝜕id_o/𝜕t
     output_ode[local_ix[5]] = (
-        ωb / lg * Vd_filter - ωb / lg * V_dq[2] - ωb * rg / lg * Id_filter +
+        ωb / lg * Vd_filter - ωb / lg * V_dq[1] - ωb * rg / lg * Id_filter +
         ωb * ω_sys * Iq_filter
     )
-    #𝜕iq_o/𝜕t
+    #𝜕iq_o/𝜕t (Multiply Vq by -1 to lag instead of lead)
     output_ode[local_ix[6]] = (
-        ωb / lg * Vq_filter + ωb / lg * V_dq[1] - ωb * rg / lg * Iq_filter -
+        ωb / lg * Vq_filter + ωb / lg * (-V_dq[2]) - ωb * rg / lg * Iq_filter -
         ωb * ω_sys * Id_filter
     )
 
@@ -96,7 +96,7 @@ function mdl_filter_ode!(
     #get_inner_vars(device)[Vq_filter_var] = V_dq[q::dq_ref]
 
     #Compute current from the inverter to the grid
-    I_RI = (MVABase / sys_Sbase) * dq_ri(δ) * [Id_filter; Iq_filter]
+    I_RI = (MVABase / sys_Sbase) * dq_ri(δ + pi / 2) * [Id_filter; Iq_filter]
     #Update current
     current_r[1] += I_RI[1]
     current_i[1] += I_RI[2]
