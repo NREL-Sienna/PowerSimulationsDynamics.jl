@@ -72,18 +72,14 @@ function mdl_outer_ode!(
     qm = internal_states[3]
 
     #Obtain additional expressions
-    V_dq_oc = ri_dq(θ_oc + pi / 2) * [V_tR; V_tI]
-    _p_elec_out = Id_filter * V_dq_oc[d] + (Iq_filter  * V_dq_oc[q])
-    _q_elec_out = (Id_filter * V_dq_oc[q]) - Iq_filter * V_dq_oc[d]
-
-    p_elec_out = Id_filter * Vd_filter + Iq_filter * Vq_filter
-    q_elec_out = (-1* Iq_filter * Vd_filter) + (Id_filter * Vq_filter)
-
+    I_ri = dq_ri(θ_oc + pi / 2) * [Id_filter; Iq_filter]
+    p_elec_out = I_ri[1] * V_tR + I_ri[2] * V_tI
+    q_elec_out = - I_ri[2] * V_tR + I_ri[1] * V_tI
     #Compute 3 states ODEs
     output_ode[local_ix[1]] =
         (p_ref / Ta - p_elec_out / Ta - kd * (ω_oc - ω_pll) / Ta - kω * (ω_oc - ω_ref) / Ta)
     output_ode[local_ix[2]] = ωb * (ω_oc - ω_sys)
-    output_ode[local_ix[3]] = ωf * (q_elec_out - qm)
+    output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
     #Update inner vars
     get_inner_vars(device)[θ_oc_var] = θ_oc
