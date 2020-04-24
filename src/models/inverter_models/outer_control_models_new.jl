@@ -24,13 +24,13 @@ function mdl_outer_ode!(
         device,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
-        vpll_d = device_states[external_ix[1]]
+    vpll_d = device_states[external_ix[1]]
     vpll_q = device_states[external_ix[2]]
     ϵ_pll = device_states[external_ix[3]]
-    Vd_filter = device_states[external_ix[4]] #TODO: Should be inner reference after initialization
-    Vq_filter = device_states[external_ix[5]] #TODO: Should be inner reference after initialization
-    Id_filter = device_states[external_ix[6]]
-    Iq_filter = device_states[external_ix[7]]
+    Vr_filter = device_states[external_ix[4]] #TODO: Should be inner reference after initialization
+    Vi_filter = device_states[external_ix[5]] #TODO: Should be inner reference after initialization
+    Ir_filter = device_states[external_ix[6]]
+    Ii_filter = device_states[external_ix[7]]
 
     #Obtain inner variables for component
     ω_pll = get_inner_vars(device)[ω_freq_estimator_var]
@@ -76,8 +76,8 @@ function mdl_outer_ode!(
     #p_elec_out = I_ri[1] * V_tR + I_ri[2] * V_tI
     #q_elec_out = - I_ri[2] * V_tR + I_ri[1] * V_tI
 
-    p_elec_out = Id_filter * Vd_filter + Iq_filter * Vq_filter
-    q_elec_out = - Iq_filter * Vd_filter + Id_filter * Vq_filter
+    p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
+    q_elec_out = - Ii_filter * Vr_filter + Ir_filter * Vi_filter
     #Compute 3 states ODEs
     output_ode[local_ix[1]] =
         (p_ref / Ta - p_elec_out / Ta - kd * (ω_oc - ω_pll) / Ta - kω * (ω_oc - ω_ref) / Ta)

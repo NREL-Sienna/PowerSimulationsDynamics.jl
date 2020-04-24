@@ -14,14 +14,11 @@ function mdl_freq_estimator_ode!(
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.KauraPLL)
-    Vd_filter = device_states[external_ix[1]]
-    Vq_filter = device_states[external_ix[2]]
-    θ_oc = device_states[external_ix[3]]
+    Vr_filter = device_states[external_ix[1]]
+    Vi_filter = device_states[external_ix[2]]
 
-    #Obtain inner variables for component
-    #Vd_filter = device.inner_vars[Vd_filter_var]
-    #Vq_filter = device.inner_vars[Vq_filter_var]
-    #θ_oc = device.inner_vars[θ_oc_var]
+    #V_tR = get_inner_vars(device)[VR_inv_var]
+    #V_tI = get_inner_vars(device)[VI_inv_var]
 
     #Get parameters
     pll_control = PSY.get_freq_estimator(device)
@@ -40,20 +37,16 @@ function mdl_freq_estimator_ode!(
     ϵ_pll = internal_states[3]
     θ_pll = internal_states[4]
 
+    V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
+
     #Inputs (control signals)
 
     #Compute 6 states ODEs (D'Arco EPSR122 Model)
     #Output Voltage LPF (internal state)
     #𝜕vpll_d/𝜕t, D'Arco ESPR122 eqn. 12
-    output_ode[local_ix[1]] = (
-        ω_lp * Vd_filter * cos(θ_pll - θ_oc) + ω_lp * Vq_filter * sin(θ_pll - θ_oc) -
-        ω_lp * vpll_d
-    )
+    output_ode[local_ix[1]] = ω_lp * (V_dq_pll[d] - vpll_d)
     #𝜕vpll_q/𝜕t, D'Arco ESPR122 eqn. 12
-    output_ode[local_ix[2]] = (
-        -ω_lp * Vd_filter * sin(θ_pll - θ_oc) + ω_lp * Vq_filter * cos(θ_pll - θ_oc) -
-        ω_lp * vpll_q
-    )
+    output_ode[local_ix[2]] = ω_lp * (V_dq_pll[q] - vpll_q)
     #PI Integrator (internal state)
     #𝜕dϵ_pll/𝜕t, D'Arco ESPR122 eqn. 13
     output_ode[local_ix[3]] = atan(vpll_q / vpll_d)
