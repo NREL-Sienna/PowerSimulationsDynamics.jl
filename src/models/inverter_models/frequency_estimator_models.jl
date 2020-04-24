@@ -14,9 +14,11 @@ function mdl_freq_estimator_ode!(
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.KauraPLL)
+    Vr_filter = device_states[external_ix[1]]
+    Vi_filter = device_states[external_ix[2]]
 
-    V_tR = get_inner_vars(device)[VR_inv_var]
-    V_tI = get_inner_vars(device)[VI_inv_var]
+    #V_tR = get_inner_vars(device)[VR_inv_var]
+    #V_tI = get_inner_vars(device)[VI_inv_var]
 
     #Get parameters
     pll_control = PSY.get_freq_estimator(device)
@@ -35,7 +37,8 @@ function mdl_freq_estimator_ode!(
     ϵ_pll = internal_states[3]
     θ_pll = internal_states[4]
 
-    V_dq_pll = ri_dq(θ_pll + pi / 2) * [V_tR; V_tI]
+    #Transform to internal dq-PLL reference frame
+    V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
 
     #Inputs (control signals)
 

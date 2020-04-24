@@ -30,7 +30,7 @@ case1_gen = dyn_gen_OMIB(nodes_case1)
 ######################### Dynamical System ########################
 
 #Create system with BasePower = 100 MVA and nominal frequency 60 Hz.
-sys = system_no_inv(nodes_case1, branch_case1, loads_case1, [inf_gen_case1], [case1_gen])
+sys = system_OMIB(nodes_case1, branch_case1, loads_case1, [inf_gen_case1], [case1_gen])
 
 ##################################################
 ############### SOLVE PROBLEM ####################

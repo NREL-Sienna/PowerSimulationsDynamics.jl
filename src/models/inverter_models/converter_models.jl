@@ -13,13 +13,13 @@ function mdl_converter_ode!(
     #Obtain inner variables for component
     md = get_inner_vars(device)[md_var]
     mq = get_inner_vars(device)[mq_var]
-    VDC = get_inner_vars(device)[Vdc_var]
+    Vdc = get_inner_vars(device)[Vdc_var]
+    θ_oc = get_inner_vars(device)[θ_oc_var]
+
+    #Transform reference frame to grid reference frame
+    m_ri = dq_ri(θ_oc + pi / 2) * [md; mq]
 
     #Update inner_vars
-    get_inner_vars(device)[Vd_cnv_var] = md * VDC
-    get_inner_vars(device)[Vq_cnv_var] = mq * VDC
+    get_inner_vars(device)[Vr_cnv_var] = m_ri[R] * Vdc
+    get_inner_vars(device)[Vi_cnv_var] = m_ri[I] * Vdc
 end
-
-#TODO: Same as above, but:
-## VDC is state of DC source
-## IDC is algebraic inner_var output from Vcnv real output power

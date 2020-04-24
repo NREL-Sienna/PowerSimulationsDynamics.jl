@@ -61,7 +61,7 @@ branches_OMIB(nodes_OMIB) = [PSY.Line(
     Arc(from = nodes_OMIB[1], to = nodes_OMIB[2]), #Connection between buses
     0.01, #resistance in pu
     0.05, #reactance in pu
-    (from = 0.0, to = 0.0), #susceptance in pu
+    (from = 0.001, to = 0.001), #susceptance in pu
     18.046, #rate in MW
     1.04,
 )]  #angle limits (-min and max)
@@ -74,7 +74,7 @@ branches_OMIB_fault(nodes_OMIB) = [PSY.Line(
     Arc(from = nodes_OMIB[1], to = nodes_OMIB[2]), #Connection between buses
     0.02, #resistance in pu
     0.1, #reactance in pu
-    (from = 0.0, to = 0.0), #susceptance in pu
+    (from = 0.001, to = 0.001), #susceptance in pu
     18.046, #rate in MW
     1.04,
 )]  #angle limits (-min and max)
