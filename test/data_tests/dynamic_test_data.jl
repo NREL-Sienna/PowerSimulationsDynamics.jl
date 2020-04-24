@@ -572,6 +572,37 @@ end
 ######## System Constructors #########
 ######################################
 
+function system_OMIB(nodes, branches, loads, sources, gens)
+    #Create system with BasePower = 100 MVA and nominal frequency 60 Hz.
+    sys = PSY.System(100.0, frequency = 60.0)
+
+    #Add buses
+    for bus in nodes
+        PSY.add_component!(sys, bus)
+    end
+
+    #Add lines
+    for lines in branches
+        PSY.add_component!(sys, lines)
+    end
+
+    #Add loads
+    for load in loads
+        PSY.add_component!(sys, load)
+    end
+
+    #Add infinite source
+    for source in sources
+        PSY.add_component!(sys, source)
+    end
+
+    #Add generator
+    for gen in gens
+        PSY.add_component!(sys, gen)
+    end
+    return sys
+end
+
 function system_no_inv(nodes, branches, loads, sources, gens)
     #Create system with BasePower = 100 MVA and nominal frequency 60 Hz.
     sys = PSY.System(100.0, frequency = 60.0)
