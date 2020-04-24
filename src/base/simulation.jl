@@ -292,7 +292,7 @@ function _index_dynamic_system!(sys::PSY.System)
     end
     dynamic_injection = PSY.get_components(PSY.DynamicInjection, sys)
     isempty(dynamic_injection) &&
-    error("System doesn't contain any DynamicInjection devices")
+        error("System doesn't contain any DynamicInjection devices")
     for d in dynamic_injection
         if !(:states in fieldnames(typeof(d)))
             continue
