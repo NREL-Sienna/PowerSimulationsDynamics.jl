@@ -45,7 +45,7 @@ end
 #### Converter Ports ####
 function Ports(::PSY.Converter)
     state_input = Vector{Symbol}()
-    inner_input = [md_var, mq_var, Vdc_var, Vd_cnv_var, Vq_cnv_var]
+    inner_input = [md_var, mq_var, Vdc_var, Vr_cnv_var, Vi_cnv_var]
     return Ports(state_input, inner_input)
 end
 
@@ -63,11 +63,11 @@ function Ports(::PSY.Filter)
     inner_input = [
         VR_inv_var,
         VI_inv_var,
-        Vd_cnv_var,
-        Vq_cnv_var,
+        Vr_cnv_var,
+        Vi_cnv_var,
         θ_oc_var,
-        Vd_filter_var,
-        Vq_filter_var,
+        Vr_filter_var,
+        Vi_filter_var,
     ]
     return Ports(state_input, inner_input)
 end
@@ -77,20 +77,20 @@ end
 function Ports(::PSY.FrequencyEstimator)
     state_input = [:vd_filter, :vq_filter, :θ_oc]
     #TODO: Move PLL to PCC, i.e. move v_cap (D'Arco v_o), to inner inputs
-    inner_input = [Vd_filter_var, Vq_filter_var, θ_oc_var, ω_freq_estimator_var]
+    inner_input = [Vr_filter_var, Vi_filter_var, θ_oc_var, ω_freq_estimator_var]
     return Ports(state_input, inner_input)
 end
 
 #### Outer Control Ports ####
 function Ports(::PSY.OuterControl)
     state_input = [:vd_pll, :vq_pll, :ε_pll, :vd_filter, :vq_filter, :id_filter, :iq_filter]
-    inner_input = [Vd_filter_var, Vq_filter_var, ω_freq_estimator_var]
+    inner_input = [Vr_filter_var, Vi_filter_var, ω_freq_estimator_var]
     return Ports(state_input, inner_input)
 end
 
 #### Inner Control Ports ####
 function Ports(::PSY.InnerControl)
     state_input = [:id_filter, :iq_filter, :id_cnv, :iq_cnv, :vd_filter, :vq_filter]
-    inner_input = [Vd_filter_var, Vq_filter_var, V_oc_var, ω_oc_var]
+    inner_input = [Vr_filter_var, Vi_filter_var, V_oc_var, ω_oc_var]
     return Ports(state_input, inner_input)
 end

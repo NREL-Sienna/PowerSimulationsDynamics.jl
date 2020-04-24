@@ -54,14 +54,10 @@ include("models/generator_models/shaft_models.jl")
 
 #Inverter Component Models
 include("models/inverter_models/DCside_models.jl")
-#include("models/inverter_models/filter_models.jl")
-#include("models/inverter_models/frequency_estimator_models.jl")
-#include("models/inverter_models/outer_control_models.jl")
-#include("models/inverter_models/inner_control_models.jl")
-include("models/inverter_models/filter_models_new.jl")
-include("models/inverter_models/frequency_estimator_models_new.jl")
-include("models/inverter_models/outer_control_models_new.jl")
-include("models/inverter_models/inner_control_models_new.jl")
+include("models/inverter_models/filter_models.jl")
+include("models/inverter_models/frequency_estimator_models.jl")
+include("models/inverter_models/outer_control_models.jl")
+include("models/inverter_models/inner_control_models.jl")
 include("models/inverter_models/converter_models.jl")
 
 #Injection Models

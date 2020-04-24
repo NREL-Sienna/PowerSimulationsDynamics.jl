@@ -40,32 +40,32 @@ Inverter Inner Vars:
 md_var :: Modulation signal on the d-component
 mq_var :: Modulation signal on the q-component
 Vdc_var :: DC voltage supplied by the DC source
-Vd_filter_var :: Voltage seen in the capacitor of the filter in the d-component
-Vq_filter_var :: Voltage seen in the capacitor of the filter in the q-component
+Vr_filter_var :: Voltage seen in the capacitor of the filter in the R-component
+Vi_filter_var :: Voltage seen in the capacitor of the filter in the I-component
 ω_freq_estimator_var :: Frequency estimated by the frequency estimator.
 V_oc_var :: Control voltage supplied from the outer loop control to the inner loop
 ω_oc_var :: Control frequency supplied from the outer loop control the inner loop
 θ_oc_var :: Variation of the angle (PLL or VSM) of the inverter
 VR_inv_var :: Real terminal voltage on the inverter
 VI_inv_var :: Imaginary terminal voltage on the inverter
-Vd_cnv_var :: Voltage supplied from the converter in the d-component
-Vq_cnv_var :: Voltage supplied from the converter in the q-component
+Vr_cnv_var :: Voltage supplied from the converter in the R-component
+Vi_cnv_var :: Voltage supplied from the converter in the I-component
 """
 
 @enum inverter_inner_vars begin
     md_var = 1
     mq_var = 2
     Vdc_var = 3
-    Vd_filter_var = 4
-    Vq_filter_var = 5
+    Vr_filter_var = 4
+    Vi_filter_var = 5
     ω_freq_estimator_var = 6
     V_oc_var = 7
     ω_oc_var = 8
     θ_oc_var = 9
     VR_inv_var = 10
     VI_inv_var = 11
-    Vd_cnv_var = 12
-    Vq_cnv_var = 13
+    Vr_cnv_var = 12
+    Vi_cnv_var = 13
 end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
