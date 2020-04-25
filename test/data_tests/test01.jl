@@ -2,10 +2,10 @@ using PowerSystems
 using NLsolve
 const PSY = PowerSystems
 
-include("test/data_tests/dynamic_test_data.jl")
-include("test/data_tests/data_utils.jl")
+include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
+include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
-omib_file_dir = joinpath(pwd(), "test/data_tests/OMIB.raw")
+omib_file_dir= joinpath(dirname(@__FILE__), "OMIB.raw")
 omib_sys = System(PowerModelsData(omib_file_dir), runchecks=false)
 add_source_to_ref(omib_sys)
 res = solve_powerflow!(omib_sys, nlsolve)
