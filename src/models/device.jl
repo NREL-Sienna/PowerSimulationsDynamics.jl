@@ -1,6 +1,6 @@
 function device!(
     x,
-    output_ode::Vector{T},
+    output_ode,
     voltage_r,
     voltage_i,
     current_r,
@@ -9,7 +9,7 @@ function device!(
     ode_range::UnitRange{Int64},
     device::DynG,
     sys::PSY.System,
-) where {DynG <: PSY.DynamicGenerator, T <: Real}
+) where {DynG <: PSY.DynamicGenerator}
     #Obtain local device states
     n_states = PSY.get_n_states(device)
     device_states = @view x[ix_range]
