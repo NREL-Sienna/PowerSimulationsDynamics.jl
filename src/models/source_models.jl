@@ -8,8 +8,8 @@ function mdl_source!(
 )
 
     #Load device parameters
-    V_R = PSY.get_V_R(device)
-    V_I = PSY.get_V_I(device)
+    V = PSY.get_voltage(PSY.get_bus(device))
+    angle = PSY.get_angle(PSY.get_bus(device))
     X_th = PSY.get_X_th(device)
 
     #I = ( (V_R + V_I*1im) - (V_tR + V_tI*1im) )/(X_th*1im)
@@ -17,8 +17,8 @@ function mdl_source!(
     #I_i = -(V_R - V_tR)/X_th #in system pu flowing out
 
     #update current
-    current_r[1] += (V_I - voltage_i[1]) / X_th #in system pu flowing out
-    current_i[1] += -(V_R - voltage_r[1]) / X_th #in system pu flowing out
+    current_r[1] += (V*sin(angle) - voltage_i[1]) / X_th #in system pu flowing out
+    current_i[1] += -(V*cos(angle) - voltage_r[1]) / X_th #in system pu flowing out
 
     return
 end
