@@ -52,6 +52,7 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
     end
 
     for d in PSY.get_components(PSY.StaticInjection, sys)
+        isa(d, PSY.Generator) && continue
         bus_n = PSY.get_number(PSY.get_bus(d))
 
         device!(
