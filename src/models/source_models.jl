@@ -18,8 +18,8 @@ function mdl_source!(
     #I_i = -(V_R - V_tR)/X_th #in system pu flowing out
 
     #update current
-    current_r[1] += (V_I - voltage_i[1]) / X_th #in system pu flowing out
-    current_i[1] += -(V_R - voltage_r[1]) / X_th #in system pu flowing out
+    current_r[1] += (V*sin(angle) - voltage_i[1]) / X_th #in system pu flowing out
+    current_i[1] += -(V*cos(angle) - voltage_r[1]) / X_th #in system pu flowing out
 
     return
 end
