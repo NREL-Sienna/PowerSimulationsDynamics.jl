@@ -12,16 +12,16 @@ res = solve_powerflow!(threebus_sys, nlsolve)
 
 ### Case 2 Generators ###
 
-function dyn_gen_second_order(generator)
+function dyn_gen_eight_order(generator)
     return PSY.DynamicGenerator(
         1, #Number
-        "Case2_$(get_name(generator))",
+        "Case4_$(get_name(generator))",
         get_bus(generator), #bus
         1.0, # ω_ref,
-        1.0, #V_ref
+        get_voltage(get_bus(generator)), #V_ref
         get_activepower(generator), #P_ref
         get_reactivepower(generator), #Q_ref
-        machine_4th(), #machine
+        machine_8th(), #machine
         shaft_no_damping(), #shaft
         avr_type1(), #avr
         tg_none(), #tg
@@ -30,7 +30,7 @@ function dyn_gen_second_order(generator)
 end
 
 for g in get_components(Generator, threebus_sys)
-    case_gen = dyn_gen_second_order(g)
+    case_gen = dyn_gen_eight_order(g)
     add_component!(threebus_sys, case_gen)
 end
 

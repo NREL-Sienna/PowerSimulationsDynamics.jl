@@ -12,13 +12,13 @@ res = solve_powerflow!(threebus_sys, nlsolve)
 
 ### Case 2 Generators ###
 
-function dyn_gen_fourth_order(generator)
+function dyn_gen_sixth_order(generator)
     return PSY.DynamicGenerator(
         1, #Number
         "Case3_$(get_name(generator))",
         get_bus(generator), #bus
         1.0, # ω_ref,
-        1.0, #V_ref
+        get_voltage(get_bus(generator)), #V_ref
         get_activepower(generator), #P_ref
         get_reactivepower(generator), #Q_ref
         machine_6th(), #machine
@@ -30,8 +30,8 @@ function dyn_gen_fourth_order(generator)
 end
 
 for g in get_components(Generator, threebus_sys)
-    case1_gen = dyn_gen_fourth_order(g)
-    add_component!(threebus_sys, case1_gen)
+    case_gen = dyn_gen_sixth_order(g)
+    add_component!(threebus_sys, case_gen)
 end
 
 #Compute Y_bus after fault

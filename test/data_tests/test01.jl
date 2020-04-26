@@ -16,7 +16,7 @@ function dyn_gen_first_order(generator)
         "Case1Gen",
         get_bus(generator), #bus
         1.0, # ω_ref,
-        1.0, #V_ref
+        get_voltage(get_bus(generator)), #V_ref
         get_activepower(generator), #P_ref
         get_reactivepower(generator), #Q_ref
         machine_OMIB(), #machine
@@ -29,8 +29,8 @@ end
 
 #Attach dynamic generator. Currently use PSS/e format based on bus #.
 gen = [g for g in get_components(Generator, omib_sys)][1]
-case1_gen = dyn_gen_first_order(gen)
-add_component!(omib_sys, case1_gen)
+case_gen = dyn_gen_first_order(gen)
+add_component!(omib_sys, case_gen)
 
 #Compute Y_bus after fault
 fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
