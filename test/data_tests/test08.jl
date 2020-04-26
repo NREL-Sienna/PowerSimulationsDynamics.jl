@@ -1,5 +1,4 @@
 using PowerSystems
-using NLsolve
 const PSY = PowerSystems
 
 ############### Data Network ########################
@@ -11,18 +10,18 @@ threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks=false)
 add_source_to_ref(threebus_sys)
 res = solve_powerflow!(threebus_sys, nlsolve)
 
-### Case 2 Generators ###
+############### Data devices ########################
 
-function dyn_gen_sixth_order(generator)
+function dyn_gen_second_order(generator)
     return PSY.DynamicGenerator(
         1, #Number
-        "Case3_$(get_name(generator))",
+        "Case2_$(get_name(generator))",
         get_bus(generator), #bus
         1.0, # ω_ref,
-        get_voltage(get_bus(generator)), #V_ref
+        1.0, #V_ref
         get_activepower(generator), #P_ref
         get_reactivepower(generator), #Q_ref
-        machine_6th(), #machine
+        machine_4th(), #machine
         shaft_no_damping(), #shaft
         avr_type1(), #avr
         tg_none(), #tg
@@ -30,11 +29,22 @@ function dyn_gen_sixth_order(generator)
     ) #pss
 end
 
-for g in get_components(Generator, threebus_sys)
-    case_gen = dyn_gen_sixth_order(g)
-    add_component!(threebus_sys, case_gen)
-end
 
-#Compute Y_bus after fault
-fault_branches = deepcopy(collect(get_components(Branch, threebus_sys))[2:end])
-Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :]
+function inv_case9(buses)
+    return PSY.DynamicInverter(
+        1, #Number
+        "DARCO", #name
+        buses[3], #bus
+        1.0, # ω_ref,
+        0.8, #V_ref
+        0.5, #P_ref
+        -0.3, #Q_ref
+        100.0, #MVABase
+        converter_case78(), #converter
+        outer_control_test(), #outer control
+        vsc_test(), #inner control voltage source
+        dc_source_case78(), #dc source
+        pll_test(), #pll
+        filter_test(),
+    ) #filter
+end

@@ -8,38 +8,9 @@ The perturbation trips one of the two circuits of line between buses 2 and 3, du
 ############### LOAD DATA ########################
 ##################################################
 
-############### Data Network ########################
-
-nodes_case10 = nodes_multimachine()
-
-branch_case10 = branch_multimachine(nodes_case10)
-
-#Trip of Line 1.
-branch_case10_fault = branch_multimachine_fault(nodes_case10)
-
-loads_case10 = loads_multimachine(nodes_case10)
-
-######## Machine Data #########
-
-### Case 9 Generators ###
-case10_gen1 = dyn_gen_case10_ref(nodes_case10)
-case10_gen2 = dyn_gen_case10_2(nodes_case10)
-
-######################### Dynamical System ########################
-
-sys = system_no_inv_no_sources(
-    nodes_case10,
-    branch_case10,
-    loads_case10,
-    [case10_gen1, case10_gen2],
-);
-
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
-
-#Compute Y_bus after fault
-Ybus_fault = Ybus(branch_case10_fault, nodes_case10)[:, :]
 
 #Time span
 tspan = (0.0, 30.0)

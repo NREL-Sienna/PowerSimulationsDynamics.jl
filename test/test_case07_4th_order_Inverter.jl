@@ -8,41 +8,6 @@ The perturbation increase the reference power (analogy for mechanical power) of 
 ############### LOAD DATA ########################
 ##################################################
 
-############### Data Network ########################
-
-nodes_case7 = nodes_3bus()
-
-branch_case7 = branches_3lines(nodes_case7)
-
-#Trip of Line 1.
-branch_case7_fault = branches_3lines_fault(nodes_case7)
-
-loads_case7 = loads_3bus_case7(nodes_case7)
-
-############### Data devices ########################
-
-inf_gen_case7 = inf_gen_1_pu(nodes_case7)
-
-### Case 7 Generators ###
-
-case7_gen = dyn_gen_case7(nodes_case7)
-
-############### Inverter Data ########################
-
-case7_inv = inv_case78(nodes_case7)
-
-######################### Dynamical System ########################
-
-#Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-sys = system_50Hz(
-    nodes_case7,
-    branch_case7,
-    loads_case7,
-    [inf_gen_case7],
-    [case7_inv],
-    [case7_gen],
-)
-
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################

@@ -8,50 +8,10 @@ The perturbation trips two of the three circuits of line between buses 1 and 2, 
 ############### LOAD DATA ########################
 ##################################################
 
-############### Data Network ########################
-
-nodes_case9 = nodes_3bus()
-
-branch_case9 = branch_3bus_case9(nodes_case9)
-
-#Trip of Line 1.
-branch_case9_fault = branch_3bus_case9_fault(nodes_case9)
-
-loads_case9 = loads_3bus_case9(nodes_case9)
-
-############### Data devices ########################
-
-inf_gen_case9 = inf_gen_1_pu(nodes_case9)
-
-######## Machine Data #########
-
-### Case 9 Generators ###
-case9_gen = dyn_gen_case9(nodes_case9)
-
-############### Inverter Data ########################
-
-case9_inv = inv_case9(nodes_case9)
-
-######################### Dynamical System ########################
-
-sys = system_case9(
-    nodes_case9,
-    branch_case9,
-    loads_case9,
-    [inf_gen_case9],
-    [case9_inv],
-    [case9_gen],
-);
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
-
-#Compute Y_bus after fault
-Ybus_fault = get_admittance_matrix_case9(nodes_case9, branch_case9_fault)
-
-#Time span
-tspan = (0.0, 30.0)
 
 #Initial guess
 x0_guess = [

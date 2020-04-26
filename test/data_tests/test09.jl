@@ -1,5 +1,4 @@
 using PowerSystems
-using NLsolve
 const PSY = PowerSystems
 
 ############### Data Network ########################
@@ -10,19 +9,21 @@ threebus_file_dir= joinpath(dirname(@__FILE__), "ThreeBusNetwork.raw")
 threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks=false)
 add_source_to_ref(threebus_sys)
 res = solve_powerflow!(threebus_sys, nlsolve)
+#Make line 3 the dynamic line
 
-### Case 2 Generators ###
+make_dynamic_branch!(branches[3], sys)
 
-function dyn_gen_sixth_order(generator)
+######## Machine Data #########
+function dyn_gen_second_order(generator)
     return PSY.DynamicGenerator(
         1, #Number
-        "Case3_$(get_name(generator))",
+        "Case9_$(get_name(generator))",
         get_bus(generator), #bus
         1.0, # ω_ref,
-        get_voltage(get_bus(generator)), #V_ref
+        1.0, #V_ref
         get_activepower(generator), #P_ref
         get_reactivepower(generator), #Q_ref
-        machine_6th(), #machine
+        machine_4th(), #machine
         shaft_no_damping(), #shaft
         avr_type1(), #avr
         tg_none(), #tg
@@ -30,8 +31,28 @@ function dyn_gen_sixth_order(generator)
     ) #pss
 end
 
+############### Inverter Data ########################
+function inv_case9(buses)
+    return PSY.DynamicInverter(
+        1, #Number
+        "DARCO", #name
+        buses[3], #bus
+        1.0, # ω_ref,
+        0.8, #V_ref
+        0.5, #P_ref
+        -0.3, #Q_ref
+        100.0, #MVABase
+        converter_case78(), #converter
+        outer_control_test(), #outer control
+        vsc_test(), #inner control voltage source
+        dc_source_case78(), #dc source
+        pll_test(), #pll
+        filter_test(),
+    ) #filter
+end
+
 for g in get_components(Generator, threebus_sys)
-    case_gen = dyn_gen_sixth_order(g)
+    case_gen = dyn_gen_second_order(g)
     add_component!(threebus_sys, case_gen)
 end
 
