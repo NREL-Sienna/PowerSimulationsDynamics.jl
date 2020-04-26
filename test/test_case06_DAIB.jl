@@ -1,3 +1,6 @@
+using LITS
+using Sundials
+
 """
 Case 6:
 This case study a 19-state virtual synchronous machine against an infinite bus located at bus 1, with VSM located at bus 2.
@@ -8,24 +11,7 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-############### Data Network ########################
-
-nodes_DAIB = nodes_DArco_IB()
-
-branch_DAIB = branches_DArco_IB(nodes_DAIB)
-
-############### Data devices ########################
-
-inf_gen_DAIB = inf_gen_1_pu(nodes_DAIB)
-
-############### Inverter Data ########################
-
-Darco_Inverter = inv_DAIB(nodes_DAIB)
-
-######################### Dynamical System ########################
-
-#Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-sys = system_DAIB(nodes_DAIB, branch_DAIB, [inf_gen_DAIB], [Darco_Inverter])
+include(joinpath("test","data_tests/test06.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -62,10 +48,10 @@ x0_guess = [
 ] #Iq_filter
 
 #Define Fault using Callbacks
-Pref_change = LITS.ControlReferenceChange(1.0, Darco_Inverter, LITS.P_ref_index, 0.7)
+Pref_change = LITS.ControlReferenceChange(1.0, darco_inverter, LITS.P_ref_index, 0.7)
 
 #Define Simulation Problem
-sim = LITS.Simulation(sys, tspan, Pref_change, initial_guess = x0_guess)
+sim = LITS.Simulation(omib_sys, tspan, Pref_change, initial_guess = x0_guess)
 
 #Solve problem in equilibrium
 run_simulation!(sim, Sundials.IDA());

@@ -41,7 +41,7 @@ As mentioned earlier, we require to create a `Vector` of `PSY.Bus` to define the
 
 ```julia
 #Define the vector of buses
-nodes_OMIB = [
+buses_OMIB = [
     PSY.Bus(
         1, #number
         "Bus 1", #Name
@@ -55,7 +55,7 @@ nodes_OMIB = [
 ]
 ```
 
-Note that two buses are defined in the vector `nodes_case1`. It is important that the bus numbers are ordered from ``1`` to ``n``, since that structure will be used to construct the vector of variables. Future versions of `LITS` will allow to relax this assumption. Similarly, to define the branches (that also has some parameters that are currently not used, such as the rate and angle limits):
+Note that two buses are defined in the vector `buses_case1`. It is important that the bus numbers are ordered from ``1`` to ``n``, since that structure will be used to construct the vector of variables. Future versions of `LITS` will allow to relax this assumption. Similarly, to define the branches (that also has some parameters that are currently not used, such as the rate and angle limits):
 
 ```julia
 #Define the vector of branches
@@ -64,7 +64,7 @@ branch_OMIB = [PSY.Line(
     true, #available
     0.0, #active power flow initial condition (from-to)
     0.0, #reactive power flow initial condition (from-to)
-    Arc(from = nodes_OMIB[1], to = nodes_OMIB[2]), #Connection between buses
+    Arc(from = buses_OMIB[1], to = buses_OMIB[2]), #Connection between buses
     0.01, #resistance in pu
     0.05, #reactance in pu
     (from = 0.0, to = 0.0), #susceptance in pu
@@ -82,7 +82,7 @@ branch_OMIB_fault = [PSY.Line(
     true, #available
     0.0, #active power flow initial condition (from-to)
     0.0, #reactive power flow initial condition (from-to)
-    Arc(from = nodes_OMIB[1], to = nodes_OMIB[2]), #Connection between buses
+    Arc(from = buses_OMIB[1], to = buses_OMIB[2]), #Connection between buses
     0.02, #resistance in pu
     0.1, #reactance in pu
     (from = 0.0, to = 0.0), #susceptance in pu
@@ -101,7 +101,7 @@ Secondly, we will define devices that can inject/withdraw electric current direc
 loads_OMIB = [PSY.PowerLoad(
     "LBus1", #name
     true, #availability
-    nodes_OMIB[2], #bus
+    buses_OMIB[2], #bus
     PSY.LoadModels.ConstantPower, #type
     0.3, #P
     0.01, #Q
@@ -112,7 +112,7 @@ loads_OMIB = [PSY.PowerLoad(
 inf_gen_OMIB = [PSY.Source(
     "InfBus", #name
     true, #availability
-    nodes_OMIB[1], #bus
+    buses_OMIB[1], #bus
     1.05, #VR
     0.0, #VI
     0.000005, #Xth
@@ -157,7 +157,7 @@ pss_OMIB = PSSFixed(0.0) #No PSS without AVR
 gen_OMIB = PSY.DynamicGenerator(
     1, #Number
     "OMIB_Gen", #name
-    nodes_OMIB[2], #bus
+    buses_OMIB[2], #bus
     1.0, #ω_ref
     1.0, #V_ref
     0.5, #P_ref
@@ -184,7 +184,7 @@ sys = PSY.System(
 )
 
 #Add the buses to the system
-for bus in nodes_OMIB
+for bus in buses_OMIB
     PSY.add_component!(sys, bus)
 end
 
@@ -218,7 +218,7 @@ In here, he will use a Three Phase Fault, that is modeled by modifying the admit
 #Obtain the Ybus of the faulted system
 Ybus_fault = PSY.Ybus(
     branch_OMIB_fault, #fault set of lines
-    nodes_OMIB, #set of buses
+    buses_OMIB, #set of buses
 )[:,:]
 
 #Construct the perturbation

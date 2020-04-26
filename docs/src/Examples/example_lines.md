@@ -25,7 +25,7 @@ To start we will define the data structures for the network.
 ### Buses and Branches
 
 ```julia
-nodes_case9 = [
+buses_case9 = [
     PSY.Bus(1, "Bus 1", "REF", 0, 1.02, (min = 0.94, max = 1.06), 138),
     PSY.Bus(2, "Bus 2", "PV", 0, 1.00, (min = 0.94, max = 1.06), 138),
     PSY.Bus(3, "Bus 3", "PQ", 0, 1.00, (min = 0.94, max = 1.06), 138),
@@ -37,7 +37,7 @@ branch_case9 = [
         true,
         0.0,
         0.0,
-        Arc(from = nodes_case9[1], to = nodes_case9[3]),
+        Arc(from = buses_case9[1], to = buses_case9[3]),
         0.01,
         0.12,
         (from = 0.1, to = 0.1),
@@ -49,7 +49,7 @@ branch_case9 = [
         true,
         0.0,
         0.0,
-        Arc(from = nodes_case9[1], to = nodes_case9[2]),
+        Arc(from = buses_case9[1], to = buses_case9[2]),
         0.01,
         0.12,
         (from = 0.1, to = 0.1),
@@ -61,7 +61,7 @@ branch_case9 = [
         true,
         0.0,
         0.0,
-        Arc(from = nodes_case9[2], to = nodes_case9[3]),
+        Arc(from = buses_case9[2], to = buses_case9[3]),
         0.02,
         0.9,
         (from = 0.5, to = 0.5),
@@ -77,7 +77,7 @@ branch_case9_fault = [
         true,
         0.0,
         0.0,
-        Arc(from = nodes_case9[1], to = nodes_case9[3]),
+        Arc(from = buses_case9[1], to = buses_case9[3]),
         0.03,
         0.36,
         (from = 0.03, to = 0.03),
@@ -89,7 +89,7 @@ branch_case9_fault = [
         true,
         0.0,
         0.0,
-        Arc(from = nodes_case9[1], to = nodes_case9[2]),
+        Arc(from = buses_case9[1], to = buses_case9[2]),
         0.01,
         0.12,
         (from = 0.1, to = 0.1),
@@ -101,7 +101,7 @@ branch_case9_fault = [
         true,
         0.0,
         0.0,
-        Arc(from = nodes_case9[2], to = nodes_case9[3]),
+        Arc(from = buses_case9[2], to = buses_case9[3]),
         0.02,
         0.9,
         (from = 0.5, to = 0.5),
@@ -115,15 +115,15 @@ branch_case9_fault = [
 
 ```julia
 loads_case9 = [
-    PowerLoad("Bus1", true, nodes_case9[1], PSY.LoadModels.ConstantPower, 0.5, 0.1, 1.5, 0.8),
-    PowerLoad("Bus2", true, nodes_case9[2], PSY.LoadModels.ConstantPower, 1.0, 0.3, 1.5, 0.8),
-    PowerLoad("Bus3", true, nodes_case9[3], PSY.LoadModels.ConstantPower, 0.3, 0.1, 0.5, 0.3),
+    PowerLoad("Bus1", true, buses_case9[1], PSY.LoadModels.ConstantPower, 0.5, 0.1, 1.5, 0.8),
+    PowerLoad("Bus2", true, buses_case9[2], PSY.LoadModels.ConstantPower, 1.0, 0.3, 1.5, 0.8),
+    PowerLoad("Bus3", true, buses_case9[3], PSY.LoadModels.ConstantPower, 0.3, 0.1, 0.5, 0.3),
 ]
 
 inf_gen_case9 = [PSY.Source(
     "InfBus", #name
     true, #availability
-    nodes_case9[1],#bus
+    buses_case9[1],#bus
     1.00, #VR
     0.0, #VI
     0.000005,  #Xth
@@ -185,7 +185,7 @@ case9_avr = PSY.AVRTypeI(
 case9_gen = PSY.DynamicGenerator(
     1, #Number
     "Case9Gen",
-    nodes_case9[2], #bus
+    buses_case9[2], #bus
     1.0, # ω_ref,
     1.0124, #V_ref
     0.6, #P_ref
@@ -252,7 +252,7 @@ vsc = PSY.CombinedVIwithVZ(
 case9_inv = PSY.DynamicInverter(
     2, #number
     "DARCO", #name
-    nodes_case9[3], #bus location
+    buses_case9[3], #bus location
     1.0, #ω_ref
     0.8, #V_ref
     0.5, #P_ref
@@ -277,7 +277,7 @@ sys = PSY.System(
 )
 
 #Add the buses to the system
-for bus in nodes_case9
+for bus in buses_case9
     PSY.add_component!(sys, bus)
 end
 
@@ -318,7 +318,7 @@ sys2 = PSY.System(
 )
 
 #Add the buses to the system
-for bus in nodes_case9
+for bus in buses_case9
     PSY.add_component!(sys2, bus)
 end
 

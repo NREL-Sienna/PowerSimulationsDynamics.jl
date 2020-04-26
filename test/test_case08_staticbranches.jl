@@ -8,47 +8,12 @@ The perturbation trips two of the three circuits of line between buses 1 and 2, 
 ############### LOAD DATA ########################
 ##################################################
 
-############### Data Network ########################
-
-nodes_case8 = nodes_3bus()
-
-branch_case8 = branches_3lines_case8(nodes_case8)
-
-#Two of three lines lost in Line 1
-branch_case8_fault = branches_3lines_case8_fault(nodes_case8)
-
-loads_case8 = loads_3bus_case8(nodes_case8)
-
-############### Data devices ########################
-
-inf_gen_case8 = inf_gen_1_pu(nodes_case8)
-
-### Case 8 Generators ###
-
-case8_gen = dyn_gen_case8(nodes_case8)
-
-############### Inverter Data ########################
-
-case8_inv = inv_case9(nodes_case8)
-
-######################### Dynamical System ########################
-
-#Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-sys = system_50Hz(
-    nodes_case8,
-    branch_case8,
-    loads_case8,
-    [inf_gen_case8],
-    [case8_inv],
-    [case8_gen],
-)
-
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
 #Compute Y_bus after fault
-Ybus_fault = get_admittance_matrix(nodes_case8, branch_case8_fault)
+Ybus_fault = get_admittance_matrix(buses_case8, branch_case8_fault)
 
 #time span
 tspan = (0.0, 20.0)
