@@ -14,21 +14,21 @@ res = solve_powerflow!(omib_sys, nlsolve)
 
 function inv_DAIB(bus)
     return PSY.DynamicInverter(
-        1, #Number
-        "DARCO", #name
-        bus, #bus
-        1.0, # ω_ref,
-        get_voltage(bus), #V_ref
-        0.5, #P_ref
-        0.0, #Q_ref
-        2.75, #MVABase
-        converter_DAIB(), #converter
-        outer_control_test(), #outer control
-        vsc_test(), #inner control voltage source
-        dc_source_DAIB(), #dc source
-        pll_test(), #pll
-        filter_test(),
-    ) #filter
+        number = 1,
+        name = "VSM",
+        bus = get_bus(battery),
+        ω_ref = 1.0,
+        V_ref = get_voltage(get_bus(battery)),
+        P_ref = get_activepower(battery),
+        Q_ref = get_reactivepower(battery),
+        MVABase = 2.75,
+        converter = converter(),
+        outer_control = outer_control(),
+        inner_control = inner_control(),
+        dc_source = dc_source(),
+        freq_estimator = pll(),
+        filter = filter(),
+    )
 end
 
 darco_inverter = inv_DAIB(gen_bus)
