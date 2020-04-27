@@ -219,68 +219,65 @@ avr_type2() = AVRTypeII(
 ######################################
 
 ###### Converter Data ######
+converter_low_power() = AverageConverter(
+    v_rated = 690.0,
+    s_rated = 2.75,
+)
 
-converter_DAIB() = AverageConverter(
-    690.0, #Rated Voltage
-    2.75,
-) #Rated MVA
-
-converter_case78() = AverageConverter(
-    138.0, #Rated Voltage
-    100.0,
-) #Rated MVA
+converter_high_power() = AverageConverter(
+    v_rated = 138.0,
+    s_rated = 100.0,
+)
 
 ###### DC Source Data ######
-
-dc_source_DAIB() = FixedDCSource(600.0) #Not in the original data, guessed.
-
-dc_source_case78() = FixedDCSource(1500.0) #Not in the original data, guessed.
+dc_source_lv() = FixedDCSource(voltage = 600.0) #Not in the original data, guessed.
+dc_source_hv() = FixedDCSource(voltage = 1500.0) #Not in the original data, guessed.
 
 ###### Filter Data ######
-
-filter_test() = LCLFilter(
-    0.08, #Series inductance lf in pu
-    0.003, #Series resitance rf in pu
-    0.074, #Shunt capacitance cf in pu
-    0.2, #Series ractance rg to grid connection (#Step up transformer or similar)
-    0.01,
-) #Series resistance lg to grid connection (#Step up transformer or similar)
+filter() = LCLFilter(
+    lf = 0.08,
+    rf = 0.003,
+    cf = 0.074,
+    lg = 0.2,
+    rg = 0.01,
+)
 
 ###### PLL Data ######
-
-pll_test() = KauraPLL(
-    500.0, #ω_lp: Cut-off frequency for LowPass filter of PLL filter.
-    0.084, #k_p: PLL proportional gain
-    4.69,
-) #k_i: PLL integral gain
+pll() = KauraPLL(
+    ω_lp = 500.0, #Cut-off frequency for LowPass filter of PLL filter.
+    k_p = 0.084,  #PLL proportional gain
+    k_i = 4.69,   #PLL integral gain
+)
 
 ###### Outer Control ######
-
-virtual_inertia_test() = VirtualInertia(
-    2.0, #Ta:: VSM inertia constant
-    400.0, #kd:: VSM damping coefficient
-    20.0, #kω:: Frequency droop gain in pu
-    2 * pi * 50.0,
-) #ωb:: Rated angular frequency
-
-reactive_droop_test() = ReactivePowerDroop(
-    0.2, #kq:: Reactive power droop gain in pu
-    1000.0,
-) #ωf:: Reactive power cut-off low pass filter frequency
-
-outer_control_test() = OuterControl(virtual_inertia_test(), reactive_droop_test())
+function outer_control()
+    function virtual_inertia()
+        return VirtualInertia(
+        Ta = 2.0,
+        kd = 400.0,
+        kω = 20.0,
+        ωb = 2 * pi * 50.0,
+    )
+    end
+    function reactive_droop()
+        return ReactivePowerDroop(
+        kq = 0.2,
+        ωf = 1000.0,
+    )
+    end
+    return OuterControl(virtual_inertia(), reactive_droop())
+end
 
 ######## Inner Control ######
-
-vsc_test() = CurrentControl(
-    0.59, #kpv:: Voltage controller proportional gain
-    736.0, #kiv:: Voltage controller integral gain
-    0.0, #kffv:: Binary variable enabling the voltage feed-forward in output of current controllers
-    0.0, #rv:: Virtual resistance in pu
-    0.2, #lv: Virtual inductance in pu
-    1.27, #kpc:: Current controller proportional gain
-    14.3, #kiv:: Current controller integral gain
-    0.0, #kffi:: Binary variable enabling the current feed-forward in output of current controllers
-    50.0, #ωad:: Active damping low pass filter cut-off frequency
-    0.2,
-) #kad:: Active damping gain
+inner_control() = CurrentControl(
+    kpv = 0.59,     #Voltage controller proportional gain
+    kiv = 736.0,    #Voltage controller integral gain
+    kffv = 0.0,     #Binary variable enabling the voltage feed-forward in output of current controllers
+    rv = 0.0,       #Virtual resistance in pu
+    lv = 0.2,       #Virtual inductance in pu
+    kpc = 1.27,     #Current controller proportional gain
+    kic = 14.3,     #Current controller integral gain
+    kffi = 0.0,     #Binary variable enabling the current feed-forward in output of current controllers
+    ωad = 50.0,     #Active damping low pass filter cut-off frequency
+    kad = 0.2,
+)
