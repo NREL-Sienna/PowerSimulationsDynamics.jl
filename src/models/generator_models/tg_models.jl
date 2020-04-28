@@ -6,7 +6,7 @@ function mdl_tg_ode!(
 
     #Update inner vars
     P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
-    get_inner_vars(device)[τm_var] = P_ref * PSY.get_efficiency(PSY.get_tg(device))
+    get_inner_vars(device)[τm_var] = P_ref * PSY.get_efficiency(PSY.get_prime_mover(device))
 
     return
 end
@@ -35,7 +35,7 @@ function mdl_tg_ode!(
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    tg = PSY.get_tg(device)
+    tg = PSY.get_prime_mover(device)
     R = PSY.get_R(tg)
     Ts = PSY.get_Ts(tg)
     Tc = PSY.get_Tc(tg)
@@ -89,7 +89,7 @@ function mdl_tg_ode!(
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    tg = PSY.get_tg(device)
+    tg = PSY.get_prime_mover(device)
     R = PSY.get_R(tg)
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
