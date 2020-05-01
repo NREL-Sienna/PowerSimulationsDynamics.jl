@@ -8,7 +8,7 @@ drop a circuit on the (double circuit) line connecting the two buses, doubling i
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__),"data_tests/test01.jl"))
+include(joinpath(dirname(@__FILE__), "data_tests/test01.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

@@ -5,8 +5,8 @@ const PSY = PowerSystems
 include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
-omib_file_dir= joinpath(dirname(@__FILE__), "OMIB.raw")
-omib_sys = System(PowerModelsData(omib_file_dir), runchecks=false)
+omib_file_dir = joinpath(dirname(@__FILE__), "OMIB.raw")
+omib_sys = System(PowerModelsData(omib_file_dir), runchecks = false)
 add_source_to_ref(omib_sys)
 res = solve_powerflow!(omib_sys, nlsolve)
 ############### Data Dynamic devices ########################
@@ -34,5 +34,6 @@ add_component!(omib_sys, case_gen)
 
 #Compute Y_bus after fault
 fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
-fault_branch.r = 0.02; fault_branch.x = 0.1
+fault_branch.r = 0.02;
+fault_branch.x = 0.1;
 Ybus_fault = PSY.Ybus([fault_branch], get_components(Bus, omib_sys))[:, :]
