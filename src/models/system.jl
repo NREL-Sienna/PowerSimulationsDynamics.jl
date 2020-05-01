@@ -51,8 +51,20 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
         out[ix_range] = injection_ode[ode_range] - dx[ix_range]
     end
 
-    # TODO: remove filtered get_component
-    for d in PSY.get_components(PSY.StaticInjection, sys, d -> !isa(d, PSY.Generator))
+    for d in PSY.get_components(PSY.ElectricLoad, sys)
+        bus_n = PSY.get_number(PSY.get_bus(d))
+
+        device!(
+            view(V_r, bus_n),
+            view(V_i, bus_n),
+            view(I_injections_r, bus_n),
+            view(I_injections_i, bus_n),
+            d,
+            sys,
+        )
+    end
+
+    for d in PSY.get_components(PSY.Source, sys)
         bus_n = PSY.get_number(PSY.get_bus(d))
 
         device!(

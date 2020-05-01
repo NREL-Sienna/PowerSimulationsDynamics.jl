@@ -8,39 +8,11 @@ drop a circuit on the (double circuit) line connecting the two buses, doubling i
 ############### LOAD DATA ########################
 ##################################################
 
-############### Data Network ########################
-
-nodes_case1 = nodes_OMIB()
-
-branch_case1 = branches_OMIB(nodes_case1)
-
-#Trip of a single circuit of Line 1 -> Resistance and Reactance doubled.
-branch_case1_fault = branches_OMIB_fault(nodes_case1)
-
-loads_case1 = loads_OMIB(nodes_case1)
-
-############### Data devices ########################
-
-inf_gen_case1 = inf_gen_105_pu(nodes_case1)
-
-### Case 1 Generator ###
-
-case1_gen = dyn_gen_OMIB(nodes_case1)
-
-######################### Dynamical System ########################
-
-#Create system with BasePower = 100 MVA and nominal frequency 60 Hz.
-sys = system_no_inv(nodes_case1, branch_case1, loads_case1, [inf_gen_case1], [case1_gen])
+include(joinpath(dirname(@__FILE__), "data_tests/test01.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
-
-#Compute Y_bus after fault
-Ybus_fault = get_admittance_matrix(nodes_case1, branch_case1_fault)
-
-tspan = (0.0, 30.0);
-
 #Define Fault: Change of YBus
 Ybus_change = ThreePhaseFault(
     1.0, #change at t = 1.0
@@ -49,8 +21,8 @@ Ybus_change = ThreePhaseFault(
 
 #Define Simulation Problem
 sim = Simulation(
-    sys, #system
-    tspan, #time span
+    omib_sys, #system
+    (0.0, 30.0), #time span
     Ybus_change,
 ) #Type of Fault
 

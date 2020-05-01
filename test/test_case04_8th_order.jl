@@ -9,48 +9,11 @@ and the generator located in bus 3.
 ############### LOAD DATA ########################
 ##################################################
 
-############### Data Network ########################
-
-nodes_case234 = nodes_3bus()
-
-branch_case234 = branches_3lines(nodes_case234)
-
-#Trip of Line 1.
-branch_case234_fault = branches_3lines_fault(nodes_case234)
-
-loads_case234 = loads_3bus(nodes_case234)
-
-############### Data devices ########################
-
-inf_gen_case234 = inf_gen_102_pu(nodes_case234)
-
-### Case 4 Generators ###
-
-case4_gen2 = dyn_gen2_case4(nodes_case234)
-
-case4_gen3 = dyn_gen3_case4(nodes_case234)
-
-######################### Dynamical System ########################
-
-#Create system with BasePower = 100 MVA and nominal frequency 60 Hz.
-sys = system_no_inv(
-    nodes_case234,
-    branch_case234,
-    loads_case234,
-    [inf_gen_case234],
-    [case4_gen2, case4_gen3],
-)
+include(joinpath(dirname(@__FILE__), "data_tests/test04.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
-
-#Compute Y_bus after fault
-Ybus_fault = get_admittance_matrix(nodes_case234, branch_case234_fault)
-
-#time span
-tspan = (0.0, 20.0);
-
 #Initial guess
 x0_guess = [
     1.02,
@@ -93,8 +56,8 @@ Ybus_change = ThreePhaseFault(
 
 #Define Simulation Problem
 sim = Simulation(
-    sys, #system
-    tspan, #time span
+    threebus_sys, #system
+    (0.0, 20.0), #time span
     Ybus_change, #Type of Fault
     initial_guess = x0_guess,
 ) #initial guess
@@ -103,6 +66,6 @@ sim = Simulation(
 run_simulation!(sim, IDA());
 
 #Obtain data for angles
-series = get_state_series(sim, ("Case4Gen2", :δ));
+series = get_state_series(sim, ("Case4_generator-2-1", :δ));
 
 @test sim.solution.retcode == :Success

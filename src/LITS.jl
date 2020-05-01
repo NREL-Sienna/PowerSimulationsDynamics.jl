@@ -19,6 +19,7 @@ export get_voltagemag_series
 export print_init_states
 
 ####################################### Package Imports ####################################
+import Logging
 import InfrastructureSystems
 import DiffEqBase
 import ForwardDiff
