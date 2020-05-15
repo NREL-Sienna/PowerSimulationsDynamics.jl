@@ -2,23 +2,18 @@ using PowerSystems
 using NLsolve
 const PSY = PowerSystems
 
-include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
-include(joinpath(dirname(@__FILE__), "data_utils.jl"))
+include(joinpath("test/data_tests", "dynamic_test_data.jl"))
+include(joinpath("test/data_tests", "data_utils.jl"))
 ############### Data Network ########################
-omib_file_dir = joinpath(dirname(@__FILE__), "OMIB.raw")
+omib_file_dir = joinpath("test/data_tests", "OMIB.raw")
 omib_sys = System(PowerModelsData(omib_file_dir), runchecks = false)
 add_source_to_ref(omib_sys)
 res = solve_powerflow!(omib_sys, nlsolve)
 ############### Data Dynamic devices ########################
 function dyn_gen_first_order(generator)
     return PSY.DynamicGenerator(
-        1, #Number
-        "Case1Gen",
-        get_bus(generator), #bus
-        1.0, # ω_ref,
-        get_voltage(get_bus(generator)), #V_ref
-        get_activepower(generator), #P_ref
-        get_reactivepower(generator), #Q_ref
+        generator,
+        1.0,
         machine_OMIB(), #machine
         shaft_damping(), #shaft
         avr_none(), #avr
