@@ -1,6 +1,6 @@
 name = "LITS"
 uuid = "86b0dc02-7903-11e9-325f-f195ca7e6c1a"
-version = "0.3.5"
+version = "0.4.0"
 
 [deps]
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
@@ -17,5 +17,5 @@ DiffEqBase = "6"
 ForwardDiff = "~v0.10"
 InfrastructureSystems = "~0.6.3"
 NLsolve = "4"
-PowerSystems = "~0.17"
+PowerSystems = "~0.18"
 julia = "^1.2"
