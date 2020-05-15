@@ -416,123 +416,25 @@ function system_no_inv_no_sources(nodes, branches, loads, gens)
     for bus in nodes
         PSY.add_component!(sys, bus)
     end
-
-    #Add lines
-    for lines in branches
-        PSY.add_component!(sys, lines)
+    function reactive_droop()
+        return ReactivePowerDroop(
+        kq = 0.2,
+        ωf = 1000.0,
+    )
     end
-
-    #Add loads
-    for load in loads
-        PSY.add_component!(sys, load)
-    end
-
-    #Add generator
-    for gen in gens
-        PSY.add_component!(sys, gen)
-    end
-    return sys
+    return OuterControl(virtual_inertia(), reactive_droop())
 end
 
-function system_DAIB(nodes, branches, sources, invs)
-    #Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-    sys = PSY.System(100.0, frequency = 50.0)
-
-    #Add buses
-    for bus in nodes
-        PSY.add_component!(sys, bus)
-    end
-
-    #Add lines
-    for lines in branches
-        PSY.add_component!(sys, lines)
-    end
-
-    #Add infinite source
-    for source in sources
-        PSY.add_component!(sys, source)
-    end
-
-    #Add inverters
-    for inv in invs
-        PSY.add_component!(sys, inv)
-    end
-    return sys
-end
-
-function system_50Hz(nodes, branches, loads, sources, invs, gens)
-    #Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-    sys = PSY.System(100.0, frequency = 50.0)
-
-    #Add buses
-    for bus in nodes
-        PSY.add_component!(sys, bus)
-    end
-
-    #Add lines
-    for lines in branches
-        PSY.add_component!(sys, lines)
-    end
-
-    #Add loads
-    for load in loads
-        PSY.add_component!(sys, load)
-    end
-
-    #Add infinite source
-    for source in sources
-        PSY.add_component!(sys, source)
-    end
-
-    #Add inverters
-    for inv in invs
-        PSY.add_component!(sys, inv)
-    end
-
-    #Add generators
-    for gen in gens
-        PSY.add_component!(sys, gen)
-    end
-
-    return sys
-end
-
-function system_case9(nodes, branches, loads, sources, invs, gens)
-    #Create system with BasePower = 100 MVA and nominal frequency 50 Hz.
-    sys = PSY.System(100.0, frequency = 50.0)
-
-    #Add buses
-    for bus in nodes
-        PSY.add_component!(sys, bus)
-    end
-
-    #Add lines
-    for lines in branches
-        PSY.add_component!(sys, lines)
-    end
-
-    #Make line 3 the dynamic line
-    make_dynamic_branch!(branches[3], sys)
-
-    #Add loads
-    for load in loads
-        PSY.add_component!(sys, load)
-    end
-
-    #Add infinite source
-    for source in sources
-        PSY.add_component!(sys, source)
-    end
-
-    #Add inverters
-    for inv in invs
-        PSY.add_component!(sys, inv)
-    end
-
-    #Add generators
-    for gen in gens
-        PSY.add_component!(sys, gen)
-    end
-
-    return sys
-end
+######## Inner Control ######
+inner_control() = CurrentControl(
+    kpv = 0.59,     #Voltage controller proportional gain
+    kiv = 736.0,    #Voltage controller integral gain
+    kffv = 0.0,     #Binary variable enabling the voltage feed-forward in output of current controllers
+    rv = 0.0,       #Virtual resistance in pu
+    lv = 0.2,       #Virtual inductance in pu
+    kpc = 1.27,     #Current controller proportional gain
+    kic = 14.3,     #Current controller integral gain
+    kffi = 0.0,     #Binary variable enabling the current feed-forward in output of current controllers
+    ωad = 50.0,     #Active damping low pass filter cut-off frequency
+    kad = 0.2,
+)
