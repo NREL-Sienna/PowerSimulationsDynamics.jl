@@ -73,5 +73,6 @@ include("utils/plot_utils.jl")
 include("utils/immutable_dicts.jl")
 include("utils/print.jl")
 include("utils/kwargs_check.jl")
+include("utils/logging.jl")
 
 end # module
