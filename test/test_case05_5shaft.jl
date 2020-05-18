@@ -5,7 +5,6 @@ The generator uses the model of a one d- one q- machine, and has a 5-mass shaft 
 The fault disconnects a circuit between buses 1 and 2, doubling its impedance.
 """
 
-
 ##################################################
 ############### LOAD DATA ########################
 ##################################################
@@ -47,11 +46,11 @@ x0_guess = [
     0.59, #ed_p
     0.6, #δ
     1.0, #ω
-     1.7, #Vf
+    1.7, #Vf
     0.11, #Vr1
     -0.31, #Vr2,
     1.0, #Vm
-] 
+]
 
 #Define Fault: Change of YBus
 Ybus_change = ThreePhaseFault(
@@ -68,7 +67,7 @@ sim = Simulation(
 ) #initial guess
 
 #Solve problem in equilibrium
-run_simulation!(sim, IDA(), dtmax=0.001);
+run_simulation!(sim, IDA(), dtmax = 0.001);
 
 small_sig = small_signal_analysis(sim)
 

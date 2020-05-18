@@ -11,7 +11,7 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath("test","data_tests/test06.jl"))
+include(joinpath("test", "data_tests/test06.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

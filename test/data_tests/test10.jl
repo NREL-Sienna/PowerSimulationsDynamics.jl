@@ -13,7 +13,6 @@ branch_case10_fault = branch_multimachine_fault(buses_case10)
 
 loads_case10 = loads_multimachine(buses_case10)
 
-
 function dyn_gen_second_order(generator)
     return PSY.DynamicGenerator(
         1, #Number

@@ -219,28 +219,16 @@ avr_type2() = AVRTypeII(
 ######################################
 
 ###### Converter Data ######
-converter_low_power() = AverageConverter(
-    v_rated = 690.0,
-    s_rated = 2.75,
-)
+converter_low_power() = AverageConverter(v_rated = 690.0, s_rated = 2.75)
 
-converter_high_power() = AverageConverter(
-    v_rated = 138.0,
-    s_rated = 100.0,
-)
+converter_high_power() = AverageConverter(v_rated = 138.0, s_rated = 100.0)
 
 ###### DC Source Data ######
 dc_source_lv() = FixedDCSource(voltage = 600.0) #Not in the original data, guessed.
 dc_source_hv() = FixedDCSource(voltage = 1500.0) #Not in the original data, guessed.
 
 ###### Filter Data ######
-filter() = LCLFilter(
-    lf = 0.08,
-    rf = 0.003,
-    cf = 0.074,
-    lg = 0.2,
-    rg = 0.01,
-)
+filt() = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01)
 
 ###### PLL Data ######
 pll() = KauraPLL(
@@ -252,18 +240,10 @@ pll() = KauraPLL(
 ###### Outer Control ######
 function outer_control()
     function virtual_inertia()
-        return VirtualInertia(
-        Ta = 2.0,
-        kd = 400.0,
-        kω = 20.0,
-        ωb = 2 * pi * 50.0,
-    )
+        return VirtualInertia(Ta = 2.0, kd = 400.0, kω = 20.0, ωb = 2 * pi * 50.0)
     end
     function reactive_droop()
-        return ReactivePowerDroop(
-        kq = 0.2,
-        ωf = 1000.0,
-    )
+        return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)
     end
     return OuterControl(virtual_inertia(), reactive_droop())
 end
@@ -417,10 +397,7 @@ function system_no_inv_no_sources(nodes, branches, loads, gens)
         PSY.add_component!(sys, bus)
     end
     function reactive_droop()
-        return ReactivePowerDroop(
-        kq = 0.2,
-        ωf = 1000.0,
-    )
+        return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)
     end
     return OuterControl(virtual_inertia(), reactive_droop())
 end
