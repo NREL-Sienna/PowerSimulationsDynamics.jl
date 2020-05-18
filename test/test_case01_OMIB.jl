@@ -33,9 +33,10 @@ small_sig = small_signal_analysis(sim)
 run_simulation!(sim, IDA(), dtmax = 0.02);
 
 #Obtain data for angles
-series = get_state_series(sim, ("Case1Gen", :δ));
+series = get_state_series(sim, ("generator-2-1", :δ));
 series2 = get_voltagemag_series(sim, 2)
 LITS.print_init_states(sim)
 
+@test norm(sim.x0_init - test01_x0_init) < 1e-5
 @test sim.solution.retcode == :Success
 @test small_sig.stable

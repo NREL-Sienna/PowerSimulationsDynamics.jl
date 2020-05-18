@@ -15,13 +15,8 @@ res = solve_powerflow!(threebus_sys, nlsolve)
 
 function dyn_gen_sixth_order(generator)
     return PSY.DynamicGenerator(
-        1, #Number
-        "Case3_$(get_name(generator))",
-        get_bus(generator), #bus
-        1.0, # ω_ref,
-        get_voltage(get_bus(generator)), #V_ref
-        get_activepower(generator), #P_ref
-        get_reactivepower(generator), #Q_ref
+        generator, #static generator
+        1.0, # ω_ref
         machine_6th(), #machine
         shaft_no_damping(), #shaft
         avr_type1(), #avr

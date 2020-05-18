@@ -62,10 +62,14 @@ sim = Simulation(
     initial_guess = x0_guess,
 ) #initial guess
 
+small_sig = small_signal_analysis(sim)
+
 #Solve problem in equilibrium
 run_simulation!(sim, IDA());
 
 #Obtain data for angles
-series = get_state_series(sim, ("Case3_generator-2-1", :δ));
+series = get_state_series(sim, ("generator-2-1", :δ));
 
+@test norm(sim.x0_init - test03_x0_init) < 1e-5
 @test sim.solution.retcode == :Success
+@test small_sig.stable

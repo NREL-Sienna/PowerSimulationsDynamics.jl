@@ -15,13 +15,8 @@ res = solve_powerflow!(threebus_sys, nlsolve)
 
 function dyn_gen_second_order(generator)
     return PSY.DynamicGenerator(
-        1, #Number
-        "Case2_$(get_name(generator))",
-        get_bus(generator), #bus
-        1.0, # ω_ref,
-        1.0, #V_ref
-        get_activepower(generator), #P_ref
-        get_reactivepower(generator), #Q_ref
+        generator, #static generator
+        1.0, # ω_ref
         machine_4th(), #machine
         shaft_no_damping(), #shaft
         avr_type1(), #avr
@@ -30,6 +25,7 @@ function dyn_gen_second_order(generator)
     ) #pss
 end
 
+# Add dynamic generators to the system (each gen is linked through a static one)
 for g in get_components(Generator, threebus_sys)
     case_gen = dyn_gen_second_order(g)
     add_component!(threebus_sys, case_gen)
