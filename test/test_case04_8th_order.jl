@@ -70,6 +70,6 @@ run_simulation!(sim, IDA());
 #Obtain data for angles
 series = get_state_series(sim, ("generator-2-1", :δ));
 
-@test norm(sim.x0_init - test04_x0_init) < 1e-5
+@test LinearAlgebra.norm(sim.x0_init - test04_x0_init) < 1e-5
 @test sim.solution.retcode == :Success
 @test small_sig.stable

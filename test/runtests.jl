@@ -5,7 +5,7 @@ using NLsolve
 using DiffEqBase
 using Sundials
 using InfrastructureSystems
-using LinearAlgebra
+import LinearAlgebra
 using Logging
 
 const IS = InfrastructureSystems

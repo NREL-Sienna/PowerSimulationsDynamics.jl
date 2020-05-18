@@ -77,6 +77,6 @@ series2 = get_state_series(sim, ("generator-3-2", :δ_hp));
 series3 = get_state_series(sim, ("generator-3-2", :δ_ip));
 series4 = get_state_series(sim, ("generator-3-2", :δ_ex));
 
-@test norm(sim.x0_init - test05_x0_init) < 1e-5
+@test LinearAlgebra.norm(sim.x0_init - test05_x0_init) < 1e-5
 @test sim.solution.retcode == :Success
 @test small_sig.stable
