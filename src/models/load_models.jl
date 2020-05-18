@@ -9,8 +9,8 @@ function mdl_Zload!(
 
     #Load squared voltage magnitude at steady state
     bus = PSY.get_bus(device)
-    #Vmag_sq = PSY.get_voltage(bus)^2
-    Vmag_sq = 1.0
+    Vmag_sq = PSY.get_voltage(bus)^2
+    #Vmag_sq = 1.0
 
     #Load device parameters
     P = PSY.get_activepower(device)
