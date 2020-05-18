@@ -5,6 +5,7 @@ using NLsolve
 using DiffEqBase
 using Sundials
 using InfrastructureSystems
+using LinearAlgebra
 using Logging
 
 const IS = InfrastructureSystems
@@ -40,8 +41,9 @@ function run_tests()
     console_logger = ConsoleLogger(stderr, console_level)
     file_level = get_logging_level("SYS_LOG_LEVEL", "Info")
 
-    include("./data_tests/network_test_data.jl")
+    #include("./data_tests/network_test_data.jl")
     include("./data_tests/dynamic_test_data.jl")
+    include("./results/results_initial_conditions.jl")
 
     IS.open_file_logger(LOG_FILE, file_level) do file_logger
         multi_logger = IS.MultiLogger(
