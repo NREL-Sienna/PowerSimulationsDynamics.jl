@@ -6,7 +6,6 @@
 0 / END OF BUS DATA, BEGIN LOAD DATA
 0 / END OF LOAD DATA, BEGIN FIXED SHUNT DATA
 0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA
-     2,  1,        2.75,         0,       2.75,      -10,     1.02, 0,    1000, 0, 1, 0, 0, 1, 1, 100,      1000,         0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1
 0 / END OF GENERATOR DATA, BEGIN BRANCH DATA
      1,      2, 1,    0.0,     0.075,   0.00,     100,     100,     100, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1
 0 / END OF BRANCH DATA, BEGIN TRANSFORMER DATA

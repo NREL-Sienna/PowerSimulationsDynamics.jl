@@ -233,8 +233,8 @@ filt() = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01)
 ###### PLL Data ######
 pll() = KauraPLL(
     ω_lp = 500.0, #Cut-off frequency for LowPass filter of PLL filter.
-    k_p = 0.084,  #PLL proportional gain
-    k_i = 4.69,   #PLL integral gain
+    kp_pll = 0.084,  #PLL proportional gain
+    ki_pll = 4.69,   #PLL integral gain
 )
 
 ###### Outer Control ######

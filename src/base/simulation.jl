@@ -166,12 +166,13 @@ function _attach_inner_vars!(
     return
 end
 
-function _attach_control_refs!(device::PSY.DynamicInjection)
+function _attach_control_refs!(device::PSY.DynamicInjection, sys_basepower::Float64)
+    device_basepower = PSY.get_basepower(device)
     device.ext[CONTROL_REFS] = [
         PSY.get_V_ref(device),
         PSY.get_ω_ref(device),
-        PSY.get_P_ref(device),
-        PSY.get_Q_ref(device),
+        PSY.get_P_ref(device) / device_basepower,
+        PSY.get_Q_ref(device) / device_basepower,
     ]
     return
 end
@@ -191,12 +192,12 @@ function _index_port_mapping!(
     return
 end
 
-function _make_device_index!(device::PSY.DynamicInjection)
+function _make_device_index!(device::PSY.DynamicInjection, sys_basepower::Float64)
     states = PSY.get_states(device)
     device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
     input_port_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
     _attach_inner_vars!(device)
-    _attach_control_refs!(device)
+    _attach_control_refs!(device, sys_basepower)
 
     for c in PSY.get_dynamic_components(device)
         device_state_mapping[typeof(c)] = Vector{Int64}(undef, length(c.states))
@@ -241,6 +242,7 @@ function _index_dynamic_system!(sys::PSY.System)
     )
     total_shunts = Dict{Int, Float64}()
     found_ref_bus = false
+    sys_basepower = PSY.get_basepower(sys)
 
     dyn_branches = PSY.get_components(DynamicLine, sys)
     if !(isempty(dyn_branches))
@@ -302,7 +304,7 @@ function _index_dynamic_system!(sys::PSY.System)
         if (btype == PSY.BusTypes.REF) && found_ref_bus
             throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
         end
-        _make_device_index!(d)
+        _make_device_index!(d, sys_basepower)
         device_n_states = PSY.get_n_states(d)
         DAE_vector = push!(DAE_vector, collect(trues(device_n_states))...)
         total_states += device_n_states
