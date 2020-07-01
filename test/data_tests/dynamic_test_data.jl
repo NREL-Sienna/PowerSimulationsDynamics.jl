@@ -10,7 +10,7 @@ machine_OMIB() = BaseMachine(
     0.0, #R
     0.2995, #Xd_p
     0.7087, #eq_p
-    100.0,
+
 )  #MVABase
 
 machine_4th() = OneDOneQMachine(
@@ -21,7 +21,7 @@ machine_4th() = OneDOneQMachine(
     0.25, #Xq_p
     5.89, #Td0_p
     0.6, #Tq0_p
-    100.0,
+
 )   #MVABase
 
 machine_6th() = SimpleMarconatoMachine(
@@ -37,7 +37,7 @@ machine_6th() = SimpleMarconatoMachine(
     0.5, #Td0_pp
     0.023, #Tq0_pp
     0.0, #T_AA
-    100.0,
+
 ) #MVABase
 
 machine_8th() = MarconatoMachine(
@@ -53,7 +53,7 @@ machine_8th() = MarconatoMachine(
     0.5, #Td0_pp
     0.023, #Tq0_pp
     0.0, #T_AA
-    100.0,
+
 ) #MVABase
 
 machine_anderson() = AndersonFouadMachine(
@@ -108,14 +108,14 @@ machine_multi_ref() = BaseMachine(
     0.0, #R
     0.2995, #Xd_p
     1.0901, #eq_p
-    100.0,
+
 )  #MVABase
 
 machine_multi() = BaseMachine(
     0.0, #R
     0.2995, #Xd_p
     0.9516, #eq_p
-    100.0,
+
 )  #MVABase
 
 ######## Shaft Data #########
@@ -312,7 +312,7 @@ function inv_case9(nodes)
         0.8, #V_ref
         0.5, #P_ref
         -0.3, #Q_ref
-        100.0, #MVABase
+         #MVABase
         converter_case78(), #converter
         outer_control_test(), #outer control
         vsc_test(), #inner control voltage source
@@ -328,7 +328,7 @@ end
 
 function system_OMIB(nodes, branches, loads, sources, gens)
     #Create system with BasePower = 100 MVA and nominal frequency 60 Hz.
-    sys = PSY.System(100.0, frequency = 60.0)
+    sys = PSY.System( frequency = 60.0)
 
     #Add buses
     for bus in nodes
@@ -390,7 +390,7 @@ end
 
 function system_no_inv_no_sources(nodes, branches, loads, gens)
     #Create system with BasePower = 100 MVA and nominal frequency 60 Hz.
-    sys = PSY.System(100.0, frequency = 60.0)
+    sys = PSY.System( frequency = 60.0)
 
     #Add buses
     for bus in nodes
