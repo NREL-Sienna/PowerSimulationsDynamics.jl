@@ -1,10 +1,12 @@
 function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Float64})
+    # TODO: Code to refine initial_guess
 
     bus_count = length(PSY.get_components(PSY.Bus, sys))
     var_count = get_variable_count(sys)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
 
-    #These lines stay
+
+
     inif! = (out, x) -> system!(
         out,    #output of the function
         dx0,    #derivatives equal to zero
@@ -12,6 +14,9 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         sys,    #Parameters
         0.0,    #time equals to zero.
     )
+
+
+
 
     sys_solve = NLsolve.nlsolve(
         inif!,

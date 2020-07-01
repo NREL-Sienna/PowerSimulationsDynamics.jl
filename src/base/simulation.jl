@@ -27,10 +27,10 @@ function Simulation(
     bus_count = length(PSY.get_components(PSY.Bus, system))
     flat_start[1:bus_count] .= 1.0
     x0_init = get(kwargs, :initial_guess, flat_start)
-    _add_aux_arrays!(system, Real)
 
     if initialize_simulation
         @info("Initializing Simulation States")
+        _add_aux_arrays!(system, Real)
         initialized = calculate_initial_conditions!(system, x0_init)
     end
 
@@ -106,6 +106,30 @@ function _build_perturbations(perturbations::Vector{<:Perturbation})
     callback_tuple = Tuple(cb for cb in callback_vector)
     callback_set = DiffEqBase.CallbackSet((), callback_tuple)
     return callback_set, tstops
+end
+
+function _index_local_states!(
+    component_state_index::Vector{Int64},
+    local_states::Vector{Symbol},
+    component::PSY.DynamicComponent,
+)
+    for (ix, s) in enumerate(component.states)
+        component_state_index[ix] = findfirst(x -> x == s, local_states)
+    end
+    return
+end
+
+function _attach_ports!(component::PSY.DynamicComponent)
+    component.ext[PORTS] = Ports(component)
+    return
+end
+
+function _attach_inner_vars!(
+    device::PSY.DynamicGenerator,
+    ::Type{T} = Real,
+) where {T <: Real}
+    device.ext[INNER_VARS] = zeros(T, 8)
+    return
 end
 
 function _attach_inner_vars!(
