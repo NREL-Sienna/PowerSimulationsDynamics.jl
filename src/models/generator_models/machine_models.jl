@@ -26,7 +26,7 @@ function mdl_machine_ode!(
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
     eq_p = PSY.get_eq_p(machine)
-    BaseMVA = PSY.get_MVABase(machine)
+    BaseMVA = 100.0 #PSY.get_MVABase(machine)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -90,7 +90,7 @@ function mdl_machine_ode!(
     Xq_p = PSY.get_Xq_p(machine)
     Td0_p = PSY.get_Td0_p(machine)
     Tq0_p = PSY.get_Tq0_p(machine)
-    BaseMVA = PSY.get_MVABase(machine)
+    BaseMVA = 100.0 #PSY.get_MVABase(machine)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
