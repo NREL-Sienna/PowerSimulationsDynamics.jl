@@ -140,13 +140,13 @@ function _attach_inner_vars!(
     return
 end
 
-function _attach_control_refs!(device::PSY.DynamicInjection, sys_basepower::Float64)
+function _attach_control_refs!(device::PSY.DynamicInjection)
     device_basepower = PSY.get_basepower(device)
     device.ext[CONTROL_REFS] = [
-        PSY.get_V_ref(device),
+        PSY.get_V_ref(PSY.get_avr(device)),
         PSY.get_ω_ref(device),
-        PSY.get_P_ref(device) / device_basepower,
-        PSY.get_Q_ref(device) / device_basepower,
+        PSY.get_P_ref(PSY.get_prime_mover(device)),
+        PSY.get_reactivepower(PSY.get_static_injector(device)),
     ]
     return
 end
@@ -171,7 +171,7 @@ function _make_device_index!(device::PSY.DynamicInjection, sys_basepower::Float6
     device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
     input_port_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
     _attach_inner_vars!(device)
-    _attach_control_refs!(device, sys_basepower)
+    _attach_control_refs!(device)
 
     for c in PSY.get_dynamic_components(device)
         device_state_mapping[typeof(c)] = Vector{Int64}(undef, length(c.states))
