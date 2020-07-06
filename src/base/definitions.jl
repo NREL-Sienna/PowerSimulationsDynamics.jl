@@ -102,3 +102,6 @@ const TOTAL_SHUNTS = "total_shunts"
 const AUX_ARRAYS = "aux_arrays"
 
 const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation]
+
+PSY.get_V_ref(value::PSY.AVRFixed) = value.Vf
+PSY.set_V_ref!(value::PSY.AVRFixed, val::Float64) = value.Vf = val
