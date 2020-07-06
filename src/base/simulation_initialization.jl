@@ -5,8 +5,6 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         error("Power Flow fail")
     end
     var_count = get_variable_count(sys)
-   #=
-    initial_guess = zeros(var_count)
 
     #Index Setup
     bus_size = get_bus_count(sys)
@@ -26,12 +24,15 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         #Write Buses Voltages Initial Guess
         initial_guess[bus_n] = PSY.get_voltage(bus)*cos(PSY.get_angle(bus))
         initial_guess[bus_n + bus_size] = PSY.get_voltage(bus)*sin(PSY.get_angle(bus))
-        initialize_device[ix_range] = initialize_device(initial_guess[bus_n],
-        initial_guess[bus_n + bus_size], device, sys)
+        initialize_device!(
+            initial_guess,
+            ix_range,
+            d,
+        )
     end
 
 
-=#
+
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
 
     inif! = (out, x) -> system!(

@@ -67,6 +67,14 @@ include("models/inverter_models/converter_models.jl")
 include("models/load_models.jl")
 include("models/source_models.jl")
 
+#Initialization Parameters
+include("initialization/init_device.jl")
+include("initialization/generator_components/init_machine.jl")
+include("initialization/generator_components/init_shaft.jl")
+include("initialization/generator_components/init_avr.jl")
+include("initialization/generator_components/init_tg.jl")
+include("initialization/generator_components/init_pss.jl")
+
 #System Model
 include("models/system.jl")
 
