@@ -58,9 +58,7 @@ function device!(
     device::PSY.Source,
     sys::PSY.System,
 )
-
     mdl_source!(voltage_r, voltage_i, current_r, current_i, device, sys)
-
     return
 end
 
@@ -72,9 +70,7 @@ function device!(
     device::PSY.PowerLoad,
     sys::PSY.System,
 )
-
     mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device, sys)
-
     return
 end
 
