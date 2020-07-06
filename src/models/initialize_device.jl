@@ -1,4 +1,4 @@
-function initialize_device!(
+function _initialize_device(
     residuals,
     device_initial_guess,
     voltage_r,
@@ -40,5 +40,35 @@ function initialize_device!(
     #Obtain ODEs and Mechanical Power for Turbine Governor
     mdl_tg_ode!(device_initial_guess, residuals, device)
 
+    return device_initial_guess
+
+end
+function initialize_device!(
+    voltage_r,
+    voltage_i,
+    device::DynG,
+    sys::PSY.System,
+) where {DynG <: PSY.DynamicGenerator}
+
+        dev = (out, x) ->
+        LITS._initialize_device!(
+            out,
+            x,
+            voltage_r,
+            voltage_i,
+            d,
+            sys,
+        )
+        dev_solve = NLsolve.nlsolve(dev,
+                   [1.0, #eq_p
+                    0.47, #ed_p
+                    0.6, #δ
+                    1.0, #ω
+                    2.1, #Vf
+                    0.28, #Vr1
+                    -0.39, #Vr2,
+                    1.0, #Vm
+                    ],
+    )
     return device_initial_guess
 end

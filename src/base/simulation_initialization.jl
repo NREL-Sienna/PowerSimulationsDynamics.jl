@@ -26,27 +26,8 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         #Write Buses Voltages Initial Guess
         initial_guess[bus_n] = PSY.get_voltage(bus)*cos(PSY.get_angle(bus))
         initial_guess[bus_n + bus_size] = PSY.get_voltage(bus)*sin(PSY.get_angle(bus))
-
-        dev = (out, x) ->
-        LITS.initialize_device!(
-            out,
-            x,
-            initial_guess[bus_n],
-            initial_guess[bus_n + bus_size],
-            d,
-            sys,
-        )
-        dev_solve = NLsolve.nlsolve(dev,
-                   [1.0, #eq_p
-                    0.47, #ed_p
-                    0.6, #δ
-                    1.0, #ω
-                    2.1, #Vf
-                    0.28, #Vr1
-                    -0.39, #Vr2,
-                    1.0, #Vm
-                    ],
-    )
+        initialize_device[ix_range] = initialize_device(initial_guess[bus_n],
+        initial_guess[bus_n + bus_size], device, sys)
     end
 
 
