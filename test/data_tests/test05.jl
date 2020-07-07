@@ -13,7 +13,7 @@ add_source_to_ref(threebus_sys)
 for g in get_components(Generator, threebus_sys)
     g.activepower = 0.75
 end
-res = solve_powerflow!(threebus_sys, nlsolve)
+res = solve_powerflow!(threebus_sys)
 
 function dyn_gen_five_mass_shaft_order(generator)
     return PSY.DynamicGenerator(
