@@ -42,7 +42,6 @@ include("base/simulation.jl")
 
 #Common Models
 include("models/branch.jl")
-include("models/initialize_device.jl")
 include("models/device.jl")
 include("models/kirchoff_laws.jl")
 include("models/dynline_model.jl")
