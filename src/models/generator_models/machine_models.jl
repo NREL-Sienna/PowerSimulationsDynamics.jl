@@ -1,5 +1,5 @@
 """
-Model of 2-state synchronous machine in Julia.
+Model of 0-state synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 
@@ -26,7 +26,7 @@ function mdl_machine_ode!(
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
     eq_p = PSY.get_eq_p(machine)
-    BaseMVA = 100.0 #PSY.get_MVABase(machine)
+    basepower = PSY.get_basepower(PSY.get_static_injector(device))
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -40,7 +40,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = Pe #Model assume ω approx 1.0
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -50,7 +50,7 @@ function mdl_machine_ode!(
 end
 
 """
-Model of 4-state (One d- and One q-) synchronous machine in Julia.
+Model of 2-state (One d- and One q-) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 
@@ -90,7 +90,7 @@ function mdl_machine_ode!(
     Xq_p = PSY.get_Xq_p(machine)
     Td0_p = PSY.get_Td0_p(machine)
     Tq0_p = PSY.get_Tq0_p(machine)
-    BaseMVA = 100.0 #PSY.get_MVABase(machine)
+    basepower = PSY.get_basepower(PSY.get_static_injector(device))
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -108,7 +108,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = Pe #Model assume ω approx 1.0
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -170,7 +170,7 @@ function mdl_machine_ode!(
     T_AA = PSY.get_T_AA(machine)
     γd = PSY.get_γd(machine)
     γq = PSY.get_γq(machine)
-    BaseMVA = PSY.get_MVABase(machine)
+    basepower = PSY.get_basepower(PSY.get_static_injector(device))
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -194,7 +194,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -254,7 +254,7 @@ function mdl_machine_ode!(
     T_AA = PSY.get_T_AA(machine)
     γd = PSY.get_γd(machine)
     γq = PSY.get_γq(machine)
-    BaseMVA = PSY.get_MVABase(machine)
+    basepower = PSY.get_basepower(PSY.get_static_injector(device))
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -279,7 +279,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
