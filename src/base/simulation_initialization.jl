@@ -24,17 +24,12 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         #Write Buses Voltages Initial Guess
         initial_guess[bus_n] = PSY.get_voltage(bus)*cos(PSY.get_angle(bus))
         initial_guess[bus_n + bus_size] = PSY.get_voltage(bus)*sin(PSY.get_angle(bus))
-        initialize_device!(
-            initial_guess,
-            ix_range,
-            d,
-        )
+        x0_device = initialize_device(d)
+        @assert length(x0_device) == n_states
+        initial_guess[ix_range] = x0_device
     end
 
-
-
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-
     inif! = (out, x) -> system!(
         out,    #output of the function
         dx0,    #derivatives equal to zero
@@ -42,10 +37,7 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         sys,    #Parameters
         0.0,    #time equals to zero.
     )
-
-
-
-
+    #Refine initial solution
     sys_solve = NLsolve.nlsolve(
         inif!,
         initial_guess,
