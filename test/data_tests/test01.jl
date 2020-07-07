@@ -8,7 +8,7 @@ include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 omib_file_dir = joinpath(dirname(@__FILE__), "OMIB.raw")
 omib_sys = System(PowerModelsData(omib_file_dir), runchecks = false)
 add_source_to_ref(omib_sys)
-res = solve_powerflow!(omib_sys, nlsolve)
+res = solve_powerflow!(omib_sys)
 ############### Data Dynamic devices ########################
 function dyn_gen_first_order(generator)
     return PSY.DynamicGenerator(

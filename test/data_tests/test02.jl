@@ -9,7 +9,7 @@ include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusNetwork.raw")
 threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false)
 add_source_to_ref(threebus_sys)
-res = solve_powerflow!(threebus_sys, nlsolve)
+res = solve_powerflow!(threebus_sys)
 
 ### Case 2 Generators ###
 

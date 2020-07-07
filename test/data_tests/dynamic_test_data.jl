@@ -19,8 +19,8 @@ machine_4th() = OneDOneQMachine(
     0.1813, #Xd_p
     0.25, #Xq_p
     5.89, #Td0_p
-    0.6,
-)   #MVABase
+    0.6, #Tq0_p
+)   
 
 machine_6th() = SimpleMarconatoMachine(
     0.0,
