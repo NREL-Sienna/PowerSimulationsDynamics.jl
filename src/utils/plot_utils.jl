@@ -39,24 +39,26 @@ function print_init_states(sim::Simulation)
 end
 
 
-#=
+
 """
 Function to print initial states. It receives the vector of initial states and the dynamical system.
 """
-function print_init_states(sim::Simulation)
+function print_device_states(sim::Simulation)
     for (ix, val_sys) in PSY.get_ext(sim.system)[GLOBAL_INDEX]
-        println("Differential States")
-        println(ix)
-        println("====================")
         ix_dyn_injector = PSY.get_dynamic_injector(PSY.get_component(PSY.StaticInjection, sim.system, ix))
-        ix_states = PSY.get_states(ix_dyn_injector)
-        for k in ix_states
-            print(k, " ", sim.x0_init[val_sys[k]], "\n")
+        if !isnothing(ix_dyn_injector)
+            println("Differential States")
+            println(ix)
+            println("====================")
+            ix_states = PSY.get_states(ix_dyn_injector)
+            for k in ix_states
+                print(k, " ", sim.x0_init[val_sys[k]], "\n")
+            end
+            println("====================")
         end
-        println("====================")
     end
 
-    println("Algebraic States") # TODO: Print Buses Voltages
+    #println("Algebraic States") # TODO: Print Buses Voltages
     return
 end
-=#
+
