@@ -8,7 +8,6 @@ include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 omib_file_dir = joinpath(dirname(@__FILE__), "OMIB_DARCO_PSR.raw")
 omib_sys = System(PowerModelsData(omib_file_dir), runchecks = false)
 add_source_to_ref(omib_sys)
-res = solve_powerflow!(omib_sys, nlsolve)
 
 ############### Data Dynamic devices ########################
 function inv_darco(static_device)

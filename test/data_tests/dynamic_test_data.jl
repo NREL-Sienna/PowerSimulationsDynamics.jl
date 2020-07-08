@@ -234,7 +234,7 @@ pll() = KauraPLL(
 ###### Outer Control ######
 function outer_control()
     function virtual_inertia()
-        return VirtualInertia(Ta = 2.0, kd = 400.0, kω = 20.0, ωb = 2 * pi * 50.0)
+        return VirtualInertia(Ta = 2.0, kd = 400.0, kω = 20.0)
     end
     function reactive_droop()
         return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)
