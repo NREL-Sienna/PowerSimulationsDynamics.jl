@@ -26,12 +26,16 @@ Pref_change = LITS.ControlReferenceChange(1.0, case_inv, LITS.P_ref_index, 0.7)
 #Define Simulation Problem
 sim = LITS.Simulation(omib_sys, tspan, Pref_change)
 
+small_sig = small_signal_analysis(sim)
+
 #Solve problem in equilibrium
 run_simulation!(sim, Sundials.IDA());
 
 #Obtain data for angles
 series = get_state_series(sim, ("generator-2-1", :ω_oc))
 
+print_device_states(sim)
 
 @test LinearAlgebra.norm(sim.x0_init - test06_x0_init) < 1e-6
 @test sim.solution.retcode == :Success
+@test small_sig.stable

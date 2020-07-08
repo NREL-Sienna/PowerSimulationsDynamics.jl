@@ -17,6 +17,7 @@ export small_signal_analysis
 export get_state_series
 export get_voltagemag_series
 export print_init_states
+export print_device_states
 
 ####################################### Package Imports ####################################
 import Logging

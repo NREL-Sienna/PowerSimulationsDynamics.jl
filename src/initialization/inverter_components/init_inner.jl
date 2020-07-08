@@ -44,8 +44,6 @@ function initialize_inner!(device_states,
     ωad = PSY.get_ωad(inner_control)
     kad = PSY.get_kad(inner_control)
 
-    
-
     function f!(out, x)
         θ_oc = x[1]
         v_refr = x[2]

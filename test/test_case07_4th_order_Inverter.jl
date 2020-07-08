@@ -8,59 +8,30 @@ The perturbation increase the reference power (analogy for mechanical power) of 
 ############### LOAD DATA ########################
 ##################################################
 
+include(joinpath(dirname(@__FILE__), "data_tests/test07.jl"))
+
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
 #time span
 tspan = (0.0, 20.0);
-
-x0_guess = [
-    1.00, #V1_R
-    1.00, #V2_R
-    1.00, #V3_R
-    0.0, #V1_I
-    -0.01, #V2_I
-    -0.01, #V3_I
-    1.0, #ω_oc
-    0.2, #θ_oc
-    0.025, #qm
-    0.0015, #ξ_d
-    -0.07, #ξ_q
-    0.05, #γ_d
-    -0.001, #γ_q
-    0.95, #ϕ_d
-    -0.10, #ϕ_q
-    1.004, #vpll_d
-    0.0, #vpll_q
-    0.0, #ε_pll
-    0.1, #θ_pll
-    0.5, #id_cv
-    0.0, #iq_cv
-    0.95, #Vd_filter
-    -0.1, #Vq_filter
-    0.49, #Id_filter
-    -0.1, #Iq_filter
-    1.0, #eq_p
-    0.47, #ed_p
-    0.6, #δ
-    1.0, #ω
-    2.1, #Vf
-    0.28, #Vr1
-    -0.39, #Vr2,
-    1.0,
-] #Vm
+case_inv = collect(PSY.get_components(PSY.DynamicInverter, threebus_sys))[1]
 
 #Define Fault using Callbacks
-Pref_change = LITS.ControlReferenceChange(1.0, case7_gen, LITS.P_ref_index, 0.8)
+Pref_change = LITS.ControlReferenceChange(1.0, case_inv, LITS.P_ref_index, 1.2)
 
 #Define Simulation Problem
-sim = LITS.Simulation(sys, tspan, Pref_change, initial_guess = x0_guess)
+sim = LITS.Simulation(threebus_sys, tspan, Pref_change)
+
+small_sig = small_signal_analysis(sim)
 
 #Solve problem in equilibrium
-run_simulation!(sim, IDA());
+run_simulation!(sim, IDA(), dtmax=0.02);
 
 #Obtain data for angles
-series = get_state_series(sim, ("Case7Gen", :δ));
+series = get_state_series(sim, ("generator-3-1", :θ_oc));
 
+@test LinearAlgebra.norm(sim.x0_init - test07_x0_init) < 1e-6
 @test sim.solution.retcode == :Success
+@test small_sig.stable

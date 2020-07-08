@@ -15,32 +15,6 @@ include(joinpath(dirname(@__FILE__), "data_tests/test02.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#Initial guess
-x0_guess = [
-    1.02,
-    1.0,
-    1.0,
-    0.0,
-    -0.01,
-    -0.01,
-    1.0, #eq_p
-    0.47, #ed_p
-    0.6, #δ
-    1.0, #ω
-    2.1, #Vf
-    0.28, #Vr1
-    -0.39, #Vr2,
-    1.0, #Vm
-    0.81, #eq_p
-    0.59, #ed_p
-    0.86, #δ
-    1.0, #ω
-    1.7, #Vf
-    0.11, #Vr1
-    -0.31, #Vr2,
-    1.0,
-] #Vm
-
 #Define Fault: Change of YBus
 Ybus_change = ThreePhaseFault(
     1.0, #change at t = 1.0
@@ -52,7 +26,6 @@ sim = Simulation(
     threebus_sys, #system
     (0.0, 30.0), #time span
     Ybus_change, #Type of Fault
-    initial_guess = x0_guess,
 ) #initial guess
 
 small_sig = small_signal_analysis(sim)

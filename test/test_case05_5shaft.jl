@@ -30,10 +30,10 @@ sim = Simulation(
     Ybus_change, #Type of Fault
 ) #initial guess
 
+small_sig = small_signal_analysis(sim)
+
 #Solve problem in equilibrium
 run_simulation!(sim, IDA(), dtmax = 0.001);
-
-small_sig = small_signal_analysis(sim)
 
 #Obtain data for angles
 series = get_state_series(sim, ("generator-3-1", :δ));
