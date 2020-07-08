@@ -68,11 +68,21 @@ include("models/source_models.jl")
 
 #Initialization Parameters
 include("initialization/init_device.jl")
+
+#Initialization Generator
 include("initialization/generator_components/init_machine.jl")
 include("initialization/generator_components/init_shaft.jl")
 include("initialization/generator_components/init_avr.jl")
 include("initialization/generator_components/init_tg.jl")
 include("initialization/generator_components/init_pss.jl")
+
+#Initialization Inverter
+include("initialization/inverter_components/init_filter.jl")
+include("initialization/inverter_components/init_DCside.jl")
+include("initialization/inverter_components/init_converter.jl")
+include("initialization/inverter_components/init_frequency_estimator.jl")
+include("initialization/inverter_components/init_inner.jl")
+include("initialization/inverter_components/init_outer.jl")
 
 #System Model
 include("models/system.jl")
