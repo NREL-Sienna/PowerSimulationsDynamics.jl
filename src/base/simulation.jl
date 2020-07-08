@@ -136,16 +136,16 @@ function _attach_inner_vars!(
     device::PSY.DynamicInverter,
     ::Type{T} = Real,
 ) where {T <: Real}
-    device.ext[INNER_VARS] = zeros(T, 13)
+    device.ext[INNER_VARS] = zeros(T, 14)
     return
 end
 
 function _attach_control_refs!(device::PSY.DynamicInjection)
     device_basepower = PSY.get_basepower(device)
     device.ext[CONTROL_REFS] = [
-        PSY.get_V_ref(PSY.get_avr(device)),
+        get_V_ref_control(device),
         PSY.get_ω_ref(device),
-        PSY.get_P_ref(PSY.get_prime_mover(device)),
+        get_P_ref_control(device),
         PSY.get_reactivepower(PSY.get_static_injector(device)),
     ]
     return
