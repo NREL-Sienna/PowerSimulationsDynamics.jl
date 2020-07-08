@@ -26,7 +26,7 @@ function mdl_machine_ode!(
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
     eq_p = PSY.get_eq_p(machine)
-    basepower = PSY.get_basepower(PSY.get_static_injector(device))
+    basepower = PSY.get_basepower(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -90,7 +90,7 @@ function mdl_machine_ode!(
     Xq_p = PSY.get_Xq_p(machine)
     Td0_p = PSY.get_Td0_p(machine)
     Tq0_p = PSY.get_Tq0_p(machine)
-    basepower = PSY.get_basepower(PSY.get_static_injector(device))
+    basepower = PSY.get_basepower(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -170,7 +170,7 @@ function mdl_machine_ode!(
     T_AA = PSY.get_T_AA(machine)
     γd = PSY.get_γd(machine)
     γq = PSY.get_γq(machine)
-    basepower = PSY.get_basepower(PSY.get_static_injector(device))
+    basepower = PSY.get_basepower(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -254,7 +254,7 @@ function mdl_machine_ode!(
     T_AA = PSY.get_T_AA(machine)
     γd = PSY.get_γd(machine)
     γq = PSY.get_γq(machine)
-    basepower = PSY.get_basepower(PSY.get_static_injector(device))
+    basepower = PSY.get_basepower(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
