@@ -337,7 +337,6 @@ function initialize_mach_shaft!(
     end
 end
 
-
 """
 Initialitation of model of 6-state (Anderson-Fouad) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
@@ -480,9 +479,11 @@ function initialize_mach_shaft!(
 
         V_dq = LITS.ri_dq(δ) * [V_R; V_I]
         i_d =
-        (1.0 / (R^2 + Xd_pp * Xq_pp)) * (Xq_pp * (eq_pp - V_dq[2]) + R * (ed_pp - V_dq[1]))      #15.25
+            (1.0 / (R^2 + Xd_pp * Xq_pp)) *
+            (Xq_pp * (eq_pp - V_dq[2]) + R * (ed_pp - V_dq[1]))      #15.25
         i_q =
-        (1.0 / (R^2 + Xd_pp * Xq_pp)) * (-Xd_pp * (ed_pp - V_dq[1]) + R * (eq_pp - V_dq[2]))      #15.25 
+            (1.0 / (R^2 + Xd_pp * Xq_pp)) *
+            (-Xd_pp * (ed_pp - V_dq[1]) + R * (eq_pp - V_dq[2]))      #15.25 
         Pe = (V_dq[1] + R * i_d) * i_d + (V_dq[2] + R * i_q) * i_q
         out[1] = τm - Pe #Mechanical Torque
         out[2] = P0 - (V_dq[1] * i_d + V_dq[2] * i_q) #Output Power
@@ -521,7 +522,6 @@ function initialize_mach_shaft!(
         machine_states[4] = sol_x0[7] #ed_pp
     end
 end
-
 
 #=
 """

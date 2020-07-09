@@ -64,7 +64,7 @@ machine_anderson() = AndersonFouadMachine(
     0.1, #Tq0_p
     0.01, #Td0_pp
     0.033, #Tq0_pp
-) 
+)
 
 machine_simple_anderson() = SimpleAFMachine(
     0.0, #R
@@ -78,7 +78,7 @@ machine_simple_anderson() = SimpleAFMachine(
     0.1, #Tq0_p 
     0.01, #Td0_pp
     0.033, #Tq0_pp
-) 
+)
 
 machine_kundur() = SimpleFullMachine(
     0.003, #R on Example 3.1 and 4.1 of Kundur
@@ -110,7 +110,7 @@ machine_full_kundur() = FullMachine(
     1.825, #L_ff
     0.1713, #L_1d or L_D in Machowski
     0.7525, #L_1q or L_Q in Machowski
-) 
+)
 
 machine_multi_ref() = BaseMachine(
     0.0, #R
