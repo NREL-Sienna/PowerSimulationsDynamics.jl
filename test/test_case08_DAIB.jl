@@ -2,7 +2,7 @@ using LITS
 using Sundials
 
 """
-Case 6:
+Case 8:
 This case study a 19-state virtual synchronous machine against an infinite bus located at bus 1, with VSM located at bus 2.
 The perturbation increase the reference power (analogy for mechanical power) from 0.5 to 0.7.
 """
@@ -11,7 +11,7 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test06.jl"))
+include(joinpath(dirname(@__FILE__), "data_tests/test08.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

@@ -1,5 +1,5 @@
 """
-Case 5:
+Case 7:
 This case study a three bus system with 2 machine located at bus 2 and 3.
 The generator at bus 3 uses the model of a one d- one q- machine, and has a 5-mass shaft and a turbine governor.
 The generator at bus 2 uses the model of a one d- one q- machine, and single mass shaft.
@@ -10,7 +10,7 @@ The fault disconnects a circuit between buses 1 and 2, doubling its impedance.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test05.jl"))
+include(joinpath(dirname(@__FILE__), "data_tests/test07.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

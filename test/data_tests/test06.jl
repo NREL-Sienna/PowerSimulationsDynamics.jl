@@ -2,29 +2,33 @@ using PowerSystems
 using NLsolve
 const PSY = PowerSystems
 
+############### Data Network ########################
 include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
-omib_file_dir = joinpath(dirname(@__FILE__), "OMIB_DARCO_PSR.raw")
-omib_sys = System(PowerModelsData(omib_file_dir), runchecks = false)
-add_source_to_ref(omib_sys)
+threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusNetwork.raw")
+threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false)
+add_source_to_ref(threebus_sys)
 
-############### Data Dynamic devices ########################
-function inv_darco(static_device)
-    return PSY.DynamicInverter(
-        static_device,
-        1.0, #ω_ref
-        2.75, #MVABase
-        converter_low_power(), #converter
-        outer_control(), #outercontrol
-        inner_control(), #inner_control
-        dc_source_lv(),
-        pll(),
-        filt(),
+### Case 2 Generators ###
+
+function dyn_gen_anderson(generator)
+    return PSY.DynamicGenerator(
+        generator, #static generator
+        1.0, # ω_ref
+        machine_anderson(), #machine
+        shaft_no_damping(), #shaft
+        avr_type1(), #avr
+        tg_none(), #tg
+        pss_none(),
     ) #pss
 end
 
-#Attach dynamic generator. Currently use PSS/e format based on bus #.
-device = [g for g in get_components(Generator, omib_sys)][1]
-case_inv = inv_darco(device)
-add_component!(omib_sys, case_inv)
+for g in get_components(Generator, threebus_sys)
+    case_gen = dyn_gen_anderson(g)
+    add_component!(threebus_sys, case_gen)
+end
+
+#Compute Y_bus after fault
+fault_branches = deepcopy(collect(get_components(Branch, threebus_sys))[2:end])
+Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :]

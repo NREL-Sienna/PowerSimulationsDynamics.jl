@@ -1,5 +1,5 @@
 """
-Case 8:
+Case 10:
 This case study a three bus system with 1 machine (One d- One q-: 4th order model), a VSM of 19 states and an infinite source. All lines are modeled as a static lines.
 The perturbation trips two of the three circuits of line between buses 1 and 2, triplicating its impedance.
 """
@@ -8,7 +8,7 @@ The perturbation trips two of the three circuits of line between buses 1 and 2, 
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test08.jl"))
+include(joinpath(dirname(@__FILE__), "data_tests/test10.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
