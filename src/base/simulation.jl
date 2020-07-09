@@ -284,7 +284,7 @@ function _index_dynamic_system!(sys::PSY.System)
         total_states += device_n_states
         _add_states_to_global!(global_state_index, state_space_ix, d)
         btype != PSY.BusTypes.REF && continue
-        global_vars[:ω_sys_index] = global_state_index[d.name][:ω] #To define 0 if infinite source, bus_number otherwise,
+        global_vars[:ω_sys_index] = global_state_index[PSY.get_name(d)][:ω] #To define 0 if infinite source, bus_number otherwise,
         found_ref_bus = true
     end
     injection_n_states = state_space_ix[1] - branches_n_states - n_buses * 2
