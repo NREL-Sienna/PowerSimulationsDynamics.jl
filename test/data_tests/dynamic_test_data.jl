@@ -6,13 +6,13 @@ using PowerSystems
 
 ######## Machine Data #########
 
-machine_OMIB() = BaseMachine(
+machine_classic() = BaseMachine(
     0.0, #R
     0.2995, #Xd_p
     0.7087,
 )  #MVABase
 
-machine_4th() = OneDOneQMachine(
+machine_oneDoneQ() = OneDOneQMachine(
     0.0, #R
     1.3125, #Xd
     1.2578, #Xq
@@ -22,7 +22,7 @@ machine_4th() = OneDOneQMachine(
     0.6, #Tq0_p
 )
 
-machine_6th() = SimpleMarconatoMachine(
+machine_simple_marconato() = SimpleMarconatoMachine(
     0.0,
     1.3125, #Xd
     1.2578, #Xq
@@ -37,7 +37,7 @@ machine_6th() = SimpleMarconatoMachine(
     0.0,
 ) #MVABase
 
-machine_8th() = MarconatoMachine(
+machine_marconato() = MarconatoMachine(
     0.0,
     1.3125, #Xd
     1.2578, #Xq

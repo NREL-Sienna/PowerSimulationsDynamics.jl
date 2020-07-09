@@ -23,7 +23,7 @@ function dyn_gen_second_order(generator)
         1.0, #V_ref
         get_activepower(generator), #P_ref
         get_reactivepower(generator), #Q_ref
-        machine_4th(), #machine
+        machine_oneDoneQ(), #machine
         shaft_no_damping(), #shaft
         avr_type1(), #avr
         tg_none(), #tg

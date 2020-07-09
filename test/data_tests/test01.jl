@@ -14,7 +14,7 @@ function dyn_gen_first_order(generator)
     return PSY.DynamicGenerator(
         generator,
         1.0, #ω_ref
-        machine_OMIB(), #machine
+        machine_classic(), #machine
         shaft_damping(), #shaft
         avr_none(), #avr
         tg_none(), #tg

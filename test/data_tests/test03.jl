@@ -16,7 +16,7 @@ function dyn_gen_sixth_order(generator)
     return PSY.DynamicGenerator(
         generator, #static generator
         1.0, # ω_ref
-        machine_6th(), #machine
+        machine_simple_marconato(), #machine
         shaft_no_damping(), #shaft
         avr_type1(), #avr
         tg_none(), #tg

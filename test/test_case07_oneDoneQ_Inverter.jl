@@ -1,7 +1,7 @@
 """
 Case 7:
 This case study a three bus system with 1 machine (One d- One q-: 4th order model), a VSM of 19 states and an infinite source.
-The perturbation increase the reference power (analogy for mechanical power) of the machine from 0.6 to 0.8.
+The perturbation increase the reference power (analogy for mechanical power) of the inverter from 1.0 to 1.2.
 """
 
 ##################################################

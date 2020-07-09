@@ -15,7 +15,7 @@ function dyn_gen_second_order(generator)
     return PSY.DynamicGenerator(
         generator,
         1.0, # ω_ref,
-        machine_4th(), #machine
+        machine_oneDoneQ(), #machine
         shaft_no_damping(), #shaft
         avr_type1(), #avr
         tg_none(), #tg

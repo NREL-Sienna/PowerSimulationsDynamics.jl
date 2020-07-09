@@ -19,7 +19,7 @@ function dyn_gen_five_mass_shaft_order(generator)
     return PSY.DynamicGenerator(
         generator,
         1.0, # ω_ref,
-        machine_4th(), #machine
+        machine_oneDoneQ(), #machine
         shaft_fivemass(), #shaft
         avr_type1(), #avr
         tg_none(),
@@ -31,7 +31,7 @@ function dyn_gen_first_order(generator)
     return PSY.DynamicGenerator(
         generator,
         1.0, # ω_ref,
-        machine_4th(), #machine
+        machine_oneDoneQ(), #machine
         shaft_damping(), #shaft
         avr_type1(), #avr
         tg_none(), #tg
