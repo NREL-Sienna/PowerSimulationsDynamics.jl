@@ -338,7 +338,7 @@ function mdl_machine_ode!(
     Tq0_p = PSY.get_Tq0_p(machine)
     Td0_pp = PSY.get_Td0_pp(machine)
     Tq0_pp = PSY.get_Tq0_pp(machine)
-    BaseMVA = PSY.get_MVABase(machine)
+    basepower = PSY.get_basepower(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -360,7 +360,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -417,7 +417,7 @@ function mdl_machine_ode!(
     Tq0_p = PSY.get_Tq0_p(machine)
     Td0_pp = PSY.get_Td0_pp(machine)
     Tq0_pp = PSY.get_Tq0_pp(machine)
-    BaseMVA = PSY.get_MVABase(machine)
+    basepower = PSY.get_basepower(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -439,7 +439,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -448,6 +448,8 @@ function mdl_machine_ode!(
     return
 end
 
+#Not already implemented:
+#=
 """
 Model of 5-state (FullOrderMachine) synchronous machine in Julia.
 Refer to Power System Dynamics: Stability and Control, by J. Machowski, J. Bialek and J. Bumby,
@@ -471,9 +473,9 @@ function mdl_machine_ode!(
     internal_states = @view device_states[local_ix]
     ψd = internal_states[1]
     ψq = internal_states[2]
-    ψf = internal_states[1]
-    ψ1d = internal_states[2]
-    ψ1q = internal_states[3]
+    ψf = internal_states[3]
+    ψ1d = internal_states[4]
+    ψ1q = internal_states[5]
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.FullMachine)
@@ -495,7 +497,7 @@ function mdl_machine_ode!(
     R_1q = PSY.get_R_1q(machine)
     inv_d_fluxlink = PSY.get_inv_d_fluxlink(machine)
     inv_q_fluxlink = PSY.get_inv_q_fluxlink(machine)
-    BaseMVA = PSY.get_MVABase(machine)
+    basepower = PSY.get_basepower(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -522,7 +524,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[ψq_var] = ψq
 
     #Compute current from the generator to the grid
-    I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_df1d[1]; i_q1q[1]]
+    I_RI = basepower * dq_ri(δ) * [i_df1d[1]; i_q1q[1]]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -609,3 +611,4 @@ function mdl_machine_ode!(
 
     return
 end
+=#
