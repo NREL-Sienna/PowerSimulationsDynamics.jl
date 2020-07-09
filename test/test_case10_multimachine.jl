@@ -8,38 +8,29 @@ The perturbation trips one of the two circuits of line between buses 2 and 3, du
 ############### LOAD DATA ########################
 ##################################################
 
+include(joinpath(dirname(@__FILE__), "data_tests/test10.jl"))
+
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
 #Time span
-tspan = (0.0, 30.0)
+tspan = (0.0, 5.0)
 
+#Define Fault: Change of YBus
 Ybus_change = ThreePhaseFault(
     1.0, #change at t = 1.0
     Ybus_fault,
-); #New YBus
+) #New YBus
 
-x0_guess = [
-    1.02, #V1_R
-    1.005, #V2_R
-    1.0, #V3_R
-    0.0, #V1_I
-    0.01, #V2_I
-    0.01, #V3_I
-    0.1, #δ_1
-    1.0, #ω_1
-    0.1, #xg
-    1.0, #δ_2
-    0.0, #ω_2
-]
 
 sim = Simulation(
-    sys, #system
+    threebus_sys, #system
     tspan, #time span
     Ybus_change, #Type of Fault
-    initial_guess = x0_guess,
 )
+
+small_sig = small_signal_analysis(sim)
 
 #Run simulation
 run_simulation!(
@@ -48,6 +39,8 @@ run_simulation!(
     dtmax = 0.02, #keywords arguments
 )
 
-series = get_state_series(sim, ("Case10Gen1", :ω));
+series = get_state_series(sim, ("generator-2-1", :ω));
 
+@test LinearAlgebra.norm(sim.x0_init - test10_x0_init) < 1e-6
 @test sim.solution.retcode == :Success
+@test small_sig.stable

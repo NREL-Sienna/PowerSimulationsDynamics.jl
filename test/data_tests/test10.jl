@@ -3,49 +3,53 @@ using NLsolve
 const PSY = PowerSystems
 
 ############### Data Network ########################
+include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
+include(joinpath(dirname(@__FILE__), "data_utils.jl"))
+############### Data Network ########################
+threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusMulti.raw")
+threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false)
 
-buses_case10 = buses_multimachine()
-
-branch_case10 = branch_multimachine(buses_case10)
-
-#Trip of Line 1.
-branch_case10_fault = branch_multimachine_fault(buses_case10)
-
-loads_case10 = loads_multimachine(buses_case10)
-
-function dyn_gen_second_order(generator)
+function dyn_gen_multi(generator)
     return PSY.DynamicGenerator(
-        1, #Number
-        "Case2_$(get_name(generator))",
-        get_bus(generator), #bus
+        generator,
         1.0, # ω_ref,
-        1.0, #V_ref
-        get_activepower(generator), #P_ref
-        get_reactivepower(generator), #Q_ref
-        machine_4th(), #machine
+        machine_OMIB(), #machine
         shaft_damping(), #shaft
-        avr_type1(), #avr
+        avr_none(), #avr
         tg_none(), #tg
         pss_none(),
-    ) #pss
+    ) 
 end
 
-function dyn_gen_case10_2(buses)
+function dyn_gen_multi_tg(generator)
     return PSY.DynamicGenerator(
-        1, #Number
-        "Case10Gen2",
-        buses[3], #bus
+        generator,
         1.0, # ω_ref,
-        1.0, #V_ref
-        0.4, #P_ref
-        0.0, #Q_ref
-        machine_multi(), #machine
+        machine_OMIB(), #machine
         shaft_damping(), #shaft
         avr_none(), #avr
         tg_type2(), #tg
         pss_none(),
-    ) #pss
+    ) 
 end
 
-#Compute Y_bus after fault
-Ybus_fault = Ybus(branch_case10_fault, buses_case10)[:, :]
+# Add dynamic generators to the system (each gen is linked through a static one)
+for g in get_components(Generator, threebus_sys)
+    if get_number(get_bus(g)) == 1
+        case_gen = dyn_gen_multi(g)
+        add_component!(threebus_sys, case_gen)
+    elseif get_number(get_bus(g)) == 2
+        case_gen = dyn_gen_multi_tg(g)
+        add_component!(threebus_sys, case_gen)
+    end
+end
+
+#Create Ybus_Fault
+fault_branches = deepcopy(collect(get_components(Branch, threebus_sys)))
+for br in fault_branches
+    if get_name(br) == "1"
+        br.r = 4 * br.r
+        br.x = 4 * br.x
+    end
+end
+Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :];
