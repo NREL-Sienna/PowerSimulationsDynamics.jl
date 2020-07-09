@@ -10,7 +10,7 @@ omib_sys = System(PowerModelsData(omib_file_dir), runchecks = false)
 add_source_to_ref(omib_sys)
 res = solve_powerflow!(omib_sys)
 ############### Data Dynamic devices ########################
-function dyn_gen_first_order(generator)
+function dyn_gen_classic(generator)
     return PSY.DynamicGenerator(
         generator,
         1.0, #ω_ref
@@ -24,7 +24,7 @@ end
 
 #Attach dynamic generator. Currently use PSS/e format based on bus #.
 gen = [g for g in get_components(Generator, omib_sys)][1]
-case_gen = dyn_gen_first_order(gen)
+case_gen = dyn_gen_classic(gen)
 add_component!(omib_sys, case_gen)
 
 #Compute Y_bus after fault

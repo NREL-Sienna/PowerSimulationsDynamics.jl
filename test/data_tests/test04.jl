@@ -12,7 +12,7 @@ add_source_to_ref(threebus_sys)
 
 ### Case 2 Generators ###
 
-function dyn_gen_eight_order(generator)
+function dyn_gen_marconato(generator)
     return PSY.DynamicGenerator(
         generator, #static generator
         1.0, # ω_ref
@@ -25,7 +25,7 @@ function dyn_gen_eight_order(generator)
 end
 
 for g in get_components(Generator, threebus_sys)
-    case_gen = dyn_gen_eight_order(g)
+    case_gen = dyn_gen_marconato(g)
     add_component!(threebus_sys, case_gen)
 end
 

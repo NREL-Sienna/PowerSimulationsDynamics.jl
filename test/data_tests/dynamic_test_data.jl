@@ -60,12 +60,25 @@ machine_anderson() = AndersonFouadMachine(
     0.646, #Xq_p
     0.23, #Xd_pp
     0.4, #Xq_pp
-    7.4, #Td0_p
-    0.01, #Tq0_p #Data not available in Milano: Used 0.01
-    0.03, #Td0_pp
+    3.0, #Td0_p
+    0.1, #Tq0_p
+    0.01, #Td0_pp
     0.033, #Tq0_pp
-    615.0,
-) #MVABase
+) 
+
+machine_simple_anderson() = SimpleAFMachine(
+    0.0, #R
+    0.8979, #Xd
+    0.646, #Xq
+    0.2995, #Xd_p
+    0.646, #Xq_p
+    0.23, #Xd_pp
+    0.4, #Xq_pp
+    3.0, #Td0_p
+    0.1, #Tq0_p 
+    0.01, #Td0_pp
+    0.033, #Tq0_pp
+) 
 
 machine_kundur() = SimpleFullMachine(
     0.003, #R on Example 3.1 and 4.1 of Kundur
@@ -85,8 +98,8 @@ machine_kundur() = SimpleFullMachine(
 
 machine_full_kundur() = FullMachine(
     0.003, #R on Example 3.1 and 4.1 of Kundur
-    0.0006, #R_f
-    #0.003, #R_f
+    #0.0006, #R_f
+    0.003, #R_f
     0.0284, #R_1d or RD in Machowski
     0.0062, #R_1q or RQ on Machowski
     1.81, #L_d
@@ -97,8 +110,7 @@ machine_full_kundur() = FullMachine(
     1.825, #L_ff
     0.1713, #L_1d or L_D in Machowski
     0.7525, #L_1q or L_Q in Machowski
-    555.0,
-) #MVABase
+) 
 
 machine_multi_ref() = BaseMachine(
     0.0, #R

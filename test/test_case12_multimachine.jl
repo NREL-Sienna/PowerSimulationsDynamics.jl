@@ -41,6 +41,6 @@ run_simulation!(
 
 series = get_state_series(sim, ("generator-2-1", :ω));
 
-@test LinearAlgebra.norm(sim.x0_init - test10_x0_init) < 1e-6
+@test LinearAlgebra.norm(sim.x0_init - test12_x0_init) < 1e-6
 @test sim.solution.retcode == :Success
 @test small_sig.stable

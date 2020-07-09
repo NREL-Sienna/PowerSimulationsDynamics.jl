@@ -44,6 +44,6 @@ zoom = [
     for (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
 ]
 
-@test LinearAlgebra.norm(sim.x0_init - test08_x0_init) < 1e-6
+@test LinearAlgebra.norm(sim.x0_init - test10_x0_init) < 1e-6
 @test sim.solution.retcode == :Success
 @test small_sig.stable
