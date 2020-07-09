@@ -30,6 +30,11 @@ sim = Simulation(
     Ybus_change, #Type of Fault
 )
 
+for i in sim.x0_init
+    print(i)
+    print("\n")
+end
+
 small_sig = small_signal_analysis(sim)
 
 #Run simulation
