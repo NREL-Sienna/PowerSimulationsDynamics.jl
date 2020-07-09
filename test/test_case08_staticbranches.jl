@@ -8,52 +8,14 @@ The perturbation trips two of the three circuits of line between buses 1 and 2, 
 ############### LOAD DATA ########################
 ##################################################
 
+include(joinpath(dirname(@__FILE__), "data_tests/test08.jl"))
+
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#Compute Y_bus after fault
-Ybus_fault = get_admittance_matrix(buses_case8, branch_case8_fault)
-
 #time span
-tspan = (0.0, 20.0)
-
-#initial_guess
-x0_guess = [
-    1.00, #V1_R
-    1.00, #V2_R
-    1.00, #V3_R
-    0.0, #V1_I
-    -0.01, #V2_I
-    -0.01, #V3_I
-    1.0, #ω_oc
-    0.2, #θ_oc
-    0.025, #qm
-    0.0015, #ξ_d
-    -0.07, #ξ_q
-    0.05, #γ_d
-    -0.001, #γ_q
-    0.95, #ϕ_d
-    -0.10, #ϕ_q
-    1.004, #vpll_d
-    0.0, #vpll_q
-    0.0, #ε_pll
-    0.1, #θ_pll
-    0.5, #id_cv
-    0.0, #iq_cv
-    0.95, #Vd_filter
-    -0.1, #Vq_filter
-    0.49, #Id_filter
-    -0.1, #Iq_filter
-    1.0, #eq_p
-    0.47, #ed_p
-    0.6, #δ
-    1.0, #ω
-    2.1, #Vf
-    0.28, #Vr1
-    -0.39, #Vr2,
-    1.0,
-] #Vm
+tspan = (0.0, 40.0)
 
 #Define Fault: Change of YBus
 Ybus_change = LITS.ThreePhaseFault(
@@ -63,11 +25,10 @@ Ybus_change = LITS.ThreePhaseFault(
 
 #Define Simulation Problem
 sim = Simulation(
-    sys, #system
+    threebus_sys, #system
     tspan, #time span
     Ybus_change, #Type of Fault
-    initial_guess = x0_guess,
-) #initial guess
+) 
 
 #Obtain small signal results for initial conditions
 small_sig = small_signal_analysis(sim)
@@ -83,5 +44,6 @@ zoom = [
     for (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
 ]
 
+@test LinearAlgebra.norm(sim.x0_init - test08_x0_init) < 1e-6
 @test sim.solution.retcode == :Success
 @test small_sig.stable
