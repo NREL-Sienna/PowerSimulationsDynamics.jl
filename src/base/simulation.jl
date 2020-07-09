@@ -383,8 +383,9 @@ function _change_vector_type(sys::PSY.System)
 end
 
 function _determine_stability(vals::Vector{Complex{Float64}})
+    stable = true
     for real_eig in real(vals)
-        real_eig >= 0.0 && return false
+        real_eig > 0.0 && return false
     end
     return true
 end
@@ -423,6 +424,15 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     # TODO: Make operation using BLAS!
     reduced_jacobian = fx - fy * inv(gy) * gx
     vals, vect = LinearAlgebra.eigen(reduced_jacobian)
+    sources = collect(PSY.get_components(PSY.Source, sim.system))
+    if isempty(sources)
+        @warn("No Infinite Bus found. Confirm stability directly checking eigenvalues.\nIf all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable.")
+        info_evals = "Eigenvalues are:\n"
+        for i in vals
+            info_evals = info_evals * string(i) * "\n"
+        end
+        @info(info_evals)
+    end
     return SmallSignalOutput(
         reduced_jacobian,
         vals,
