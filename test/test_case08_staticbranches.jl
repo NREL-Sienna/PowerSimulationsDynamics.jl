@@ -28,7 +28,7 @@ sim = Simulation(
     threebus_sys, #system
     tspan, #time span
     Ybus_change, #Type of Fault
-) 
+)
 
 #Obtain small signal results for initial conditions
 small_sig = small_signal_analysis(sim)

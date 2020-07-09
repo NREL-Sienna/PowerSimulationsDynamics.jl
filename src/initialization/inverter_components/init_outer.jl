@@ -1,4 +1,5 @@
-function initialize_outer!(device_states,
+function initialize_outer!(
+    device_states,
     device::PSY.DynamicInverter{
         C,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
@@ -27,7 +28,7 @@ function initialize_outer!(device_states,
 
     Vr_cnv = get_inner_vars(device)[Vr_cnv_var]
     Vi_cnv = get_inner_vars(device)[Vi_cnv_var]
-    θ0_oc = angle(Vr_cnv + 1im*Vi_cnv)
+    θ0_oc = angle(Vr_cnv + 1im * Vi_cnv)
 
     #Obtain additional expressions
     p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter

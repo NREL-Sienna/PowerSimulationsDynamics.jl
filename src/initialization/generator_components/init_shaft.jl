@@ -1,11 +1,12 @@
-function initialize_shaft!(device_states,
+function initialize_shaft!(
+    device_states,
     device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    
+
 end
 
-
-function initialize_shaft!(device_states,
+function initialize_shaft!(
+    device_states,
     device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -46,27 +47,25 @@ function initialize_shaft!(device_states,
         δ_lp = x[4]
         δ_ex = x[5]
 
-        out[1] = ( -τe - D * (ω - ω_sys) - D_34 * (ω - ω_lp) - D_45 * (ω - ω_ex) +
-                K_lp * (δ_lp - δ) +
-                K_ex * (δ_ex - δ)
-            )
+        out[1] = (
+            -τe - D * (ω - ω_sys) - D_34 * (ω - ω_lp) - D_45 * (ω - ω_ex) +
+            K_lp * (δ_lp - δ) +
+            K_ex * (δ_ex - δ)
+        )
 
         out[2] = τm - D_hp * (ω_hp - ω_sys) - D_12 * (ω_hp - ω_ip) + K_hp * (δ_ip - δ_hp)
 
+        out[3] = (
+            -D_ip * (ω_ip - ω_sys) - D_12 * (ω_ip - ω_hp) - D_23 * (ω_ip - ω_lp) +
+            K_hp * (δ_hp - δ_ip) +
+            K_ip * (δ_lp - δ_ip)
+        )
 
-        out[3] =
-            (
-                -D_ip * (ω_ip - ω_sys) - D_12 * (ω_ip - ω_hp) - D_23 * (ω_ip - ω_lp) +
-                K_hp * (δ_hp - δ_ip) +
-                K_ip * (δ_lp - δ_ip)
-            )
-
-        out[4]=
-            (
-                -D_lp * (ω_lp - ω_sys) - D_23 * (ω_lp - ω_ip) - D_34 * (ω_lp - ω) +
-                K_ip * (δ_ip - δ_lp) +
-                K_lp * (δ - δ_lp)
-            )
+        out[4] = (
+            -D_lp * (ω_lp - ω_sys) - D_23 * (ω_lp - ω_ip) - D_34 * (ω_lp - ω) +
+            K_ip * (δ_ip - δ_lp) +
+            K_lp * (δ - δ_lp)
+        )
         out[5] = -D_ex * (ω_ex - ω_sys) - D_45 * (ω_ex - ω) + K_ex * (δ - δ_ex)
     end
 
@@ -87,6 +86,5 @@ function initialize_shaft!(device_states,
         shaft_states[9] = sol_x0[5] #δ_ex
         shaft_states[10] = ω #ω_ex
     end
-
 
 end

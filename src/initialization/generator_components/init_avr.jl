@@ -1,4 +1,5 @@
-function initialize_avr!(device_states,
+function initialize_avr!(
+    device_states,
     device::PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #In AVRFixed, V_ref is used as Vf
@@ -8,7 +9,8 @@ function initialize_avr!(device_states,
     device.ext[CONTROL_REFS][V_ref_index] = Vf
 end
 
-function initialize_avr!(device_states,
+function initialize_avr!(
+    device_states,
     device::PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
@@ -25,7 +27,7 @@ function initialize_avr!(device_states,
     Ae = PSY.get_Ae(avr)
     Be = PSY.get_Be(avr)
     #Obtain saturated Vf
-    Se_Vf = Ae * exp(Be * abs(Vf0)) 
+    Se_Vf = Ae * exp(Be * abs(Vf0))
 
     #States of AVRTypeI are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr1, Vr2

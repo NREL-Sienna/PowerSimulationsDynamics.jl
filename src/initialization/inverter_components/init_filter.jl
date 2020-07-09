@@ -1,4 +1,5 @@
-function initialize_filter!(device_states,
+function initialize_filter!(
+    device_states,
     device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter},
 ) where {
     C <: PSY.Converter,
@@ -13,11 +14,11 @@ function initialize_filter!(device_states,
     Q0 = PSY.get_reactivepower(static_inj) / PSY.get_basepower(static_inj)
     Vm = PSY.get_voltage(PSY.get_bus(static_inj))
     θ = PSY.get_angle(PSY.get_bus(static_inj))
-    S0 = P0 + Q0*1im
-    V_R = Vm*cos(θ)
-    V_I = Vm*sin(θ)
-    V = V_R + V_I*1im
-    I = conj(S0/V)
+    S0 = P0 + Q0 * 1im
+    V_R = Vm * cos(θ)
+    V_I = Vm * sin(θ)
+    V = V_R + V_I * 1im
+    I = conj(S0 / V)
     I_R = real(I)
     I_I = imag(I)
 

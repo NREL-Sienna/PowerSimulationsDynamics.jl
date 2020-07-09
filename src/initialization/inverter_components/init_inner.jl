@@ -1,4 +1,5 @@
-function initialize_inner!(device_states,
+function initialize_inner!(
+    device_states,
     device::PSY.DynamicInverter{C, O, PSY.CurrentControl, DC, P, F},
 ) where {
     C <: PSY.Converter,
@@ -66,7 +67,8 @@ function initialize_inner!(device_states,
 
         #Current controller references
         Id_cnv_ref = (
-            kpv * (Vd_filter_ref - V_dq_filter[d]) + kiv * ξ_d - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
+            kpv * (Vd_filter_ref - V_dq_filter[d]) + kiv * ξ_d -
+            cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
         )
         Iq_cnv_ref = (
             kpv * (Vq_filter_ref - V_dq_filter[q]) +
@@ -126,7 +128,5 @@ function initialize_inner!(device_states,
         inner_states[5] = sol_x0[7] #ϕ_d
         inner_states[6] = sol_x0[8] #ϕ_q
     end
-
-
 
 end

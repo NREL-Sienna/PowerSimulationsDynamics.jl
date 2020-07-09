@@ -1,4 +1,5 @@
-function initialize_DCside!(device_states,
+function initialize_DCside!(
+    device_states,
     device::PSY.DynamicInverter{C, O, IC, PSY.FixedDCSource, P, F},
 ) where {
     C <: PSY.Converter,

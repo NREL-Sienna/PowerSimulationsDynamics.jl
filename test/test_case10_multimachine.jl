@@ -23,7 +23,6 @@ Ybus_change = ThreePhaseFault(
     Ybus_fault,
 ) #New YBus
 
-
 sim = Simulation(
     threebus_sys, #system
     tspan, #time span

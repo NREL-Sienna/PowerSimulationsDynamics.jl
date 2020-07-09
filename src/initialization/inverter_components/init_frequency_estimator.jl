@@ -1,4 +1,5 @@
-function initialize_frequency_estimator!(device_states,
+function initialize_frequency_estimator!(
+    device_states,
     device::PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F},
 ) where {
     C <: PSY.Converter,

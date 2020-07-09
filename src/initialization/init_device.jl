@@ -1,7 +1,7 @@
 function initialize_device(device::PSY.DynamicGenerator)
     #Obtain States
     device_states = zeros(PSY.get_n_states(device))
-    
+
     #Initialize Machine and Shaft: δ and ω
     initialize_mach_shaft!(device_states, device)
     #Initialize extra Shaft states
@@ -16,11 +16,10 @@ function initialize_device(device::PSY.DynamicGenerator)
     return device_states
 end
 
-
 function initialize_device(device::PSY.DynamicInverter)
     #Obtain States
     device_states = zeros(PSY.get_n_states(device))
-    
+
     #Initialize Machine and Shaft: V and I
     initialize_filter!(device_states, device)
     #Initialize freq estimator

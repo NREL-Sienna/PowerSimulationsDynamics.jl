@@ -20,7 +20,7 @@ function dyn_gen_second_order(generator)
         avr_type1(), #avr
         tg_none(), #tg
         pss_none(), #pss
-    ) 
+    )
 end
 
 function inv_case78(static_device)
@@ -34,7 +34,7 @@ function inv_case78(static_device)
         dc_source_lv(), #dc source
         pll(), #pll
         filt(), #filter
-    ) 
+    )
 end
 
 for g in get_components(Generator, threebus_sys)
@@ -58,4 +58,3 @@ for br in fault_branches
     end
 end
 Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :];
-

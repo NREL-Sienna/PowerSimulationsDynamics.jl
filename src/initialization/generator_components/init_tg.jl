@@ -1,4 +1,5 @@
-function initialize_tg!(device_states,
+function initialize_tg!(
+    device_states,
     device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
@@ -11,10 +12,8 @@ function initialize_tg!(device_states,
     device.ext[CONTROL_REFS][P_ref_index] = P_ref
 end
 
-
-
-
-function initialize_tg!(device_states,
+function initialize_tg!(
+    device_states,
     device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
@@ -47,6 +46,6 @@ function initialize_tg!(device_states,
         #Update states
         tg_ix = get_local_state_ix(device, PSY.TGTypeII)
         tg_states = @view device_states[tg_ix]
-        tg_states[1] = sol_x0[2] 
+        tg_states[1] = sol_x0[2]
     end
 end

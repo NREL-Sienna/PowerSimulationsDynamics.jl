@@ -1,4 +1,5 @@
-function mdl_converter_ode!(device_states,
+function mdl_converter_ode!(
+    device_states,
     device::PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
 ) where {
     O <: PSY.OuterControl,
@@ -9,7 +10,6 @@ function mdl_converter_ode!(device_states,
 }
 
     #TO DO
-
 
     #Obtain inner variables for component
     md = get_inner_vars(device)[md_var]
@@ -24,4 +24,3 @@ function mdl_converter_ode!(device_states,
     get_inner_vars(device)[Vr_cnv_var] = m_ri[R] * Vdc
     get_inner_vars(device)[Vi_cnv_var] = m_ri[I] * Vdc
 end
-

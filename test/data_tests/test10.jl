@@ -18,7 +18,7 @@ function dyn_gen_multi(generator)
         avr_none(), #avr
         tg_none(), #tg
         pss_none(),
-    ) 
+    )
 end
 
 function dyn_gen_multi_tg(generator)
@@ -30,7 +30,7 @@ function dyn_gen_multi_tg(generator)
         avr_none(), #avr
         tg_type2(), #tg
         pss_none(),
-    ) 
+    )
 end
 
 # Add dynamic generators to the system (each gen is linked through a static one)
