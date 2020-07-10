@@ -30,11 +30,6 @@ sim = Simulation(
     Ybus_change, #Type of Fault
 )
 
-for i in sim.x0_init
-    print(i)
-    print("\n")
-end
-
 small_sig = small_signal_analysis(sim)
 
 #Run simulation
@@ -46,6 +41,11 @@ run_simulation!(
 
 series = get_state_series(sim, ("generator-2-1", :ω));
 
-@test LinearAlgebra.norm(sim.x0_init - test12_x0_init) < 1e-6
+diff = [0.0]
+res = LITS.get_dict_init_states(sim)
+for (k, v) in test12_x0_init
+    diff[1] += LinearAlgebra.norm(res[k] - v)
+end
+@test (diff[1] < 1e-6)
 @test sim.solution.retcode == :Success
 @test small_sig.stable

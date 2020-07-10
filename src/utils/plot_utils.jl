@@ -60,3 +60,33 @@ function print_device_states(sim::Simulation)
     #println("Algebraic States") # TODO: Print Buses Voltages
     return
 end
+
+function get_dict_init_states(sim::Simulation)
+    bus_size = get_bus_count(sim.system)
+    V_R = Vector{Float64}(undef, bus_size)
+    V_I = Vector{Float64}(undef, bus_size)
+    Vm = Vector{Float64}(undef, bus_size)
+    θ = Vector{Float64}(undef, bus_size)
+    for bus in PSY.get_components(PSY.Bus, sim.system)
+        bus_n = PSY.get_number(bus)
+        V_R[bus_n] = sim.x0_init[bus_n]
+        V_I[bus_n] = sim.x0_init[bus_n + bus_size]
+        Vm[bus_n] = sqrt(V_R[bus_n]^2 + V_I[bus_n]^2)
+        θ[bus_n] = angle(V_R[bus_n] + V_I[bus_n] * 1im)
+    end
+    results =
+        Dict{String, Vector{Float64}}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
+    for (ix, val_sys) in PSY.get_ext(sim.system)[GLOBAL_INDEX]
+        ix_dyn_injector =
+            PSY.get_dynamic_injector(PSY.get_component(PSY.StaticInjection, sim.system, ix))
+        if !isnothing(ix_dyn_injector)
+            ix_states = PSY.get_states(ix_dyn_injector)
+            x0_device = Vector{Float64}(undef, length(ix_states))
+            for (i, state) in enumerate(ix_states)
+                x0_device[i] = sim.x0_init[val_sys[state]]
+            end
+            results[ix] = x0_device
+        end
+    end
+    return results
+end

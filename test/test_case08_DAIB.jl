@@ -36,6 +36,11 @@ series = get_state_series(sim, ("generator-2-1", :ω_oc))
 
 print_device_states(sim)
 
-@test LinearAlgebra.norm(sim.x0_init - test08_x0_init) < 1e-6
+diff = [0.0]
+res = LITS.get_dict_init_states(sim)
+for (k, v) in test08_x0_init
+    diff[1] += LinearAlgebra.norm(res[k] - v)
+end
+@test (diff[1] < 1e-6)
 @test sim.solution.retcode == :Success
 @test small_sig.stable

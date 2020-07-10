@@ -32,6 +32,11 @@ run_simulation!(sim, IDA(), dtmax = 0.02);
 #Obtain data for angles
 series = get_state_series(sim, ("generator-3-1", :θ_oc));
 
-@test LinearAlgebra.norm(sim.x0_init - test09_x0_init) < 1e-6
+diff = [0.0]
+res = LITS.get_dict_init_states(sim)
+for (k, v) in test09_x0_init
+    diff[1] += LinearAlgebra.norm(res[k] - v)
+end
+@test (diff[1] < 1e-6)
 @test sim.solution.retcode == :Success
 @test small_sig.stable

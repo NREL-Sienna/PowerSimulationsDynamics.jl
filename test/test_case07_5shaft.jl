@@ -42,6 +42,11 @@ series2 = get_state_series(sim, ("generator-3-1", :δ_hp));
 series3 = get_state_series(sim, ("generator-3-1", :δ_ip));
 series4 = get_state_series(sim, ("generator-3-1", :δ_ex));
 
-@test LinearAlgebra.norm(sim.x0_init - test07_x0_init) < 1e-6
+diff = [0.0]
+res = LITS.get_dict_init_states(sim)
+for (k, v) in test07_x0_init
+    diff[1] += LinearAlgebra.norm(res[k] - v)
+end
+@test (diff[1] < 1e-6)
 @test sim.solution.retcode == :Success
 @test small_sig.stable

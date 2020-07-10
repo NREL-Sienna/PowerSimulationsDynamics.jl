@@ -44,6 +44,11 @@ zoom = [
     for (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
 ]
 
-@test LinearAlgebra.norm(sim.x0_init - test10_x0_init) < 1e-6
+diff = [0.0]
+res = LITS.get_dict_init_states(sim)
+for (k, v) in test10_x0_init
+    diff[1] += LinearAlgebra.norm(res[k] - v)
+end
+@test (diff[1] < 1e-6)
 @test sim.solution.retcode == :Success
 @test small_sig.stable
