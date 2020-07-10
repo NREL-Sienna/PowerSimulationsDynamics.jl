@@ -24,28 +24,36 @@ Ybus_change = ThreePhaseFault(
     Ybus_fault,
 ) #New YBus
 
-sim = Simulation(
-    threebus_sys, #system
-    tspan, #time span
-    Ybus_change, #Type of Fault
-)
+path = (joinpath(pwd(), "test-01"))
+!isdir(path) && mkdir(path)
+try
+    sim = Simulation(
+        path,
+        threebus_sys, #system
+        tspan, #time span
+        Ybus_change, #Type of Fault
+    )
 
-small_sig = small_signal_analysis(sim)
+    small_sig = small_signal_analysis(sim)
 
-#Run simulation
-run_simulation!(
-    sim, #simulation structure
-    IDA(),#Sundials DAE Solver
-    dtmax = 0.02, #keywords arguments
-)
+    #Run simulation
+    run_simulation!(
+        sim, #simulation structure
+        IDA(),#Sundials DAE Solver
+        dtmax = 0.02, #keywords arguments
+    )
 
-series = get_state_series(sim, ("generator-2-1", :ω));
+    series = get_state_series(sim, ("generator-2-1", :ω))
 
-diff = [0.0]
-res = LITS.get_dict_init_states(sim)
-for (k, v) in test12_x0_init
-    diff[1] += LinearAlgebra.norm(res[k] - v)
+    diff = [0.0]
+    res = LITS.get_dict_init_states(sim)
+    for (k, v) in test12_x0_init
+        diff[1] += LinearAlgebra.norm(res[k] - v)
+    end
+    @test (diff[1] < 1e-6)
+    @test sim.solution.retcode == :Success
+    @test small_sig.stable
+finally
+    @info("removing test files")
+    rm(path, force = true, recursive = true)
 end
-@test (diff[1] < 1e-6)
-@test sim.solution.retcode == :Success
-@test small_sig.stable

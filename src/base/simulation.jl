@@ -8,48 +8,57 @@ mutable struct Simulation
     tstops::Vector{Float64}
     callbacks::DiffEqBase.CallbackSet
     solution::Union{Nothing, DiffEqBase.DAESolution}
+    simulation_folder::String
     ext::Dict{String, Any}
 end
 
 function Simulation(
+    simulation_folder::String,
     system::PSY.System,
     tspan::NTuple{2, Float64},
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
-    initialize_simulation::Bool = true,
     kwargs...,
 )
+    check_folder(simulation_folder)
+    simulation_system = deepcopy(system)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
-    DAE_vector = _index_dynamic_system!(system)
-    var_count = get_variable_count(system)
+    DAE_vector = _index_dynamic_system!(simulation_system)
+    var_count = get_variable_count(simulation_system)
 
     flat_start = zeros(var_count)
-    bus_count = length(PSY.get_components(PSY.Bus, system))
+    bus_count = length(PSY.get_components(PSY.Bus, simulation_system))
     flat_start[1:bus_count] .= 1.0
     x0_init = get(kwargs, :initial_guess, flat_start)
 
+    initialize_simulation = get(kwargs, :initialize_simulation, true)
     if initialize_simulation
         @info("Initializing Simulation States")
-        _add_aux_arrays!(system, Real)
-        initialized = calculate_initial_conditions!(system, x0_init)
+        _add_aux_arrays!(simulation_system, Real)
+        initialized = calculate_initial_conditions!(simulation_system, x0_init)
     end
 
     dx0 = zeros(var_count)
-    callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
-
-    _add_aux_arrays!(system, Float64)
+    callback_set, tstops = _build_perturbations(simulation_system, perturbations)
+    _add_aux_arrays!(simulation_system, Float64)
     prob = DiffEqBase.DAEProblem(
         system!,
         dx0,
         x0_init,
         tspan,
-        system,
+        simulation_system,
         differential_vars = DAE_vector;
         kwargs...,
     )
 
+    if get(kwargs, :system_to_file, false)
+        PSY.to_json(
+            simulation_system,
+            joinpath(simulation_folder, "initialized_system.json"),
+        )
+    end
     return Simulation(
-        system,
+        simulation_system,
         false,
         prob,
         perturbations,
@@ -58,11 +67,13 @@ function Simulation(
         tstops,
         callback_set,
         nothing,
+        simulation_folder,
         Dict{String, Any}(),
     )
 end
 
 function Simulation(
+    simulation_folder::String,
     system::PSY.System,
     tspan::NTuple{2, Float64},
     perturbation::Perturbation;
@@ -70,6 +81,7 @@ function Simulation(
     kwargs...,
 )
     return Simulation(
+        simulation_folder,
         system,
         tspan,
         [perturbation];
@@ -92,14 +104,14 @@ function _add_aux_arrays!(system::PSY.System, T)
     return
 end
 
-function _build_perturbations(perturbations::Vector{<:Perturbation})
+function _build_perturbations(system::PSY.System, perturbations::Vector{<:Perturbation})
     isempty(perturbations) && return DiffEqBase.CallbackSet(), [0.0]
     perturbations_count = length(perturbations)
     callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
     tstops = Vector{Float64}(undef, perturbations_count)
     for (ix, pert) in enumerate(perturbations)
         condition = (x, t, integrator) -> t in [pert.time]
-        affect = get_affect(pert)
+        affect = get_affect(system, pert)
         callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
