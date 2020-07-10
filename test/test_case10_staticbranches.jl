@@ -23,32 +23,40 @@ Ybus_change = LITS.ThreePhaseFault(
     Ybus_fault,
 ) #New YBus
 
-#Define Simulation Problem
-sim = Simulation(
-    threebus_sys, #system
-    tspan, #time span
-    Ybus_change, #Type of Fault
-)
+path = (joinpath(pwd(), "test-10"))
+!isdir(path) && mkdir(path)
+try
+    #Define Simulation Problem
+    sim = Simulation(
+        path,
+        threebus_sys, #system
+        tspan, #time span
+        Ybus_change, #Type of Fault
+    )
 
-#Obtain small signal results for initial conditions
-small_sig = small_signal_analysis(sim)
+    #Obtain small signal results for initial conditions
+    small_sig = small_signal_analysis(sim)
 
-#Solve problem in equilibrium
-run_simulation!(sim, IDA());
+    #Solve problem in equilibrium
+    run_simulation!(sim, IDA());
 
-#Obtain data for voltages
-series = get_voltagemag_series(sim, 2)
+    #Obtain data for voltages
+    series = get_voltagemag_series(sim, 2)
 
-zoom = [
-    (series[1][ix], series[2][ix])
-    for (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
-]
+    zoom = [
+        (series[1][ix], series[2][ix])
+        for (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
+    ]
 
-diff = [0.0]
-res = LITS.get_dict_init_states(sim)
-for (k, v) in test10_x0_init
-    diff[1] += LinearAlgebra.norm(res[k] - v)
+    diff = [0.0]
+    res = LITS.get_dict_init_states(sim)
+    for (k, v) in test10_x0_init
+        diff[1] += LinearAlgebra.norm(res[k] - v)
+    end
+    @test (diff[1] < 1e-6)
+    @test sim.solution.retcode == :Success
+    @test small_sig.stable
+finally
+    @info("removing test files")
+    rm(path, force = true, recursive = true)
 end
-@test (diff[1] < 1e-6)
-@test sim.solution.retcode == :Success
-@test small_sig.stable

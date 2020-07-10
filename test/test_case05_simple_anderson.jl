@@ -23,26 +23,34 @@ Ybus_change = ThreePhaseFault(
     Ybus_fault,
 ) #New YBus
 
-#Define Simulation Problem
-sim = Simulation(
-    threebus_sys, #system
-    tspan, #time span
-    Ybus_change, #Type of Fault
-)
+path = (joinpath(pwd(), "test-05"))
+!isdir(path) && mkdir(path)
+try
+    #Define Simulation Problem
+    sim = Simulation(
+        path,
+        threebus_sys, #system
+        tspan, #time span
+        Ybus_change, #Type of Fault
+    )
 
-small_sig = small_signal_analysis(sim)
+    small_sig = small_signal_analysis(sim)
 
-#Solve problem in equilibrium
-run_simulation!(sim, IDA(), dtmax = 0.02);
+    #Solve problem in equilibrium
+    run_simulation!(sim, IDA(), dtmax = 0.02);
 
-#Obtain data for angles
-series = get_state_series(sim, ("generator-2-1", :δ));
+    #Obtain data for angles
+    series = get_state_series(sim, ("generator-2-1", :δ));
 
-diff = [0.0]
-res = LITS.get_dict_init_states(sim)
-for (k, v) in test05_x0_init
-    diff[1] += LinearAlgebra.norm(res[k] - v)
+    diff = [0.0]
+    res = LITS.get_dict_init_states(sim)
+    for (k, v) in test05_x0_init
+        diff[1] += LinearAlgebra.norm(res[k] - v)
+    end
+    @test (diff[1] < 1e-6)
+    @test sim.solution.retcode == :Success
+    @test small_sig.stable
+finally
+    @info("removing test files")
+    rm(path, force = true, recursive = true)
 end
-@test (diff[1] < 1e-6)
-@test sim.solution.retcode == :Success
-@test small_sig.stable
