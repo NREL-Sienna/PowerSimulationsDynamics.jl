@@ -69,8 +69,8 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
         bus_n = PSY.get_number(PSY.get_bus(d))
         bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
         device!(
-            view(V_r, bus_n),
-            view(V_i, bus_n),
+            view(V_r, bus_ix),
+            view(V_i, bus_ix),
             view(I_injections_r, bus_ix),
             view(I_injections_i, bus_ix),
             d,

@@ -33,7 +33,7 @@ try
     run_simulation!(sim, IDA(), dtmax = 0.02)
 
     #Obtain data for angles
-    series = get_state_series(sim, ("generator-3-1", :θ_oc))
+    series = get_state_series(sim, ("generator-103-1", :θ_oc))
 
     diff = [0.0]
     res = LITS.get_dict_init_states(sim)

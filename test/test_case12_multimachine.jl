@@ -43,7 +43,7 @@ try
         dtmax = 0.02, #keywords arguments
     )
 
-    series = get_state_series(sim, ("generator-2-1", :ω))
+    series = get_state_series(sim, ("generator-102-1", :ω))
 
     diff = [0.0]
     res = LITS.get_dict_init_states(sim)

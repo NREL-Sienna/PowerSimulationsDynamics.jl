@@ -37,8 +37,8 @@ try
     run_simulation!(sim, IDA(), dtmax = 0.02)
 
     #Obtain data for angles
-    series = get_state_series(sim, ("generator-2-1", :δ))
-    series2 = get_voltagemag_series(sim, 2)
+    series = get_state_series(sim, ("generator-102-1", :δ))
+    series2 = get_voltagemag_series(sim, 102)
     LITS.print_init_states(sim)
 
     diff = [0.0]

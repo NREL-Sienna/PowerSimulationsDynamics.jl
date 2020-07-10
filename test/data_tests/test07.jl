@@ -39,14 +39,15 @@ function dyn_gen_first_order(generator)
     ) #pss
 end
 
-gens = collect(get_components(Generator, threebus_sys))
-#At node 3
-case5_gen = dyn_gen_five_mass_shaft_order(gens[1])
-add_component!(threebus_sys, case5_gen)
-#At node 2
-case1_gen = dyn_gen_first_order(gens[2])
-add_component!(threebus_sys, case1_gen)
-
+for g in get_components(Generator, threebus_sys)
+    if get_number(get_bus(g)) == 103
+        case_gen = dyn_gen_five_mass_shaft_order(g)
+        add_component!(threebus_sys, case_gen)
+    elseif get_number(get_bus(g)) == 102
+        case_inv = dyn_gen_first_order(g)
+        add_component!(threebus_sys, case_inv)
+    end
+end
 #Compute Y_bus after fault
 fault_branches = deepcopy(collect(get_components(Branch, threebus_sys))[2:end])
 Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :]

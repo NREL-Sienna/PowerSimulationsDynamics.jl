@@ -35,7 +35,7 @@ try
     run_simulation!(sim, Sundials.IDA())
 
     #Obtain data for angles
-    series = get_state_series(sim, ("generator-2-1", :ω_oc))
+    series = get_state_series(sim, ("generator-102-1", :ω_oc))
 
     print_device_states(sim)
 

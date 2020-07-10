@@ -41,7 +41,7 @@ try
     run_simulation!(sim, IDA())
 
     #Obtain data for voltages
-    series = get_voltagemag_series(sim, 2)
+    series = get_voltagemag_series(sim, 102)
 
     zoom = [
         (series[1][ix], series[2][ix])

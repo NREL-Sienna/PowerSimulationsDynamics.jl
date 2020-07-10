@@ -16,8 +16,13 @@ Function to obtain the voltage magnitude series out of the DAE Solution. It rece
 """
 function get_voltagemag_series(sim::Simulation, bus_number::Int64)
     n_buses = length(PSY.get_components(PSY.Bus, sim.system))
-    return sim.solution.t,
-    [sqrt(value[bus_number]^2 + value[bus_number + n_buses]^2) for value in sim.solution.u]
+    bus_ix = get(PSY.get_ext(sim.system)[LOOKUP], bus_number, nothing)
+    if isnothing(bus_ix)
+        @error("Bus number $(bus_number) not found.")
+    else
+        return sim.solution.t,
+        [sqrt(value[bus_ix]^2 + value[bus_ix + n_buses]^2) for value in sim.solution.u]
+    end
 end
 
 """
@@ -69,10 +74,11 @@ function get_dict_init_states(sim::Simulation)
     θ = Vector{Float64}(undef, bus_size)
     for bus in PSY.get_components(PSY.Bus, sim.system)
         bus_n = PSY.get_number(bus)
-        V_R[bus_n] = sim.x0_init[bus_n]
-        V_I[bus_n] = sim.x0_init[bus_n + bus_size]
-        Vm[bus_n] = sqrt(V_R[bus_n]^2 + V_I[bus_n]^2)
-        θ[bus_n] = angle(V_R[bus_n] + V_I[bus_n] * 1im)
+        bus_ix = PSY.get_ext(sim.system)[LOOKUP][bus_n]
+        V_R[bus_ix] = sim.x0_init[bus_ix]
+        V_I[bus_ix] = sim.x0_init[bus_ix + bus_size]
+        Vm[bus_ix] = sqrt(V_R[bus_ix]^2 + V_I[bus_ix]^2)
+        θ[bus_ix] = angle(V_R[bus_ix] + V_I[bus_ix] * 1im)
     end
     results =
         Dict{String, Vector{Float64}}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)

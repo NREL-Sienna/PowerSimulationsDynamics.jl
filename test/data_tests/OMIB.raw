@@ -1,14 +1,14 @@
 0, 100, 33, 0, 0, 60  / 24-Apr-2020 17:05:49 - MATPOWER 7.0.1-dev
 
 
-     1, 'BUS 1       ',       230, 3,    1,    1, 1,        1.05,           0, 1.06, 0.94, 1.06, 0.94
-     2, 'BUS 2       ',       230, 2,    1,    1, 1,        1.04,           0, 1.06, 0.94, 1.06, 0.94
+     101, 'BUS 1       ',       230, 3,    1,    1, 1,        1.05,           0, 1.06, 0.94, 1.06, 0.94
+     102, 'BUS 2       ',       230, 2,    1,    1, 1,        1.04,           0, 1.06, 0.94, 1.06, 0.94
 0 / END OF BUS DATA, BEGIN LOAD DATA
 0 / END OF LOAD DATA, BEGIN FIXED SHUNT DATA
 0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA
-     2,  1,        50,         0,       100,      -100,     1.00, 0,     100, 0, 1, 0, 0, 1, 1, 100,       100,         0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1
+     102,  1,        50,         0,       100,      -100,     1.00, 0,     100, 0, 1, 0, 0, 1, 1, 100,       100,         0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1
 0 / END OF GENERATOR DATA, BEGIN BRANCH DATA
-     1,      2, 1,    0.00,     0.05,   0.000,     100,     100,     100, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1
+     101,      102, 1,    0.00,     0.05,   0.000,     100,     100,     100, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 1
 0 / END OF BRANCH DATA, BEGIN TRANSFORMER DATA
 0 / END OF TRANSFORMER DATA, BEGIN AREA DATA
 0 / END OF AREA DATA, BEGIN TWO-TERMINAL DC DATA

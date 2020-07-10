@@ -35,10 +35,10 @@ end
 
 # Add dynamic generators to the system (each gen is linked through a static one)
 for g in get_components(Generator, threebus_sys)
-    if get_number(get_bus(g)) == 1
+    if get_number(get_bus(g)) == 101
         case_gen = dyn_gen_multi(g)
         add_component!(threebus_sys, case_gen)
-    elseif get_number(get_bus(g)) == 2
+    elseif get_number(get_bus(g)) == 102
         case_gen = dyn_gen_multi_tg(g)
         add_component!(threebus_sys, case_gen)
     end

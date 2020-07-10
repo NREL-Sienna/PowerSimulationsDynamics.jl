@@ -37,10 +37,10 @@ function inv_case78(static_device)
 end
 
 for g in get_components(Generator, threebus_sys)
-    if get_number(get_bus(g)) == 2
+    if get_number(get_bus(g)) == 102
         case_gen = dyn_gen_second_order(g)
         add_component!(threebus_sys, case_gen)
-    elseif get_number(get_bus(g)) == 3
+    elseif get_number(get_bus(g)) == 103
         case_inv = inv_case78(g)
         add_component!(threebus_sys, case_inv)
     end
