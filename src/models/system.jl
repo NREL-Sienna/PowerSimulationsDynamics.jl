@@ -30,7 +30,8 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
     fill!(I_injections_i, 0.0)
 
     for d in PSY.get_components(PSY.DynamicInjection, sys)
-        bus_n = PSY.get_number(PSY.get_bus(d)) # TODO: This requires that the bus numbers are indexed 1-N
+        bus_n = PSY.get_number(PSY.get_bus(d))
+        bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
         n_states = PSY.get_n_states(d)
         ix_range = range(injection_start, length = n_states)
         ode_range = range(injection_count, length = n_states)
@@ -39,10 +40,10 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
         device!(
             x,
             injection_ode,
-            view(V_r, bus_n),
-            view(V_i, bus_n),
-            view(I_injections_r, bus_n),
-            view(I_injections_i, bus_n),
+            view(V_r, bus_ix),
+            view(V_i, bus_ix),
+            view(I_injections_r, bus_ix),
+            view(I_injections_i, bus_ix),
             ix_range,
             ode_range,
             d,
@@ -53,12 +54,12 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
 
     for d in PSY.get_components(PSY.ElectricLoad, sys)
         bus_n = PSY.get_number(PSY.get_bus(d))
-
+        bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
         device!(
-            view(V_r, bus_n),
-            view(V_i, bus_n),
-            view(I_injections_r, bus_n),
-            view(I_injections_i, bus_n),
+            view(V_r, bus_ix),
+            view(V_i, bus_ix),
+            view(I_injections_r, bus_ix),
+            view(I_injections_i, bus_ix),
             d,
             sys,
         )
@@ -66,12 +67,12 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
 
     for d in PSY.get_components(PSY.Source, sys)
         bus_n = PSY.get_number(PSY.get_bus(d))
-
+        bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
         device!(
             view(V_r, bus_n),
             view(V_i, bus_n),
-            view(I_injections_r, bus_n),
-            view(I_injections_i, bus_n),
+            view(I_injections_r, bus_ix),
+            view(I_injections_i, bus_ix),
             d,
             sys,
         )
@@ -84,6 +85,8 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
             to_bus_number = PSY.get_number(arc.to)
+            bus_ix_from = PSY.get_ext(sys)[LOOKUP][from_bus_number]
+            bus_ix_to = PSY.get_ext(sys)[LOOKUP][to_bus_number]
             ix_range = range(branches_start, length = n_states)
             ode_range = range(branches_count, length = n_states)
             branches_count = branches_count + n_states
@@ -92,15 +95,15 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
                 dx,
                 branches_ode,
                 #Get Voltage data
-                view(V_r, from_bus_number),
-                view(V_i, from_bus_number),
-                view(V_r, to_bus_number),
-                view(V_i, to_bus_number),
+                view(V_r, bus_ix_from),
+                view(V_i, bus_ix_from),
+                view(V_r, bus_ix_to),
+                view(V_i, bus_ix_to),
                 #Get Current data
-                view(I_injections_r, from_bus_number),
-                view(I_injections_i, from_bus_number),
-                view(I_injections_r, to_bus_number),
-                view(I_injections_i, to_bus_number),
+                view(I_injections_r, bus_ix_from),
+                view(I_injections_i, bus_ix_from),
+                view(I_injections_r, bus_ix_to),
+                view(I_injections_i, bus_ix_to),
                 ix_range,
                 ode_range,
                 br,

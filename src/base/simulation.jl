@@ -86,7 +86,7 @@ function _add_aux_arrays!(system::PSY.System, T)
         3 => collect(zeros(T, get_n_injection_states(system))),  #injection_ode
         4 => collect(zeros(T, get_n_branches_states(system))),   #branches_ode
         5 => collect(zeros(Complex{T}, bus_count)),              #I_bus
-        6 => collect(zeros(T, 2 * bus_count)),                      #I_balance
+        6 => collect(zeros(T, 2 * bus_count)),                   #I_balance
     )
     system.internal.ext[AUX_ARRAYS] = aux_arrays
     return
@@ -292,9 +292,12 @@ function _index_dynamic_system!(sys::PSY.System)
     @debug total_states
     setdiff!(current_buses_no, voltage_buses_no)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
-        Ybus = PSY.Ybus(sys)[:, :]
+        Ybus_ = PSY.Ybus(sys)
+        Ybus = Ybus_[:, :]
+        lookup = Ybus_.lookup[1]
     else
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
+        lookup = Dict{Int.Int}()
     end
     sys_ext = Dict{String, Any}()
     counts = Base.ImmutableDict(
@@ -307,6 +310,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :bus_count => n_buses,
     )
 
+    sys_ext[LOOKUP] = lookup
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
     sys_ext[VOLTAGE_BUSES_NO] = voltage_buses_no
@@ -335,6 +339,7 @@ get_current_bus_no(sys::PSY.System) = PSY.get_ext(sys)[CURRENT_BUSES_NO]
 get_voltage_bus_no(sys::PSY.System) = PSY.get_ext(sys)[VOLTAGE_BUSES_NO]
 get_total_shunts(sys::PSY.System) = PSY.get_ext(sys)[TOTAL_SHUNTS]
 get_bus_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:bus_count]
+get_lookup(sys::PSY.System) = PSY.get_ext(sys)[LOOKUP]
 
 function _get_internal_mapping(
     device::PSY.DynamicInjection,
