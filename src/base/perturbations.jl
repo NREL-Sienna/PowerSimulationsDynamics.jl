@@ -1,6 +1,6 @@
 abstract type Perturbation end
 
-struct ThreePhaseFault <: Perturbation
+mutable struct ThreePhaseFault <: Perturbation
     time::Float64
     Ybus::SparseMatrixCSC{Complex{Float64}, Int64}
 end
@@ -8,7 +8,7 @@ end
 get_affect(::PSY.System, pert::ThreePhaseFault) =
     (integrator) -> PSY.get_ext(integrator.p)["Ybus"] = pert.Ybus
 
-struct ControlReferenceChange <: Perturbation
+mutable struct ControlReferenceChange <: Perturbation
     time::Float64
     device::PSY.DynamicInjection
     signal_index::Int64
