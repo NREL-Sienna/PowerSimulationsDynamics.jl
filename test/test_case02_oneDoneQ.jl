@@ -21,7 +21,6 @@ Ybus_change = ThreePhaseFault(
     Ybus_fault,
 ) #New YBus
 
-
 path = (joinpath(pwd(), "test-02"))
 !isdir(path) && mkdir(path)
 try

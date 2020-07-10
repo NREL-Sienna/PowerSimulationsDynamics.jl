@@ -38,7 +38,7 @@ try
     small_sig = small_signal_analysis(sim)
 
     #Solve problem in equilibrium
-    run_simulation!(sim, IDA());
+    run_simulation!(sim, IDA())
 
     #Obtain data for voltages
     series = get_voltagemag_series(sim, 2)

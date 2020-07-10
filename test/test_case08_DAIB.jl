@@ -32,7 +32,7 @@ try
     small_sig = small_signal_analysis(sim)
 
     #Solve problem in equilibrium
-    run_simulation!(sim, Sundials.IDA());
+    run_simulation!(sim, Sundials.IDA())
 
     #Obtain data for angles
     series = get_state_series(sim, ("generator-2-1", :ω_oc))

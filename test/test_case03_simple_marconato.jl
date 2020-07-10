@@ -37,10 +37,10 @@ try
     small_sig = small_signal_analysis(sim)
 
     #Solve problem in equilibrium
-    run_simulation!(sim, IDA(), dtmax = 0.02);
+    run_simulation!(sim, IDA(), dtmax = 0.02)
 
     #Obtain data for angles
-    series = get_state_series(sim, ("generator-2-1", :δ));
+    series = get_state_series(sim, ("generator-2-1", :δ))
 
     diff = [0.0]
     res = LITS.get_dict_init_states(sim)
