@@ -297,7 +297,7 @@ function _index_dynamic_system!(sys::PSY.System)
         lookup = Ybus_.lookup[1]
     else
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
-        lookup = Dict{Int. Int}()
+        lookup = Dict{Int.Int}()
     end
     sys_ext = Dict{String, Any}()
     counts = Base.ImmutableDict(
