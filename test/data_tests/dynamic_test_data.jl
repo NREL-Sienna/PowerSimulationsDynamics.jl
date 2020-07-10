@@ -80,6 +80,8 @@ machine_simple_anderson() = SimpleAFMachine(
     0.033, #Tq0_pp
 )
 
+#Not available yet
+#=
 machine_kundur() = SimpleFullMachine(
     0.003, #R on Example 3.1 and 4.1 of Kundur
     0.0006, #R_f
@@ -111,6 +113,7 @@ machine_full_kundur() = FullMachine(
     0.1713, #L_1d or L_D in Machowski
     0.7525, #L_1q or L_Q in Machowski
 )
+=#
 
 machine_multi_ref() = BaseMachine(
     0.0, #R
@@ -188,7 +191,7 @@ tg_type2() = TGTypeII(
 
 avr_none() = AVRFixed(0.0)
 
-avr_propr() = AVRSimple(5000.0) #Kv
+avr_propr() = AVRSimple(500.0) #Kv
 
 avr_fixed() = AVRFixed(1.05) #Emf
 
@@ -207,17 +210,17 @@ avr_type1() = AVRTypeI(
 ) #Be - 2nd ceiling coefficient
 
 avr_type2() = AVRTypeII(
-    20.0, #K0 - Gain
-    0.2, #T1 - 1st pole
-    0.063, #T2 - 1st zero
-    0.35, #T3 - 2nd pole
-    0.01, #T4 - 2nd zero
-    0.314, #Te - Field current time constant
-    0.001, #Tr - Measurement time constant
-    5.0, #Vrmax
-    -5.0, #Vrmin
-    0.0039, #Ae - 1st ceiling coefficient
-    1.555,
+    200.0, #K0 - Gain
+    4.0, #T1 - 1st pole
+    1.0, #T2 - 1st zero
+    0.006, #T3 - 2nd pole
+    0.06, #T4 - 2nd zero
+    0.0001, #Te - Field current time constant
+    0.0001, #Tr - Measurement time constant
+    50.0, #Vrmax
+    -50.0, #Vrmin
+    0.0, #Ae - 1st ceiling coefficient
+    0.0,
 ) #Be - 2nd ceiling coefficient
 
 ######################################
