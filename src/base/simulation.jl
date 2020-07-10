@@ -39,8 +39,7 @@ function Simulation(
     end
 
     dx0 = zeros(var_count)
-    callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
-
+    callback_set, tstops = _build_perturbations(simulation_system, perturbations)
     _add_aux_arrays!(simulation_system, Float64)
     prob = DiffEqBase.DAEProblem(
         system!,
@@ -105,14 +104,14 @@ function _add_aux_arrays!(system::PSY.System, T)
     return
 end
 
-function _build_perturbations(perturbations::Vector{<:Perturbation})
+function _build_perturbations(system::PSY.System, perturbations::Vector{<:Perturbation})
     isempty(perturbations) && return DiffEqBase.CallbackSet(), [0.0]
     perturbations_count = length(perturbations)
     callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
     tstops = Vector{Float64}(undef, perturbations_count)
     for (ix, pert) in enumerate(perturbations)
         condition = (x, t, integrator) -> t in [pert.time]
-        affect = get_affect(pert)
+        affect = get_affect(system, pert)
         callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
