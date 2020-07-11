@@ -1,4 +1,4 @@
-function mdl_converter_ode!(
+function initialize_converter!(
     device_states,
     device::PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
 ) where {
@@ -8,8 +8,6 @@ function mdl_converter_ode!(
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
 }
-
-    #TO DO
 
     #Obtain inner variables for component
     md = get_inner_vars(device)[md_var]

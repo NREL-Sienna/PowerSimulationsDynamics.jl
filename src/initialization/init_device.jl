@@ -30,5 +30,7 @@ function initialize_device(device::PSY.DynamicInverter)
     initialize_DCside!(device_states, device)
     #Initialize InnerLoop
     initialize_inner!(device_states, device)
+    #Initialize Converter
+    initialize_converter!(device_states, device)
     return device_states
 end
