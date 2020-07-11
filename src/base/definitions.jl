@@ -104,14 +104,3 @@ const AUX_ARRAYS = "aux_arrays"
 const LOOKUP = "lookup"
 
 const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation, :system_to_file]
-
-PSY.get_V_ref(value::PSY.AVRFixed) = value.Vf
-PSY.set_V_ref!(value::PSY.AVRFixed, val::Float64) = value.Vf = val
-
-get_V_ref_control(value::PSY.DynamicGenerator) = PSY.get_V_ref(PSY.get_avr(value))
-get_V_ref_control(value::PSY.DynamicInverter) =
-    PSY.get_V_ref(PSY.get_reactive_power(PSY.get_outer_control(value)))
-
-get_P_ref_control(value::PSY.DynamicGenerator) = PSY.get_P_ref(PSY.get_prime_mover(value))
-get_P_ref_control(value::PSY.DynamicInverter) =
-    PSY.get_P_ref(PSY.get_active_power(PSY.get_outer_control(value)))
