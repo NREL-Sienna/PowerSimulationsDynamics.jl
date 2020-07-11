@@ -6,23 +6,23 @@ using PowerSystems
 
 ######## Machine Data #########
 
-machine_OMIB() = BaseMachine(
+machine_classic() = BaseMachine(
     0.0, #R
     0.2995, #Xd_p
     0.7087,
 )  #MVABase
 
-machine_4th() = OneDOneQMachine(
+machine_oneDoneQ() = OneDOneQMachine(
     0.0, #R
     1.3125, #Xd
     1.2578, #Xq
     0.1813, #Xd_p
     0.25, #Xq_p
     5.89, #Td0_p
-    0.6,
-)   #MVABase
+    0.6, #Tq0_p
+)
 
-machine_6th() = SimpleMarconatoMachine(
+machine_simple_marconato() = SimpleMarconatoMachine(
     0.0,
     1.3125, #Xd
     1.2578, #Xq
@@ -37,7 +37,7 @@ machine_6th() = SimpleMarconatoMachine(
     0.0,
 ) #MVABase
 
-machine_8th() = MarconatoMachine(
+machine_marconato() = MarconatoMachine(
     0.0,
     1.3125, #Xd
     1.2578, #Xq
@@ -60,13 +60,28 @@ machine_anderson() = AndersonFouadMachine(
     0.646, #Xq_p
     0.23, #Xd_pp
     0.4, #Xq_pp
-    7.4, #Td0_p
-    0.01, #Tq0_p #Data not available in Milano: Used 0.01
-    0.03, #Td0_pp
+    3.0, #Td0_p
+    0.1, #Tq0_p
+    0.01, #Td0_pp
     0.033, #Tq0_pp
-    615.0,
-) #MVABase
+)
 
+machine_simple_anderson() = SimpleAFMachine(
+    0.0, #R
+    0.8979, #Xd
+    0.646, #Xq
+    0.2995, #Xd_p
+    0.646, #Xq_p
+    0.23, #Xd_pp
+    0.4, #Xq_pp
+    3.0, #Td0_p
+    0.1, #Tq0_p 
+    0.01, #Td0_pp
+    0.033, #Tq0_pp
+)
+
+#Not available yet
+#=
 machine_kundur() = SimpleFullMachine(
     0.003, #R on Example 3.1 and 4.1 of Kundur
     0.0006, #R_f
@@ -85,8 +100,8 @@ machine_kundur() = SimpleFullMachine(
 
 machine_full_kundur() = FullMachine(
     0.003, #R on Example 3.1 and 4.1 of Kundur
-    0.0006, #R_f
-    #0.003, #R_f
+    #0.0006, #R_f
+    0.003, #R_f
     0.0284, #R_1d or RD in Machowski
     0.0062, #R_1q or RQ on Machowski
     1.81, #L_d
@@ -97,8 +112,8 @@ machine_full_kundur() = FullMachine(
     1.825, #L_ff
     0.1713, #L_1d or L_D in Machowski
     0.7525, #L_1q or L_Q in Machowski
-    555.0,
-) #MVABase
+)
+=#
 
 machine_multi_ref() = BaseMachine(
     0.0, #R
@@ -158,7 +173,7 @@ tg_type1() = TGTypeI(
     0.1, #Ts
     0.45, #Tc
     0.0, #T3
-    0.0, #T4
+    12.0, #T4
     50.0, #T5
     0.3, #P_min
     1.2,
@@ -176,7 +191,7 @@ tg_type2() = TGTypeII(
 
 avr_none() = AVRFixed(0.0)
 
-avr_propr() = AVRSimple(5000.0) #Kv
+avr_propr() = AVRSimple(500.0) #Kv
 
 avr_fixed() = AVRFixed(1.05) #Emf
 
@@ -195,17 +210,17 @@ avr_type1() = AVRTypeI(
 ) #Be - 2nd ceiling coefficient
 
 avr_type2() = AVRTypeII(
-    20.0, #K0 - Gain
-    0.2, #T1 - 1st pole
-    0.063, #T2 - 1st zero
-    0.35, #T3 - 2nd pole
-    0.01, #T4 - 2nd zero
-    0.314, #Te - Field current time constant
-    0.001, #Tr - Measurement time constant
-    5.0, #Vrmax
-    -5.0, #Vrmin
-    0.0039, #Ae - 1st ceiling coefficient
-    1.555,
+    200.0, #K0 - Gain
+    4.0, #T1 - 1st pole
+    1.0, #T2 - 1st zero
+    0.006, #T3 - 2nd pole
+    0.06, #T4 - 2nd zero
+    0.0001, #Te - Field current time constant
+    0.0001, #Tr - Measurement time constant
+    50.0, #Vrmax
+    -50.0, #Vrmin
+    0.0, #Ae - 1st ceiling coefficient
+    0.0,
 ) #Be - 2nd ceiling coefficient
 
 ######################################
@@ -234,7 +249,7 @@ pll() = KauraPLL(
 ###### Outer Control ######
 function outer_control()
     function virtual_inertia()
-        return VirtualInertia(Ta = 2.0, kd = 400.0, kω = 20.0, ωb = 2 * pi * 50.0)
+        return VirtualInertia(Ta = 2.0, kd = 400.0, kω = 20.0)
     end
     function reactive_droop()
         return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)

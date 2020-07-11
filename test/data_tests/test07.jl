@@ -11,42 +11,43 @@ threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false)
 add_source_to_ref(threebus_sys)
 #Reduce generator output
 for g in get_components(Generator, threebus_sys)
-    g.activepower = 0.5
+    g.activepower = 0.75
 end
-res = solve_powerflow!(threebus_sys, nlsolve)
+res = solve_powerflow!(threebus_sys)
 
-function dyn_gen_second_order(generator)
+function dyn_gen_five_mass_shaft_order(generator)
     return PSY.DynamicGenerator(
-        1, #Number
-        "Case2_$(get_name(generator))",
-        get_bus(generator), #bus
+        generator,
         1.0, # ω_ref,
-        1.0, #V_ref
-        get_activepower(generator), #P_ref
-        get_reactivepower(generator), #Q_ref
-        machine_4th(), #machine
-        shaft_no_damping(), #shaft
+        machine_oneDoneQ(), #machine
+        shaft_fivemass(), #shaft
+        avr_type1(), #avr
+        tg_none(),
+        pss_none(),
+    ) #pss
+end
+
+function dyn_gen_first_order(generator)
+    return PSY.DynamicGenerator(
+        generator,
+        1.0, # ω_ref,
+        machine_oneDoneQ(), #machine
+        shaft_damping(), #shaft
         avr_type1(), #avr
         tg_none(), #tg
         pss_none(),
     ) #pss
 end
 
-function inv_case78(buses)
-    return PSY.DynamicInverter(
-        1, #Number
-        "DARCO", #name
-        buses[2], #bus
-        1.0, # ω_ref,
-        1.02, #V_ref
-        0.5, #P_ref
-        0.0, #Q_ref
-        2.75, #MVABase
-        converter_case78(), #converter
-        outer_control_test(), #outer control
-        vsc_test(), #inner control voltage source
-        dc_source_case78(), #dc source
-        pll_test(), #pll
-        filter_test(),
-    ) #filter
+for g in get_components(Generator, threebus_sys)
+    if get_number(get_bus(g)) == 103
+        case_gen = dyn_gen_five_mass_shaft_order(g)
+        add_component!(threebus_sys, case_gen)
+    elseif get_number(get_bus(g)) == 102
+        case_inv = dyn_gen_first_order(g)
+        add_component!(threebus_sys, case_inv)
+    end
 end
+#Compute Y_bus after fault
+fault_branches = deepcopy(collect(get_components(Branch, threebus_sys))[2:end])
+Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :]

@@ -32,7 +32,7 @@ function mdl_filter_ode!(
     cf = PSY.get_cf(filter)
     lg = PSY.get_lg(filter)
     rg = PSY.get_rg(filter)
-    MVABase = PSY.get_inverter_Sbase(device)
+    basepower = PSY.get_basepower(device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.LCLFilter)
@@ -84,7 +84,7 @@ function mdl_filter_ode!(
     get_inner_vars(device)[Vi_filter_var] = Vi_filter
 
     #Compute current from the inverter to the grid
-    I_RI = (MVABase / sys_Sbase) * [Ir_filter; Ii_filter]
+    I_RI = basepower * [Ir_filter; Ii_filter]
 
     #Update current
     current_r[1] += I_RI[1]

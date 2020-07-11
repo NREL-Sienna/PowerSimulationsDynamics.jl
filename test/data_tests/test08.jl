@@ -1,49 +1,30 @@
 using PowerSystems
+using NLsolve
 const PSY = PowerSystems
 
-############### Data Network ########################
 include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
-threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusNetwork.raw")
-threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false)
-add_source_to_ref(threebus_sys)
-res = solve_powerflow!(threebus_sys, nlsolve)
+omib_file_dir = joinpath(dirname(@__FILE__), "OMIB_DARCO_PSR.raw")
+omib_sys = System(PowerModelsData(omib_file_dir), runchecks = false)
+add_source_to_ref(omib_sys)
 
-############### Data devices ########################
-
-function dyn_gen_second_order(generator)
-    return PSY.DynamicGenerator(
-        1, #Number
-        "Case2_$(get_name(generator))",
-        get_bus(generator), #bus
-        1.0, # ω_ref,
-        1.0, #V_ref
-        get_activepower(generator), #P_ref
-        get_reactivepower(generator), #Q_ref
-        machine_4th(), #machine
-        shaft_no_damping(), #shaft
-        avr_type1(), #avr
-        tg_none(), #tg
-        pss_none(),
+############### Data Dynamic devices ########################
+function inv_darco(static_device)
+    return PSY.DynamicInverter(
+        static_device,
+        1.0, #ω_ref
+        2.75, #MVABase
+        converter_low_power(), #converter
+        outer_control(), #outercontrol
+        inner_control(), #inner_control
+        dc_source_lv(),
+        pll(),
+        filt(),
     ) #pss
 end
 
-function inv_case9(buses)
-    return PSY.DynamicInverter(
-        1, #Number
-        "DARCO", #name
-        buses[3], #bus
-        1.0, # ω_ref,
-        0.8, #V_ref
-        0.5, #P_ref
-        -0.3, #Q_ref
-        100.0, #MVABase
-        converter_case78(), #converter
-        outer_control_test(), #outer control
-        vsc_test(), #inner control voltage source
-        dc_source_case78(), #dc source
-        pll_test(), #pll
-        filter_test(),
-    ) #filter
-end
+#Attach dynamic generator. Currently use PSS/e format based on bus #.
+device = [g for g in get_components(Generator, omib_sys)][1]
+case_inv = inv_darco(device)
+add_component!(omib_sys, case_inv)

@@ -1,49 +1,56 @@
 """
-Case 1:
-This case study defines a classical machine against an infinite bus. The fault
-drop a circuit on the (double circuit) line connecting the two buses, doubling its impedance
+Case 10:
+This case study a three bus system with 1 machine (One d- One q-: 4th order model), a VSM of 19 states and an infinite source. All lines are modeled as a static lines.
+The perturbation trips two of the three circuits of line between buses 1 and 2, triplicating its impedance.
 """
 
 ##################################################
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test01.jl"))
+include(joinpath(dirname(@__FILE__), "data_tests/test10.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
+
+#time span
+tspan = (0.0, 40.0)
+
 #Define Fault: Change of YBus
-Ybus_change = ThreePhaseFault(
+Ybus_change = LITS.ThreePhaseFault(
     1.0, #change at t = 1.0
     Ybus_fault,
 ) #New YBus
 
-path = (joinpath(pwd(), "test-01"))
+path = (joinpath(pwd(), "test-10"))
 !isdir(path) && mkdir(path)
 try
     #Define Simulation Problem
     sim = Simulation(
         path,
-        omib_sys, #system
-        (0.0, 30.0), #time span
-        Ybus_change,
-    ) #Type of Fault
+        threebus_sys, #system
+        tspan, #time span
+        Ybus_change, #Type of Fault
+    )
 
     #Obtain small signal results for initial conditions
     small_sig = small_signal_analysis(sim)
 
     #Solve problem in equilibrium
-    run_simulation!(sim, IDA(), dtmax = 0.02)
+    run_simulation!(sim, IDA())
 
-    #Obtain data for angles
-    series = get_state_series(sim, ("generator-102-1", :δ))
-    series2 = get_voltagemag_series(sim, 102)
-    LITS.print_init_states(sim)
+    #Obtain data for voltages
+    series = get_voltagemag_series(sim, 102)
+
+    zoom = [
+        (series[1][ix], series[2][ix])
+        for (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
+    ]
 
     diff = [0.0]
     res = LITS.get_dict_init_states(sim)
-    for (k, v) in test01_x0_init
+    for (k, v) in test10_x0_init
         diff[1] += LinearAlgebra.norm(res[k] - v)
     end
     @test (diff[1] < 1e-6)

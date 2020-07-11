@@ -11,6 +11,8 @@ function mdl_pss_ode!(
     return
 end
 
+#Currently not working properly.
+#=
 function mdl_pss_ode!(
     device_states,
     output_ode,
@@ -19,7 +21,8 @@ function mdl_pss_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
     #Get references
-    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
+    static_gen = PSY.get_static_injector(device)
+    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
 
     #Obtain external states for device
     external_ix = get_input_port_ix(device, PSY.PSSSimple)
@@ -35,7 +38,8 @@ function mdl_pss_ode!(
     K_p = PSY.get_K_p(pss)
 
     #Update V_pss on inner vars
-    get_inner_vars(device)[V_pss_var] = K_ω * (ω - ω_sys) + K_p * (ω * τe - P_ref)
+    get_inner_vars(device)[V_pss_var] = K_ω * (ω[1] - ω_sys) + K_p * (ω[1] * τe - P0)
 
     return
 end
+=#

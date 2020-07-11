@@ -2,7 +2,7 @@ function mdl_shaft_ode!(
     device_states,
     output_ode,
     f0::Float64,
-    ω_sys::Float64,
+    ω_sys,
     device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -34,7 +34,7 @@ function mdl_shaft_ode!(
     device_states,
     output_ode,
     f0::Float64,
-    ω_sys::Float64,
+    ω_sys,
     device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 

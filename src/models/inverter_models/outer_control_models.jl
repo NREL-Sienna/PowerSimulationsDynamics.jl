@@ -43,7 +43,7 @@ function mdl_outer_ode!(
     Ta = PSY.get_Ta(active_power_control) #VSM Inertia constant
     kd = PSY.get_kd(active_power_control) #VSM damping constant
     kω = PSY.get_kω(active_power_control) #Frequency droop gain
-    ωb = PSY.get_ωb(active_power_control) #Rated angular frequency
+    ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
     reactive_power_control = PSY.get_reactive_power(outer_control)

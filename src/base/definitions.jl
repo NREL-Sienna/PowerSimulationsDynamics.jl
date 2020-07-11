@@ -66,6 +66,7 @@ Vi_cnv_var :: Voltage supplied from the converter in the I-component
     VI_inv_var = 11
     Vr_cnv_var = 12
     Vi_cnv_var = 13
+    P_ES_var = 14 #Power from energy source
 end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
@@ -100,8 +101,17 @@ const VOLTAGE_BUSES_NO = "voltage_buses_no"
 const CURRENT_BUSES_NO = "current_buses_no"
 const TOTAL_SHUNTS = "total_shunts"
 const AUX_ARRAYS = "aux_arrays"
+const LOOKUP = "lookup"
 
-const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation]
+const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation, :system_to_file]
 
 PSY.get_V_ref(value::PSY.AVRFixed) = value.Vf
 PSY.set_V_ref!(value::PSY.AVRFixed, val::Float64) = value.Vf = val
+
+get_V_ref_control(value::PSY.DynamicGenerator) = PSY.get_V_ref(PSY.get_avr(value))
+get_V_ref_control(value::PSY.DynamicInverter) =
+    PSY.get_V_ref(PSY.get_reactive_power(PSY.get_outer_control(value)))
+
+get_P_ref_control(value::PSY.DynamicGenerator) = PSY.get_P_ref(PSY.get_prime_mover(value))
+get_P_ref_control(value::PSY.DynamicInverter) =
+    PSY.get_P_ref(PSY.get_active_power(PSY.get_outer_control(value)))
