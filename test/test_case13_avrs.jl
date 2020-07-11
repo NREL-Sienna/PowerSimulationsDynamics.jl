@@ -1,15 +1,14 @@
 """
-Case 4:
-This case study a three bus system with 2 machines (Marconato: 8th order model) and an infinite source.
-The fault drop the connection between buses 1 and 3, eliminating the direct connection between the infinite source
-and the generator located in bus 3.
+Case 13:
+This case study a three bus system with 2 machines (One d- One q-: 4th order model) and an infinite source.
+The case is similar to case 04, with different AVR and TG models.
 """
 
 ##################################################
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test04.jl"))
+include(joinpath(dirname(@__FILE__), "data_tests/test13.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -21,7 +20,7 @@ Ybus_change = ThreePhaseFault(
     Ybus_fault,
 ) #New YBus
 
-path = (joinpath(pwd(), "test-04"))
+path = (joinpath(pwd(), "test-13"))
 !isdir(path) && mkdir(path)
 try
     #Define Simulation Problem
@@ -42,7 +41,7 @@ try
 
     diff = [0.0]
     res = LITS.get_dict_init_states(sim)
-    for (k, v) in test04_x0_init
+    for (k, v) in test13_x0_init
         diff[1] += LinearAlgebra.norm(res[k] - v)
     end
     @test (diff[1] < 1e-6)
