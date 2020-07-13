@@ -9,6 +9,7 @@ makedocs(
         "Home" => "index.md",
         # "User Guide" => "man/guide.md",
         "Tutorials" => Any[
+            "Tutorial 0: Data Creation" => "Examples/example_data.md",
             "Tutorial 1: OMIB" => "Examples/example_OMIB.md",
             "Tutorial 2: Dynamic Lines" => "Examples/example_lines.md",
         ],
