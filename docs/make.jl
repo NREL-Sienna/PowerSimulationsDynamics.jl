@@ -14,6 +14,7 @@ makedocs(
         ],
         "Models" => Any[
             "Network" => "Models/network.md",
+            "Reference Frames" => "Models/srf.md",
             "Generator" => "Models/gens.md",
             "Inverter" => "Models/inverters.md",
             "Small Signal" => "Models/small.md",

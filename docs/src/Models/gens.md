@@ -14,14 +14,6 @@ The following figure summarizes the components of a generator and which variable
 <img src="../../assets/gen_metamodel.png" width="75%"/>
 ``` ⠀
 
-Each generator is defined in its own ``dq`` reference frame. Let ``\delta`` be the rotor angle of the generator. If ``v_r + jv_i = v_h\angle \theta`` defines the voltage in the bus in the network reference frame ``RI`` rotating at nominal frequency ``\Omega_b``, then the following equations (both are equivalent) can be used to convert between reference frames:
-```math
-\begin{align}
-\left[ \begin{array}{c} v_d \\ v_q \end{array} \right] &=  \left[ \begin{array}{c} v_h \sin(\delta - \theta) \\ v_h \cos(\delta - \theta) \end{array} \right]  \tag{0a} \\
-\left[ \begin{array}{c} v_d \\ v_q \end{array} \right] &= \left[ \begin{array}{cc} \sin(\delta) & -\cos(\delta) \\ \cos(\delta) & \sin(\delta) \end{array} \right] \left[ \begin{array}{c} v_r \\ v_i \end{array} \right] \tag{0b}
-\end{align}
-```
-
 Models are based from Federico Milano's book: "Power System Modelling and Scripting" and Prabha Kundur's book: "Power System's Stability and Control" and structures are defined in ```PowerSystems.jl``` abbreviated as ```PSY```.
 
 ## Machines
@@ -120,7 +112,7 @@ i_q &= \frac{1}{x_q''} (-e_d'' - \psi_q) \tag{5h} \\
 \end{align}
 ```
 
-### Simplified Anderson-Fouad Machine (4th Order) ``[PSY.SimpleAFMachine]``
+### Simplified Anderson-Fouad Machine (4th Order) ```[PSY.SimpleAFMachine]```
 
 Similar to the Simplified Marconato Model, this model neglects the derivative of stator fluxes (``\dot{\psi}_d`` and  ``\dot{\psi}_q``) and assume that the rotor speed stays close to 1 pu (``\omega \psi_d = \psi_d`` and ``\omega \psi_q = \psi_q``) that allows to remove the stator fluxes variables from the model:
 
@@ -132,23 +124,6 @@ Similar to the Simplified Marconato Model, this model neglects the derivative of
 \dot{e}_d'' &= \frac{1}{T_{q0}''} \left[-e_d'' + e_d' + (x_q'-x_q'')i_q \right] \tag{6d} \\
 \left[ \begin{array}{c} i_d \\ i_q \end{array} \right] &= \left[ \begin{array}{cc} r_a & -x_q'' \\ x_d'' & r_a \end{array} \right]^{-1}  \left[ \begin{array}{c} e_d''-v_d \\ e_q'' - v_q \end{array} \right] \tag{6e}\\
 p_e \approx \tau_e &= (v_q + r_a i_q)i_q + (v_d + r_ai_d)i_d \tag{6f}
-\end{align}
-```
-
-### Rotor Fluxes Model (5th Order) ```[PSY.FullMachine]```
-
-This models describes a machine model using 2 stator fluxes ``\psi_d`` and ``\psi_q``, the rotor field flux ``\psi_f``, the d-axis damping ``\psi_{1d}`` and only one q-axis damping circuit ``\psi_{1q}``:
-
-```math
-\begin{align}
-\dot{\psi}_d &= \Omega_b(r_a i_d + \omega \psi_q + v_d) \tag{7a} \\
-\dot{\psi}_q &= \Omega_b(r_ai_q - \omega \psi_d + v_q) \tag{7b} \\
-\dot{\psi}_f &= -r_f i_f + v_f \tag{7c}\\
-\dot{\psi}_{1d} &= -r_{1d}i_{1d} \tag{7d}\\
-\dot{\psi}_{1q} &= -r_{1q}i_{1q} \tag{7e} \\
-\left[ \begin{array}{c} i_d \\ i_f \\ i_{1d} \end{array} \right] &= \left[ \begin{array}{ccc} -L_d & -L_{ad} & L_{ad} \\ -L_{ad} & L_{ff} & L_{f1d} \\ -L_{ad} & L_{f1d} & L_{1d} \end{array} \right]^{-1}  \left[ \begin{array}{c} \psi_d \\ \psi_f  \\ \psi_{1d} \end{array} \right] \tag{7f}\\
-\left[ \begin{array}{c} i_q \\ i_{1q}  \end{array} \right] &= \left[ \begin{array}{ccc} -L_q & L_{aq} \\  -L_{aq} & L_{1q} \end{array} \right]^{-1}  \left[ \begin{array}{c} \psi_q \\ \psi_{1q}  \end{array} \right] \tag{7g}\\
-\tau_e &= \psi_d i_q - \psi_q i_d \tag{7h}
 \end{align}
 ```
 
