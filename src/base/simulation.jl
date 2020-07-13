@@ -155,9 +155,9 @@ end
 function _attach_control_refs!(device::PSY.DynamicInjection)
     device_basepower = PSY.get_basepower(device)
     device.ext[CONTROL_REFS] = [
-        get_V_ref_control(device),
+        LITS.get_V_ref_control(device),
         PSY.get_ω_ref(device),
-        get_P_ref_control(device),
+        LITS.get_P_ref_control(device),
         PSY.get_reactivepower(PSY.get_static_injector(device)),
     ]
     return
