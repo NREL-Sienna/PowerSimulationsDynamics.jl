@@ -13,11 +13,10 @@ function add_source_to_ref(sys::PSY.System, X_th::Float64)
         reactivepower = 0.0,
         bus = slack_bus, #bus
         X_th = X_th, #Xth
-    ) 
+    )
     PSY.add_component!(sys, inf_source)
     return
 end
-
 
 function add_source_to_ref(sys::PSY.System)
     for g in PSY.get_components(StaticInjection, sys)
@@ -34,8 +33,7 @@ function add_source_to_ref(sys::PSY.System)
         reactivepower = 0.0,
         bus = slack_bus, #bus
         X_th = 5e-6, #Xth
-    ) 
+    )
     PSY.add_component!(sys, inf_source)
     return
 end
-
