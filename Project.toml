@@ -4,6 +4,7 @@ version = "0.4.0"
 
 [deps]
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
+Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 InfrastructureSystems = "2cd47ed4-ca9b-11e9-27f2-ab636a7671f1"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -15,7 +16,5 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 [compat]
 DiffEqBase = "6"
 ForwardDiff = "~v0.10"
-InfrastructureSystems = "~0.11"
 NLsolve = "4"
-PowerSystems = "~0.21"
 julia = "^1.2"

@@ -19,8 +19,8 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         #Write voltage initial guess
         bus_n = PSY.get_number(bus)
         bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
-        initial_guess[bus_ix] = PSY.get_voltage(bus) * cos(PSY.get_angle(bus))
-        initial_guess[bus_ix + bus_size] = PSY.get_voltage(bus) * sin(PSY.get_angle(bus))
+        initial_guess[bus_ix] = PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
+        initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
     end
 
     for d in PSY.get_components(PSY.DynamicInjection, sys)

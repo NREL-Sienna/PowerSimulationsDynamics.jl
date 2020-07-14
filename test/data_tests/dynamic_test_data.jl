@@ -228,9 +228,9 @@ avr_type2() = AVRTypeII(
 ######################################
 
 ###### Converter Data ######
-converter_low_power() = AverageConverter(v_rated = 690.0, s_rated = 2.75)
+converter_low_power() = AverageConverter(rated_voltage = 690.0, rated_current = 2.75)
 
-converter_high_power() = AverageConverter(v_rated = 138.0, s_rated = 100.0)
+converter_high_power() = AverageConverter(rated_voltage = 138.0, rated_current = 100.0)
 
 ###### DC Source Data ######
 dc_source_lv() = FixedDCSource(voltage = 600.0) #Not in the original data, guessed.

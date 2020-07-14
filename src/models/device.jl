@@ -15,7 +15,7 @@ function device!(
     device_states = @view x[ix_range]
 
     #Obtain references
-    sys_Sbase = PSY.get_basepower(sys)
+    sys_Sbase = PSY.get_base_power(sys)
     sys_f0 = PSY.get_frequency(sys)
     sys_ω = get_ω_sys(sys)
 
@@ -92,7 +92,7 @@ function device!(
     device_states = @view x[ix_range]
 
     #Obtain references
-    Sbase = PSY.get_basepower(sys)
+    Sbase = PSY.get_base_power(sys)
     sys_f0 = PSY.get_frequency(sys)
     sys_ω = get_ω_sys(sys)
 

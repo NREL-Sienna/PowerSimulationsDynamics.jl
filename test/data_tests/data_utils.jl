@@ -12,6 +12,7 @@ function add_source_to_ref(sys::PSY.System, X_th::Float64)
         activepower = 0.0,
         reactivepower = 0.0,
         bus = slack_bus, #bus
+        R_th = 0.0,
         X_th = X_th, #Xth
     )
     PSY.add_component!(sys, inf_source)
@@ -29,9 +30,10 @@ function add_source_to_ref(sys::PSY.System)
     inf_source = Source(
         name = "InfBus", #name
         available = true, #availability
-        activepower = 0.0,
-        reactivepower = 0.0,
+        active_power = 0.0,
+        reactive_power = 0.0,
         bus = slack_bus, #bus
+        R_th = 0.0,
         X_th = 5e-6, #Xth
     )
     PSY.add_component!(sys, inf_source)

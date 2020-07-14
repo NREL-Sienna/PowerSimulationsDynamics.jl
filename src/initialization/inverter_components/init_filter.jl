@@ -10,9 +10,9 @@ function initialize_filter!(
 }
     #PowerFlow Data
     static_inj = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_inj) / PSY.get_basepower(static_inj)
-    Q0 = PSY.get_reactivepower(static_inj) / PSY.get_basepower(static_inj)
-    Vm = PSY.get_voltage(PSY.get_bus(static_inj))
+    P0 = PSY.get_active_power(static_inj)
+    Q0 = PSY.get_reactive_power(static_inj)
+    Vm = PSY.get_magnitude(PSY.get_bus(static_inj))
     θ = PSY.get_angle(PSY.get_bus(static_inj))
     S0 = P0 + Q0 * 1im
     V_R = Vm * cos(θ)

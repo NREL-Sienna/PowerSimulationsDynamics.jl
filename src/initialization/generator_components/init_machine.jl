@@ -8,9 +8,9 @@ function initialize_mach_shaft!(
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
-    Q0 = PSY.get_reactivepower(static_gen) / PSY.get_basepower(static_gen)
-    Vm = PSY.get_voltage(PSY.get_bus(static_gen))
+    P0 = PSY.get_active_power(static_gen)
+    Q0 = PSY.get_reactive_power(static_gen)
+    Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
     θ = PSY.get_angle(PSY.get_bus(static_gen))
     S0 = P0 + Q0 * 1im
     V_R = Vm * cos(θ)
@@ -74,9 +74,9 @@ function initialize_mach_shaft!(
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
-    Q0 = PSY.get_reactivepower(static_gen) / PSY.get_basepower(static_gen)
-    Vm = PSY.get_voltage(PSY.get_bus(static_gen))
+    P0 = PSY.get_active_power(static_gen) 
+    Q0 = PSY.get_reactive_power(static_gen)
+    Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
     θ = PSY.get_angle(PSY.get_bus(static_gen))
     S0 = P0 + Q0 * 1im
     V_R = Vm * cos(θ)
@@ -153,9 +153,9 @@ function initialize_mach_shaft!(
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
-    Q0 = PSY.get_reactivepower(static_gen) / PSY.get_basepower(static_gen)
-    Vm = PSY.get_voltage(PSY.get_bus(static_gen))
+    P0 = PSY.get_active_power(static_gen)
+    Q0 = PSY.get_reactive_power(static_gen)
+    Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
     θ = PSY.get_angle(PSY.get_bus(static_gen))
     S0 = P0 + Q0 * 1im
     V_R = Vm * cos(θ)
@@ -253,9 +253,9 @@ function initialize_mach_shaft!(
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
-    Q0 = PSY.get_reactivepower(static_gen) / PSY.get_basepower(static_gen)
-    Vm = PSY.get_voltage(PSY.get_bus(static_gen))
+    P0 = PSY.get_active_power(static_gen)
+    Q0 = PSY.get_reactive_power(static_gen)
+    Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
     θ = PSY.get_angle(PSY.get_bus(static_gen))
     S0 = P0 + Q0 * 1im
     V_R = Vm * cos(θ)
@@ -347,9 +347,9 @@ function initialize_mach_shaft!(
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
-    Q0 = PSY.get_reactivepower(static_gen) / PSY.get_basepower(static_gen)
-    Vm = PSY.get_voltage(PSY.get_bus(static_gen))
+    P0 = PSY.get_active_power(static_gen)
+    Q0 = PSY.get_reactive_power(static_gen)
+    Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
     θ = PSY.get_angle(PSY.get_bus(static_gen))
     S0 = P0 + Q0 * 1im
     V_R = Vm * cos(θ)
@@ -443,9 +443,9 @@ function initialize_mach_shaft!(
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
-    Q0 = PSY.get_reactivepower(static_gen) / PSY.get_basepower(static_gen)
-    Vm = PSY.get_voltage(PSY.get_bus(static_gen))
+    P0 = PSY.get_active_power(static_gen)
+    Q0 = PSY.get_reactive_power(static_gen)
+    Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
     θ = PSY.get_angle(PSY.get_bus(static_gen))
     S0 = P0 + Q0 * 1im
     V_R = Vm * cos(θ)
@@ -534,9 +534,9 @@ function initialize_mach_shaft!(
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
-    Q0 = PSY.get_reactivepower(static_gen) / PSY.get_basepower(static_gen)
-    Vm = PSY.get_voltage(PSY.get_bus(static_gen))
+    P0 = PSY.get_active_power(static_gen) 
+    Q0 = PSY.get_reactive_power(static_gen) 
+    Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
     θ = PSY.get_angle(PSY.get_bus(static_gen))
     S0 = P0 + Q0 * 1im
     V_R = Vm * cos(θ)
