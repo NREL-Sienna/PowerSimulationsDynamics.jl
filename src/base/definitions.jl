@@ -66,6 +66,7 @@ Vi_cnv_var :: Voltage supplied from the converter in the I-component
     VI_inv_var = 11
     Vr_cnv_var = 12
     Vi_cnv_var = 13
+    P_ES_var = 14 #Power from energy source
 end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
@@ -100,5 +101,7 @@ const VOLTAGE_BUSES_NO = "voltage_buses_no"
 const CURRENT_BUSES_NO = "current_buses_no"
 const TOTAL_SHUNTS = "total_shunts"
 const AUX_ARRAYS = "aux_arrays"
+const LOOKUP = "lookup"
 
-const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation]
+const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation, :system_to_file]
+

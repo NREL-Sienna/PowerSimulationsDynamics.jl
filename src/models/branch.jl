@@ -19,9 +19,9 @@ IS.get_name(value::DynamicLine) = value.branch_data.name
 """Get Line available."""
 PSY.get_available(value::DynamicLine) = value.branch_data.available
 """Get Line activepower_flow."""
-PSY.get_activepower_flow(value::DynamicLine) = value.branch_data.activepower_flow
+PSY.get_active_power_flow(value::DynamicLine) = value.branch_data.activepower_flow
 """Get Line reactivepower_flow."""
-PSY.get_reactivepower_flow(value::DynamicLine) = value.branch_data.reactivepower_flow
+PSY.get_reactive_power_flow(value::DynamicLine) = value.branch_data.reactivepower_flow
 """Get Line arc."""
 PSY.get_arc(value::DynamicLine) = value.branch_data.arc
 """Get Line r."""
@@ -33,7 +33,7 @@ PSY.get_b(value::DynamicLine) = value.branch_data.b
 """Get Line rate."""
 PSY.get_rate(value::DynamicLine) = value.branch_data.rate
 """Get Line anglelimits."""
-PSY.get_anglelimits(value::DynamicLine) = value.branch_data.anglelimits
+PSY.get_angle_limits(value::DynamicLine) = value.branch_data.anglelimits
 """Get Line services."""
 PSY.get_services(value::DynamicLine) = value.branch_data.services
 """Get Line ext."""
@@ -74,7 +74,7 @@ function branch!(
     device_states = @view x[ix_range]
 
     #Obtain references
-    Sbase = PSY.get_basepower(sys)
+    Sbase = PSY.get_base_power(sys)
     sys_f = PSY.get_frequency(sys)
 
     mdl_line_ode!(

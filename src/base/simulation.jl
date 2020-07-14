@@ -8,47 +8,57 @@ mutable struct Simulation
     tstops::Vector{Float64}
     callbacks::DiffEqBase.CallbackSet
     solution::Union{Nothing, DiffEqBase.DAESolution}
+    simulation_folder::String
     ext::Dict{String, Any}
 end
 
 function Simulation(
+    simulation_folder::String,
     system::PSY.System,
     tspan::NTuple{2, Float64},
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
-    initialize_simulation::Bool = true,
     kwargs...,
 )
+    check_folder(simulation_folder)
+    simulation_system = deepcopy(system)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
-    DAE_vector = _index_dynamic_system!(system)
-    var_count = get_variable_count(system)
+    DAE_vector = _index_dynamic_system!(simulation_system)
+    var_count = get_variable_count(simulation_system)
 
     flat_start = zeros(var_count)
-    bus_count = length(PSY.get_components(PSY.Bus, system))
+    bus_count = length(PSY.get_components(PSY.Bus, simulation_system))
     flat_start[1:bus_count] .= 1.0
     x0_init = get(kwargs, :initial_guess, flat_start)
 
+    initialize_simulation = get(kwargs, :initialize_simulation, true)
     if initialize_simulation
         @info("Initializing Simulation States")
-        initialized = _calculate_initial_conditions!(system, x0_init)
+        _add_aux_arrays!(simulation_system, Real)
+        initialized = calculate_initial_conditions!(simulation_system, x0_init)
     end
 
     dx0 = zeros(var_count)
-    callback_set, tstops = _build_perturbations(perturbations::Vector{<:Perturbation})
-
-    _add_aux_arrays!(system, Float64)
+    callback_set, tstops = _build_perturbations(simulation_system, perturbations)
+    _add_aux_arrays!(simulation_system, Float64)
     prob = DiffEqBase.DAEProblem(
         system!,
         dx0,
         x0_init,
         tspan,
-        system,
+        simulation_system,
         differential_vars = DAE_vector;
         kwargs...,
     )
 
+    if get(kwargs, :system_to_file, false)
+        PSY.to_json(
+            simulation_system,
+            joinpath(simulation_folder, "initialized_system.json"),
+        )
+    end
     return Simulation(
-        system,
+        simulation_system,
         false,
         prob,
         perturbations,
@@ -57,11 +67,13 @@ function Simulation(
         tstops,
         callback_set,
         nothing,
+        simulation_folder,
         Dict{String, Any}(),
     )
 end
 
 function Simulation(
+    simulation_folder::String,
     system::PSY.System,
     tspan::NTuple{2, Float64},
     perturbation::Perturbation;
@@ -69,6 +81,7 @@ function Simulation(
     kwargs...,
 )
     return Simulation(
+        simulation_folder,
         system,
         tspan,
         [perturbation];
@@ -85,53 +98,26 @@ function _add_aux_arrays!(system::PSY.System, T)
         3 => collect(zeros(T, get_n_injection_states(system))),  #injection_ode
         4 => collect(zeros(T, get_n_branches_states(system))),   #branches_ode
         5 => collect(zeros(Complex{T}, bus_count)),              #I_bus
-        6 => collect(zeros(T, 2 * bus_count)),                      #I_balance
+        6 => collect(zeros(T, 2 * bus_count)),                   #I_balance
     )
     system.internal.ext[AUX_ARRAYS] = aux_arrays
     return
 end
 
-function _build_perturbations(perturbations::Vector{<:Perturbation})
+function _build_perturbations(system::PSY.System, perturbations::Vector{<:Perturbation})
     isempty(perturbations) && return DiffEqBase.CallbackSet(), [0.0]
     perturbations_count = length(perturbations)
     callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
     tstops = Vector{Float64}(undef, perturbations_count)
     for (ix, pert) in enumerate(perturbations)
         condition = (x, t, integrator) -> t in [pert.time]
-        affect = get_affect(pert)
+        affect = get_affect(system, pert)
         callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
     callback_tuple = Tuple(cb for cb in callback_vector)
     callback_set = DiffEqBase.CallbackSet((), callback_tuple)
     return callback_set, tstops
-end
-
-function _calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Float64})
-    # TODO: Code to refine initial_guess
-    _add_aux_arrays!(sys, Real)
-    bus_count = length(PSY.get_components(PSY.Bus, sys))
-    var_count = get_variable_count(sys)
-    dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    inif! = (out, x) -> system!(
-        out,    #output of the function
-        dx0,    #derivatives equal to zero
-        x,      #states
-        sys,    #Parameters
-        0.0,    #time equals to zero.
-    )
-    sys_solve = NLsolve.nlsolve(
-        inif!,
-        initial_guess,
-        xtol = :1e-9,
-        ftol = :1e-9,
-        method = :trust_region,
-    ) #Solve using initial guess x0
-    if !NLsolve.converged(sys_solve)
-        @warn("Initialization failed, initial conditions do not meet conditions for an stable equilibrium")
-    end
-    initial_guess .= sys_solve.zero
-    return NLsolve.converged(sys_solve)
 end
 
 function _index_local_states!(
@@ -162,7 +148,7 @@ function _attach_inner_vars!(
     device::PSY.DynamicInverter,
     ::Type{T} = Real,
 ) where {T <: Real}
-    device.ext[INNER_VARS] = zeros(T, 13)
+    device.ext[INNER_VARS] = zeros(T, 14)
     return
 end
 
@@ -171,7 +157,7 @@ function _attach_control_refs!(device::PSY.DynamicInjection)
         PSY.get_V_ref(device),
         PSY.get_ω_ref(device),
         PSY.get_P_ref(device),
-        PSY.get_Q_ref(device),
+        PSY.get_reactive_power(PSY.get_static_injector(device)),
     ]
     return
 end
@@ -191,7 +177,7 @@ function _index_port_mapping!(
     return
 end
 
-function _make_device_index!(device::PSY.DynamicInjection)
+function _make_device_index!(device::PSY.DynamicInjection, sys_basepower::Float64)
     states = PSY.get_states(device)
     device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
     input_port_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
@@ -241,6 +227,7 @@ function _index_dynamic_system!(sys::PSY.System)
     )
     total_shunts = Dict{Int, Float64}()
     found_ref_bus = false
+    sys_basepower = PSY.get_base_power(sys)
 
     dyn_branches = PSY.get_components(DynamicLine, sys)
     if !(isempty(dyn_branches))
@@ -302,13 +289,13 @@ function _index_dynamic_system!(sys::PSY.System)
         if (btype == PSY.BusTypes.REF) && found_ref_bus
             throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
         end
-        _make_device_index!(d)
+        _make_device_index!(d, sys_basepower)
         device_n_states = PSY.get_n_states(d)
         DAE_vector = push!(DAE_vector, collect(trues(device_n_states))...)
         total_states += device_n_states
         _add_states_to_global!(global_state_index, state_space_ix, d)
         btype != PSY.BusTypes.REF && continue
-        global_vars[:ω_sys_index] = global_state_index[d.name][:ω] #To define 0 if infinite source, bus_number otherwise,
+        global_vars[:ω_sys_index] = global_state_index[PSY.get_name(d)][:ω] #To define 0 if infinite source, bus_number otherwise,
         found_ref_bus = true
     end
     injection_n_states = state_space_ix[1] - branches_n_states - n_buses * 2
@@ -316,9 +303,12 @@ function _index_dynamic_system!(sys::PSY.System)
     @debug total_states
     setdiff!(current_buses_no, voltage_buses_no)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
-        Ybus = PSY.Ybus(sys)[:, :]
+        Ybus_ = PSY.Ybus(sys)
+        Ybus = Ybus_[:, :]
+        lookup = Ybus_.lookup[1]
     else
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
+        lookup = Dict{Int.Int}()
     end
     sys_ext = Dict{String, Any}()
     counts = Base.ImmutableDict(
@@ -331,6 +321,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :bus_count => n_buses,
     )
 
+    sys_ext[LOOKUP] = lookup
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
     sys_ext[VOLTAGE_BUSES_NO] = voltage_buses_no
@@ -359,6 +350,7 @@ get_current_bus_no(sys::PSY.System) = PSY.get_ext(sys)[CURRENT_BUSES_NO]
 get_voltage_bus_no(sys::PSY.System) = PSY.get_ext(sys)[VOLTAGE_BUSES_NO]
 get_total_shunts(sys::PSY.System) = PSY.get_ext(sys)[TOTAL_SHUNTS]
 get_bus_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:bus_count]
+get_lookup(sys::PSY.System) = PSY.get_ext(sys)[LOOKUP]
 
 function _get_internal_mapping(
     device::PSY.DynamicInjection,
@@ -407,8 +399,9 @@ function _change_vector_type(sys::PSY.System)
 end
 
 function _determine_stability(vals::Vector{Complex{Float64}})
+    stable = true
     for real_eig in real(vals)
-        real_eig >= 0.0 && return false
+        real_eig > 0.0 && return false
     end
     return true
 end
@@ -447,6 +440,15 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     # TODO: Make operation using BLAS!
     reduced_jacobian = fx - fy * inv(gy) * gx
     vals, vect = LinearAlgebra.eigen(reduced_jacobian)
+    sources = collect(PSY.get_components(PSY.Source, sim.system))
+    if isempty(sources)
+        @warn("No Infinite Bus found. Confirm stability directly checking eigenvalues.\nIf all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable.")
+        info_evals = "Eigenvalues are:\n"
+        for i in vals
+            info_evals = info_evals * string(i) * "\n"
+        end
+        @info(info_evals)
+    end
     return SmallSignalOutput(
         reduced_jacobian,
         vals,

@@ -17,55 +17,40 @@ include(joinpath(dirname(@__FILE__), "data_tests/test03.jl"))
 
 #time span
 tspan = (0.0, 20.0);
-
-#Initial guess
-x0_guess = [
-    1.02,
-    1.0,
-    1.0,
-    0.0,
-    -0.01,
-    -0.01,
-    1.0, #eq_p
-    0.47, #ed_p
-    0.95, #eq_pp
-    0.8, #ed_pp
-    0.6, #δ
-    1.0, #ω
-    2.1, #Vf
-    0.28, #Vr1
-    -0.39, #Vr2,
-    1.0, #Vm
-    0.81, #eq_p
-    0.59, #ed_p
-    0.75, #eq_pp
-    0.6, #ed_pp
-    0.86, #δ
-    1.0, #ω
-    1.7, #Vf
-    0.11, #Vr1
-    -0.31, #Vr2,
-    1.0,
-] #Vm
-
 #Define Fault: Change of YBus
 Ybus_change = ThreePhaseFault(
     1.0, #change at t = 1.0
     Ybus_fault,
 ) #New YBus
 
-#Define Simulation Problem
-sim = Simulation(
-    threebus_sys, #system
-    tspan, #time span
-    Ybus_change, #Type of Fault
-    initial_guess = x0_guess,
-) #initial guess
+path = (joinpath(pwd(), "test-03"))
+!isdir(path) && mkdir(path)
+try
+    #Define Simulation Problem
+    sim = Simulation(
+        path,
+        threebus_sys, #system
+        tspan, #time span
+        Ybus_change, #Type of Fault
+    )
 
-#Solve problem in equilibrium
-run_simulation!(sim, IDA());
+    small_sig = small_signal_analysis(sim)
 
-#Obtain data for angles
-series = get_state_series(sim, ("Case3_generator-2-1", :δ));
+    #Solve problem in equilibrium
+    run_simulation!(sim, IDA(), dtmax = 0.02)
 
-@test sim.solution.retcode == :Success
+    #Obtain data for angles
+    series = get_state_series(sim, ("generator-102-1", :δ))
+
+    diff = [0.0]
+    res = LITS.get_dict_init_states(sim)
+    for (k, v) in test03_x0_init
+        diff[1] += LinearAlgebra.norm(res[k] - v)
+    end
+    @test (diff[1] < 1e-6)
+    @test sim.solution.retcode == :Success
+    @test small_sig.stable
+finally
+    @info("removing test files")
+    rm(path, force = true, recursive = true)
+end

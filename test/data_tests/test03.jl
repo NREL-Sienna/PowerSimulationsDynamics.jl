@@ -7,22 +7,16 @@ include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusNetwork.raw")
-threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false)
+threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false,  unit_system = "device_base")
 add_source_to_ref(threebus_sys)
-res = solve_powerflow!(threebus_sys, nlsolve)
 
 ### Case 2 Generators ###
 
-function dyn_gen_sixth_order(generator)
+function dyn_gen_simple_marconato(generator)
     return PSY.DynamicGenerator(
-        1, #Number
-        "Case3_$(get_name(generator))",
-        get_bus(generator), #bus
-        1.0, # ω_ref,
-        get_voltage(get_bus(generator)), #V_ref
-        get_activepower(generator), #P_ref
-        get_reactivepower(generator), #Q_ref
-        machine_6th(), #machine
+        generator, #static generator
+        1.0, # ω_ref
+        machine_simple_marconato(), #machine
         shaft_no_damping(), #shaft
         avr_type1(), #avr
         tg_none(), #tg
@@ -31,7 +25,7 @@ function dyn_gen_sixth_order(generator)
 end
 
 for g in get_components(Generator, threebus_sys)
-    case_gen = dyn_gen_sixth_order(g)
+    case_gen = dyn_gen_simple_marconato(g)
     add_component!(threebus_sys, case_gen)
 end
 
