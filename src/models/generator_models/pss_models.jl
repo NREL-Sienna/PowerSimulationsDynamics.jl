@@ -22,7 +22,7 @@ function mdl_pss_ode!(
 
     #Get references
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
+    P0 = PSY.get_active_power(static_gen) 
 
     #Obtain external states for device
     external_ix = get_input_port_ix(device, PSY.PSSSimple)

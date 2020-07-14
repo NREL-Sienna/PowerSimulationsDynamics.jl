@@ -32,9 +32,11 @@ The architecture of `LITS.jl`  is such that the power system models are all self
 
 ```@contents
 Pages = [
+  "Examples/example_data.md",
   "Examples/example_OMIB.md",
   "Examples/example_lines.md",
   "Models/network.md",
+  "Models/srf.md",
   "Models/gens.md",
   "Models/inverters.md",
   "Models/small.md",

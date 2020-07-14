@@ -153,12 +153,11 @@ function _attach_inner_vars!(
 end
 
 function _attach_control_refs!(device::PSY.DynamicInjection)
-    device_basepower = PSY.get_basepower(device)
     device.ext[CONTROL_REFS] = [
-        get_V_ref_control(device),
+        PSY.get_V_ref(device),
         PSY.get_ω_ref(device),
-        get_P_ref_control(device),
-        PSY.get_reactivepower(PSY.get_static_injector(device)),
+        PSY.get_P_ref(device),
+        PSY.get_reactive_power(PSY.get_static_injector(device)),
     ]
     return
 end
@@ -228,7 +227,7 @@ function _index_dynamic_system!(sys::PSY.System)
     )
     total_shunts = Dict{Int, Float64}()
     found_ref_bus = false
-    sys_basepower = PSY.get_basepower(sys)
+    sys_basepower = PSY.get_base_power(sys)
 
     dyn_branches = PSY.get_components(DynamicLine, sys)
     if !(isempty(dyn_branches))

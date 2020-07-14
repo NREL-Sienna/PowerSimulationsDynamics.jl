@@ -14,7 +14,7 @@ function initialize_pss!(
 
     ω0 = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_activepower(static_gen) / PSY.get_basepower(static_gen)
+    P0 = PSY.get_active_power(static_gen)
     τe = get_inner_vars(device)[τe_var]
 
     #Get parameters

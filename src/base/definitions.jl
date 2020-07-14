@@ -104,3 +104,4 @@ const AUX_ARRAYS = "aux_arrays"
 const LOOKUP = "lookup"
 
 const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation, :system_to_file]
+

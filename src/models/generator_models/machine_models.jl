@@ -26,7 +26,7 @@ function mdl_machine_ode!(
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
     eq_p = PSY.get_eq_p(machine)
-    basepower = PSY.get_basepower(device)
+    basepower = PSY.get_base_power(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -40,7 +40,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = Pe #Model assume ω approx 1.0
 
     #Compute current from the generator to the grid
-    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
+    I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -90,7 +90,7 @@ function mdl_machine_ode!(
     Xq_p = PSY.get_Xq_p(machine)
     Td0_p = PSY.get_Td0_p(machine)
     Tq0_p = PSY.get_Tq0_p(machine)
-    basepower = PSY.get_basepower(device)
+    basepower = PSY.get_base_power(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -108,7 +108,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = Pe #Model assume ω approx 1.0
 
     #Compute current from the generator to the grid
-    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
+    I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -170,7 +170,7 @@ function mdl_machine_ode!(
     T_AA = PSY.get_T_AA(machine)
     γd = PSY.get_γd(machine)
     γq = PSY.get_γq(machine)
-    basepower = PSY.get_basepower(device)
+    basepower = PSY.get_base_power(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -194,7 +194,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
+    I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -254,7 +254,7 @@ function mdl_machine_ode!(
     T_AA = PSY.get_T_AA(machine)
     γd = PSY.get_γd(machine)
     γq = PSY.get_γq(machine)
-    basepower = PSY.get_basepower(device)
+    basepower = PSY.get_base_power(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -279,7 +279,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
+    I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -338,7 +338,7 @@ function mdl_machine_ode!(
     Tq0_p = PSY.get_Tq0_p(machine)
     Td0_pp = PSY.get_Td0_pp(machine)
     Tq0_pp = PSY.get_Tq0_pp(machine)
-    basepower = PSY.get_basepower(device)
+    basepower = PSY.get_base_power(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -360,7 +360,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
+    I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -417,7 +417,7 @@ function mdl_machine_ode!(
     Tq0_p = PSY.get_Tq0_p(machine)
     Td0_pp = PSY.get_Td0_pp(machine)
     Tq0_pp = PSY.get_Tq0_pp(machine)
-    basepower = PSY.get_basepower(device)
+    basepower = PSY.get_base_power(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -439,7 +439,7 @@ function mdl_machine_ode!(
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = basepower * dq_ri(δ) * [i_d; i_q]
+    I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
 
     #Update current
     current_r[1] += I_RI[1]
@@ -497,7 +497,7 @@ function mdl_machine_ode!(
     R_1q = PSY.get_R_1q(machine)
     inv_d_fluxlink = PSY.get_inv_d_fluxlink(machine)
     inv_q_fluxlink = PSY.get_inv_q_fluxlink(machine)
-    basepower = PSY.get_basepower(device)
+    basepower = PSY.get_base_power(device)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
