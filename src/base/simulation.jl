@@ -330,6 +330,7 @@ function _index_dynamic_system!(sys::PSY.System)
     sys_ext[YBUS] = Ybus
     sys_ext[TOTAL_SHUNTS] = total_shunts
     sys_ext[GLOBAL_VARS] = global_vars
+    sys_ext[DYN_LINES] = !isempty(PSY.get_components(DynamicLine, sys))
     @assert sys_ext[GLOBAL_VARS][:ω_sys_index] != -1
     sys.internal.ext = sys_ext
     return DAE_vector

@@ -102,6 +102,6 @@ const CURRENT_BUSES_NO = "current_buses_no"
 const TOTAL_SHUNTS = "total_shunts"
 const AUX_ARRAYS = "aux_arrays"
 const LOOKUP = "lookup"
+const DYN_LINES = "dyn_lines"
 
 const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation, :system_to_file]
-
