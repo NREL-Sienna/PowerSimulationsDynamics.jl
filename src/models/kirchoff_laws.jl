@@ -59,8 +59,13 @@ end
                 It is zero if no generator is connected at bus j.
 """
 function kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
-
-
+    if PSY.get_ext(sys)[DYN_LINES]
+        line_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
+    elseif !PSY.get_ext(sys)[DYN_LINES]
+        Ybus_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
+    else
+        @assert false
+    end
     voltage_kirchoff(sys, V_r, V_i, dx)
     return
 end
