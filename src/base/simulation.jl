@@ -21,6 +21,7 @@ function Simulation(
 )
     check_folder(simulation_folder)
     simulation_system = deepcopy(system)
+    PSY.set_units_base_system!(simulation_system, "device_base")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
     DAE_vector = _index_dynamic_system!(simulation_system)
