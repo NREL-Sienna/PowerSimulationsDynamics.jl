@@ -1,14 +1,5 @@
-"""
-    Kirchoff law for buses.
-    I_gen_r[j]: Real current injection from all generators connected at bus j.
-                It is zero if no generator is connected at bus j.
-    I_gen_i[j]: Real current injection from all generators connected at bus j.
-                It is zero if no generator is connected at bus j.
-
-"""
-function kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
+function Ybus_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
     Ybus = PSY.get_ext(sys)[YBUS]
-    # TODO: Make more efficent calculation here.
     # Note: BLAS doesn't work because the the type of Vr and Vi is not Matrix of Complex
     I_bus = PSY.get_ext(sys)[AUX_ARRAYS][5]
     I_balance = PSY.get_ext(sys)[AUX_ARRAYS][6]
@@ -19,9 +10,33 @@ function kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
         I_balance[n + bus_count] = imag(I_bus[n]) - I_injections_i[n]
     end
 
+    return
+end
+
+function line_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
+    for br in PSY.get_components(PSY.ACBranch, sys)
+        arc = PSY.get_arc(br)
+        from_bus_number = PSY.get_number(arc.from)
+        to_bus_number = PSY.get_number(arc.to)
+        bus_ix_from = PSY.get_ext(sys)[LOOKUP][from_bus_number]
+        bus_ix_to = PSY.get_ext(sys)[LOOKUP][to_bus_number]
+
+        I_i = (V_i[bus_ix_to] - V_i[bus_ix_from])
+        I_r = (V_r[bus_ix_to] - V_r[bus_ix_from])
+
+        I_injections_i[bus_ix_from] =- I_i
+        I_injections_r[bus_ix_from] =- I_r
+        I_injections_i[bus_ix_to] =+ I_i
+        I_injections_r[bus_ix_to] =+ I_r
+    end
+    return
+end
+
+function voltage_kirchoff(sys, V_r, V_i, dx)
     voltage_buses = get_voltage_bus_no(sys)
     isempty(voltage_buses) && return
-
+    I_bus = PSY.get_ext(sys)[AUX_ARRAYS][5]
+    I_balance = PSY.get_ext(sys)[AUX_ARRAYS][6]
     sys_f = PSY.get_frequency(sys)
     ω_b = 2.0 * π * sys_f
     n_buses = length(PSY.get_components(PSY.Bus, sys))
@@ -34,6 +49,18 @@ function kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
             -ω_b * I_balance[bus_no + n_buses] * shunt_multiplier - ω_b * V_r[bus_no] -
             dx[bus_no + n_buses]
     end
+end
 
+"""
+    Kirchoff law for buses.
+    I_gen_r[j]: Real current injection from all generators connected at bus j.
+                It is zero if no generator is connected at bus j.
+    I_gen_i[j]: Real current injection from all generators connected at bus j.
+                It is zero if no generator is connected at bus j.
+"""
+function kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
+
+
+    voltage_kirchoff(sys, V_r, V_i, dx)
     return
 end
