@@ -47,7 +47,7 @@ try
     for (k, v) in test06_x0_init
         diff[1] += LinearAlgebra.norm(res[k] - v)
     end
-    @test (diff[1] < 1e-6)
+    @test (diff[1] < 1e-3)
     @test sim.solution.retcode == :Success
     @test small_sig.stable
 finally
