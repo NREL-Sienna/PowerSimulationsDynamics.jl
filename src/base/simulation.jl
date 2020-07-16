@@ -279,6 +279,7 @@ function _index_dynamic_system!(sys::PSY.System)
 
         for (ix, val) in enumerate(DAE_vector[1:n_buses])
             if val
+                #This V_ix should be V_number.
                 global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
                 total_states += 2
                 static_bus_var_count -= 2
