@@ -41,13 +41,14 @@ try
     run_simulation!(sim, IDA())
 
     #Obtain data for voltages
-    #series = get_voltagemag_series(sim, 102)
-    #diff = [0.0]
-    #res = LITS.get_dict_init_states(sim)
-    #for (k, v) in test10_x0_init
-    #     diff[1] += LinearAlgebra.norm(res[k] - v)
-    #end
-    #@test (diff[1] < 1e-6)
+    series = get_voltagemag_series(sim, 102)
+    diff = [0.0]
+    LITS.get_dict_init_states_named(sim)
+    res = LITS.get_dict_init_states(sim)
+    for (k, v) in test10_x0_init
+         diff[1] += LinearAlgebra.norm(res[k] - v)
+    end
+    @test (diff[1] < 1e-3)
     @test sim.solution.retcode == :Success
     @test small_sig.stable
 finally
