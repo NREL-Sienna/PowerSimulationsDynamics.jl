@@ -1,5 +1,5 @@
 function Ybus_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
-    Ybus = PSY.get_ext(sys)[YBUS] - Ybus_mod
+    Ybus = PSY.get_ext(sys)[YBUS]
     # Note: BLAS doesn't work because the the type of Vr and Vi is not Matrix of Complex
     I_bus = PSY.get_ext(sys)[AUX_ARRAYS][5]
     I_balance = PSY.get_ext(sys)[AUX_ARRAYS][6]
