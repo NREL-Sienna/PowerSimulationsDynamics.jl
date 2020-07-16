@@ -220,7 +220,7 @@ We will create specific functions to create the components of the inverter as fo
 
 ```julia
 #Define converter as an AverageConverter
-converter_high_power() = AverageConverter(v_rated = 138.0, s_rated = 100.0)
+converter_high_power() = AverageConverter(rated_voltage = 138.0, rated_current = 100.0)
 
 #Define Outer Control as a composition of Virtual Inertia + Reactive Power Droop
 function outer_control()
@@ -265,7 +265,6 @@ function inv_case78(static_device)
     return PSY.DynamicInverter(
         static_device,
         1.0, # ω_ref,
-        100.0, #MVABase
         converter_high_power(), #converter
         outer_control(), #outer control
         inner_control(), #inner control voltage source

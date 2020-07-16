@@ -71,7 +71,7 @@ This will correctly initialize the system. It essentially will run a power flow 
 #Will print the initial states. It also give the symbols used to describe those states.
 print_device_states(sim)
 #Will export a dictionary with the initial condition values to explore
-x0_init = get_dict_init_states(sim)
+x0_init = get_initial_conditions(sim)
 ```
 
 ## Step 4: Run the Simulation
@@ -89,7 +89,7 @@ In some cases, the dynamic time step used for the simulation may fail. In such c
 
 After running the simulation, our simulation structure `sim` will have the solution. For that `sim.solution` can be used to explore the solution structure. In this case `sim.solution.t` returns the vector of time, while `sim.solution.u` return the array of states. In addition, `LITS` have two functions to obtain different states of the solution:
 
-- `get_state_series(sim, ("generator-102-1", :δ))`: can be used to obtain the solution as a tuple of time and the required state. In this case, we are obtaining the rotor angle `:δ` of the generator named `"OMIB_Gen"`.
+- `get_state_series(sim, ("generator-102-1", :δ))`: can be used to obtain the solution as a tuple of time and the required state. In this case, we are obtaining the rotor angle `:δ` of the generator named `"generator-102-1"`.
 - `get_voltagemag_series(sim, 102)`: can be used to obtain the voltage magnitude as a tuple of time and voltage. In this case, we are obtaining the voltage magnitude at bus 102 (where the generator is located).
 
 ```julia
