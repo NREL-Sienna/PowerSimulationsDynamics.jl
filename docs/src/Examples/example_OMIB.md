@@ -5,7 +5,7 @@ Note that this tutorial is for `PowerSimulationsDynamics`. Current version alrea
 
 This tutorial presents a simulation of a two-bus system, with an infinite bus (represented as a voltage source behind an impedance) at bus 1 and a classic machine on bus 2. The perturbation will be the trip of one of the two circuits (doubling its resistance and impedance) of the line that connects both buses.
 
-This tutorial can be found on [PowerSimulationsDynamics/Examples](https://github.com/NREL-SIIP/SIIP-Examples) repository.
+This tutorial can be found on [PowerSimulationsDynamics/Examples](https://github.com/NREL-SIIP/SIIPExamples.jl) repository.
 
 ## Step 1: Package Initialization
 

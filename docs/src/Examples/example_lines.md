@@ -7,7 +7,7 @@ This tutorial presents a simulation of a three-bus system, with an infinite bus 
 
 It is recommended to check `Tutorial 1: OMIB` first, since that includes more details and explanations on all definitions and functions.
 
-This tutorial can be found on [PowerSimulationsDynamics/Examples](https://github.com/NREL-SIIP/SIIP-Examples) repository.
+This tutorial can be found on [PowerSimulationsDynamics/Examples](https://github.com/NREL-SIIP/SIIPExamples.jl) repository.
 
 ## Step 1: Package Initialization
 
