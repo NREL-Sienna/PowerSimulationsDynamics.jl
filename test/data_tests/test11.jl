@@ -8,8 +8,8 @@ include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusInverter.raw")
 threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false,  unit_system = "device_base")
 add_source_to_ref(threebus_sys)
-
-make_dynamic_branch!(branches[3], sys)
+dyn_branch = DynamicBranch(get_component(Branch, threebus_sys, "3"))
+add_component!(threebus_sys, dyn_branch)
 
 ############### Data devices ########################
 
@@ -58,4 +58,5 @@ for br in fault_branches
         br.b = b_new
     end
 end
+fault_branches = [br for br in fault_branches if !(isa(br, DynamicBranch))]
 Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :];
