@@ -82,6 +82,7 @@ function run_tests()
     console_logger = ConsoleLogger(stderr, console_level)
     file_level = get_logging_level("SYS_LOG_LEVEL", "Info")
 
+    include("utils/get_results.jl")
     include("./data_tests/dynamic_test_data.jl")
     include("./results/results_initial_conditions.jl")
 
@@ -92,7 +93,7 @@ function run_tests()
         )
         global_logger(multi_logger)
 
-      # Testing Topological components of the schema
+        # Testing Topological components of the schema
         @time @testset "Begin PowerSimulationsDynamics tests" begin
             @includetests ARGS
         end

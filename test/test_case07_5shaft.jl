@@ -47,11 +47,11 @@ try
     series4 = get_state_series(sim, ("generator-103-1", :δ_ex))
 
     diff = [0.0]
-    res = LITS.get_dict_init_states(sim)
+    res = get_init_values_for_comparison(sim)
     for (k, v) in test07_x0_init
         diff[1] += LinearAlgebra.norm(res[k] - v)
     end
-    @test (diff[1] < 1e-6)
+    @test (diff[1] < 1e-3)
     @test sim.solution.retcode == :Success
     @test small_sig.stable
 finally

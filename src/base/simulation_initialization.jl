@@ -15,6 +15,7 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
     branches_start = get_branches_pointer(sys)
     branches_count = 1
 
+    #Update Voltage guess
     for bus in PSY.get_components(PSY.Bus, sys)
         #Write voltage initial guess
         bus_n = PSY.get_number(bus)
@@ -23,6 +24,15 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
     end
 
+    #Update Source internal voltages
+    sources = PSY.get_components(PSY.Source, sys)
+    if !isempty(sources)
+        for s in sources
+            initialize_device(s)
+        end
+    end
+
+    #Update Dynamic Injection internal references and guesses
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         bus = PSY.get_bus(d)
         bus_n = PSY.get_number(PSY.get_bus(d))
@@ -33,6 +43,24 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         x0_device = initialize_device(d)
         @assert length(x0_device) == n_states
         initial_guess[ix_range] = x0_device
+    end
+
+    #Update Dynamic Branch guess
+    dyn_branches = PSY.get_components(PSY.DynamicBranch, sys)
+    if !isempty(dyn_branches)
+        for br in dyn_branches
+            arc = PSY.get_arc(br)
+            n_states = PSY.get_n_states(br)
+            from_bus_number = PSY.get_number(arc.from)
+            to_bus_number = PSY.get_number(arc.to)
+            bus_ix_from = PSY.get_ext(sys)[LOOKUP][from_bus_number]
+            bus_ix_to = PSY.get_ext(sys)[LOOKUP][to_bus_number]
+            ix_range = range(branches_start, length = n_states)
+            branches_start = branches_start + n_states
+            x0_branch = initialize_device(br)
+            @assert length(x0_branch) == n_states
+            initial_guess[ix_range] = x0_branch
+        end
     end
 
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
@@ -69,4 +97,49 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
     initial_guess .= sys_solve.zero
     return NLsolve.converged(sys_solve)
 
+end
+
+"""
+Returns a Dictionary with the resulting initial conditions of the simulation
+"""
+function get_initial_conditions(sim::Simulation)
+    bus_size = get_bus_count(sim.system)
+    V_R = Dict{Int64, Float64}()
+    V_I = Dict{Int64, Float64}()
+    Vm = Dict{Int64, Float64}()
+    θ = Dict{Int64, Float64}()
+    for bus in PSY.get_components(PSY.Bus, sim.system)
+        bus_n = PSY.get_number(bus)
+        bus_ix = PSY.get_ext(sim.system)[LOOKUP][bus_n]
+        V_R[bus_n] = sim.x0_init[bus_ix]
+        V_I[bus_n] = sim.x0_init[bus_ix + bus_size]
+        Vm[bus_n] = sqrt(sim.x0_init[bus_ix]^2 + sim.x0_init[bus_ix + bus_size]^2)
+        θ[bus_n] = angle(sim.x0_init[bus_ix] + sim.x0_init[bus_ix + bus_size] * 1im)
+    end
+    results = Dict{String, Any}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
+    for device in PSY.get_components(PSY.DynamicInjection, sim.system)
+        states = PSY.get_states(device)
+        name = PSY.get_name(device)
+        global_index = PSY.get_ext(sim.system)[GLOBAL_INDEX][name]
+        x0_device = Dict{Symbol, Float64}()
+        for (i, s) in enumerate(states)
+            x0_device[s] = sim.x0_init[global_index[s]]
+        end
+        results[name] = x0_device
+    end
+    dyn_branches = PSY.get_components(PSY.DynamicBranch, sim.system)
+    if !isempty(dyn_branches)
+        for br in dyn_branches
+            states = PSY.get_states(br)
+            name = PSY.get_name(br)
+            global_index = PSY.get_ext(sim.system)[GLOBAL_INDEX][name]
+            x0_br = Dict{Symbol, Float64}()
+            for (i, s) in enumerate(states)
+                x0_br[s] = sim.x0_init[global_index[s]]
+            end
+            printed_name = "Line " * name
+            results[printed_name] = x0_br
+        end
+    end
+    return results
 end

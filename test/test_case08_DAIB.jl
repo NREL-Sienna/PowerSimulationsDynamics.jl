@@ -40,11 +40,11 @@ try
     print_device_states(sim)
 
     diff = [0.0]
-    res = LITS.get_dict_init_states(sim)
+    res = get_init_values_for_comparison(sim)
     for (k, v) in test08_x0_init
         diff[1] += LinearAlgebra.norm(res[k] - v)
     end
-    @test (diff[1] < 1e-6)
+    @test (diff[1] < 1e-3)
     @test sim.solution.retcode == :Success
     @test small_sig.stable
 finally
