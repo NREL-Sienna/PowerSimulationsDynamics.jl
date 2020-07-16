@@ -10,7 +10,7 @@ function mdl_line_ode!(
     current_r_to,
     current_i_to,
     sys_f,
-    branch::DynamicLine{PSY.Line},
+    branch::PSY.DynamicBranch,
 )
 
     L = PSY.get_x(branch)
