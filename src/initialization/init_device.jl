@@ -74,3 +74,27 @@ function initialize_device(device::PSY.Source)
         PSY.set_internal_angle!(device, θ_internal)
     end
 end
+
+function initialize_device(branch::PSY.DynamicBranch)
+    device_states = zeros(PSY.get_n_states(branch))
+    #PowerFlow Data
+    arc = PSY.get_arc(branch)
+    Vm_from = PSY.get_magnitude(PSY.get_from(arc))
+    θ_from = PSY.get_angle(PSY.get_from(arc))
+    Vm_to = PSY.get_magnitude(PSY.get_to(arc))
+    θ_to = PSY.get_angle(PSY.get_to(arc))
+    V_R_from = Vm_from * cos(θ_from)
+    V_I_from = Vm_from * sin(θ_from)
+    V_R_to = Vm_to * cos(θ_to)
+    V_I_to = Vm_to * sin(θ_to)
+    R = PSY.get_r(branch)
+    X = PSY.get_x(branch)
+    Zmag = R^2 + X^2
+    #Compute Current
+    I_R = R * (V_R_from - V_R_to) / Zmag + X * (V_I_from - V_I_to) / Zmag
+    I_I = R * (V_I_from - V_I_to) / Zmag - X * (V_R_from - V_R_to) / Zmag
+    #Update Current
+    device_states[1] = I_R
+    device_states[2] = I_I
+    return device_states
+end
