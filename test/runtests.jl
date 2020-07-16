@@ -9,12 +9,13 @@ import LinearAlgebra
 using Logging
 
 import Aqua
-Aqua.test_unbound_args(LITS)
-Aqua.test_undefined_exports(LITS)
-Aqua.test_ambiguities(LITS)
+Aqua.test_unbound_args(PowerSimulationsDynamics)
+Aqua.test_undefined_exports(PowerSimulationsDynamics)
+Aqua.test_ambiguities(PowerSimulationsDynamics)
 
 const IS = InfrastructureSystems
 const PSY = PowerSystems
+const PSID = PowerSimulationsDynamics
 
 """
 Copied @includetests from https://github.com/ssfrr/TestSetExtensions.jl.
