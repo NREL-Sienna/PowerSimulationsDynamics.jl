@@ -178,6 +178,25 @@ function _index_port_mapping!(
     return
 end
 
+function _get_Ybus(sys::PSY.System)
+    n_buses = length(PSY.get_components(PSY.Bus, sys))
+    dyn_lines = PSY.get_components(DynamicLine, sys)
+    if !isempty(PSY.get_components(PSY.ACBranch, sys))
+        Ybus_ = PSY.Ybus(sys)
+        Ybus = Ybus_[:, :]
+        lookup = Ybus_.lookup[1]
+        if !isempty(dyn_lines)
+            for br in dyn_lines
+                ybus!(Ybus, br, lookup, -1.0)
+            end
+        end
+    else
+        Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
+        lookup = Dict{Int.Int}()
+    end
+    return Ybus, lookup
+end
+
 function _make_device_index!(device::PSY.DynamicInjection, sys_basepower::Float64)
     states = PSY.get_states(device)
     device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
@@ -303,14 +322,6 @@ function _index_dynamic_system!(sys::PSY.System)
     @assert total_states == state_space_ix[1] - static_bus_var_count
     @debug total_states
     setdiff!(current_buses_no, voltage_buses_no)
-    if !isempty(PSY.get_components(PSY.ACBranch, sys))
-        Ybus_ = PSY.Ybus(sys)
-        Ybus = Ybus_[:, :]
-        lookup = Ybus_.lookup[1]
-    else
-        Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
-        lookup = Dict{Int.Int}()
-    end
     sys_ext = Dict{String, Any}()
     counts = Base.ImmutableDict(
         :total_states => total_states,
@@ -322,6 +333,8 @@ function _index_dynamic_system!(sys::PSY.System)
         :bus_count => n_buses,
     )
 
+    Ybus, lookup = _get_Ybus(sys)
+    sys_ext[DYN_LINES] = !isempty(PSY.get_components(DynamicLine, sys))
     sys_ext[LOOKUP] = lookup
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
@@ -330,7 +343,6 @@ function _index_dynamic_system!(sys::PSY.System)
     sys_ext[YBUS] = Ybus
     sys_ext[TOTAL_SHUNTS] = total_shunts
     sys_ext[GLOBAL_VARS] = global_vars
-    sys_ext[DYN_LINES] = !isempty(PSY.get_components(DynamicLine, sys))
     @assert sys_ext[GLOBAL_VARS][:ω_sys_index] != -1
     sys.internal.ext = sys_ext
     return DAE_vector

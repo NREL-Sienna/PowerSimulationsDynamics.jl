@@ -1,5 +1,5 @@
 function Ybus_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
-    Ybus = PSY.get_ext(sys)[YBUS]
+    Ybus = PSY.get_ext(sys)[YBUS] - Ybus_mod
     # Note: BLAS doesn't work because the the type of Vr and Vi is not Matrix of Complex
     I_bus = PSY.get_ext(sys)[AUX_ARRAYS][5]
     I_balance = PSY.get_ext(sys)[AUX_ARRAYS][6]
@@ -10,25 +10,6 @@ function Ybus_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
         I_balance[n + bus_count] = imag(I_bus[n]) - I_injections_i[n]
     end
 
-    return
-end
-
-function line_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
-    for br in PSY.get_components(PSY.ACBranch, sys)
-        arc = PSY.get_arc(br)
-        from_bus_number = PSY.get_number(arc.from)
-        to_bus_number = PSY.get_number(arc.to)
-        bus_ix_from = PSY.get_ext(sys)[LOOKUP][from_bus_number]
-        bus_ix_to = PSY.get_ext(sys)[LOOKUP][to_bus_number]
-
-        I_i = (V_i[bus_ix_to] - V_i[bus_ix_from])
-        I_r = (V_r[bus_ix_to] - V_r[bus_ix_from])
-
-        I_injections_i[bus_ix_from] =- I_i
-        I_injections_r[bus_ix_from] =- I_r
-        I_injections_i[bus_ix_to] =+ I_i
-        I_injections_r[bus_ix_to] =+ I_r
-    end
     return
 end
 
@@ -59,13 +40,7 @@ end
                 It is zero if no generator is connected at bus j.
 """
 function kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
-    if PSY.get_ext(sys)[DYN_LINES]
-        line_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
-    elseif !PSY.get_ext(sys)[DYN_LINES]
-        Ybus_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
-    else
-        @assert false
-    end
+    Ybus_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
     voltage_kirchoff(sys, V_r, V_i, dx)
     return
 end
