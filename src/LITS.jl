@@ -16,6 +16,7 @@ export get_voltagemag_series
 export print_init_states
 export print_device_states
 export get_dict_init_states
+export get_dict_init_states_named
 
 ####################################### Package Imports ####################################
 import Logging
