@@ -1,34 +1,34 @@
-# LITS
+# PowerSimulationsDynamics
 
 ```@meta
-CurrentModule = LITS
+CurrentModule = PowerSimulationsDynamics
 DocTestSetup  = quote
-    using LITS
+    using PowerSimulationsDynamics
 end
 ```
 
 API documentation
 
 ```@contents
-Pages = ["LITS.md"]
+Pages = ["PowerSimulationsDynamics.md"]
 ```
 
 ## Index
 
 ```@index
-Pages = ["LITS.md"]
+Pages = ["PowerSimulationsDynamics.md"]
 ```
 
 ## Exported
 
 ```@autodocs
-Modules = [LITS]
+Modules = [PowerSimulationsDynamics]
 Private = false
 ```
 
 ## Internal
 
 ```@autodocs
-Modules = [LITS]
+Modules = [PowerSimulationsDynamics]
 Public = false
 ```

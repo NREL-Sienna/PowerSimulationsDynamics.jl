@@ -8,15 +8,15 @@
 You can install it by typing
 
 ```julia
-pkg> add LITS
+pkg> add PowerSimulationsDynamics
 ```
 
 ## Usage
 
-Once installed, the `LITS` package can by used by typing:
+Once installed, the `PowerSimulationsDynamics` package can by used by typing:
 
 ```julia
-using LITS
+using PowerSimulationsDynamics
 ```
 
 ## Structure

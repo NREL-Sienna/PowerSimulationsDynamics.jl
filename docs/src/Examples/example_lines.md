@@ -1,18 +1,18 @@
 # Tutorial: Dynamic Lines
 
-This tutorial will introduce an example of considering dynamic lines in `LITS`.
-Note that this tutorial is for `LITS 0.4.0`. 
+This tutorial will introduce an example of considering dynamic lines in `PowerSimulationsDynamics`.
+Note that this tutorial is for `PowerSimulationsDynamics`.
 
 This tutorial presents a simulation of a three-bus system, with an infinite bus (represented as a voltage source behind an impedance) at bus 1, a one d- one q- machine on bus 2 and an inverter of 19 states, as a virtual synchronous machine at bus 3. The perturbation will be the trip of two of the three circuits (triplicating its resistance and impedance) of the line that connects bus 1 and bus 3. This case also consider a dynamic line model for connection between buses 2 and 3. We will compare it against a system without dynamic lines.
 
 It is recommended to check `Tutorial 1: OMIB` first, since that includes more details and explanations on all definitions and functions.
 
-This tutorial can be found on [LITS/Examples](https://github.com/Energy-MAC/LITS-Examples) repository.
+This tutorial can be found on [PowerSimulationsDynamics/Examples](https://github.com/NREL-SIIP/SIIP-Examples) repository.
 
 ## Step 1: Package Initialization
 
 ```julia
-using LITS
+using PowerSimulationsDynamics
 using PowerSystems
 using Sundials
 const PSY = PowerSystems
@@ -51,10 +51,10 @@ end
 #Obtain the new Ybus
 Ybus_fault = Ybus(sys2).data
 #Define Fault: Change of YBus
-Ybus_change = LITS.ThreePhaseFault(
+Ybus_change = PowerSimulationsDynamics.ThreePhaseFault(
     1.0, #change at t = 1.0
     Ybus_fault, #New YBus
-) 
+)
 ```
 
 Now, we construct the simulation:
@@ -133,10 +133,10 @@ end
 #Obtain the new Ybus
 Ybus_fault_dyn = Ybus(sys3).data
 #Define Fault: Change of YBus
-Ybus_change_dyn = LITS.ThreePhaseFault(
+Ybus_change_dyn = PowerSimulationsDynamics.ThreePhaseFault(
     1.0, #change at t = 1.0
     Ybus_fault_dyn, #New YBus
-) 
+)
 ```
 
 ## Step 4.1: Run the simulation of the Dynamic Lines System

@@ -9,17 +9,17 @@ const PSY = PowerSystems
 
 ## Step 1: System description
 
-Next we need to define the different elements required to run a simulation. To run a simulation in `LITS`, it is required to define a `PSY.System` that contains the following components:
+Next we need to define the different elements required to run a simulation. To run a simulation in `PowerSimulationsDynamics`, it is required to define a `System` that contains the following components:
 
 ### Static Components:
 
 We called static components to those that are used to run a Power Flow problem. Basically those are:
 
-- Vector of `PSY.Bus` elements, that define all the buses in the network.
-- Vector of `PSY.Branch` elements, that define all the branches elements (that connect two buses) in the network.
-- Vector of `PSY.StaticInjection` elements, that define all the devices connected to buses that can inject (or withdraw) power. These static devices, typically generators, in `LITS` are used to solve the Power Flow problem that determines the active and reactive power provided for each device.
-- Vector of `PSY.PowerLoad` elements, that define all the loads connected to buses that can withdraw current. These are also used to solve the Power Flow. In addition, note that `LITS` will convert ConstantPower loads to RLC loads for transient simulations.
-- Vector of `PSY.Source` elements, that define source components behind a reactance that can inject or withdraw current.
+- Vector of `Bus` elements, that define all the buses in the network.
+- Vector of `Branch` elements, that define all the branches elements (that connect two buses) in the network.
+- Vector of `StaticInjection` elements, that define all the devices connected to buses that can inject (or withdraw) power. These static devices, typically generators, in `PowerSimulationsDynamics` are used to solve the Power Flow problem that determines the active and reactive power provided for each device.
+- Vector of `PowerLoad` elements, that define all the loads connected to buses that can withdraw current. These are also used to solve the Power Flow. In addition, note that `PowerSimulationsDynamics` will convert ConstantPower loads to RLC loads for transient simulations.
+- Vector of `Source` elements, that define source components behind a reactance that can inject or withdraw current.
 - The base of power used to define per unit values, in MVA as a `Float64` value.
 - The base frequency used in the system, in Hz as a `Float64` value.
 
@@ -27,8 +27,8 @@ We called static components to those that are used to run a Power Flow problem. 
 
 Dynamic components are those that define differential equations to run a transient simulation. Basically those are:
 
-- Vector of `PSY.DynamicInjection` elements. These components must be attached to a `PSY.StaticInjection` that connects the power flow solution to the dynamic formulation of such device. `PSY.DynamicInjection` can be `PSY.DynamicGenerator` or `PSY.DynamicInverter`, and its specific formulation (i.e. differential equations) will depend on the specific components that define such device.
-- (Optional) Selecting which of the `PSY.Lines` (of the `PSY.Branch` vector) elements must be modeled of `DynamicLines` elements, that can be used to model lines with differential equations.
+- Vector of `DynamicInjection` elements. These components must be attached to a `StaticInjection` that connects the power flow solution to the dynamic formulation of such device. `DynamicInjection` can be `DynamicGenerator` or `DynamicInverter`, and its specific formulation (i.e. differential equations) will depend on the specific components that define such device.
+- (Optional) Selecting which of the `Lines` (of the `Branch` vector) elements must be modeled of `DynamicLines` elements, that can be used to model lines with differential equations.
 
 To start we will define the data structures for the network.
 
@@ -77,14 +77,14 @@ omib_sys = System(omib_file_dir)
 ```
 Note that this system does not have an injection device in bus 1 (the reference bus). We can add a source with small impedance directly using a function like:
 ```julia
-function add_source_to_ref(sys::PSY.System)
-    for g in PSY.get_components(StaticInjection, sys)
+function add_source_to_ref(sys::System)
+    for g in get_components(StaticInjection, sys)
         isa(g, ElectricLoad) && continue
         g.bus.bustype == BusTypes.REF &&
             error("A device is already attached to the REF bus")
     end
 
-    slack_bus = [b for b in PSY.get_components(Bus, sys) if b.bustype == BusTypes.REF][1]
+    slack_bus = [b for b in get_components(Bus, sys) if b.bustype == BusTypes.REF][1]
     inf_source = Source(
         name = "InfBus", #name
         available = true, #availability
@@ -92,8 +92,8 @@ function add_source_to_ref(sys::PSY.System)
         reactivepower = 0.0,
         bus = slack_bus, #bus
         X_th = 5e-6, #Xth
-    ) 
-    PSY.add_component!(sys, inf_source)
+    )
+    add_component!(sys, inf_source)
     return
 end
 
@@ -110,7 +110,7 @@ By exploring those it can be seen that the generators are named as: `generator-b
 
 ### Dynamic Injections
 
-We are now interested in attaching to the system the dynamic component that will be modeling our dynamic generator. Later versions will include a parser for `.dyr` files. 
+We are now interested in attaching to the system the dynamic component that will be modeling our dynamic generator. Later versions will include a parser for `.dyr` files.
 
 Dynamic generator devices are composed by 5 components, namely, `machine`, `shaft`, `avr`, `tg` and `pss`. So we will be adding functions to create all of its components and the generator itself:
 
@@ -136,7 +136,7 @@ tg_none() = TGFixed(1.0) #efficiency
 pss_none() = PSSFixed(0.0)
 
 function dyn_gen_classic(generator)
-    return PSY.DynamicGenerator(
+    return DynamicGenerator(
         generator,
         1.0, #ω_ref
         machine_classic(), #machine
@@ -144,11 +144,11 @@ function dyn_gen_classic(generator)
         avr_none(), #avr
         tg_none(), #tg
         pss_none(), #pss
-    ) 
+    )
 end
 ```
 
-The last function receives a static generator, and creates a `PSY.DynamicGenerator` based on that specific static generator, with the specific components defined previously. This is a classic machine model without AVR, Turbine Governor and PSS.
+The last function receives a static generator, and creates a `DynamicGenerator` based on that specific static generator, with the specific components defined previously. This is a classic machine model without AVR, Turbine Governor and PSS.
 
 Then we can simply create the dynamic generator as:
 
@@ -262,7 +262,7 @@ filt() = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01)
 
 #Construct the Inverter:
 function inv_case78(static_device)
-    return PSY.DynamicInverter(
+    return DynamicInverter(
         static_device,
         1.0, # ω_ref,
         converter_high_power(), #converter
@@ -312,7 +312,7 @@ avr_type1() = AVRTypeI(
     -5.0, #Vrmin
     0.0039, #Ae - 1st ceiling coefficient
     1.555, #Be - 2nd ceiling coefficient
-) 
+)
 
 #No TG
 tg_none() = TGFixed(1.0) #efficiency
@@ -322,7 +322,7 @@ pss_none() = PSSFixed(0.0) #Vs
 
 #Construct the generator
 function dyn_gen_second_order(generator)
-    return PSY.DynamicGenerator(
+    return DynamicGenerator(
         generator,
         1.0, # ω_ref,
         machine_oneDoneQ(), #machine

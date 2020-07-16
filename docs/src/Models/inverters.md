@@ -23,7 +23,7 @@ Models are based from the paper: "A Virtual Synchronous Machine implementation f
 
 This component can be used to model the dynamics of the DC side of the converter.
 
-### Fixed DC Source ```[PSY.FixedDCSource]```
+### Fixed DC Source ```[FixedDCSource]```
 
 This is a model that set the DC voltage to a fixed value ``v_{\text{dc}} = v_{\text{dc}}^{\text{fix}}``.
 
@@ -32,7 +32,7 @@ This is a model that set the DC voltage to a fixed value ``v_{\text{dc}} = v_{\t
 
 This component is used to estimate the frequency of the grid based on the voltage at the bus.
 
-### Phase-Locked Loop (PLL) for VSM ```[PSY.KauraPLL]```
+### Phase-Locked Loop (PLL) for VSM ```[KauraPLL]```
 
 The following equations present a PLL used to estimate the frequency and PLL angle of the grid. There are two reference frames considered in this inverter. Those are the VSM of the outer-loop control ``\delta\theta_{\text{olc}}`` and the PLL one ``\delta\theta_{\text{pll}}``. The notation used a ``\delta\theta`` to refer as the variation of the respective angle ``\theta`` with respect to the grid SRF (instead of the fixed ``\alpha`` component of the ``\alpha\beta`` transformation):
 
@@ -60,9 +60,9 @@ on which ``v_r + jv_i`` is the voltage in the grid reference frame on which the 
 
 This component defines controllers for both active and reactive power
 
-### Virtual Inertia and Q-droop ```[PSY.OuterControl]```
+### Virtual Inertia and Q-droop ```[OuterControl]```
 
-The following model represent a virtual synchronous machine model to represent how active power is going to be deployed. The constructor is ```PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop}```. It defines a new SRF denoted as ``\theta_{\text{olc}}`` for the active power controller and uses a simple voltage droop for dispatching reactive power:
+The following model represent a virtual synchronous machine model to represent how active power is going to be deployed. The constructor is ```OuterControl{VirtualInertia, ReactivePowerDroop}```. It defines a new SRF denoted as ``\theta_{\text{olc}}`` for the active power controller and uses a simple voltage droop for dispatching reactive power:
 
 ```math
 \begin{align}
@@ -86,7 +86,7 @@ with
 
 This component defines voltage and current controllers to generate the reference signal for the converter.
 
-### Integrated Virtual Impedance, Voltage and Current Controller ```[PSY.CurrentControl]```
+### Integrated Virtual Impedance, Voltage and Current Controller ```[CurrentControl]```
 
 The following model receives both the outer loop control frequency and reference voltage signal to generate the reference signal for the converters. The virtual impedance plays a similar role of the impedance of a synchronous generator. A PI voltage controller is used to generate the current signal that is used in the PI current controller to finally generate the voltage reference signal for the converters.
 
@@ -118,7 +118,7 @@ with
 
 This component can be used to model the dynamics of the switching process.
 
-### Average Model ```[PSY.AverageConverter]```
+### Average Model ```[AverageConverter]```
 
 The average model simply output the desired reference signal since:
 
@@ -133,7 +133,7 @@ where ``m_{dq}`` is the modulation signal, and ``v_{dq}^{\text{ref-signal}}`` is
 
 ## Filters
 
-### LCL Filter ```[PSY.LCLFilter]```
+### LCL Filter ```[LCLFilter]```
 
 A standard LCL filter is proposed to connect the output of the converter to the grid. In this case, ``v_d`` and ``v_q`` are voltages in the capacitor, while ``v_d^{\text{grid}}`` and ``v_q^{\text{grid}}`` represent the voltage at the bus. The L filter after the capacitor can also include a step-up transformer to increase the voltage, that is model as an extra impedance.
 
