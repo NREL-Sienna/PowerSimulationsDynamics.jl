@@ -50,14 +50,7 @@ function print_device_states(sim::Simulation)
     bus_size = get_bus_count(sim.system)
     println("Voltage Variables")
     println("====================")
-    buses = PSY.get_components(PSY.Bus, sim.system)
-    bus_ax = [PSY.get_number(bus) for bus in buses]
-    sort!(bus_ax)
-    look_up = PSY._make_ax_ref(bus_ax)
-    buses_sorted = Vector{Any}(undef, bus_size)
-    for b in buses
-        buses_sorted[look_up[PSY.get_number(b)]] = b
-    end
+    buses_sorted = sort(collect(PSY.get_components(PSY.Bus, sim.system)); by = x -> PSY.get_number(x))
     for bus in buses_sorted
         name = PSY.get_name(bus)
         println(name)
