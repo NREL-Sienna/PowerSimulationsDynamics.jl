@@ -27,7 +27,6 @@ function inv_case78(static_device)
     return PSY.DynamicInverter(
         static_device,
         1.0, # ω_ref,
-        100.0, #MVABase
         converter_high_power(), #converter
         outer_control(), #outer control
         inner_control(), #inner control voltage source

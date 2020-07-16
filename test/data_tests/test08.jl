@@ -14,7 +14,6 @@ function inv_darco(static_device)
     return PSY.DynamicInverter(
         static_device,
         1.0, #ω_ref
-        2.75, #MVABase
         converter_low_power(), #converter
         outer_control(), #outercontrol
         inner_control(), #inner_control
