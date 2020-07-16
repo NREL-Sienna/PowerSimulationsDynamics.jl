@@ -56,8 +56,10 @@ function initialize_device(device::PSY.Source)
         V_R_internal = x[1]
         V_I_internal = x[2]
 
-        out[1] = R_th * (V_R_internal - V_R) / Zmag + X_th * (V_I_internal - V_I) / Zmag - I_R
-        out[2] = R_th * (V_I_internal - V_I) / Zmag - X_th * (V_R_internal - V_R) / Zmag - I_I
+        out[1] =
+            R_th * (V_R_internal - V_R) / Zmag + X_th * (V_I_internal - V_I) / Zmag - I_R
+        out[2] =
+            R_th * (V_I_internal - V_I) / Zmag - X_th * (V_R_internal - V_R) / Zmag - I_I
     end
     x0 = [V_R, V_I]
     sol = NLsolve.nlsolve(f!, x0)

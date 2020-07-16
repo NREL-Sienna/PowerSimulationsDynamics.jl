@@ -78,7 +78,6 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
         )
     end
 
-
     if PSY.get_ext(sys)[DYN_LINES]
         dyn_branches = PSY.get_components(PSY.DynamicBranch, sys)
         for br in dyn_branches
