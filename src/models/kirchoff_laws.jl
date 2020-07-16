@@ -14,7 +14,7 @@ function Ybus_current_kirchoff(sys, V_r, V_i, I_injections_r, I_injections_i)
 end
 
 function voltage_kirchoff(sys, V_r, V_i, dx)
-    voltage_buses = get_voltage_bus_no(sys)
+    voltage_buses = get_voltage_bus_ix(sys)
     isempty(voltage_buses) && return
     I_bus = PSY.get_ext(sys)[AUX_ARRAYS][5]
     I_balance = PSY.get_ext(sys)[AUX_ARRAYS][6]
@@ -22,13 +22,13 @@ function voltage_kirchoff(sys, V_r, V_i, dx)
     ω_b = 2.0 * π * sys_f
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     shunts = get_total_shunts(sys)
-    for bus_no in voltage_buses
-        shunt_multiplier = shunts[bus_no]
-        I_balance[bus_no] =
-            -ω_b * I_balance[bus_no] * shunt_multiplier + ω_b * V_i[bus_no] - dx[bus_no]
-        I_balance[bus_no + n_buses] =
-            -ω_b * I_balance[bus_no + n_buses] * shunt_multiplier - ω_b * V_r[bus_no] -
-            dx[bus_no + n_buses]
+    for bus_ix in voltage_buses
+        shunt_multiplier = shunts[bus_ix]
+        I_balance[bus_ix] =
+            -ω_b * I_balance[bus_ix] * shunt_multiplier + ω_b * V_i[bus_ix] - dx[bus_ix]
+        I_balance[bus_ix + n_buses] =
+            -ω_b * I_balance[bus_ix + n_buses] * shunt_multiplier - ω_b * V_r[bus_ix] -
+            dx[bus_ix + n_buses]
     end
 end
 

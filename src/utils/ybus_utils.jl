@@ -81,7 +81,7 @@ function ybus!(
     mult::Float64 = 1.0
 )
     bus = PSY.get_bus(fa)
-    bus_no = num_bus[PSY.get_number(bus)]
-    ybus[bus_no, bus_no] += mult*fa.Y
+    bus_ix = num_bus[PSY.get_number(bus)]
+    ybus[bus_ix, bus_ix] += mult*fa.Y
     return
 end
