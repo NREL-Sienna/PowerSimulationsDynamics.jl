@@ -92,7 +92,7 @@ function run_tests()
         )
         global_logger(multi_logger)
 
-      # Testing Topological components of the schema
+        # Testing Topological components of the schema
         @time @testset "Begin PowerSimulationsDynamics tests" begin
             @includetests ARGS
         end
