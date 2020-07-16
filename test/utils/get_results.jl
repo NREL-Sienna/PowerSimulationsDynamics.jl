@@ -29,7 +29,8 @@ function get_init_values_for_comparison(sim::Simulation)
         for br in dyn_branches
             states = PSY.get_states(br)
             name = PSY.get_name(br)
-            global_index = PSY.get_ext(sim.system)[PowerSimulationsDynamics.GLOBAL_INDEX][name]
+            global_index =
+                PSY.get_ext(sim.system)[PowerSimulationsDynamics.GLOBAL_INDEX][name]
             x0_br = Vector{Float64}(undef, length(states))
             for (i, s) in enumerate(states)
                 x0_br[i] = sim.x0_init[global_index[s]]

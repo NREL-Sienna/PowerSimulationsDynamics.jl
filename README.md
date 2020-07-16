@@ -1,6 +1,6 @@
 # PowerSimulationsDynamics
 
-[![Build Status](https://img.shields.io/travis/com/NREL-SIIP/PowerSimulationsDynamics.jl/master.svg)](https://travis-ci.com/NREL-SIIP/PowerSimulationsDynamics.jl)
+[![Build Status](https://travis-ci.com/NREL-SIIP/PowerSimulationsDynamics.jl.svg?branch=master)](https://travis-ci.com/NREL-SIIP/PowerSimulationsDynamics.jl)
 [![codecov](https://codecov.io/gh/NREL-SIIP/PowerSimulationsDynamics.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/NREL-SIIP/PowerSimulationsDynamics.jl)
 [![Documentation](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/workflows/Documentation/badge.svg)](https://nrel-siip.github.io/PowerSimulationsDynamics.jl/latest)
 [![Join the chat at https://gitter.im/NREL/PowerSimulationsDynamics.jl](https://badges.gitter.im/NREL/PowerSimulationsDynamics.jl.svg)](https://gitter.im/NREL/PowerSimulationsDynamics.jl)
