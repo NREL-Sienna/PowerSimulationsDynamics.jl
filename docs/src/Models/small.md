@@ -1,6 +1,6 @@
 # Small Signal Analysis
 
-Here we discuss the method used to do a small signal analysis on the DAE system defined in *LITS.jl*. The package defines algebraic variables for both real and imaginary voltages on all buses (except if they have a dynamic line connected, on which the voltage of those buses are treated as differential variables). In addition, each dynamic device can add differential variables (or states) that are concatenated to construct the system of differential algebraic equations.
+Here we discuss the method used to do a small signal analysis on the DAE system defined in *PowerSimulationsDynamics.jl*. The package defines algebraic variables for both real and imaginary voltages on all buses (except if they have a dynamic line connected, on which the voltage of those buses are treated as differential variables). In addition, each dynamic device can add differential variables (or states) that are concatenated to construct the system of differential algebraic equations.
 
 We define ``y`` as the vector of algebraic variables, ``x`` as the vector of differential variables (states) and ``p`` the parameters of the system, we can define ``g(y,x,p)`` as the vector of algebraic equations and ``f(y,x,p)`` as the vector of differential equations. With that, the non-linear differential algebraic system of equations can be written as:
 
@@ -59,4 +59,4 @@ on which we can compute its eigenvalues to analyze local stability.
 
 ## Automatic Differentiation
 
-Once an equilibrium point is found, the complete jacobian of the non-linear system can be obtained using [automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation) in [Julia](https://www.juliadiff.org). In particular, the package `ForwardDiff.jl` is used to obtain the jacobian of the non-linear algebraic system of equations. *LITS.jl* handles the resulting jacobian and reports the reduced jacobian and the corresponding eigenvalues and eigenvectors.
+Once an equilibrium point is found, the complete jacobian of the non-linear system can be obtained using [automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation) in [Julia](https://www.juliadiff.org). In particular, the package `ForwardDiff.jl` is used to obtain the jacobian of the non-linear algebraic system of equations. *PowerSimulationsDynamics.jl* handles the resulting jacobian and reports the reduced jacobian and the corresponding eigenvalues and eigenvectors.

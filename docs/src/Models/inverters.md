@@ -1,6 +1,6 @@
 # Inverter Models
 
-Here we discuss the structure and models used to model inverters in LITS.jl. Each inverter is a data structure that is defined by the following components:
+Here we discuss the structure and models used to model inverters in PowerSimulationsDynamics.jl. Each inverter is a data structure that is defined by the following components:
 
 - DC Source: Defines the dynamics of the DC side of the converter.
 - Frequency Estimator: That describes how the frequency of the grid can be estimated using the grid voltages. Typically a phase-locked loop (PLL).

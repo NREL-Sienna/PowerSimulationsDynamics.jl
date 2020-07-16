@@ -1,6 +1,6 @@
 # Generator Models
 
-Here we discuss the structure and models used to model generators in LITS.jl. Each generator is a data structure that is defined by the following components:
+Here we discuss the structure and models used to model generators in PowerSimulationsDynamics.jl. Each generator is a data structure that is defined by the following components:
 
 - Machine: That defines the stator electro-magnetic dynamics.
 - Shaft: That describes the rotor electro-mechanical dynamics.
