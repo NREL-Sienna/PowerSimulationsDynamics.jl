@@ -6,7 +6,11 @@ include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusInverter.raw")
-threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false,  unit_system = "device_base")
+threebus_sys = System(
+    PowerModelsData(threebus_file_dir),
+    runchecks = false,
+    unit_system = "device_base",
+)
 add_source_to_ref(threebus_sys)
 
 ############### Data devices ########################
@@ -27,7 +31,6 @@ function inv_case78(static_device)
     return PSY.DynamicInverter(
         static_device,
         1.0, # ω_ref,
-        100.0, #MVABase
         converter_high_power(), #converter
         outer_control(), #outer control
         inner_control(), #inner control voltage source
@@ -48,7 +51,9 @@ for g in get_components(Generator, threebus_sys)
 end
 
 #Create Ybus_Fault
-fault_branches = deepcopy(collect(get_components(Branch, threebus_sys)))
+sys2 = System(PowerModelsData(threebus_file_dir), runchecks = false)
+add_source_to_ref(sys2)
+fault_branches = get_components(ACBranch, sys2)
 for br in fault_branches
     if get_name(br) == "1"
         br.r = 3 * br.r
@@ -57,4 +62,4 @@ for br in fault_branches
         br.b = b_new
     end
 end
-Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :];
+Ybus_fault = Ybus(sys2).data

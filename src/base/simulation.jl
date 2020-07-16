@@ -178,6 +178,25 @@ function _index_port_mapping!(
     return
 end
 
+function _get_Ybus(sys::PSY.System)
+    n_buses = length(PSY.get_components(PSY.Bus, sys))
+    dyn_lines = PSY.get_components(PSY.DynamicBranch, sys)
+    if !isempty(PSY.get_components(PSY.ACBranch, sys))
+        Ybus_ = PSY.Ybus(sys)
+        Ybus = Ybus_[:, :]
+        lookup = Ybus_.lookup[1]
+        if !isempty(dyn_lines)
+            for br in dyn_lines
+                ybus!(Ybus, br, lookup, -1.0)
+            end
+        end
+    else
+        Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
+        lookup = Dict{Int.Int}()
+    end
+    return Ybus, lookup
+end
+
 function _make_device_index!(device::PSY.DynamicInjection, sys_basepower::Float64)
     states = PSY.get_states(device)
     device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
@@ -216,9 +235,9 @@ function _index_dynamic_system!(sys::PSY.System)
     DAE_vector = collect(falses(n_buses * 2))
     global_state_index = Dict{String, Dict{Symbol, Int64}}()
     state_space_ix = [n_buses * 2]
-    current_buses_no = collect(1:n_buses)
-    static_bus_var_count = 2 * length(current_buses_no)
-    voltage_buses_no = Vector{Int}()
+    current_buses_ix = collect(1:n_buses)
+    static_bus_var_count = 2 * length(current_buses_ix)
+    voltage_buses_ix = Vector{Int}()
     total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
@@ -230,7 +249,9 @@ function _index_dynamic_system!(sys::PSY.System)
     found_ref_bus = false
     sys_basepower = PSY.get_base_power(sys)
 
-    dyn_branches = PSY.get_components(DynamicLine, sys)
+    Ybus, lookup = _get_Ybus(sys)
+    dyn_branches = PSY.get_components(PSY.DynamicBranch, sys)
+
     if !(isempty(dyn_branches))
         first_dyn_branch_point = state_space_ix[1] + 1
         for br in dyn_branches
@@ -238,17 +259,19 @@ function _index_dynamic_system!(sys::PSY.System)
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
             to_bus_number = PSY.get_number(arc.to)
+            bus_ix_from = lookup[from_bus_number]
+            bus_ix_to = lookup[to_bus_number]
             merge!(
                 +,
                 total_shunts,
                 Dict(
-                    from_bus_number => 1 / PSY.get_b(br).from,
-                    to_bus_number => 1 / PSY.get_b(br).to,
+                    bus_ix_from => 1 / PSY.get_b(br).from,
+                    bus_ix_to => 1 / PSY.get_b(br).to,
                 ),
             )
-            push!(voltage_buses_no, from_bus_number, to_bus_number)
-            DAE_vector[from_bus_number] = DAE_vector[from_bus_number + n_buses] = true
-            DAE_vector[to_bus_number] = DAE_vector[to_bus_number + n_buses] = true
+            push!(voltage_buses_ix, bus_ix_from, bus_ix_to)
+            DAE_vector[bus_ix_from] = DAE_vector[bus_ix_from + n_buses] = true
+            DAE_vector[bus_ix_to] = DAE_vector[bus_ix_to + n_buses] = true
             DAE_vector = push!(DAE_vector, collect(trues(n_states))...)
             total_states += n_states
             _add_states_to_global!(global_state_index, state_space_ix, br)
@@ -256,10 +279,11 @@ function _index_dynamic_system!(sys::PSY.System)
 
         for (ix, val) in enumerate(DAE_vector[1:n_buses])
             if val
+                #This V_ix should be V_number.
                 global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
                 total_states += 2
                 static_bus_var_count -= 2
-                push!(voltage_buses_no, ix)
+                push!(voltage_buses_ix, ix)
                 @assert static_bus_var_count >= 0
             end
         end
@@ -267,7 +291,7 @@ function _index_dynamic_system!(sys::PSY.System)
     else
         @debug("System doesn't contain Dynamic Branches")
     end
-    unique!(voltage_buses_no)
+    unique!(voltage_buses_ix)
     sources = PSY.get_components(PSY.Source, sys)
     for s in sources
         btype = PSY.get_bustype(PSY.get_bus(s))
@@ -302,15 +326,7 @@ function _index_dynamic_system!(sys::PSY.System)
     injection_n_states = state_space_ix[1] - branches_n_states - n_buses * 2
     @assert total_states == state_space_ix[1] - static_bus_var_count
     @debug total_states
-    setdiff!(current_buses_no, voltage_buses_no)
-    if !isempty(PSY.get_components(PSY.ACBranch, sys))
-        Ybus_ = PSY.Ybus(sys)
-        Ybus = Ybus_[:, :]
-        lookup = Ybus_.lookup[1]
-    else
-        Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
-        lookup = Dict{Int.Int}()
-    end
+    setdiff!(current_buses_ix, voltage_buses_ix)
     sys_ext = Dict{String, Any}()
     counts = Base.ImmutableDict(
         :total_states => total_states,
@@ -322,14 +338,15 @@ function _index_dynamic_system!(sys::PSY.System)
         :bus_count => n_buses,
     )
 
-    sys_ext[LOOKUP] = lookup
     sys_ext[LITS_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
-    sys_ext[VOLTAGE_BUSES_NO] = voltage_buses_no
-    sys_ext[CURRENT_BUSES_NO] = current_buses_no
+    sys_ext[VOLTAGE_BUSES_IX] = voltage_buses_ix
+    sys_ext[CURRENT_BUSES_IX] = current_buses_ix
     sys_ext[YBUS] = Ybus
     sys_ext[TOTAL_SHUNTS] = total_shunts
     sys_ext[GLOBAL_VARS] = global_vars
+    sys_ext[DYN_LINES] = !isempty(PSY.get_components(PSY.DynamicBranch, sys))
+    sys_ext[LOOKUP] = lookup
     @assert sys_ext[GLOBAL_VARS][:ω_sys_index] != -1
     sys.internal.ext = sys_ext
     return DAE_vector
@@ -347,8 +364,8 @@ get_device_index(sys::PSY.System, device::D) where {D <: PSY.DynamicInjection} =
     PSY.get_ext(sys)[GLOBAL_INDEX][device.name]
 get_inner_vars(device::PSY.DynamicInjection) = device.ext[INNER_VARS]
 get_ω_sys(sys::PSY.System) = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys]
-get_current_bus_no(sys::PSY.System) = PSY.get_ext(sys)[CURRENT_BUSES_NO]
-get_voltage_bus_no(sys::PSY.System) = PSY.get_ext(sys)[VOLTAGE_BUSES_NO]
+get_current_bus_ix(sys::PSY.System) = PSY.get_ext(sys)[CURRENT_BUSES_IX]
+get_voltage_bus_ix(sys::PSY.System) = PSY.get_ext(sys)[VOLTAGE_BUSES_IX]
 get_total_shunts(sys::PSY.System) = PSY.get_ext(sys)[TOTAL_SHUNTS]
 get_bus_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:bus_count]
 get_lookup(sys::PSY.System) = PSY.get_ext(sys)[LOOKUP]
@@ -429,9 +446,9 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     n_buses = length(PSY.get_components(PSY.Bus, sim.system))
     diff_states = collect(trues(var_count))
     diff_states[1:(2 * n_buses)] .= false
-    for b_no in get_voltage_bus_no(sim.system)
-        diff_states[b_no] = true
-        diff_states[b_no + n_buses] = true
+    for b_ix in get_voltage_bus_ix(sim.system)
+        diff_states[b_ix] = true
+        diff_states[b_ix + n_buses] = true
     end
     alg_states = .!diff_states
     fx = @view jacobian[diff_states, diff_states]

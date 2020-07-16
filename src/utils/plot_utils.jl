@@ -47,52 +47,55 @@ end
 Function to print initial states. It receives the vector of initial states and the dynamical system.
 """
 function print_device_states(sim::Simulation)
-    for (ix, val_sys) in PSY.get_ext(sim.system)[GLOBAL_INDEX]
-        ix_dyn_injector =
-            PSY.get_dynamic_injector(PSY.get_component(PSY.StaticInjection, sim.system, ix))
-        if !isnothing(ix_dyn_injector)
-            println("Differential States")
-            println(ix)
-            println("====================")
-            ix_states = PSY.get_states(ix_dyn_injector)
-            for k in ix_states
-                print(k, " ", sim.x0_init[val_sys[k]], "\n")
-            end
-            println("====================")
-        end
-    end
-
-    #println("Algebraic States") # TODO: Print Buses Voltages
-    return
-end
-
-function get_dict_init_states(sim::Simulation)
     bus_size = get_bus_count(sim.system)
-    V_R = Vector{Float64}(undef, bus_size)
-    V_I = Vector{Float64}(undef, bus_size)
-    Vm = Vector{Float64}(undef, bus_size)
-    θ = Vector{Float64}(undef, bus_size)
-    for bus in PSY.get_components(PSY.Bus, sim.system)
+    println("Voltage Variables")
+    println("====================")
+    buses_sorted =
+        sort(collect(PSY.get_components(PSY.Bus, sim.system)); by = x -> PSY.get_number(x))
+    for bus in buses_sorted
+        name = PSY.get_name(bus)
+        println(name)
+        println("====================")
         bus_n = PSY.get_number(bus)
         bus_ix = PSY.get_ext(sim.system)[LOOKUP][bus_n]
-        V_R[bus_ix] = sim.x0_init[bus_ix]
-        V_I[bus_ix] = sim.x0_init[bus_ix + bus_size]
-        Vm[bus_ix] = sqrt(V_R[bus_ix]^2 + V_I[bus_ix]^2)
-        θ[bus_ix] = angle(V_R[bus_ix] + V_I[bus_ix] * 1im)
+        V_R = sim.x0_init[bus_ix]
+        V_I = sim.x0_init[bus_ix + bus_size]
+        Vm = sqrt(V_R^2 + V_I^2)
+        θ = angle(V_R + V_I * 1im)
+        print("Vm ", round(Vm, digits = 4), "\n")
+        print("θ ", round(θ, digits = 4), "\n")
+        println("====================")
     end
-    results =
-        Dict{String, Vector{Float64}}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
-    for (ix, val_sys) in PSY.get_ext(sim.system)[GLOBAL_INDEX]
-        ix_dyn_injector =
-            PSY.get_dynamic_injector(PSY.get_component(PSY.StaticInjection, sim.system, ix))
-        if !isnothing(ix_dyn_injector)
-            ix_states = PSY.get_states(ix_dyn_injector)
-            x0_device = Vector{Float64}(undef, length(ix_states))
-            for (i, state) in enumerate(ix_states)
-                x0_device[i] = sim.x0_init[val_sys[state]]
+    println("====================")
+    for device in PSY.get_components(PSY.DynamicInjection, sim.system)
+        states = PSY.get_states(device)
+        name = PSY.get_name(device)
+        println("Differential States")
+        println(name)
+        println("====================")
+        global_index = PSY.get_ext(sim.system)[GLOBAL_INDEX][name]
+        for s in states
+            print(s, " ", round(sim.x0_init[global_index[s]], digits = 4), "\n")
+        end
+        println("====================")
+    end
+    dyn_branches = PSY.get_components(PSY.DynamicBranch, sim.system)
+    if !isempty(dyn_branches)
+        println("====================")
+        println("Line Current States")
+        for br in dyn_branches
+            states = PSY.get_states(br)
+            name = PSY.get_name(br)
+            printed_name = "Line " * name
+            println("====================")
+            println(printed_name)
+            global_index = PSY.get_ext(sim.system)[GLOBAL_INDEX][name]
+            x0_br = Dict{Symbol, Float64}()
+            for (i, s) in enumerate(states)
+                print(s, " ", round(sim.x0_init[global_index[s]], digits = 5), "\n")
             end
-            results[ix] = x0_device
+            println("====================")
         end
     end
-    return results
+    return
 end

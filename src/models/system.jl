@@ -78,8 +78,8 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
         )
     end
 
-    dyn_branches = PSY.get_components(DynamicLine, sys)
-    if !(isempty(dyn_branches))
+    if PSY.get_ext(sys)[DYN_LINES]
+        dyn_branches = PSY.get_components(PSY.DynamicBranch, sys)
         for br in dyn_branches
             arc = PSY.get_arc(br)
             n_states = PSY.get_n_states(br)

@@ -4,21 +4,18 @@ module LITS
 ####################################### Structs Exports ####################################
 
 # Base Exports
-export DynamicLine
 export Simulation
 export run_simulation!
 export ThreePhaseFault
 export ControlReferenceChange
-export DynamicLine
 
 # Export for routines
-export make_dynamic_branch!
 export small_signal_analysis
 export get_state_series
 export get_voltagemag_series
 export print_init_states
 export print_device_states
-export get_dict_init_states
+export get_initial_conditions
 
 ####################################### Package Imports ####################################
 import Logging
@@ -39,9 +36,9 @@ include("base/definitions.jl")
 include("base/ports.jl")
 include("base/perturbations.jl")
 include("base/small_signal_results.jl")
-include("base/simulation_initialization.jl")
 include("base/file_system.jl")
 include("base/simulation.jl")
+include("base/simulation_initialization.jl")
 
 #Common Models
 include("models/branch.jl")
@@ -91,6 +88,7 @@ include("initialization/inverter_components/init_outer.jl")
 include("models/system.jl")
 
 #Utils
+include("utils/ybus_utils.jl")
 include("utils/plot_utils.jl")
 include("utils/immutable_dicts.jl")
 include("utils/print.jl")
