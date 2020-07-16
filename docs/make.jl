@@ -24,7 +24,7 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/Energy-MAC/LITS.jl",
+    repo = "github.com/NREL-SIIP/PowerSimulationsDynamics.jl",
     branch = "gh-pages",
     target = "build",
     #deps = Deps.pip("pygments", "mkdocs", "python-markdown-math"),
