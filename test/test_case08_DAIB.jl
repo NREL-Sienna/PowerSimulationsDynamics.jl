@@ -21,7 +21,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test08.jl"))
 tspan = (0.0, 4.0);
 
 #Define Fault using Callbacks
-Pref_change = ControlReferenceChange(1.0, case_inv, P_ref_index, 0.7)
+Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
 
 path = (joinpath(pwd(), "test-08"))
 !isdir(path) && mkdir(path)

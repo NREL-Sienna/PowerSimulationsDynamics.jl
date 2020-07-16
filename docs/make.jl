@@ -1,10 +1,10 @@
-using Documenter, LITS
+using Documenter, PowerSimulationsDynamics
 const PSYPATH = dirname(pathof(LITS))
 
 makedocs(
-    modules = [LITS],
+    modules = [PowerSimulationsDynamics],
     format = Documenter.HTML(mathengine = Documenter.MathJax()),
-    sitename = "LITS.jl",
+    sitename = "PowerSimulationsDynamics.jl",
     pages = Any[ # Compat: `Any` for 0.4 compat
         "Home" => "index.md",
         # "User Guide" => "man/guide.md",
