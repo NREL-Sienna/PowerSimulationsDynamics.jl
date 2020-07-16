@@ -1,5 +1,5 @@
 isdefined(Base, :__precompile__) && __precompile__()
-module LITS
+module PowerSimulationsDynamics
 
 ####################################### Structs Exports ####################################
 

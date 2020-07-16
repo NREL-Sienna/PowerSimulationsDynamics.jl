@@ -19,13 +19,13 @@ tspan = (0.0, 20.0);
 case_inv = collect(PSY.get_components(PSY.DynamicInverter, threebus_sys))[1]
 
 #Define Fault using Callbacks
-Pref_change = LITS.ControlReferenceChange(1.0, case_inv, LITS.P_ref_index, 1.2)
+Pref_change = ControlReferenceChange(1.0, case_inv, P_ref_index, 1.2)
 
 path = (joinpath(pwd(), "test-09"))
 !isdir(path) && mkdir(path)
 try
     #Define Simulation Problem
-    sim = LITS.Simulation(path, threebus_sys, tspan, Pref_change)
+    sim = Simulation(path, threebus_sys, tspan, Pref_change)
 
     small_sig = small_signal_analysis(sim)
 

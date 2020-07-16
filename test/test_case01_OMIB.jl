@@ -39,7 +39,7 @@ try
     #Obtain data for angles
     series = get_state_series(sim, ("generator-102-1", :δ))
     series2 = get_voltagemag_series(sim, 102)
-    LITS.print_init_states(sim)
+    print_init_states(sim)
 
     diff = [0.0]
     res = get_init_values_for_comparison(sim)

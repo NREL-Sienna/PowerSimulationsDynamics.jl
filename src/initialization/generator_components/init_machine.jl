@@ -33,7 +33,7 @@ function initialize_mach_shaft!(
         τm = x[2]
         Vf0 = x[3]
 
-        V_dq = LITS.ri_dq(δ) * [V_R; V_I]
+        V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / (R^2 + Xd_p^2)) * (Xd_p * (Vf0 - V_dq[2]) - R * V_dq[1])  #15.36
         i_q = (1.0 / (R^2 + Xd_p^2)) * (Xd_p * V_dq[1] + R * (Vf0 - V_dq[2])) #15.36
         Pe = (V_dq[1] + R * i_d) * i_d + (V_dq[2] + R * i_q) * i_q
@@ -104,7 +104,7 @@ function initialize_mach_shaft!(
         eq_p = x[4]
         ed_p = x[5]
 
-        V_dq = LITS.ri_dq(δ) * [V_R; V_I]
+        V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / (R^2 + Xd_p * Xq_p)) * (Xq_p * (eq_p - V_dq[2]) + R * (ed_p - V_dq[1]))  #15.32
         i_q =
             (1.0 / (R^2 + Xd_p * Xq_p)) * (-Xd_p * (ed_p - V_dq[1]) + R * (eq_p - V_dq[2]))  #15.32
@@ -115,7 +115,7 @@ function initialize_mach_shaft!(
         out[4] = -eq_p - (Xd - Xd_p) * i_d + Vf0 #∂(eq_p)/∂t
         out[5] = -ed_p + (Xq - Xq_p) * i_q #∂(ed_p)/∂t
     end
-    V_dq0 = LITS.ri_dq(δ0) * [V_R; V_I]
+    V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
@@ -133,7 +133,7 @@ function initialize_mach_shaft!(
         #Update Mechanical and Electrical Torque on Generator
         get_inner_vars(device)[τe_var] = sol_x0[2]
         get_inner_vars(device)[τm_var] = sol_x0[2]
-        #Update Vf for AVR in OneDOneQ Machine. 
+        #Update Vf for AVR in OneDOneQ Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
         #Update eq_p and ed_p for Machine
         machine_ix = get_local_state_ix(device, PSY.OneDOneQMachine)
@@ -193,7 +193,7 @@ function initialize_mach_shaft!(
         eq_pp = x[8]
         ed_pp = x[9]
 
-        V_dq = LITS.ri_dq(δ) * [V_R; V_I]
+        V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / Xd_pp) * (eq_pp - ψd)      #15.18
         i_q = (1.0 / Xq_pp) * (-ed_pp - ψq)     #15.18
         τ_e = ψd * i_q - ψq * i_d               #15.6
@@ -208,7 +208,7 @@ function initialize_mach_shaft!(
         out[9] = -ed_pp + ed_p + (Xq_p - Xq_pp + γq) * i_q #15.16 ed_pp
     end
 
-    V_dq0 = LITS.ri_dq(δ0) * [V_R; V_I]
+    V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[1], V_dq0[2], V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
@@ -226,7 +226,7 @@ function initialize_mach_shaft!(
         #Update Mechanical and Electrical Torque on Generator
         get_inner_vars(device)[τe_var] = sol_x0[2]
         get_inner_vars(device)[τm_var] = sol_x0[2]
-        #Update Vf for AVR in OneDOneQ Machine. 
+        #Update Vf for AVR in OneDOneQ Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
         #Update states for Machine
         machine_ix = get_local_state_ix(device, PSY.MarconatoMachine)
@@ -291,13 +291,13 @@ function initialize_mach_shaft!(
         eq_pp = x[6]
         ed_pp = x[7]
 
-        V_dq = LITS.ri_dq(δ) * [V_R; V_I]
+        V_dq = ri_dq(δ) * [V_R; V_I]
         i_d =
             (1.0 / (R^2 + Xd_pp * Xq_pp)) *
             (Xq_pp * (eq_pp - V_dq[2]) + R * (ed_pp - V_dq[1]))      #15.25
         i_q =
             (1.0 / (R^2 + Xd_pp * Xq_pp)) *
-            (-Xd_pp * (ed_pp - V_dq[1]) + R * (eq_pp - V_dq[2]))      #15.25 
+            (-Xd_pp * (ed_pp - V_dq[1]) + R * (eq_pp - V_dq[2]))      #15.25
         Pe = (V_dq[1] + R * i_d) * i_d + (V_dq[2] + R * i_q) * i_q
         out[1] = τm - Pe #Mechanical Torque
         out[2] = P0 - (V_dq[1] * i_d + V_dq[2] * i_q) #Output Power
@@ -307,7 +307,7 @@ function initialize_mach_shaft!(
         out[6] = -eq_pp + eq_p - (Xd_p - Xd_pp + γd) * i_d + (T_AA / Td0_p) * Vf0        #15.16 eq_pp
         out[7] = -ed_pp + ed_p + (Xq_p - Xq_pp + γq) * i_q                              #15.16 ed_pp
     end
-    V_dq0 = LITS.ri_dq(δ0) * [V_R; V_I]
+    V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
@@ -325,7 +325,7 @@ function initialize_mach_shaft!(
         #Update Mechanical and Electrical Torque on Generator
         get_inner_vars(device)[τe_var] = sol_x0[2]
         get_inner_vars(device)[τm_var] = sol_x0[2]
-        #Update Vf for AVR in OneDOneQ Machine. 
+        #Update Vf for AVR in OneDOneQ Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
         #Update eq_p and ed_p for Machine
         machine_ix = get_local_state_ix(device, PSY.SimpleMarconatoMachine)
@@ -383,7 +383,7 @@ function initialize_mach_shaft!(
         eq_pp = x[8]
         ed_pp = x[9]
 
-        V_dq = LITS.ri_dq(δ) * [V_R; V_I]
+        V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / Xd_pp) * (eq_pp - ψd)      #15.18
         i_q = (1.0 / Xq_pp) * (-ed_pp - ψq)     #15.18
         τ_e = ψd * i_q - ψq * i_d               #15.6
@@ -398,7 +398,7 @@ function initialize_mach_shaft!(
         out[9] = -ed_pp + ed_p + (Xq_p - Xq_pp) * i_q      #15.19 ed_pp
     end
 
-    V_dq0 = LITS.ri_dq(δ0) * [V_R; V_I]
+    V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[1], V_dq0[2], V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
@@ -416,7 +416,7 @@ function initialize_mach_shaft!(
         #Update Mechanical and Electrical Torque on Generator
         get_inner_vars(device)[τe_var] = sol_x0[2]
         get_inner_vars(device)[τm_var] = sol_x0[2]
-        #Update Vf for AVR in OneDOneQ Machine. 
+        #Update Vf for AVR in OneDOneQ Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
         #Update states for Machine
         machine_ix = get_local_state_ix(device, PSY.AndersonFouadMachine)
@@ -477,13 +477,13 @@ function initialize_mach_shaft!(
         eq_pp = x[6]
         ed_pp = x[7]
 
-        V_dq = LITS.ri_dq(δ) * [V_R; V_I]
+        V_dq = ri_dq(δ) * [V_R; V_I]
         i_d =
             (1.0 / (R^2 + Xd_pp * Xq_pp)) *
             (Xq_pp * (eq_pp - V_dq[2]) + R * (ed_pp - V_dq[1]))      #15.25
         i_q =
             (1.0 / (R^2 + Xd_pp * Xq_pp)) *
-            (-Xd_pp * (ed_pp - V_dq[1]) + R * (eq_pp - V_dq[2]))      #15.25 
+            (-Xd_pp * (ed_pp - V_dq[1]) + R * (eq_pp - V_dq[2]))      #15.25
         Pe = (V_dq[1] + R * i_d) * i_d + (V_dq[2] + R * i_q) * i_q
         out[1] = τm - Pe #Mechanical Torque
         out[2] = P0 - (V_dq[1] * i_d + V_dq[2] * i_q) #Output Power
@@ -493,7 +493,7 @@ function initialize_mach_shaft!(
         out[6] = -eq_pp + eq_p - (Xd_p - Xd_pp) * i_d      #15.19 eq_pp
         out[7] = -ed_pp + ed_p + (Xq_p - Xq_pp) * i_q      #15.19 ed_pp
     end
-    V_dq0 = LITS.ri_dq(δ0) * [V_R; V_I]
+    V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
@@ -511,7 +511,7 @@ function initialize_mach_shaft!(
         #Update Mechanical and Electrical Torque on Generator
         get_inner_vars(device)[τe_var] = sol_x0[2]
         get_inner_vars(device)[τm_var] = sol_x0[2]
-        #Update Vf for AVR in OneDOneQ Machine. 
+        #Update Vf for AVR in OneDOneQ Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
         #Update eq_p and ed_p for Machine
         machine_ix = get_local_state_ix(device, PSY.SimpleAFMachine)
@@ -534,8 +534,8 @@ function initialize_mach_shaft!(
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
-    P0 = PSY.get_active_power(static_gen) 
-    Q0 = PSY.get_reactive_power(static_gen) 
+    P0 = PSY.get_active_power(static_gen)
+    Q0 = PSY.get_reactive_power(static_gen)
     Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
     θ = PSY.get_angle(PSY.get_bus(static_gen))
     S0 = P0 + Q0 * 1im
@@ -571,7 +571,7 @@ function initialize_mach_shaft!(
         ψ1d = x[7]
         ψ1q = x[8]
 
-        V_dq = LITS.ri_dq(δ) * [V_R; V_I]
+        V_dq = ri_dq(δ) * [V_R; V_I]
         #Obtain electric currents] using Flux Linkage equations
         i_df1d = inv_d_fluxlink * [ψd; ψf; ψ1d]  #11.18 in Machowski (3.127, 3.130 and 3.131 in Kundur)
         i_q1q = inv_q_fluxlink * [ψq; ψ1q]        #11.19 in Machowski (3.128 and 3.132 in Kundur)
@@ -586,7 +586,7 @@ function initialize_mach_shaft!(
         out[8] = -R_1q * i_q1q[2]        #15.19 eq_pp
     end
 
-    V_dq0 = LITS.ri_dq(δ0) * [V_R; V_I]
+    V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[2], -V_dq0[1], 1.0, 0.0, 0.0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
@@ -604,7 +604,7 @@ function initialize_mach_shaft!(
         #Update Mechanical and Electrical Torque on Generator
         get_inner_vars(device)[τe_var] = sol_x0[2]
         get_inner_vars(device)[τm_var] = sol_x0[2]
-        #Update Vf for AVR in OneDOneQ Machine. 
+        #Update Vf for AVR in OneDOneQ Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
         #Update states for Machine
         machine_ix = get_local_state_ix(device, PSY.FullMachine)

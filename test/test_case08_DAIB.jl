@@ -1,4 +1,4 @@
-using LITS
+using PowerSimulationsDynamics
 using Sundials
 
 """
@@ -21,13 +21,13 @@ include(joinpath(dirname(@__FILE__), "data_tests/test08.jl"))
 tspan = (0.0, 4.0);
 
 #Define Fault using Callbacks
-Pref_change = LITS.ControlReferenceChange(1.0, case_inv, LITS.P_ref_index, 0.7)
+Pref_change = ControlReferenceChange(1.0, case_inv, P_ref_index, 0.7)
 
 path = (joinpath(pwd(), "test-08"))
 !isdir(path) && mkdir(path)
 try
     #Define Simulation Problem
-    sim = LITS.Simulation(path, omib_sys, tspan, Pref_change)
+    sim = Simulation(path, omib_sys, tspan, Pref_change)
 
     small_sig = small_signal_analysis(sim)
 

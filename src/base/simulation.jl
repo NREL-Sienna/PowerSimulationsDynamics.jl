@@ -338,7 +338,7 @@ function _index_dynamic_system!(sys::PSY.System)
         :bus_count => n_buses,
     )
 
-    sys_ext[LITS_COUNTS] = counts
+    sys_ext[PSID_COUNTS] = counts
     sys_ext[GLOBAL_INDEX] = global_state_index
     sys_ext[VOLTAGE_BUSES_IX] = voltage_buses_ix
     sys_ext[CURRENT_BUSES_IX] = current_buses_ix
@@ -353,13 +353,13 @@ function _index_dynamic_system!(sys::PSY.System)
 end
 
 get_injection_pointer(sys::PSY.System) =
-    PSY.get_ext(sys)[LITS_COUNTS][:first_dyn_injection_pointer]
+    PSY.get_ext(sys)[PSID_COUNTS][:first_dyn_injection_pointer]
 get_branches_pointer(sys::PSY.System) =
-    PSY.get_ext(sys)[LITS_COUNTS][:first_dyn_branch_point]
-get_n_injection_states(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:injection_n_states]
-get_n_branches_states(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:branches_n_states]
-get_system_state_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_states]
-get_variable_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:total_variables]
+    PSY.get_ext(sys)[PSID_COUNTS][:first_dyn_branch_point]
+get_n_injection_states(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:injection_n_states]
+get_n_branches_states(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:branches_n_states]
+get_system_state_count(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:total_states]
+get_variable_count(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:total_variables]
 get_device_index(sys::PSY.System, device::D) where {D <: PSY.DynamicInjection} =
     PSY.get_ext(sys)[GLOBAL_INDEX][device.name]
 get_inner_vars(device::PSY.DynamicInjection) = device.ext[INNER_VARS]
@@ -367,7 +367,7 @@ get_ω_sys(sys::PSY.System) = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys]
 get_current_bus_ix(sys::PSY.System) = PSY.get_ext(sys)[CURRENT_BUSES_IX]
 get_voltage_bus_ix(sys::PSY.System) = PSY.get_ext(sys)[VOLTAGE_BUSES_IX]
 get_total_shunts(sys::PSY.System) = PSY.get_ext(sys)[TOTAL_SHUNTS]
-get_bus_count(sys::PSY.System) = PSY.get_ext(sys)[LITS_COUNTS][:bus_count]
+get_bus_count(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:bus_count]
 get_lookup(sys::PSY.System) = PSY.get_ext(sys)[LOOKUP]
 
 function _get_internal_mapping(
@@ -430,10 +430,10 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     end
     _change_vector_type(sim.system)
     _add_aux_arrays!(sim.system, Real)
-    var_count = LITS.get_variable_count(sim.system)
+    var_count = PSID.get_variable_count(sim.system)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     bus_count = length(PSY.get_components(PSY.Bus, sim.system))
-    sysf! = (out, x) -> LITS.system!(
+    sysf! = (out, x) -> system!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
         x,              #states
