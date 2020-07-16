@@ -9,8 +9,6 @@ function mdl_source!(
 
     #Load device parameters
     bus = PSY.get_bus(device)
-    #V_R = PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
-    #V_I = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
     V_R = PSY.get_internal_voltage(device) * cos(PSY.get_internal_angle(device))
     V_I = PSY.get_internal_voltage(device) * sin(PSY.get_internal_angle(device))
     R_th = PSY.get_R_th(device)
