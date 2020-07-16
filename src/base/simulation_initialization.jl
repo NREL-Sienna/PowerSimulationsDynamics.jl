@@ -23,6 +23,13 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
     end
 
+    sources = PSY.get_components(PSY.Source, sys)
+    if !isempty(sources)
+        for s in sources
+            initialize_device(s)
+        end
+    end
+
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         bus = PSY.get_bus(d)
         bus_n = PSY.get_number(PSY.get_bus(d))
