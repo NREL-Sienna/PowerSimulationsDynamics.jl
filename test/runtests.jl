@@ -8,16 +8,57 @@ using InfrastructureSystems
 import LinearAlgebra
 using Logging
 
+import Aqua
+Aqua.test_unbound_args(LITS)
+Aqua.test_undefined_exports(LITS)
+Aqua.test_ambiguities(LITS)
+
 const IS = InfrastructureSystems
 const PSY = PowerSystems
 
-tests = readdir(dirname(@__FILE__))
-tests = filter(
-    f -> startswith(f, "test_") && endswith(f, ".jl") && f != basename(@__FILE__),
-    tests,
-)
+"""
+Copied @includetests from https://github.com/ssfrr/TestSetExtensions.jl.
+Ideally, we could import and use TestSetExtensions.  Its functionality was broken by changes
+in Julia v0.7.  Refer to https://github.com/ssfrr/TestSetExtensions.jl/pull/7.
+"""
 
-const LOG_FILE = "lits-test.log"
+"""
+Includes the given test files, given as a list without their ".jl" extensions.
+If none are given it will scan the directory of the calling file and include all
+the julia files.
+"""
+macro includetests(testarg...)
+    if length(testarg) == 0
+        tests = []
+    elseif length(testarg) == 1
+        tests = testarg[1]
+    else
+        error("@includetests takes zero or one argument")
+    end
+
+    quote
+        tests = $tests
+        rootfile = @__FILE__
+        if length(tests) == 0
+            tests = readdir(dirname(rootfile))
+            tests = filter(
+                f ->
+                    startswith(f, "test_") && endswith(f, ".jl") && f != basename(rootfile),
+                tests,
+            )
+        else
+            tests = map(f -> string(f, ".jl"), tests)
+        end
+        println()
+        for test in tests
+            print(splitext(test)[1], ": ")
+            include(test)
+            println()
+        end
+    end
+end
+
+const LOG_FILE = "psid-test.log"
 
 LOG_LEVELS = Dict(
     "Debug" => Logging.Debug,
@@ -51,13 +92,12 @@ function run_tests()
         )
         global_logger(multi_logger)
 
-        @testset "BasicTests" begin
-            for test in tests
-                print(splitext(test)[1], ": ")
-                include(test)
-                println()
-            end
+      # Testing Topological components of the schema
+        @time @testset "Begin PowerSimulationsDynamics tests" begin
+            @includetests ARGS
         end
+
+        @test length(IS.get_log_events(multi_logger.tracker, Logging.Error)) == 0
         @info IS.report_log_summary(multi_logger)
     end
 end
