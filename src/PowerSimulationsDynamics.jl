@@ -30,6 +30,7 @@ import Base.ImmutableDict
 import PowerSystems
 const PSY = PowerSystems
 const IS = InfrastructureSystems
+const PSID = PowerSimulationsDynamics
 
 #Structs for General Devices and System
 include("base/definitions.jl")
