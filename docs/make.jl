@@ -1,5 +1,4 @@
 using Documenter, PowerSimulationsDynamics
-const PSYPATH = dirname(pathof(LITS))
 
 makedocs(
     modules = [PowerSimulationsDynamics],
