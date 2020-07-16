@@ -40,7 +40,7 @@ try
     series = get_state_series(sim, ("generator-102-1", :δ))
 
     diff = [0.0]
-    res = LITS.get_dict_init_states(sim)
+    res = get_init_values_for_comparison(sim)
     for (k, v) in test13_x0_init
         diff[1] += LinearAlgebra.norm(res[k] - v)
     end

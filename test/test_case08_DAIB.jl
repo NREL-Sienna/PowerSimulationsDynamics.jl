@@ -40,7 +40,7 @@ try
     print_device_states(sim)
 
     diff = [0.0]
-    res = LITS.get_dict_init_states(sim)
+    res = get_init_values_for_comparison(sim)
     for (k, v) in test08_x0_init
         diff[1] += LinearAlgebra.norm(res[k] - v)
     end
