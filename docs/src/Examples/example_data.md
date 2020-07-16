@@ -73,7 +73,7 @@ Based on the description provided in PTI files, this is a two-bus system, on whi
 ```julia
 #To create the system you need to pass the location of the RAW file
 file_dir = "OMIB.raw"
-omib_sys = System(omib_file_dir)
+omib_sys = System(PowerModelsData(omib_file_dir))
 ```
 Note that this system does not have an injection device in bus 1 (the reference bus). We can add a source with small impedance directly using a function like:
 ```julia
@@ -209,7 +209,7 @@ Q
 That describes a three bus connected system, with generators connected at bus 2 and 3, and loads in three buses. We can load the system and attach an infinite source on the reference bus:
 ```julia
 sys_file_dir = "ThreeBusInverter.raw")
-threebus_sys = System(sys_file_dir)
+threebus_sys = System(PowerModelsData(sys_file_dir))
 add_source_to_ref(threebus_sys)
 ```
 We will connect a One-d-one-q machine at bus 102, and a Virtual Synchronous Generator Inverter at bus 103. An inverter is composed by a `converter`, `outer control`, `inner control`, `dc source`, `frequency estimator` and a `filter`.
@@ -220,7 +220,7 @@ We will create specific functions to create the components of the inverter as fo
 
 ```julia
 #Define converter as an AverageConverter
-converter_high_power() = AverageConverter(v_rated = 138.0, s_rated = 100.0)
+converter_high_power() = AverageConverter(rated_voltage = 138.0, rated_current = 100.0)
 
 #Define Outer Control as a composition of Virtual Inertia + Reactive Power Droop
 function outer_control()
@@ -265,7 +265,6 @@ function inv_case78(static_device)
     return PSY.DynamicInverter(
         static_device,
         1.0, # ω_ref,
-        100.0, #MVABase
         converter_high_power(), #converter
         outer_control(), #outer control
         inner_control(), #inner control voltage source
