@@ -13,7 +13,7 @@
 
 - Exploit Julia's capabilities to improve computational performance of large scale power system dynamic simulations.
 
-- Provide State-of-Art modeling to assess Low-Innertia Power Systems.
+- Provide State-of-Art modeling to assess Low-Inertia Power Systems.
 
 ## Installation
 
@@ -37,5 +37,5 @@ Contributions to the development and enahancement of PowerSimulationsDynamic is 
 
 ## License
 
-PowerSimulationsDynamics is released under a BSD [license](https://github.com/NREL/PowerSimulationsDynamics.jl/blob/master/LICENSE). PowerSimulations has been developed as part of the Scalable Integrated Infrastructure Planning (SIIP)
-initiative at the U.S. Department of Energy's National Renewable Energy Laboratory ([NREL](https://www.nrel.gov/))
+PowerSimulationsDynamics is released under a BSD [license](https://github.com/NREL/PowerSimulationsDynamics.jl/blob/master/LICENSE).
+PowerSimulationsDynamics has been developed as part of the Scalable Integrated Infrastructure Planning (SIIP) initiative at the U.S. Department of Energy's National Renewable Energy Laboratory ([NREL](https://www.nrel.gov/))
