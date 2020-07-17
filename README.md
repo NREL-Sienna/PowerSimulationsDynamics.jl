@@ -5,8 +5,6 @@
 [![Documentation](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/workflows/Documentation/badge.svg)](https://nrel-siip.github.io/PowerSimulationsDynamics.jl/latest)
 [![Join the chat at https://gitter.im/NREL/PowerSimulationsDynamics.jl](https://badges.gitter.im/NREL/PowerSimulationsDynamics.jl.svg)](https://gitter.im/NREL/PowerSimulationsDynamics.jl)
 
-## The current implementation of the functionalities can be seen in the test codes.
-
 `PowerSimulationsDynamics.jl` is a Julia package for power system modeling and simulation of Power Systems dynamics. The objectives of the package are:
 
 - Provide a flexible modeling framework that can accommodate different device models according to modeling needs.
