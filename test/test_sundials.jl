@@ -14,15 +14,17 @@ include(joinpath(dirname(@__FILE__), "data_tests/test11.jl"))
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
-solver_list = [:Dense,
-               #:Band Requires jac_upper, jac_lower
-               :LapackDense,
-               #:LapackBand Requires jac_upper, jac_lower,
-               :GMRES,
-               :BCG,
-               :PCG,
-               :TFQMR,
-               :KLU]
+solver_list = [
+    :Dense,
+    #:Band Requires jac_upper, jac_lower
+    :LapackDense,
+    #:LapackBand Requires jac_upper, jac_lower,
+    :GMRES,
+    :BCG,
+    :PCG,
+    :TFQMR,
+    :KLU,
+]
 
 #time span
 tspan = (0.0, 40.0)
@@ -37,40 +39,40 @@ function test_sundials(solver)
     path = (joinpath(pwd(), "test-sundials"))
     !isdir(path) && mkdir(path)
     try
-            #Define Simulation Problem
-            sim = Simulation(
-                path,
-                threebus_sys, #system
-                tspan, #time span
-                Ybus_change, #Type of Fault
-            )
+        #Define Simulation Problem
+        sim = Simulation(
+            path,
+            threebus_sys, #system
+            tspan, #time span
+            Ybus_change, #Type of Fault
+        )
 
-            #Obtain small signal results for initial conditions
-            small_sig = small_signal_analysis(sim)
+        #Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
 
-            #Solve problem in equilibrium
-            @info "$(solver)" @time run_simulation!(sim, IDA(); linearsolver = solver)
+        #Solve problem in equilibrium
+        @info "$(solver)" @time run_simulation!(sim, IDA(); linearsolver = solver)
 
-            #Obtain data for voltages
-            series = get_voltagemag_series(sim, 102)
-            diff = [0.0]
-            res = get_init_values_for_comparison(sim)
-            for (k, v) in test10_x0_init
-                diff[1] += LinearAlgebra.norm(res[k] - v)
-            end
-            @test (diff[1] < 1e-3)
-            @test sim.solution.retcode == :Success
-        finally
-            @info("removing test files")
-            rm(path, force = true, recursive = true)
+        #Obtain data for voltages
+        series = get_voltagemag_series(sim, 102)
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test10_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
         end
+        @test (diff[1] < 1e-3)
+        @test sim.solution.retcode == :Success
+    finally
+        @info("removing test files")
+        rm(path, force = true, recursive = true)
+    end
     return
 end
 
 @testset "Sundials Tests" begin
-for name in solver_list
-    @testset "$(name)" begin
-        test_sundials(name)
+    for name in solver_list
+        @testset "$(name)" begin
+            test_sundials(name)
+        end
     end
-end
 end
