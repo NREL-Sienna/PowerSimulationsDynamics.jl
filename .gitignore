@@ -28,7 +28,6 @@ docs/site/
 #Figures
 *.pdf
 *.ipynb
-*.png
 
 Manifest.toml
 .vscode
