@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/NREL-SIIP/PowerSimulationsDynamics.jl.svg?branch=master)](https://travis-ci.com/NREL-SIIP/PowerSimulationsDynamics.jl)
 [![codecov](https://codecov.io/gh/NREL-SIIP/PowerSimulationsDynamics.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/NREL-SIIP/PowerSimulationsDynamics.jl)
 [![Documentation](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/workflows/Documentation/badge.svg)](https://nrel-siip.github.io/PowerSimulationsDynamics.jl/latest)
-[![Join the chat at https://gitter.im/NREL/PowerSimulationsDynamics.jl](https://badges.gitter.im/NREL/PowerSimulationsDynamics.jl.svg)](https://gitter.im/NREL/PowerSimulationsDynamics.jl)
+[<img src="https://img.shields.io/badge/slack-@SIIP/PSID-blue.svg?logo=slack">](https://join.slack.com/t/lits-julia/shared_invite/zt-fulpdlfa-~Y2EB~ChC6_YIxiQUz3Z4g)
 
 `PowerSimulationsDynamics.jl` is a Julia package for power system modeling and simulation of Power Systems dynamics. The objectives of the package are:
 
