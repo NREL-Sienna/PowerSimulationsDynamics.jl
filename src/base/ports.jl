@@ -2,12 +2,10 @@
 mutable struct Ports
     states::Vector{Symbol}
     inner::Vector{Int}
-        function Ports(states::Vector{Symbol}, inner::Vector)
-            new(states, Int.(inner))
-        end
+    function Ports(states::Vector{Symbol}, inner::Vector)
+        new(states, Int.(inner))
+    end
 end
-
-
 
 #### AVR Ports ####
 function Ports(::PSY.AVR)

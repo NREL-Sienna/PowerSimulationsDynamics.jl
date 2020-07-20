@@ -49,12 +49,19 @@ function Simulation(
     check_folder(simulation_folder)
     simulation_system = deepcopy(system)
     if get(kwargs, :system_to_file, false)
-        PSY.to_json(system, joinpath(simulation_folder, "input_system.json"),)
+        PSY.to_json(system, joinpath(simulation_folder, "input_system.json"))
     end
-    return build_simulation(simulation_folder, simulation_system, tspan, perturbations; kwargs...)
+    return build_simulation(
+        simulation_folder,
+        simulation_system,
+        tspan,
+        perturbations;
+        kwargs...,
+    )
 end
 
-function build_simulation(simulation_folder::String,
+function build_simulation(
+    simulation_folder::String,
     simulation_system::PSY.System,
     tspan::NTuple{2, Float64},
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
