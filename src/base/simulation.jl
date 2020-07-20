@@ -12,6 +12,33 @@ mutable struct Simulation
     ext::Dict{String, Any}
 end
 
+"""
+Initializes the simulations and builds the indexing. The initial conditions are stored in the system.
+
+# Accepted Key Words
+- `system_to_file::Bool`: Serializes the initialized system
+"""
+function Simulation!(
+    simulation_folder::String,
+    system::PSY.System,
+    tspan::NTuple{2, Float64},
+    perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
+    kwargs...,
+)
+    check_folder(simulation_folder)
+    sim = build_simulation(simulation_folder, system, tspan, perturbations; kwargs...)
+    if get(kwargs, :system_to_file, false)
+        PSY.to_json(system, joinpath(simulation_folder, "initialized_system.json"))
+    end
+    return sim
+end
+
+"""
+Initializes the simulations and builds the indexing. The input system is not modified during the initialization
+
+# Accepted Key Words
+- `system_to_file::Bool`: Serializes the original input system
+"""
 function Simulation(
     simulation_folder::String,
     system::PSY.System,
@@ -21,6 +48,18 @@ function Simulation(
 )
     check_folder(simulation_folder)
     simulation_system = deepcopy(system)
+    if get(kwargs, :system_to_file, false)
+        PSY.to_json(system, joinpath(simulation_folder, "input_system.json"),)
+    end
+    return build_simulation(simulation_folder, simulation_system, tspan, perturbations; kwargs...)
+end
+
+function build_simulation(simulation_folder::String,
+    simulation_system::PSY.System,
+    tspan::NTuple{2, Float64},
+    perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
+    kwargs...,
+)
     PSY.set_units_base_system!(simulation_system, "device_base")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
@@ -51,13 +90,6 @@ function Simulation(
         differential_vars = DAE_vector;
         kwargs...,
     )
-
-    if get(kwargs, :system_to_file, false)
-        PSY.to_json(
-            simulation_system,
-            joinpath(simulation_folder, "initialized_system.json"),
-        )
-    end
     return Simulation(
         simulation_system,
         false,
@@ -125,7 +157,7 @@ function _index_local_states!(
     local_states::Vector{Symbol},
     component::PSY.DynamicComponent,
 )
-    for (ix, s) in enumerate(component.states)
+    for (ix, s) in enumerate(PSY.get_states(component))
         component_state_index[ix] = findfirst(x -> x == s, local_states)
     end
     return
