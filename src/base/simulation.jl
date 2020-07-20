@@ -105,6 +105,24 @@ function build_simulation(simulation_folder::String,
     )
 end
 
+function Simulation!(
+    simulation_folder::String,
+    system::PSY.System,
+    tspan::NTuple{2, Float64},
+    perturbation::Perturbation;
+    initialize_simulation::Bool = true,
+    kwargs...,
+)
+    return Simulation!(
+        simulation_folder,
+        system,
+        tspan,
+        [perturbation];
+        initialize_simulation = initialize_simulation,
+        kwargs...,
+    )
+end
+
 function Simulation(
     simulation_folder::String,
     system::PSY.System,
