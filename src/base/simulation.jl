@@ -169,7 +169,7 @@ function _index_port_mapping!(
     component::PSY.DynamicComponent,
 )
     _attach_ports!(component)
-    for i in component.ext[PORTS].state
+    for i in component.ext[PORTS].states
         tmp = [(ix, var) for (ix, var) in enumerate(local_states) if var == i]
         isempty(tmp) && continue
         push!(index_component_inputs, tmp[1][1])
@@ -217,7 +217,7 @@ function _make_device_index!(device::PSY.DynamicInjection, sys_basepower::Float6
 end
 
 function _add_states_to_global!(
-    global_state_index::Dict{String, Dict{Symbol, Int64}},
+    global_state_index::MAPPING_DICT,
     state_space_ix::Vector{Int64},
     device::PSY.Device,
 )
@@ -233,7 +233,7 @@ end
 function _index_dynamic_system!(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     DAE_vector = collect(falses(n_buses * 2))
-    global_state_index = Dict{String, Dict{Symbol, Int64}}()
+    global_state_index = MAPPING_DICT()
     state_space_ix = [n_buses * 2]
     current_buses_ix = collect(1:n_buses)
     static_bus_var_count = 2 * length(current_buses_ix)
