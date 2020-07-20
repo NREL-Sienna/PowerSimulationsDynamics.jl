@@ -116,8 +116,7 @@ function _build_perturbations(system::PSY.System, perturbations::Vector{<:Pertur
         callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
-    callback_tuple = Tuple(cb for cb in callback_vector)
-    callback_set = DiffEqBase.CallbackSet((), callback_tuple)
+    callback_set = DiffEqBase.CallbackSet((), tuple(callback_vector...))
     return callback_set, tstops
 end
 
@@ -185,10 +184,8 @@ function _get_Ybus(sys::PSY.System)
         Ybus_ = PSY.Ybus(sys)
         Ybus = Ybus_[:, :]
         lookup = Ybus_.lookup[1]
-        if !isempty(dyn_lines)
-            for br in dyn_lines
-                ybus!(Ybus, br, lookup, -1.0)
-            end
+        for br in dyn_lines
+            ybus!(Ybus, br, lookup, -1.0)
         end
     else
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
