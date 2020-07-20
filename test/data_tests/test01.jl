@@ -30,6 +30,6 @@ add_component!(omib_sys, case_gen)
 
 #Compute Y_bus after fault
 fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
-fault_branch.r = 0.02;
+fault_branch.r = 0.00;
 fault_branch.x = 0.1;
 Ybus_fault = PSY.Ybus([fault_branch], get_components(Bus, omib_sys))[:, :]
