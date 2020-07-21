@@ -33,6 +33,13 @@ const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
 
+using DocStringExtensions
+
+@template (FUNCTIONS, METHODS) = """
+                                 $(TYPEDSIGNATURES)
+                                 $(DOCSTRING)
+                                 """
+
 #Structs for General Devices and System
 include("base/definitions.jl")
 include("base/ports.jl")
