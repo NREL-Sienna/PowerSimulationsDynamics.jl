@@ -1,6 +1,7 @@
 [deps]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 InfrastructureSystems = "2cd47ed4-ca9b-11e9-27f2-ab636a7671f1"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
