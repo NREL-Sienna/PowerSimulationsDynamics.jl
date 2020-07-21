@@ -1,6 +1,7 @@
 function update_global_vars!(sys::PSY.System, x::AbstractArray)
     index = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys_index]
     index == 0 && return
+    #TO DO: Make it general for cases when ω is not a state (droop)!
     PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys] = x[index]
     return
 end
