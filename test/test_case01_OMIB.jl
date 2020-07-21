@@ -48,7 +48,7 @@ try
     t_psat, δ_psat = get_psat_delta(psat_csv)
 
     #Clean Extra Point at t = 1.0 from Callback
-    clean_extra_timestep!(t, δ)    
+    clean_extra_timestep!(t, δ)
 
     diff = [0.0]
     res = get_init_values_for_comparison(sim)
