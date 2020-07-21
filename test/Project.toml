@@ -1,5 +1,6 @@
 [deps]
 Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
