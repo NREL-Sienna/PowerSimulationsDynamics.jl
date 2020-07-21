@@ -275,12 +275,12 @@ function _add_states_to_global!(
     state_space_ix::Vector{Int64},
     device::PSY.Device,
 )
-    device_state_ix = Dict{Symbol, Int}()
+    global_state_index[PSY.get_name(device)] = Dict{Symbol, Int}()
     for s in PSY.get_states(device)
         state_space_ix[1] += 1
-        device_state_ix[s] = state_space_ix[1]
+        global_state_index[PSY.get_name(device)][s] = state_space_ix[1]
     end
-    global_state_index[PSY.get_name(device)] = device_state_ix
+
     return
 end
 
