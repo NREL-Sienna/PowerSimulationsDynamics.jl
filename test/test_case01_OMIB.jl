@@ -67,7 +67,7 @@ try
     @test small_sig.stable
     #Test Transient Simulation Results
     @test LinearAlgebra.norm(t - t_psat) == 0.0
-    @test LinearAlgebra.norm(δ - δ_psat) <= 1e-2
+    @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 finally
     @info("removing test files")
     rm(path, force = true, recursive = true)
