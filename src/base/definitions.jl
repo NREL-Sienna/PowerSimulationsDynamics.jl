@@ -88,6 +88,8 @@ const ω_ref_index = 2
 const P_ref_index = 3
 const Q_ref_index = 4
 
+const MAPPING_DICT = Dict{String, Dict{Symbol, Int64}}
+
 const PSID_COUNTS = "psid_counts"
 const LOCAL_STATE_MAPPING = "local_state_mapping"
 const INPUT_PORT_MAPPING = "input_port_mapping"

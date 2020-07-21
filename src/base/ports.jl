@@ -1,7 +1,10 @@
 ### Port struct ###
 mutable struct Ports
-    state::Vector{Symbol}
-    inner::Vector
+    states::Vector{Symbol}
+    inner::Vector{Int}
+    function Ports(states::Vector{Symbol}, inner::Vector)
+        new(states, Int.(inner))
+    end
 end
 
 #### AVR Ports ####
@@ -27,7 +30,7 @@ end
 
 #### Shaft Ports ####
 function Ports(::PSY.Shaft)
-    state_input = Vector{Int64}()
+    state_input = Vector{Symbol}()
     inner_input = [τe_var, τm_var]
     return Ports(state_input, inner_input)
 end

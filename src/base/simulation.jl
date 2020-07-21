@@ -12,6 +12,33 @@ mutable struct Simulation
     ext::Dict{String, Any}
 end
 
+"""
+Initializes the simulations and builds the indexing. The initial conditions are stored in the system.
+
+# Accepted Key Words
+- `system_to_file::Bool`: Serializes the initialized system
+"""
+function Simulation!(
+    simulation_folder::String,
+    system::PSY.System,
+    tspan::NTuple{2, Float64},
+    perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
+    kwargs...,
+)
+    check_folder(simulation_folder)
+    sim = build_simulation(simulation_folder, system, tspan, perturbations; kwargs...)
+    if get(kwargs, :system_to_file, false)
+        PSY.to_json(system, joinpath(simulation_folder, "initialized_system.json"))
+    end
+    return sim
+end
+
+"""
+Initializes the simulations and builds the indexing. The input system is not modified during the initialization
+
+# Accepted Key Words
+- `system_to_file::Bool`: Serializes the original input system
+"""
 function Simulation(
     simulation_folder::String,
     system::PSY.System,
@@ -21,6 +48,25 @@ function Simulation(
 )
     check_folder(simulation_folder)
     simulation_system = deepcopy(system)
+    if get(kwargs, :system_to_file, false)
+        PSY.to_json(system, joinpath(simulation_folder, "input_system.json"))
+    end
+    return build_simulation(
+        simulation_folder,
+        simulation_system,
+        tspan,
+        perturbations;
+        kwargs...,
+    )
+end
+
+function build_simulation(
+    simulation_folder::String,
+    simulation_system::PSY.System,
+    tspan::NTuple{2, Float64},
+    perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
+    kwargs...,
+)
     PSY.set_units_base_system!(simulation_system, "device_base")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
@@ -51,13 +97,6 @@ function Simulation(
         differential_vars = DAE_vector;
         kwargs...,
     )
-
-    if get(kwargs, :system_to_file, false)
-        PSY.to_json(
-            simulation_system,
-            joinpath(simulation_folder, "initialized_system.json"),
-        )
-    end
     return Simulation(
         simulation_system,
         false,
@@ -70,6 +109,24 @@ function Simulation(
         nothing,
         simulation_folder,
         Dict{String, Any}(),
+    )
+end
+
+function Simulation!(
+    simulation_folder::String,
+    system::PSY.System,
+    tspan::NTuple{2, Float64},
+    perturbation::Perturbation;
+    initialize_simulation::Bool = true,
+    kwargs...,
+)
+    return Simulation!(
+        simulation_folder,
+        system,
+        tspan,
+        [perturbation];
+        initialize_simulation = initialize_simulation,
+        kwargs...,
     )
 end
 
@@ -116,8 +173,7 @@ function _build_perturbations(system::PSY.System, perturbations::Vector{<:Pertur
         callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
-    callback_tuple = Tuple(cb for cb in callback_vector)
-    callback_set = DiffEqBase.CallbackSet((), callback_tuple)
+    callback_set = DiffEqBase.CallbackSet((), tuple(callback_vector...))
     return callback_set, tstops
 end
 
@@ -126,7 +182,7 @@ function _index_local_states!(
     local_states::Vector{Symbol},
     component::PSY.DynamicComponent,
 )
-    for (ix, s) in enumerate(component.states)
+    for (ix, s) in enumerate(PSY.get_states(component))
         component_state_index[ix] = findfirst(x -> x == s, local_states)
     end
     return
@@ -169,7 +225,7 @@ function _index_port_mapping!(
     component::PSY.DynamicComponent,
 )
     _attach_ports!(component)
-    for i in component.ext[PORTS].state
+    for i in component.ext[PORTS].states
         tmp = [(ix, var) for (ix, var) in enumerate(local_states) if var == i]
         isempty(tmp) && continue
         push!(index_component_inputs, tmp[1][1])
@@ -185,10 +241,8 @@ function _get_Ybus(sys::PSY.System)
         Ybus_ = PSY.Ybus(sys)
         Ybus = Ybus_[:, :]
         lookup = Ybus_.lookup[1]
-        if !isempty(dyn_lines)
-            for br in dyn_lines
-                ybus!(Ybus, br, lookup, -1.0)
-            end
+        for br in dyn_lines
+            ybus!(Ybus, br, lookup, -1.0)
         end
     else
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
@@ -217,23 +271,23 @@ function _make_device_index!(device::PSY.DynamicInjection, sys_basepower::Float6
 end
 
 function _add_states_to_global!(
-    global_state_index::Dict{String, Dict{Symbol, Int64}},
+    global_state_index::MAPPING_DICT,
     state_space_ix::Vector{Int64},
     device::PSY.Device,
 )
-    device_state_ix = Dict{Symbol, Int}()
+    global_state_index[PSY.get_name(device)] = Dict{Symbol, Int}()
     for s in PSY.get_states(device)
         state_space_ix[1] += 1
-        device_state_ix[s] = state_space_ix[1]
+        global_state_index[PSY.get_name(device)][s] = state_space_ix[1]
     end
-    global_state_index[PSY.get_name(device)] = device_state_ix
+
     return
 end
 
 function _index_dynamic_system!(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     DAE_vector = collect(falses(n_buses * 2))
-    global_state_index = Dict{String, Dict{Symbol, Int64}}()
+    global_state_index = MAPPING_DICT()
     state_space_ix = [n_buses * 2]
     current_buses_ix = collect(1:n_buses)
     static_bus_var_count = 2 * length(current_buses_ix)

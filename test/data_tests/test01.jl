@@ -9,7 +9,6 @@ omib_file_dir = joinpath(dirname(@__FILE__), "OMIB.raw")
 omib_sys =
     System(PowerModelsData(omib_file_dir), runchecks = false, unit_system = "device_base")
 add_source_to_ref(omib_sys)
-res = solve_powerflow!(omib_sys)
 ############### Data Dynamic devices ########################
 function dyn_gen_classic(generator)
     return PSY.DynamicGenerator(
@@ -30,6 +29,6 @@ add_component!(omib_sys, case_gen)
 
 #Compute Y_bus after fault
 fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
-fault_branch.r = 0.02;
+fault_branch.r = 0.00;
 fault_branch.x = 0.1;
 Ybus_fault = PSY.Ybus([fault_branch], get_components(Bus, omib_sys))[:, :]

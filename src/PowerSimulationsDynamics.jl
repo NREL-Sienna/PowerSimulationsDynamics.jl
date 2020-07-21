@@ -5,6 +5,7 @@ module PowerSimulationsDynamics
 
 # Base Exports
 export Simulation
+export Simulation!
 export run_simulation!
 export ThreePhaseFault
 export ControlReferenceChange
@@ -31,6 +32,13 @@ import PowerSystems
 const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
+
+using DocStringExtensions
+
+@template (FUNCTIONS, METHODS) = """
+                                 $(TYPEDSIGNATURES)
+                                 $(DOCSTRING)
+                                 """
 
 #Structs for General Devices and System
 include("base/definitions.jl")
