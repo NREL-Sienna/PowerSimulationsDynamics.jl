@@ -2,7 +2,7 @@ initpsat
 
 runpsat('Test01.m', 'data')
 %Set Time-Step = 0.02
-Settings.tstep = 0.02;
+Settings.tstep = 0.005;
 %Set Fixed Time Step
 Settings.fixt = 1;
 % Set Frequency to 60 Hz
