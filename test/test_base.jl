@@ -24,7 +24,7 @@ try
         omib_sys, #system
         (0.0, 30.0), #time span
         Ybus_change;
-        system_to_file = true
+        system_to_file = true,
     )
 
     o_system = System(joinpath(path1, "input_system.json"))
@@ -43,13 +43,13 @@ end
 path2 = (joinpath(pwd(), "test-Base-2"))
 !isdir(path2) && mkdir(path2)
 try
-#Define Simulation Problem
+    #Define Simulation Problem
     sim = Simulation!(
         path2,
         omib_sys, #system
         (0.0, 30.0), #time span
         Ybus_change;
-        system_to_file = true
+        system_to_file = true,
     )
 
     m_system = System(joinpath(path2, "initialized_system.json"))
@@ -57,7 +57,11 @@ try
         b_sys = get_component(Bus, omib_sys, get_name(b))
         b_file = get_component(Bus, omib_sys_file, get_name(b))
         @test get_angle(b) == get_angle(b_sys)
-        @test get_angle(b) != get_angle(b_file)
+        if get_bustype(b) == PSY.BusTypes.REF
+            @test get_angle(b) == get_angle(b_file)
+        else
+            @test get_angle(b) != get_angle(b_file)
+        end
     end
 
 finally
