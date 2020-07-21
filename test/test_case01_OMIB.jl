@@ -45,14 +45,10 @@ try
 
     #Obtain PSAT benchmark data
     psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test01/Test01_delta.csv")
-    M = readdlm(psat_csv, ',')
-    t_psat = M[:, 1]
-    δ_psat = M[:, 2]
+    t_psat, δ_psat = get_psat_delta(psat_csv)
 
     #Clean Extra Point at t = 1.0 from Callback
-    ix = findall(x -> x == 1.0, t)
-    deleteat!(t, ix[2])
-    deleteat!(δ, ix[2])
+    clean_extra_timestep!(t, δ)    
 
     diff = [0.0]
     res = get_init_values_for_comparison(sim)

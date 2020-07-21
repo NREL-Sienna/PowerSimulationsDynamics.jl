@@ -41,3 +41,14 @@ function get_init_values_for_comparison(sim::Simulation)
     end
     return results
 end
+
+function clean_extra_timestep!(t::Vector{Float64}, δ::Vector{Float64})
+    ix = findall(x -> x == 1.0, t)
+    deleteat!(t, ix[2])
+    deleteat!(δ, ix[2])
+end
+
+function get_psat_delta(str::AbstractString)
+    M = readdlm(str, ',')
+    return M[:, 1], M[:, 2]
+end
