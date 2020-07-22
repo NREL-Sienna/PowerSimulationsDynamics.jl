@@ -62,7 +62,7 @@ try
     @test small_sig.stable
     @test LinearAlgebra.norm(t - t_psse) == 0.0
     # PSSE results are in Degrees
-    @test LinearAlgebra.norm(δ - (δ_psse.*0.0174533), Inf) <= 1e-3
+    @test LinearAlgebra.norm(δ - (δ_psse .* 0.0174533), Inf) <= 1e-3
     #Test Transient Simulation Results
     #Clean Extra Point at t = 1.0 from Callback
     clean_extra_timestep!(t, δ)
