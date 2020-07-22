@@ -28,17 +28,26 @@ try
     sim = Simulation(
         path,
         threebus_sys, #system
-        (0.0, 30.0), #time span
+        (0.0, 20.0), #time span
         Ybus_change, #Type of Fault
     ) #initial guess
 
     small_sig = small_signal_analysis(sim)
 
     #Solve problem in equilibrium
-    run_simulation!(sim, IDA(), dtmax = 0.02)
+    run_simulation!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
     #Obtain data for angles
     series = get_state_series(sim, ("generator-102-1", :δ))
+    t = series[1]
+    δ = series[2]
+
+    #Obtain PSAT benchmark data
+    psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test02/Test02_delta.csv")
+    t_psat, δ_psat = get_psat_delta(psat_csv)
+
+    #Clean Extra Point at t = 1.0 from Callback
+    clean_extra_timestep!(t, δ)
 
     diff = [0.0]
     res = get_init_values_for_comparison(sim)
@@ -48,6 +57,8 @@ try
     @test (diff[1] < 1e-3)
     @test sim.solution.retcode == :Success
     @test small_sig.stable
+    @test LinearAlgebra.norm(t - t_psat) == 0.0
+    @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 finally
     @info("removing test files")
     rm(path, force = true, recursive = true)

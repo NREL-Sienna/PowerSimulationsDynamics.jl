@@ -33,7 +33,7 @@ using PowerSystems
 
 ## Development
 
-Contributions to the development and enahancement of PowerSimulationsDynamic is welcome. Please see [CONTRIBUTING.md](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/blob/master/CONTRIBUTING.md) for code contribution guidelines.
+Contributions to the development and enahancement of PowerSimulationsDynamics is welcome. Please see [CONTRIBUTING.md](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/blob/master/CONTRIBUTING.md) for code contribution guidelines.
 
 ## License
 

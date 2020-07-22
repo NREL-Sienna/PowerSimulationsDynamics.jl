@@ -88,9 +88,10 @@ function add_source_to_ref(sys::System)
     inf_source = Source(
         name = "InfBus", #name
         available = true, #availability
-        activepower = 0.0,
-        reactivepower = 0.0,
+        active_power = 0.0,
+        reactive_power = 0.0,
         bus = slack_bus, #bus
+        R_th = 0.0, #Rth
         X_th = 5e-6, #Xth
     )
     add_component!(sys, inf_source)
