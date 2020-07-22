@@ -51,10 +51,10 @@ with
 ```math
 \begin{align}
 \delta\omega_{\text{pll}} &= k_{p,\text{pll}} \tan^{-1} \left(\frac{v_{q,\text{pll}}}{v_{d,\text{pll}}} \right) + k_{i,\text{pll}} \varepsilon_{\text{pll}} \tag{1e} \\
-v_{d,\text{out}} + jv_{q,\text{out}} &= (v_r + v_i)e^{-\delta\theta_\text{pll}}  \tag{1f}
+v_{d,\text{out}} + jv_{q,\text{out}} &= (v_r + jv_i)e^{-\delta\theta_\text{pll}}  \tag{1f}
 \end{align}
 ```
-on which ``v_r + jv_i`` is the voltage in the grid reference frame on which the PLL is measuring.
+on which ``v_r + jv_i`` is the voltage in the grid reference frame on which the PLL is measuring (i.e. point of common coupling), that could be in the capacitor of an LCL filter or the last branch of such filter.
 
 ## Outer Loop Controls
 
@@ -76,11 +76,12 @@ with
 
 ```math
 \begin{align}
-    p_e &= v_di_d + v_qi_q \tag{2d} \\
-    q_e &= v_qi_d - v_di_q \tag{2e} \\
+    p_e &= v_ri_r + v_ii_i \tag{2d} \\
+    q_e &= v_ii_r - v_ri_i \tag{2e} \\
     v_{\text{olc}}^{\text{ref}} &= v_{\text{ref}} + k_q(q_{\text{ref}} - q_m) \tag{2f}
 \end{align}
 ```
+In this case, the measurement of power are being done in the capacitor of the LCL filter. However, depending on the model, this measurements could be different depending on where is the point of common coupling.
 
 ## Inner Loop Controls
 
@@ -113,6 +114,19 @@ with
     v_q^{\text{ref-signal}} &= k_{pc} \left(i_{q,\text{cv}}^{\text{ref}} - i_{q,\text{cv}}\right) + k_{ic} \gamma_q + \omega_{\text{olc}} l_f i_{d,\text{cv}} + k_{\text{ffv}}v_q - k_{\text{ad}}(v_q - \phi_q) \tag{3l}
 \end{align}
 ```
+In here the transformation to the ``dq`` reference frame is using the outer-loop reference angle as:
+```math
+\begin{align*}
+v_d + jv_q = (v_r + jv_i)e^{-j\delta\theta_{olc}} \\
+i_d + ji_q = (i_r + ji_i)e^{-j\delta\theta_{olc}} 
+\end{align*}
+```
+that again ``v_r + jv_i`` could be in the capacitor or the last branch of the filter (i.e. the point of common coupling). For LCL filters it is considered in the capacitor. In the case of the converter, the transformation is directly
+```math
+\begin{align*}
+i_{d,\text{cv}} + ji_{q,\text{cv}} = (i_{r,\text{cv}} + ji_{i,\text{cv}})e^{-j\delta\theta_{olc}}
+\end{align*}
+```
 
 ## Converter
 
@@ -135,19 +149,26 @@ where ``m_{dq}`` is the modulation signal, and ``v_{dq}^{\text{ref-signal}}`` is
 
 ### LCL Filter ```[LCLFilter]```
 
-A standard LCL filter is proposed to connect the output of the converter to the grid. In this case, ``v_d`` and ``v_q`` are voltages in the capacitor, while ``v_d^{\text{grid}}`` and ``v_q^{\text{grid}}`` represent the voltage at the bus. The L filter after the capacitor can also include a step-up transformer to increase the voltage, that is model as an extra impedance.
+A standard LCL filter is proposed to connect the output of the converter to the grid. In this case, ``v_r`` and ``v_i`` are voltages in the capacitor, while ``v_r^{\text{grid}}`` and ``v_i^{\text{grid}}`` represent the voltage at the bus. The L filter after the capacitor can also include a step-up transformer to increase the voltage, that is model as an extra impedance.
 
 
 ```math
 \begin{align}
-    \dot{i}_{d,\text{cv}} &= \frac{\Omega_b}{l_f}\left( v_d^{\text{cv}} - v_d  - r_f i_{d,\text{cv}} + \omega_{\text{grid}} l_f i_{q,\text{cv}} \right) \tag{5a} \\
-    \dot{i}_{q,\text{cv}} &= \frac{\Omega_b}{l_f}\left( v_q^{\text{cv}} - v_q  - r_f i_{q,\text{cv}} - \omega_{\text{grid}} l_f i_{d,\text{cv}} \right) \tag{5b} \\
-    \dot{v}_{d} &=  \frac{\Omega_b}{c_f}\left( i_d^{\text{cv}} - i_d + \omega_{\text{grid}} c_f v_q \right) \tag{5c} \\
-    \dot{v}_{q} &=  \frac{\Omega_b}{c_f}\left( i_q^{\text{cv}} - i_q - \omega_{\text{grid}} c_f v_d \right) \tag{5d} \\
-    \dot{i}_{d} &= \frac{\Omega_b}{l_g}\left( v_d^{\text{cv}} - v_d^{\text{grid}} - r_g i_{d} + \omega_{\text{grid}} l_g i_{q,\text{cv}} \right) \tag{5e} \\
-    \dot{i}_{q} &= \frac{\Omega_b}{l_g}\left( v_q^{\text{cv}} - v_q^{\text{grid}} - r_g i_{q} - \omega_{\text{grid}} l_g i_{d,\text{cv}} \right) \tag{5f}
+    \dot{i}_{r,\text{cv}} &= \frac{\Omega_b}{l_f}\left( v_r^{\text{cv}} - v_r  - r_f i_{r,\text{cv}} + \omega_{\text{grid}} l_f i_{i,\text{cv}} \right) \tag{5a} \\
+    \dot{i}_{i,\text{cv}} &= \frac{\Omega_b}{l_f}\left( v_i^{\text{cv}} - v_i  - r_f i_{i,\text{cv}} - \omega_{\text{grid}} l_f i_{r,\text{cv}} \right) \tag{5b} \\
+    \dot{v}_{r} &=  \frac{\Omega_b}{c_f}\left( i_r^{\text{cv}} - i_r + \omega_{\text{grid}} c_f v_i \right) \tag{5c} \\
+    \dot{v}_{i} &=  \frac{\Omega_b}{c_f}\left( i_i^{\text{cv}} - i_i - \omega_{\text{grid}} c_f v_r \right) \tag{5d} \\
+    \dot{i}_{r} &= \frac{\Omega_b}{l_g}\left( v_r^{\text{cv}} - v_r^{\text{grid}} - r_g i_{r} + \omega_{\text{grid}} l_g i_{i,\text{cv}} \right) \tag{5e} \\
+    \dot{i}_{i} &= \frac{\Omega_b}{l_g}\left( v_i^{\text{cv}} - v_i^{\text{grid}} - r_g i_{i} - \omega_{\text{grid}} l_g i_{r,\text{cv}} \right) \tag{5f}
 \end{align}
 ```
+on which 
+```math
+\begin{align*}
+v_r^\text{cv} + jv_i^\text{cv} = (v_d^\text{cv} + jv_q^\text{cv})e^{j\delta\theta_{olc}}
+\end{align*}
+```
+that comes from the converter model.
 
 ## Reference
 
