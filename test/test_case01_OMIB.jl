@@ -49,9 +49,6 @@ try
     t_psat, δ_psat = get_csv_delta(psat_csv)
     t_psse, δ_psse = get_csv_delta(psse_csv)
 
-    #Clean Extra Point at t = 1.0 from Callback
-    clean_extra_timestep!(t, δ)
-
     diff = [0.0]
     res = get_init_values_for_comparison(sim)
     for (k, v) in test01_x0_init
@@ -63,12 +60,15 @@ try
     @test sim.solution.retcode == :Success
     #Test Small Signal
     @test small_sig.stable
-    #Test Transient Simulation Results
-    @test LinearAlgebra.norm(t - t_psat) == 0.0
-    @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
     @test LinearAlgebra.norm(t - t_psse) == 0.0
     # PSSE results are in Degrees
     @test LinearAlgebra.norm(δ - (δ_psse.*0.0174533), Inf) <= 1e-3
+    #Test Transient Simulation Results
+    #Clean Extra Point at t = 1.0 from Callback
+    clean_extra_timestep!(t, δ)
+    @test LinearAlgebra.norm(t - t_psat) == 0.0
+    @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
+
 finally
     @info("removing test files")
     rm(path, force = true, recursive = true)
