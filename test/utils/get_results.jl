@@ -48,7 +48,7 @@ function clean_extra_timestep!(t::Vector{Float64}, δ::Vector{Float64})
     deleteat!(δ, ix[2])
 end
 
-function get_psat_delta(str::AbstractString)
+function get_csv_delta(str::AbstractString)
     M = readdlm(str, ',')
     return M[:, 1], M[:, 2]
 end

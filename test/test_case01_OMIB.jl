@@ -45,7 +45,9 @@ try
 
     #Obtain PSAT benchmark data
     psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test01/Test01_delta.csv")
-    t_psat, δ_psat = get_psat_delta(psat_csv)
+    psse_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test01/Test01_delta.csv")
+    t_psat, δ_psat = get_csv_delta(psat_csv)
+    t_psse, δ_psse = get_csv_delta(psse_csv)
 
     #Clean Extra Point at t = 1.0 from Callback
     clean_extra_timestep!(t, δ)
@@ -64,6 +66,9 @@ try
     #Test Transient Simulation Results
     @test LinearAlgebra.norm(t - t_psat) == 0.0
     @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
+    @test LinearAlgebra.norm(t - t_psse) == 0.0
+    # PSSE results are in Degrees
+    @test LinearAlgebra.norm(δ - (δ_psse.*0.0174533), Inf) <= 1e-3
 finally
     @info("removing test files")
     rm(path, force = true, recursive = true)
