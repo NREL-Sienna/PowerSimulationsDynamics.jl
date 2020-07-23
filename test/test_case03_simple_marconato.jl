@@ -46,7 +46,7 @@ try
 
     #Obtain PSAT benchmark data
     psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test03/Test03_delta.csv")
-    t_psat, δ_psat = get_psat_delta(psat_csv)
+    t_psat, δ_psat = get_csv_delta(psat_csv)
 
     #Clean Extra Point at t = 1.0 from Callback
     clean_extra_timestep!(t, δ)
