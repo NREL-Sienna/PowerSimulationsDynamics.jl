@@ -523,6 +523,7 @@ function initialize_mach_shaft!(
     end
 end
 
+#=
 function initialize_mach_shaft!(
     device_states,
     device::PSY.DynamicGenerator{PSY.RoundRotorQuadratic, S, A, TG, P},
@@ -621,8 +622,9 @@ function initialize_mach_shaft!(
         machine_states[4] = sol_x0[7] #ψ_kq
     end
 end
+=#
 
-#=
+
 
 function initialize_mach_shaft!(
     device_states,
@@ -655,6 +657,12 @@ function initialize_mach_shaft!(
     Xq_pp = Xd_pp
     Xl = PSY.get_Xl(machine)
     Asat, Bsat = PSY.get_saturation_coeffs(machine)
+    #Additional Parameters
+    γ_d1 = (Xd_pp - Xl) / (Xd_p - Xl)
+    γ_q1 = (Xq_pp - Xl) / (Xq_p - Xl)
+    γ_d2 = (Xd_p - Xd_pp) / (Xd_p - Xl)^2
+    γ_q2 = (Xq_p - Xq_pp) / (Xq_p - Xl)^2
+    γ_qd = (Xq - Xl) / (Xd - Xl)
 
     #States of GENROU are [1] eq_p, [2] ed_p, [3] ψ_kd and [4] ψ_kq
     δ0 = angle(V + (R + Xq * 1im) * I)
@@ -672,32 +680,52 @@ function initialize_mach_shaft!(
 
         V_dq = ri_dq(δ) * [V_R; V_I]
 
+        #0 = I_d * Xd_pp + ψ_d - ψ_ad
+        #0 = I_q * Xq_pp + ψ_q + ψ_aq
+        
+        ψ_ad = γ_d1 * eq_p + γ_d2 * ψ_kd * (Xd_p - Xl)
+        ψ_aq = γ_q1 * ψ_kq * (1 - γ_q1)
+        
+        #0 = I_q * Xq_pp + (- I_d * R - V_dq[1]) + ψ_aq
+        #0 = I_d * Xd_pp + (I_q * R + V_dq[2]) - ψ_ad
+        
+
+        #[V_dq[1] - ψ_aq; - V_dq[2] + ψ_ad] = [-R Xq_pp;Xd_pp R] * [I_d; I_q] 
+        I_dq = inv([-R Xq_pp ; Xd_pp R]) * [V_dq[1] - ψ_aq; - V_dq[2] + ψ_ad]
+        i_d = I_dq[1]
+        i_q = I_dq[2]
+
+        ψ_d = i_q * R + V_dq[2]
+        ψ_q = - i_d * R - V_dq[1]
+
         #Compute additional terms
-        ψd_pp = eq_p * (Xd_pp - Xl)/(Xd_p - Xl) + ψ_kd * (Xd_p - Xd_pp)/(Xd_p - Xl) #2.20d
-        ψq_pp = ed_p * (Xq_pp - Xl)/(Xq_p - Xl) + ψ_kq * (Xq_p - Xq_pp)/(Xq_p - Xl) #2.21d
-        ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
-        Se_ψ = Bsat * (ψ_pp - Asat)^2
+        #ψd_pp = eq_p * (Xd_pp - Xl)/(Xd_p - Xl) + ψ_kd * (Xd_p - Xd_pp)/(Xd_p - Xl) #2.20d
+        #ψq_pp = ed_p * (Xq_pp - Xl)/(Xq_p - Xl) + ψ_kq * (Xq_p - Xq_pp)/(Xq_p - Xl) #2.21d
+        ψ_a = sqrt(ψ_ad^2 + ψ_aq^2)
+        Se_ψ = Bsat * (ψ_a - Asat)^2 / ψ_a
 
         #Obtain electric variables
-        i_d = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( Xq_pp * (ψd_pp - V_dq[2]) - R * (V_dq[1] + ψq_pp)) #2.21a
-        i_q = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( Xd_pp * (ψq_pp + V_dq[1]) - R * (V_dq[2] - ψd_pp)) #2.20a
-        τ_e = ψd_pp * i_q - ψq_pp * i_d         #2.36c + 2.34a + 2.35a
+        #i_d = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( Xq_pp * (ψd_pp - V_dq[2]) - R * (V_dq[1] + ψq_pp)) #2.21a
+        #i_q = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( Xd_pp * (ψq_pp + V_dq[1]) - R * (V_dq[2] - ψd_pp)) #2.20a
+        τ_e = -i_d * ψ_q + i_q * ψ_d         #2.36c + 2.34a + 2.35a
 
         #Get auxiliary variables
-        dtψ_kd = (1.0 / Td0_pp) * (eq_p - ψ_kd - i_d*(Xd_p - Xl)) #2.20c dψ_kd/dt
-        dtψ_kq = -(1.0 / Tq0_pp) * (-ed_p + ψ_kq + i_q*(Xq_p - Xl))
-        ΔId = Se_ψ * ψd_pp / ψ_pp
-        ΔIq = Se_ψ * (ψq_pp / ψ_pp) * ((Xq - Xl)/(Xd - Xl))
-        Xad_Ifd = eq_p + (Xd - Xd_p)*(i_d + Td0_pp * dtψ_kd * (Xd_p - Xd_pp)/(Xd_p - Xl)^2) + ΔId
-        Xaq_Ikq = ed_p + (Xq - Xq_p')*(i_q + Tq0_pp * dtψ_kq * (Xq_p - Xq_pp)/(Xq_p - Xl)^2) + ΔIq
+        #dtψ_kd = (1.0 / Td0_pp) * (eq_p - ψ_kd - i_d*(Xd_p - Xl)) #2.20c dψ_kd/dt
+        #dtψ_kq = (1.0 / Tq0_pp) * (ed_p - ψ_kq + i_q*(Xq_p - Xl))
+        ΔId = Se_ψ * ψ_ad
+        @assert ΔId == 0.0
+        ΔIq = Se_ψ * γ_qd * ψ_aq
+        @assert ΔIq == 0.0
+        Xad_Ifd = eq_p + (Xd - Xd_p)*(i_d * γ_d1 - γ_d2 * ψ_kd + γ_d2 * eq_p) + ΔId
+        Xaq_Ikq = ed_p + (Xq - Xq_p)*(-i_q * γ_q1 - γ_q2 * ψ_kq + γ_q2 * ed_p) + ΔIq
 
         out[1] = τm - τ_e #Mechanical Torque
         out[2] = P0 - (V_dq[1] * i_d + V_dq[2] * i_q) #Output Power
         out[3] = Q0 - (V_dq[2] * i_d - V_dq[1] * i_q) #Output Reactive Power
         out[4] = (1.0 / Td0_p) * (Vf0 - Xad_Ifd)            #2.20 eq_p
         out[5] = (1.0 / Td0_p) * (- Xaq_Ikq)                #15.9 ed_p
-        out[6] = dtψ_kd                                     #2.20c ψ_kd
-        out[7] = dtψ_kq                                     #15.19 ψ_kq
+        out[6] = (1.0 / Td0_pp) * (eq_p - ψ_kd - i_d*(Xd_p - Xl))                                   #2.20c ψ_kd
+        out[7] = (1.0 / Tq0_pp) * (ed_p - ψ_kq + i_q*(Xq_p - Xl))                                  #15.19 ψ_kq
     end
     V_dq0 = ri_dq(δ0) * [V_R; V_I]
     @show x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
@@ -728,7 +756,7 @@ function initialize_mach_shaft!(
         machine_states[4] = sol_x0[7] #ψ_kq
     end
 end
-=#
+
 
 
 
