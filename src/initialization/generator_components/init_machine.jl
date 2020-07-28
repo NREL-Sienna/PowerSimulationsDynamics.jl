@@ -555,6 +555,107 @@ function initialize_mach_shaft!(
     Xl = PSY.get_Xl(machine)
     Asat, Bsat = PSY.get_saturation_coeffs(machine)
 
+    #Additional Parameters
+    γ_d1 = (Xd_pp - Xl) / (Xd_p - Xl)
+    γ_q1 = (Xq_pp - Xl) / (Xq_p - Xl)
+    γ_d2 = (Xd_p - Xd_pp) / (Xd_p - Xl)^2
+    γ_q2 = (Xq_p - Xq_pp) / (Xq_p - Xl)^2
+
+    #States of GENROU are [1] eq_p, [2] ed_p, [3] ψ_kd and [4] ψ_kq
+    δ0 = angle(V + (R + Xq_pp * 1im) * I)
+    ω0 = 1.0
+    τm0 = real(V * conj(I))
+    #To solve: δ, τm, Vf0, eq_p, ed_p
+    function f!(out, x)
+        δ = x[1]
+        τm = x[2]
+        Vf0 = x[3]
+        eq_p = x[4]
+        ed_p = x[5]
+        ψ_kd = x[6]
+        ψ_kq = x[7]
+
+        V_dq = ri_dq(δ) * [V_R; V_I]
+
+
+        #Obtain electric variables
+        i_d = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( R * (ed_p * γ_q1 - ψ_kq * (1 - γ_q1) - V_dq[1]) - Xq_pp * (V_dq[2] - eq_p * γ_d1 - ψ_kd * (1 - γ_d1)) ) #2.21a
+        i_q = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( - R * (V_dq[2] - eq_p * γ_d1 - ψ_kd * (1 - γ_d1)) -  Xd_pp * (ed_p * γ_q1 - V_dq[1] - ψ_kq * ( 1 - γ_d1)) ) #2.20a
+        τ_e = (V_dq[1] + R * i_d) * i_d + (V_dq[2] + R * i_q) * i_q         #2.36c + 2.34a + 2.35a
+
+
+        out[1] = τm - τ_e #Mechanical Torque
+        out[2] = P0 - (V_dq[1] * i_d + V_dq[2] * i_q) #Output Power
+        out[3] = Q0 - (V_dq[2] * i_d - V_dq[1] * i_q) #Output Reactive Power
+        out[4] = (1.0 / Td0_p) * (Vf0 - eq_p - (Xd - Xd_p) * (i_d - γ_d2 * ψ_kd - (1 - γ_d1)*i_d + γ_d2 * eq_p) )                        #15.13 eq_p
+        out[5] = (1.0 / Td0_p) * (- ed_p + (Xq - Xq_p) * (i_q - γ_q2 * ψ_kq - (1 - γ_q1)*i_q - γ_d2 * ed_p ) )                    #15.13 ed_p
+        out[6] = (1.0 / Td0_pp) * (eq_p - ψ_kd - (Xd_p - Xl) * i_d)                    #15.13 ψ_kd
+        out[7] = (1.0 / Tq0_pp) * (-ed_p - ψ_kq - (Xq_p - Xl) * i_q)                 #15.19 ψ_kq
+    end
+    V_dq0 = ri_dq(δ0) * [V_R; V_I]
+    @show x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
+    sol = NLsolve.nlsolve(f!, x0)
+    if !NLsolve.converged(sol)
+        @warn("Initialization in Synch. Machine failed")
+    else
+        @show sol_x0 = sol.zero
+        #Update terminal voltages
+        get_inner_vars(device)[VR_gen_var] = V_R
+        get_inner_vars(device)[VI_gen_var] = V_I
+        #Update δ and ω of Shaft. Works for every Shaft.
+        shaft_ix = get_local_state_ix(device, S)
+        shaft_states = @view device_states[shaft_ix]
+        shaft_states[1] = sol_x0[1] #δ
+        shaft_states[2] = ω0 #ω
+        #Update Mechanical and Electrical Torque on Generator
+        get_inner_vars(device)[τe_var] = sol_x0[2]
+        get_inner_vars(device)[τm_var] = sol_x0[2]
+        #Update Vf for AVR in GENROU Machine.
+        get_inner_vars(device)[Vf_var] = sol_x0[3]
+        #Update states for Machine
+        machine_ix = get_local_state_ix(device, PSY.RoundRotorQuadratic)
+        machine_states = @view device_states[machine_ix]
+        machine_states[1] = sol_x0[4] #eq_p
+        machine_states[2] = sol_x0[5] #ed_p
+        machine_states[3] = sol_x0[6] #ψ_kd
+        machine_states[4] = sol_x0[7] #ψ_kq
+    end
+end
+
+#=
+
+function initialize_mach_shaft!(
+    device_states,
+    device::PSY.DynamicGenerator{PSY.RoundRotorQuadratic, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #PowerFlow Data
+    static_gen = PSY.get_static_injector(device)
+    P0 = PSY.get_active_power(static_gen)
+    Q0 = PSY.get_reactive_power(static_gen)
+    Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
+    θ = PSY.get_angle(PSY.get_bus(static_gen))
+    S0 = P0 + Q0 * 1im
+    V_R = Vm * cos(θ)
+    V_I = Vm * sin(θ)
+    V = V_R + V_I * 1im
+    I = conj(S0 / V)
+
+    #Get parameters
+    machine = PSY.get_machine(device)
+    R = PSY.get_R(machine)
+    Td0_p = PSY.get_Td0_p(machine)
+    Td0_pp = PSY.get_Td0_pp(machine)
+    Tq0_p = PSY.get_Tq0_p(machine)
+    Tq0_pp = PSY.get_Tq0_pp(machine)
+    Xd = PSY.get_Xd(machine)
+    Xq = PSY.get_Xq(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xq_p = PSY.get_Xq_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = Xd_pp
+    Xl = PSY.get_Xl(machine)
+    Asat, Bsat = PSY.get_saturation_coeffs(machine)
+
     #States of GENROU are [1] eq_p, [2] ed_p, [3] ψ_kd and [4] ψ_kq
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
@@ -627,6 +728,7 @@ function initialize_mach_shaft!(
         machine_states[4] = sol_x0[7] #ψ_kq
     end
 end
+=#
 
 
 
