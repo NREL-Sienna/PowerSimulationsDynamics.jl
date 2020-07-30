@@ -444,8 +444,9 @@ end
 
 
 """
-Model of 4-state (RoundRotorQuadratic - GENROU) synchronous machine in Julia.
-Refer to SynchGen and Excitation Models by Paszek et al. for the equations
+Model of 4-state (RoundRotorQuadratic - GENROU or RoundRotorExponential - GENROE)
+synchronous machine in Julia.
+Refer to SynchGen and Excitation Models by Paszek et al. for the equations.
 """
 function mdl_machine_ode!(
     device_states,
@@ -454,11 +455,12 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.RoundRotorQuadratic, S, A, TG, P},
-) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    device::PSY.DynamicGenerator{M, S, A, TG, P},
+) where {M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential}, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.RoundRotorQuadratic)
+    machine = PSY.get_machine(device)
+    local_ix = get_local_state_ix(device, typeof(machine))
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -468,7 +470,7 @@ function mdl_machine_ode!(
     ψ_kq = internal_states[4]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.RoundRotorQuadratic)
+    external_ix = get_input_port_ix(device, typeof(machine))
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
@@ -478,7 +480,6 @@ function mdl_machine_ode!(
     Vf = get_inner_vars(device)[Vf_var] #E_fd: Field voltage
 
     #Get parameters
-    machine = PSY.get_machine(device)
     R = PSY.get_R(machine)
     Td0_p = PSY.get_Td0_p(machine)
     Td0_pp = PSY.get_Td0_pp(machine)
@@ -491,25 +492,25 @@ function mdl_machine_ode!(
     Xd_pp = PSY.get_Xd_pp(machine)
     Xq_pp = Xd_pp
     Xl = PSY.get_Xl(machine)
-    Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+    γ_q2 = PSY.get_γ_q2(machine)
+    γ_qd = PSY.get_γ_qd(machine)
     basepower = PSY.get_base_power(device)
-
-    #Additional Parameters
-    γ_d1 = (Xd_pp - Xl) / (Xd_p - Xl)
-    γ_q1 = (Xq_pp - Xl) / (Xq_p - Xl)
-    γ_d2 = (Xd_p - Xd_pp) / (Xd_p - Xl)^2
-    γ_q2 = (Xq_p - Xq_pp) / (Xq_p - Xl)^2
-    γ_qd = (Xq - Xl) / (Xd - Xl)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
+
+    #Additional Fluxes
     ψq_pp = γ_q1 * ed_p  + ψ_kq * (1 - γ_q1)
     ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
     ψ_pp = sqrt( ψd_pp^2 + ψq_pp^2)
+    #Currents
     I_dq = inv([-R Xq_pp ; Xd_pp R]) * [V_dq[1] - ψq_pp; - V_dq[2] + ψd_pp]
     I_d = I_dq[1]
     I_q = I_dq[2]
-    Se = Sat_B * (ψ_pp - Sat_A)^2 / ψ_pp
+    Se = saturation_function(machine, ψ_pp)
     Xad_Ifd = eq_p + (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd + γ_d2 * eq_p) + Se * ψd_pp
     Xaq_I1q = ed_p + (Xq - Xq_p) * (γ_q2 * ed_p - γ_q2 * ψ_kq - γ_q1 * I_q) + Se * ψq_pp * γ_qd
     τ_e = I_d * (V_dq[1] + I_d * R) + I_q * (V_dq[2] + I_q * R)

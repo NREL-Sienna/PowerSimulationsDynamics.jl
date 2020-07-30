@@ -523,10 +523,14 @@ function initialize_mach_shaft!(
     end
 end
 
+"""
+Initialitation of 4-state (RoundRotorQuadratic - GENROU or RoundRotorExponential - GENROE)
+synchronous machine in Julia. Refer to SynchGen and Excitation Models by Paszek et al. for the equations.
+"""
 function initialize_mach_shaft!(
     device_states,
-    device::PSY.DynamicGenerator{PSY.RoundRotorQuadratic, S, A, TG, P},
-) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    device::PSY.DynamicGenerator{M, S, A, TG, P},
+) where {M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential}, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
     P0 = PSY.get_active_power(static_gen)
@@ -553,32 +557,20 @@ function initialize_mach_shaft!(
     Xd_pp = PSY.get_Xd_pp(machine)
     Xq_pp = Xd_pp
     Xl = PSY.get_Xl(machine)
-    PSY.set_Se!(machine, (0.1, 0.8))
     Se = PSY.get_Se(machine)
-    #Asat, Bsat = PSY.get_saturation_coeffs(machine)
-    #Additional Parameters
-    γ_d1 = (Xd_pp - Xl) / (Xd_p - Xl)
-    γ_q1 = (Xq_pp - Xl) / (Xq_p - Xl)
-    γ_d2 = (Xd_p - Xd_pp) / (Xd_p - Xl)^2
-    γ_q2 = (Xq_p - Xq_pp) / (Xq_p - Xl)^2
-    γ_qd = (Xq - Xl) / (Xd - Xl)
-
-    ## Initialization Saturation
-    E1 = 1.0
-    E12 = 1.2
-    Sat_Se1 = Se[1]
-    Sat_Se12 = Se[2]
-    Sat_a = sqrt(E1 * Sat_Se1 / (E12 * Sat_Se12)) * ((Sat_Se12 > 0) + (Sat_Se12 < 0))
-    Sat_A = E12 - (E1 - E12)/(Sat_a -1)
-    Sat_B = E12 * Sat_Se12 * (Sat_a - 1)^2 * ((Sat_a > 0) + (Sat_a < 0))/ (E1 - E12)^2 
-    PSY.set_saturation_coeffs!(machine, (Sat_A, Sat_B))
+    Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+    γ_q2 = PSY.get_γ_q2(machine)
+    γ_qd = PSY.get_γ_qd(machine)
     
     ## Initialization ##
     ## Fluxes
     ψ0_pp = V + (R + Xd_pp * 1im) * I
     ψ0pp_ang = angle(ψ0_pp) 
     ψ0pp_abs = abs(ψ0_pp)
-    Se0 = Sat_B * (ψ0pp_abs - Sat_A)^2 * (ψ0pp_abs >= Sat_A) / ψ0pp_abs
+    Se0 = saturation_function(machine, ψ0pp_abs)
     ## Angles
     _a = ψ0pp_abs * (Se0 * γ_qd + 1)
     _b = (Xq_pp - Xq) * abs(I)
@@ -608,7 +600,7 @@ function initialize_mach_shaft!(
     ed_p0 = I_q0 * (Xq - Xq_p) - Se0 * γ_qd * ψ0pp_q
     ψ_kd0 = - I_d0 * (Xd - Xl) - Se0 * ψ0pp_d + Vf0
     ψ_kq0 =  I_q0 * (Xq - Xl) - Se0 * γ_qd * ψ0pp_q
-    #To solve: δ, τm, Vf0, eq_p, ed_p
+    
     function f!(out, x)
         δ = x[1] 
         τm = x[2]
@@ -625,7 +617,7 @@ function initialize_mach_shaft!(
         I_dq = inv([-R Xq_pp ; Xd_pp R]) * [V_dq[1] - ψq_pp; - V_dq[2] + ψd_pp]
         I_d = I_dq[1]
         I_q = I_dq[2]
-        Se = Sat_B * (ψ_pp - Sat_A)^2 / ψ_pp
+        Se = saturation_function(machine, ψ_pp)
         Xad_Ifd = eq_p + (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd + γ_d2 * eq_p) + Se * ψd_pp
         Xaq_I1q = ed_p + (Xq - Xq_p) * (γ_q2 * ed_p - γ_q2 * ψ_kq - γ_q1 * I_q) + Se * ψq_pp * γ_qd
         τ_e = I_d * (V_dq[1] + I_d * R) + I_q * (V_dq[2] + I_q * R)
@@ -658,7 +650,7 @@ function initialize_mach_shaft!(
         #Update Vf for AVR in GENROU Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
         #Update states for Machine
-        machine_ix = get_local_state_ix(device, PSY.RoundRotorQuadratic)
+        machine_ix = get_local_state_ix(device, typeof(machine))
         machine_states = @view device_states[machine_ix]
         machine_states[1] = sol_x0[4] #eq_p
         machine_states[2] = sol_x0[5] #ed_p
