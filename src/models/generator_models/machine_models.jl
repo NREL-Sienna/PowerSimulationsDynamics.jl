@@ -442,100 +442,6 @@ function mdl_machine_ode!(
     return
 end
 
-#=
-"""
-Model of 4-state (RoundRotorQuadratic - GENROU) synchronous machine in Julia.
-Refer to SynchGen and Excitation Models by Paszek et al. for the equations
-"""
-function mdl_machine_ode!(
-    device_states,
-    output_ode,
-    current_r,
-    current_i,
-    Sbase::Float64,
-    f0::Float64,
-    device::PSY.DynamicGenerator{PSY.RoundRotorQuadratic, S, A, TG, P},
-) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-
-    #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.RoundRotorQuadratic)
-
-    #Define internal states for component
-    internal_states = @view device_states[local_ix]
-    eq_p = internal_states[1]
-    ed_p = internal_states[2]
-    ψ_kd = internal_states[3]
-    ψ_kq = internal_states[4]
-
-    #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.RoundRotorQuadratic)
-    δ = device_states[external_ix[1]]
-    ω = device_states[external_ix[2]]
-
-    #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var] #E_fd: Field voltage
-
-    #Get parameters
-    machine = PSY.get_machine(device)
-    R = PSY.get_R(machine)
-    Td0_p = PSY.get_Td0_p(machine)
-    Td0_pp = PSY.get_Td0_pp(machine)
-    Tq0_p = PSY.get_Tq0_p(machine)
-    Tq0_pp = PSY.get_Tq0_pp(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xq_p = PSY.get_Xq_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
-    Xq_pp = Xd_pp
-    Xl = PSY.get_Xl(machine)
-    Asat, Bsat = PSY.get_saturation_coeffs(machine)
-    basepower = PSY.get_base_power(device)
-
-    #Additional Parameters
-    γ_d1 = (Xd_pp - Xl) / (Xd_p - Xl)
-    γ_q1 = (Xq_pp - Xl) / (Xq_p - Xl)
-    γ_d2 = (Xd_p - Xd_pp) / (Xd_p - Xl)^2
-    γ_q2 = (Xq_p - Xq_pp) / (Xq_p - Xl)^2
-
-    #RI to dq transformation
-    V_dq = ri_dq(δ) * [V_tR; V_tI]
-    
-    #Obtain electric variables
-    i_d = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( R * (ed_p * γ_q1 - ψ_kq * (1 - γ_q1) - V_dq[1]) - Xq_pp * (V_dq[2] - eq_p * γ_d1 - ψ_kd * (1 - γ_d1)) ) #2.21a
-    i_q = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( - R * (V_dq[2] - eq_p * γ_d1 - ψ_kd * (1 - γ_d1)) -  Xd_pp * (ed_p * γ_q1 - V_dq[1] - ψ_kq * ( 1 - γ_d1)) ) #2.20a
-    τ_e = (V_dq[1] + R * i_d) * i_d + (V_dq[2] + R * i_q) * i_q         #2.36c + 2.34a + 2.35a
-    
-    #Get auxiliary variables
-    #dtψ_kd = (1.0 / Td0_pp) * (eq_p - ψ_kd - i_d*(Xd_p - Xl)) #2.20c dψ_kd/dt
-    #dtψ_kq = -(1.0 / Tq0_pp) * (-ed_p + ψ_kq + i_q*(Xq_p - Xl))
-    #ΔId = Se_ψ * ψd_pp / ψ_pp
-    #ΔIq = Se_ψ * (ψq_pp / ψ_pp) * ((Xq - Xl)/(Xd - Xl))
-    #Xad_Ifd = eq_p + (Xd - Xd_p)*(i_d + Td0_pp * dtψ_kd * (Xd_p - Xd_pp)/(Xd_p - Xl)^2) + ΔId
-    #Xaq_Ikq = ed_p + (Xq - Xq_p')*(i_q + Tq0_pp * dtψ_kq * (Xq_p - Xq_pp)/(Xq_p - Xl)^2) + ΔIq
-
-    #Compute ODEs
-    output_ode[local_ix[1]] = (1.0 / Td0_p) * (Vf - eq_p - (Xd - Xd_p) * (i_d - γ_d2 * ψ_kd - (1 - γ_d1)*i_d + γ_d2 * eq_p) )                        #15.13 eq_p
-    output_ode[local_ix[2]] = (1.0 / Td0_p) * (- ed_p + (Xq - Xq_p) * (i_q - γ_q2 * ψ_kq - (1 - γ_q1)*i_q - γ_d2 * ed_p ) )                    #15.13 ed_p
-    output_ode[local_ix[3]] = (1.0 / Td0_pp) * (eq_p - ψ_kd - (Xd_p - Xl) * i_d)                    #15.13 ψ_kd
-    output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (-ed_p - ψ_kq - (Xq_p - Xl) * i_q)                 #15.19 ψ_kq
-
-    #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
-
-    #Compute current from the generator to the grid
-    I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
-
-    #Update current
-    current_r[1] += I_RI[1]
-    current_i[1] += I_RI[2]
-
-    return
-end
-=#
-
 
 """
 Model of 4-state (RoundRotorQuadratic - GENROU) synchronous machine in Julia.
@@ -585,7 +491,7 @@ function mdl_machine_ode!(
     Xd_pp = PSY.get_Xd_pp(machine)
     Xq_pp = Xd_pp
     Xl = PSY.get_Xl(machine)
-    Asat, Bsat = PSY.get_saturation_coeffs(machine)
+    Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
     basepower = PSY.get_base_power(device)
 
     #Additional Parameters
@@ -597,58 +503,28 @@ function mdl_machine_ode!(
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
-    
-    #0 = I_d * Xd_pp + ψ_d - ψ_ad
-    #0 = I_q * Xq_pp + ψ_q + ψ_aq
-    
-    ψ_ad = γ_d1 * eq_p + γ_d2 * ψ_kd * (Xd_p - Xl)
-    ψ_aq = γ_q1 * ψ_kq * (1 - γ_q1)
-    
-    #0 = I_q * Xq_pp + (- I_d * R - V_dq[1]) + ψ_aq
-    #0 = I_d * Xd_pp + (I_q * R + V_dq[2]) - ψ_ad
-    
-
-    #[V_dq[1] - ψ_aq; - V_dq[2] + ψ_ad] = [-R Xq_pp;Xd_pp R] * [I_d; I_q] 
-    I_dq = inv([-R Xq_pp ; Xd_pp R]) * [V_dq[1] - ψ_aq; - V_dq[2] + ψ_ad]
-    i_d = I_dq[1]
-    i_q = I_dq[2]
-
-    ψ_d = i_q * R + V_dq[2]
-    ψ_q = - i_d * R - V_dq[1]
-
-    #Compute additional terms
-    #ψd_pp = eq_p * (Xd_pp - Xl)/(Xd_p - Xl) + ψ_kd * (Xd_p - Xd_pp)/(Xd_p - Xl) #2.20d
-    #ψq_pp = ed_p * (Xq_pp - Xl)/(Xq_p - Xl) + ψ_kq * (Xq_p - Xq_pp)/(Xq_p - Xl) #2.21d
-    ψ_a = sqrt(ψ_ad^2 + ψ_aq^2)
-    Se_ψ = Bsat * (ψ_a - Asat)^2 / ψ_a
-
-    #Obtain electric variables
-    #i_d = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( Xq_pp * (ψd_pp - V_dq[2]) - R * (V_dq[1] + ψq_pp)) #2.21a
-    #i_q = (1.0 / (R^2 + Xd_pp * Xq_pp) ) * ( Xd_pp * (ψq_pp + V_dq[1]) - R * (V_dq[2] - ψd_pp)) #2.20a
-    τ_e = -i_d * ψ_q + i_q * ψ_d         #2.36c + 2.34a + 2.35a
-
-    #Get auxiliary variables
-    #dtψ_kd = (1.0 / Td0_pp) * (eq_p - ψ_kd - i_d*(Xd_p - Xl)) #2.20c dψ_kd/dt
-    #dtψ_kq = (1.0 / Tq0_pp) * (ed_p - ψ_kq + i_q*(Xq_p - Xl))
-    ΔId = Se_ψ * ψ_ad
-    @assert ΔId == 0.0
-    ΔIq = Se_ψ * γ_qd * ψ_aq
-    @assert ΔIq == 0.0
-    Xad_Ifd = eq_p + (Xd - Xd_p)*(i_d * γ_d1 - γ_d2 * ψ_kd + γ_d2 * eq_p) + ΔId
-    Xaq_Ikq = ed_p + (Xq - Xq_p)*(-i_q * γ_q1 - γ_q2 * ψ_kq + γ_q2 * ed_p) + ΔIq
-
+    ψq_pp = γ_q1 * ed_p  + ψ_kq * (1 - γ_q1)
+    ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
+    ψ_pp = sqrt( ψd_pp^2 + ψq_pp^2)
+    I_dq = inv([-R Xq_pp ; Xd_pp R]) * [V_dq[1] - ψq_pp; - V_dq[2] + ψd_pp]
+    I_d = I_dq[1]
+    I_q = I_dq[2]
+    Se = Sat_B * (ψ_pp - Sat_A)^2 / ψ_pp
+    Xad_Ifd = eq_p + (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd + γ_d2 * eq_p) + Se * ψd_pp
+    Xaq_I1q = ed_p + (Xq - Xq_p) * (γ_q2 * ed_p - γ_q2 * ψ_kq - γ_q1 * I_q) + Se * ψq_pp * γ_qd
+    τ_e = I_d * (V_dq[1] + I_d * R) + I_q * (V_dq[2] + I_q * R)
 
     #Compute ODEs
     output_ode[local_ix[1]] = (1.0 / Td0_p) * (Vf - Xad_Ifd)                        #2.20 eq_p
-    output_ode[local_ix[2]] = (1.0 / Td0_p) * (- Xaq_Ikq)                    #15.9 ed_p
-    output_ode[local_ix[3]] = (1.0 / Td0_pp) * (eq_p - ψ_kd - i_d*(Xd_p - Xl))                     #2.20c ψ_kd
-    output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (ed_p - ψ_kq + i_q*(Xq_p - Xl))           #15.19 ψ_kq
+    output_ode[local_ix[2]] = (1.0 / Tq0_p) * (- Xaq_I1q)                   #15.9 ed_p
+    output_ode[local_ix[3]] = (1.0 / Td0_pp) * (- ψ_kd + eq_p - (Xd_p - Xl) * I_d)                    #2.20c ψ_kd
+    output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (- ψ_kq + ed_p + (Xq_p - Xl) * I_q)          #15.19 ψ_kq
 
     #Update inner_vars
     get_inner_vars(device)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
-    I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
+    I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
 
     #Update current
     current_r[1] += I_RI[1]
