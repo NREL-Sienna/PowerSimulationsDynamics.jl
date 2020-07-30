@@ -530,7 +530,13 @@ synchronous machine in Julia. Refer to SynchGen and Excitation Models by Paszek 
 function initialize_mach_shaft!(
     device_states,
     device::PSY.DynamicGenerator{M, S, A, TG, P},
-) where {M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential}, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+) where {
+    M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
+    S <: PSY.Shaft,
+    A <: PSY.AVR,
+    TG <: PSY.TurbineGov,
+    P <: PSY.PSS,
+}
     #PowerFlow Data
     static_gen = PSY.get_static_injector(device)
     P0 = PSY.get_active_power(static_gen)
@@ -564,30 +570,30 @@ function initialize_mach_shaft!(
     γ_d2 = PSY.get_γ_d2(machine)
     γ_q2 = PSY.get_γ_q2(machine)
     γ_qd = PSY.get_γ_qd(machine)
-    
+
     ## Initialization ##
     ## Fluxes
     ψ0_pp = V + (R + Xd_pp * 1im) * I
-    ψ0pp_ang = angle(ψ0_pp) 
+    ψ0pp_ang = angle(ψ0_pp)
     ψ0pp_abs = abs(ψ0_pp)
     Se0 = saturation_function(machine, ψ0pp_abs)
     ## Angles
     _a = ψ0pp_abs * (Se0 * γ_qd + 1)
     _b = (Xq_pp - Xq) * abs(I)
     θ_It = ψ0pp_ang - angle(I)
-    δ0 = ψ0pp_ang + atan( (_b * cos(θ_It)) / (_b * sin(θ_It) - _a))
+    δ0 = ψ0pp_ang + atan((_b * cos(θ_It)) / (_b * sin(θ_It) - _a))
     _T = cos(δ0) - sin(δ0) * 1im
     ψ0pp_dq = ψ0_pp * _T
     ## Currents and Fluxes
     I_dq = conj(I * _T)
     ψ0pp_d = real(ψ0pp_dq)
-    ψ0pp_q = - imag(ψ0pp_dq)
+    ψ0pp_q = -imag(ψ0pp_dq)
     I_d0 = imag(I_dq)
     I_q0 = real(I_dq)
     ## Voltages
     V_dq0 = PSID.ri_dq(δ0) * [real(V); imag(V)]
     V_d0 = I_d0 * R + I_q0 * Xq_pp + ψ0pp_q
-    V_q0 = - I_d0 * Xd_pp - I_q0 * R + ψ0pp_d
+    V_q0 = -I_d0 * Xd_pp - I_q0 * R + ψ0pp_d
     @assert abs(V_dq0[1] - V_d0) < 1e-6
     @assert abs(V_dq0[2] - V_q0) < 1e-6
     ## External Variables
@@ -598,39 +604,42 @@ function initialize_mach_shaft!(
     ## States
     eq_p0 = I_d0 * (Xd_p - Xd) - Se0 * ψ0pp_d + Vf0
     ed_p0 = I_q0 * (Xq - Xq_p) - Se0 * γ_qd * ψ0pp_q
-    ψ_kd0 = - I_d0 * (Xd - Xl) - Se0 * ψ0pp_d + Vf0
-    ψ_kq0 =  I_q0 * (Xq - Xl) - Se0 * γ_qd * ψ0pp_q
-    
+    ψ_kd0 = -I_d0 * (Xd - Xl) - Se0 * ψ0pp_d + Vf0
+    ψ_kq0 = I_q0 * (Xq - Xl) - Se0 * γ_qd * ψ0pp_q
+
     function f!(out, x)
-        δ = x[1] 
+        δ = x[1]
         τm = x[2]
         Vf = x[3]
         eq_p = x[4]
         ed_p = x[5]
         ψ_kd = x[6]
         ψ_kq = x[7]
-        
+
         V_dq = ri_dq(δ) * [V_R; V_I]
-        ψq_pp = γ_q1 * ed_p  + ψ_kq * (1 - γ_q1)
+        ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
         ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
-        ψ_pp = sqrt( ψd_pp^2 + ψq_pp^2)
-        I_dq = inv([-R Xq_pp ; Xd_pp R]) * [V_dq[1] - ψq_pp; - V_dq[2] + ψd_pp]
+        ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+        I_dq = inv([-R Xq_pp; Xd_pp R]) * [V_dq[1] - ψq_pp; -V_dq[2] + ψd_pp]
         I_d = I_dq[1]
         I_q = I_dq[2]
         Se = saturation_function(machine, ψ_pp)
         Xad_Ifd = eq_p + (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd + γ_d2 * eq_p) + Se * ψd_pp
-        Xaq_I1q = ed_p + (Xq - Xq_p) * (γ_q2 * ed_p - γ_q2 * ψ_kq - γ_q1 * I_q) + Se * ψq_pp * γ_qd
+        Xaq_I1q =
+            ed_p +
+            (Xq - Xq_p) * (γ_q2 * ed_p - γ_q2 * ψ_kq - γ_q1 * I_q) +
+            Se * ψq_pp * γ_qd
         τ_e = I_d * (V_dq[1] + I_d * R) + I_q * (V_dq[2] + I_q * R)
-        
+
         out[1] = τm - τ_e #Mechanical Torque
         out[2] = P0 - (V_dq[1] * I_d + V_dq[2] * I_q) #Output Power
         out[3] = Q0 - (V_dq[2] * I_d - V_dq[1] * I_q) #Output Reactive Power
         out[4] = (1.0 / Td0_p) * (Vf - Xad_Ifd) #deq_p/dt
-        out[5] = (1.0 / Tq0_p) * (- Xaq_I1q) #ded_p/dt
-        out[6] = (1.0 / Td0_pp) * (- ψ_kd + eq_p - (Xd_p - Xl) * I_d) #dψ_kd/dt
-        out[7] = (1.0 / Tq0_pp) * (- ψ_kq + ed_p + (Xq_p - Xl) * I_q) #deq_pp/dt
+        out[5] = (1.0 / Tq0_p) * (-Xaq_I1q) #ded_p/dt
+        out[6] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d) #dψ_kd/dt
+        out[7] = (1.0 / Tq0_pp) * (-ψ_kq + ed_p + (Xq_p - Xl) * I_q) #deq_pp/dt
     end
-    x0 = [δ0, τm0, Vf0, eq_p0, ed_p0, ψ_kd0, ψ_kq0] 
+    x0 = [δ0, τm0, Vf0, eq_p0, ed_p0, ψ_kd0, ψ_kq0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in Synch. Machine failed")

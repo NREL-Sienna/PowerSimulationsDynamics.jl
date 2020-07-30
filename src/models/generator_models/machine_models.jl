@@ -442,7 +442,6 @@ function mdl_machine_ode!(
     return
 end
 
-
 """
 Model of 4-state (RoundRotorQuadratic - GENROU or RoundRotorExponential - GENROE)
 synchronous machine in Julia.
@@ -456,7 +455,13 @@ function mdl_machine_ode!(
     Sbase::Float64,
     f0::Float64,
     device::PSY.DynamicGenerator{M, S, A, TG, P},
-) where {M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential}, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+) where {
+    M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
+    S <: PSY.Shaft,
+    A <: PSY.AVR,
+    TG <: PSY.TurbineGov,
+    P <: PSY.PSS,
+}
 
     #Obtain indices for component w/r to device
     machine = PSY.get_machine(device)
@@ -503,23 +508,24 @@ function mdl_machine_ode!(
     V_dq = ri_dq(δ) * [V_tR; V_tI]
 
     #Additional Fluxes
-    ψq_pp = γ_q1 * ed_p  + ψ_kq * (1 - γ_q1)
+    ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
     ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
-    ψ_pp = sqrt( ψd_pp^2 + ψq_pp^2)
+    ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
     #Currents
-    I_dq = inv([-R Xq_pp ; Xd_pp R]) * [V_dq[1] - ψq_pp; - V_dq[2] + ψd_pp]
+    I_dq = inv([-R Xq_pp; Xd_pp R]) * [V_dq[1] - ψq_pp; -V_dq[2] + ψd_pp]
     I_d = I_dq[1]
     I_q = I_dq[2]
     Se = saturation_function(machine, ψ_pp)
     Xad_Ifd = eq_p + (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd + γ_d2 * eq_p) + Se * ψd_pp
-    Xaq_I1q = ed_p + (Xq - Xq_p) * (γ_q2 * ed_p - γ_q2 * ψ_kq - γ_q1 * I_q) + Se * ψq_pp * γ_qd
+    Xaq_I1q =
+        ed_p + (Xq - Xq_p) * (γ_q2 * ed_p - γ_q2 * ψ_kq - γ_q1 * I_q) + Se * ψq_pp * γ_qd
     τ_e = I_d * (V_dq[1] + I_d * R) + I_q * (V_dq[2] + I_q * R)
 
     #Compute ODEs
     output_ode[local_ix[1]] = (1.0 / Td0_p) * (Vf - Xad_Ifd)                        #2.20 eq_p
-    output_ode[local_ix[2]] = (1.0 / Tq0_p) * (- Xaq_I1q)                   #15.9 ed_p
-    output_ode[local_ix[3]] = (1.0 / Td0_pp) * (- ψ_kd + eq_p - (Xd_p - Xl) * I_d)                    #2.20c ψ_kd
-    output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (- ψ_kq + ed_p + (Xq_p - Xl) * I_q)          #15.19 ψ_kq
+    output_ode[local_ix[2]] = (1.0 / Tq0_p) * (-Xaq_I1q)                   #15.9 ed_p
+    output_ode[local_ix[3]] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d)                    #2.20c ψ_kd
+    output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (-ψ_kq + ed_p + (Xq_p - Xl) * I_q)          #15.19 ψ_kq
 
     #Update inner_vars
     get_inner_vars(device)[τe_var] = τ_e
@@ -533,8 +539,6 @@ function mdl_machine_ode!(
 
     return
 end
-
-
 
 #Not already implemented:
 #=
