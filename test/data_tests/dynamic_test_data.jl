@@ -80,6 +80,21 @@ machine_simple_anderson() = SimpleAFMachine(
     0.033, #Tq0_pp
 )
 
+machine_genrou() = RoundRotorExponential(
+    R = 0.0,
+    Td0_p = 8.0,
+    Td0_pp = 0.03,
+    Tq0_p = 0.4,
+    Tq0_pp = 0.05,
+    Xd = 1.8,
+    Xq = 1.7,
+    Xd_p = 0.3,
+    Xq_p = 0.55,
+    Xd_pp = 0.25,
+    Xl = 0.2,
+    Se = (0.0, 0.0),
+)
+
 #Not available yet
 #=
 machine_kundur() = SimpleFullMachine(
@@ -138,6 +153,8 @@ shaft_no_damping() = SingleMass(
     3.01, #H (M = 6.02 -> H = M/2)
     0.0,
 ) #D
+
+shaft_genrou() = SingleMass(H = 6.175, D = 0.05)
 
 shaft_fivemass() = FiveMassShaft(
     3.01, #5.148, #H
