@@ -523,7 +523,6 @@ function initialize_mach_shaft!(
     end
 end
 
-
 function initialize_mach_shaft!(
     device_states,
     device::PSY.DynamicGenerator{PSY.RoundRotorQuadratic, S, A, TG, P},
