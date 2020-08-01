@@ -526,6 +526,7 @@ end
 """
 Initialitation of 4-state (RoundRotorQuadratic - GENROU or RoundRotorExponential - GENROE)
 synchronous machine in Julia. Refer to SynchGen and Excitation Models by Paszek et al. for the equations.
+
 """
 function initialize_mach_shaft!(
     device_states,
@@ -620,9 +621,12 @@ function initialize_mach_shaft!(
         ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
         ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
         ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
-        I_dq = inv([-R Xq_pp; Xd_pp R]) * [V_dq[1] - ψq_pp; -V_dq[2] + ψd_pp]
-        I_d = I_dq[1]
-        I_q = I_dq[2]
+        I_d =
+            (1.0 / (R^2 + Xq_pp * Xd_pp)) *
+            (-R * (V_dq[1] - ψq_pp) + Xq_pp * (-V_dq[2] + ψd_pp))
+        I_q =
+            (1.0 / (R^2 + Xq_pp * Xd_pp)) *
+            (Xd_pp * (V_dq[1] - ψq_pp) + R * (-V_dq[2] + ψd_pp))
         Se = saturation_function(machine, ψ_pp)
         Xad_Ifd = eq_p + (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd + γ_d2 * eq_p) + Se * ψd_pp
         Xaq_I1q =
