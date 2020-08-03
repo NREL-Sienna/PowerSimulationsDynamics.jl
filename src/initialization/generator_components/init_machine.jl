@@ -523,11 +523,6 @@ function initialize_mach_shaft!(
     end
 end
 
-"""
-Initialitation of 4-state (RoundRotorQuadratic - GENROU or RoundRotorExponential - GENROE)
-synchronous machine in Julia. Refer to SynchGen and Excitation Models by Paszek et al. for the equations.
-
-"""
 function initialize_mach_shaft!(
     device_states,
     device::PSY.DynamicGenerator{M, S, A, TG, P},

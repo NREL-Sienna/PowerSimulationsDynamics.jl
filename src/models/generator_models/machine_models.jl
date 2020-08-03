@@ -442,12 +442,6 @@ function mdl_machine_ode!(
     return
 end
 
-"""
-Model of 4-state (RoundRotorQuadratic - GENROU or RoundRotorExponential - GENROE)
-synchronous machine in Julia.
-Refer to SynchGen and Excitation Models by Paszek et al. for the equations.
-
-"""
 function mdl_machine_ode!(
     device_states,
     output_ode,
