@@ -5,6 +5,7 @@ function initialize_avr!(
     #In AVRFixed, V_ref is used as Vf
     Vf = get_inner_vars(device)[Vf_var]
     PSY.set_V_ref!(PSY.get_avr(device), Vf)
+    PSY.set_Vf!(PSY.get_avr(device), Vf)
     #Update Control Refs
     device.ext[CONTROL_REFS][V_ref_index] = Vf
 end

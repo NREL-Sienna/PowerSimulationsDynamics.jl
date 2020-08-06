@@ -67,7 +67,7 @@ function build_simulation(
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
     kwargs...,
 )
-    PSY.set_units_base_system!(simulation_system, "device_base")
+    PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
     DAE_vector = _index_dynamic_system!(simulation_system)
@@ -189,7 +189,7 @@ function _index_local_states!(
 end
 
 function _attach_ports!(component::PSY.DynamicComponent)
-    component.ext[PORTS] = Ports(component)
+    PSY.get_ext(component)[PORTS] = Ports(component)
     return
 end
 
@@ -225,7 +225,7 @@ function _index_port_mapping!(
     component::PSY.DynamicComponent,
 )
     _attach_ports!(component)
-    for i in component.ext[PORTS].states
+    for i in PSY.get_ext(component)[PORTS].states
         tmp = [(ix, var) for (ix, var) in enumerate(local_states) if var == i]
         isempty(tmp) && continue
         push!(index_component_inputs, tmp[1][1])
@@ -259,7 +259,7 @@ function _make_device_index!(device::PSY.DynamicInjection, sys_basepower::Float6
     _attach_control_refs!(device)
 
     for c in PSY.get_dynamic_components(device)
-        device_state_mapping[typeof(c)] = Vector{Int64}(undef, length(c.states))
+        device_state_mapping[typeof(c)] = Vector{Int64}(undef, length(PSY.get_states(c)))
         input_port_mapping[typeof(c)] = Vector{Int64}()
         _index_local_states!(device_state_mapping[typeof(c)], states, c)
         _index_port_mapping!(input_port_mapping[typeof(c)], states, c)

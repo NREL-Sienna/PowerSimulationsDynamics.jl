@@ -1,4 +1,4 @@
-using Documenter, PowerSimulationsDynamics
+using Documenter, DocStringExtensions, PowerSimulationsDynamics
 
 makedocs(
     modules = [PowerSimulationsDynamics],

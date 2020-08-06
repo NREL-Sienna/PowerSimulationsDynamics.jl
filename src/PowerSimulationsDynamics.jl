@@ -75,6 +75,9 @@ include("models/inverter_models/converter_models.jl")
 include("models/load_models.jl")
 include("models/source_models.jl")
 
+#Saturation Models
+include("models/saturation_models.jl")
+
 #Initialization Parameters
 include("initialization/init_device.jl")
 

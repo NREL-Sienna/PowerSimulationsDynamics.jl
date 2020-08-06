@@ -127,6 +127,51 @@ p_e \approx \tau_e &= (v_q + r_a i_q)i_q + (v_d + r_ai_d)i_d \tag{6f}
 \end{align}
 ```
 
+### Round Rotor Machine (4th Order) ```[RoundRotorQuadratic, RoundRotorExponential]```
+
+This model represents the traditional round rotor models GENROU/GENROE models implemented in PSLF/PSSE/PowerWorld.
+Similar to the Simplified Marconato Model, this model neglects the derivative of stator fluxes (``\dot{\psi}_d`` and  ``\dot{\psi}_q``). Round rotor machines must satisfy ``x_d'' = x_q''``.
+
+```math
+\begin{align}
+\dot{e}_q' &= \frac{1}{T_{d0}'} \left[v_f - X_{ad}I_{fd}\right] \tag{7a}\\
+\dot{e}_d' &= \frac{1}{T_{q0}'} \left[-X_{aq}I_{1q} \right] \tag{7b}\\
+\dot{\psi}_{kd} &= \frac{1}{T_{d0}''} \left[-\psi_{kd} + e_q' - (x_d'-x_l)i_d \right] \tag{7c} \\
+\dot{\psi}_{kq} &= \frac{1}{T_{q0}''} \left[-\psi_{kq} + e_d' + (x_q'-x_l)i_q \right] \tag{7d} \\
+\end{align}
+```
+
+with:
+```math
+\begin{align}
+\gamma_{d1} &= \frac{x_d'' - x_l}{x_d' - x_l} \tag{7e}\\
+\gamma_{q1} &= \frac{x_q'' - x_l}{x_q' - x_l} \tag{7f}\\
+\gamma_{d2} &= \frac{x_d' - x_d''}{(x_d'-x_l)^2} \tag{7g}\\
+\gamma_{q2} &= \frac{x_q' - x_q''}{(x_q' - x_l)^2} \tag{7h}\\
+\gamma_{qd} &= \frac{x_q - x_l}{x_d - x_l} \tag{7i}\\
+\psi_q'' &= \gamma_{q1} e_d' + \psi_{kq} (1 - \gamma_{q1}) \tag{7j}\\
+\psi_d'' &= \gamma_{d1} e_q' + \gamma_{d2} (x_d' - x_l) \psi_{kd} \tag{7k}\\
+\psi'' &= \sqrt{(\psi_d'')^2 + (\psi_q'')^2} \tag{7l}\\
+\left[ \begin{array}{c} i_d \\ i_q \end{array} \right] &= \left[ \begin{array}{cc} -r_a & x_q'' \\ -x_d'' & r_a \end{array} \right]^{-1}  \left[ \begin{array}{c} v_d - \psi_q'' \\ -v_q + \psi_d'' \end{array} \right] \tag{7m}\\
+X_{ad}I_{fd} &= e_q' + (x_d - x_d') (\gamma_{d1} i_d - \gamma_{d2} \psi_{kd} + \gamma_{d2} + e_q') + \text{Se}(\psi'') \psi_d'' \tag{7n}\\
+X_{aq}I_{1q} &= e_d' + (x_q - x_q') (\gamma_{q2} e_d' - \gamma_{q2}\psi_{kq} - \gamma_{q1} i_q) + \text{Se}(\psi'') \psi_q'' \gamma_{qd} \tag{7o} \\
+\tau_e &= i_d (r_a i_d + v_d) + i_q(r_a i_q + v_q) \tag{7p}
+\end{align}
+```
+
+The difference between GENROU and GENROE occurs in which additive saturation function ``\text{Se}(\psi'')`` is used. Input data is provided by the saturation values at ``\psi'' = 1.0`` and ``\psi'' = 1.2`` p.u. For the GENROU model, the function used is:
+```math
+\begin{align}
+\text{Se}(\psi'') &= \frac{B(\psi'' - A)^2 }{\psi''} \tag{7q}
+\end{align}
+```
+and for the GENROE model the function used is:
+```math
+\begin{align}
+\text{Se}(\psi'') &= B(\psi'')^A \tag{7r}
+\end{align}
+```
+The parameters ``A`` and ``B`` for each function are computed using the two points given ``(1.0, \text{Se}(1.0))`` and ``(1.2, \text{Se}(1.2))``.
 
 ## Shafts
 
