@@ -3,8 +3,7 @@
 ##################################################
 
 include(joinpath(dirname(@__FILE__), "data_tests/test01.jl"))
-omib_sys_file =
-    System(PowerModelsData(omib_file_dir), runchecks = false, unit_system = "device_base")
+omib_sys_file = System(PowerModelsData(omib_file_dir), runchecks = false)
 
 ##################################################
 ############### SOLVE PROBLEM ####################
