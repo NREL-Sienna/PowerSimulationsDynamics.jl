@@ -67,7 +67,7 @@ function build_simulation(
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
     kwargs...,
 )
-    PSY.set_units_base_system!(simulation_system, "device_base")
+    PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
     DAE_vector = _index_dynamic_system!(simulation_system)
