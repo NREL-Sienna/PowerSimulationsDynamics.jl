@@ -18,8 +18,8 @@ dyr_files = [
 ]
 
 csv_files = (
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/Test_GENROE.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/Test_GENROE_HIGH_SAT.csv"),
+    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/TEST_GENROE.csv"),
+    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/TEST_GENROE_HIGH_SAT.csv"),
 )
 
 init_conditions = [test_psse_genroe_init, test_psse_genroe_high_sat_init]
