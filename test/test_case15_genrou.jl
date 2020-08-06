@@ -18,11 +18,11 @@ dyr_files = [
     joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBus_GENROU_HIGH_SAT.dyr"),
 ]
 
-csv_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/Test_GENROU1.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/Test_GENROU_NO_SAT1.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/Test_GENROU_HIGH_SAT1.csv"),
-]
+csv_files = (
+    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/Test_GENROU.csv"),
+    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/Test_GENROU_NO_SAT.csv"),
+    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/Test_GENROU_HIGH_SAT.csv"),
+)
 
 init_conditions =
     [test_psse_genrou_init, test_psse_genrou_no_sat_init, test_psse_genrou_high_sat_init]
