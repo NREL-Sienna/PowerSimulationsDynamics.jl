@@ -115,7 +115,7 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
         end
     end
 
-    kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
+    kirchoff_laws!(inputs, V_r, V_i, I_injections_r, I_injections_i, dx)
     out[bus_range] = get_aux_arrays(inputs)[6]
 
 end
