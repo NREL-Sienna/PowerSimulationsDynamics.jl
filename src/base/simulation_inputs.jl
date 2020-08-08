@@ -1,12 +1,12 @@
 struct SimulationInputs
-    sys::System
+    sys::PSY.System
     counts::Base.ImmutableDict{Symbol, Int}
-    Ybus::SparseArrays.SparseMatrixCSC{Complex{Float64},Int64}
+    Ybus::SparseMatrixCSC{Complex{Float64},Int64}
     dyn_lines::Bool
     voltage_buses_ix::Vector{Int}
     current_buses_ix::Vector{Int}
     global_index::Dict{String,Dict{Symbol,Int64}}
-    total_shunts::Dict{Int64,Float64}()
+    total_shunts::Dict{Int64,Float64}
     global_vars::Dict{Symbol,Number}
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
@@ -16,7 +16,7 @@ end
 function SimulationInputs(;
     sys::PSY.System,
     counts::Base.ImmutableDict{Symbol, Int},
-    Ybus::SparseArrays.SparseMatrixCSC{Complex{Float64},Int64},
+    Ybus::SparseMatrixCSC{Complex{Float64},Int64},
     dyn_lines::Bool,
     voltage_buses_ix::Vector{Int} = Vector{Int}(),
     current_buses_ix::Vector{Int} = Vector{Int}(),
