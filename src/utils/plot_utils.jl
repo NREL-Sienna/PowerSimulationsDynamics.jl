@@ -5,7 +5,7 @@ and a tuple containing the symbol name of the Dynamic Injection device and the s
 """
 
 function get_state_series(sim::Simulation, ref::Tuple{String, Symbol})
-    global_state_index = PSY.get_ext(sim.system)[GLOBAL_INDEX]
+    global_state_index = get_global_index(sim.simulation_inputs)
     ix = get(global_state_index[ref[1]], ref[2], nothing)
     return sim.solution.t, [value[ix] for value in sim.solution.u]
 end
@@ -16,7 +16,7 @@ Function to obtain the voltage magnitude series out of the DAE Solution. It rece
 """
 function get_voltagemag_series(sim::Simulation, bus_number::Int64)
     n_buses = length(PSY.get_components(PSY.Bus, sim.system))
-    bus_ix = get(PSY.get_ext(sim.system)[LOOKUP], bus_number, nothing)
+    bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, nothing)
     if isnothing(bus_ix)
         @error("Bus number $(bus_number) not found.")
     else
@@ -29,7 +29,7 @@ end
 Function to print initial states. It receives the vector of initial states and the dynamical system.
 """
 function print_init_states(sim::Simulation)
-    for (ix, val_sys) in PSY.get_ext(sim.system)[GLOBAL_INDEX]
+    for (ix, val_sys) in get_global_index(sim.simulation_inputs)
         println("Differential States")
         println(ix)
         println("====================")
@@ -57,7 +57,7 @@ function print_device_states(sim::Simulation)
         println(name)
         println("====================")
         bus_n = PSY.get_number(bus)
-        bus_ix = PSY.get_ext(sim.system)[LOOKUP][bus_n]
+        bus_ix = get_lookup(sim.simulation_inputs)[bus_n]
         V_R = sim.x0_init[bus_ix]
         V_I = sim.x0_init[bus_ix + bus_size]
         Vm = sqrt(V_R^2 + V_I^2)
@@ -73,7 +73,7 @@ function print_device_states(sim::Simulation)
         println("Differential States")
         println(name)
         println("====================")
-        global_index = PSY.get_ext(sim.system)[GLOBAL_INDEX][name]
+        global_index = get_global_index(sim.simulation_inputs)[name]
         for s in states
             print(s, " ", round(sim.x0_init[global_index[s]], digits = 4), "\n")
         end
@@ -89,7 +89,7 @@ function print_device_states(sim::Simulation)
             printed_name = "Line " * name
             println("====================")
             println(printed_name)
-            global_index = PSY.get_ext(sim.system)[GLOBAL_INDEX][name]
+            global_index = get_global_index(sim.simulation_inputs)[name]
             x0_br = Dict{Symbol, Float64}()
             for (i, s) in enumerate(states)
                 print(s, " ", round(sim.x0_init[global_index[s]], digits = 5), "\n")
