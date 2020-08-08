@@ -15,14 +15,14 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
     branches_ode = get_aux_arrays(inputs)[4]
 
     #Index Setup
-    bus_size = get_bus_count(sys)
+    bus_size = get_bus_count(inputs)
     bus_vars_count = 2 * bus_size
     bus_range = 1:bus_vars_count
-    injection_start = get_injection_pointer(sys)
+    injection_start = get_injection_pointer(inputs)
     injection_count = 1
-    branches_start = get_branches_pointer(sys)
+    branches_start = get_branches_pointer(inputs)
     branches_count = 1
-    update_global_vars!(sys, x)
+    update_global_vars!(inputs, x)
 
     #Network quantities
     V_r = @view x[1:bus_size]
@@ -49,7 +49,7 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
             ix_range,
             ode_range,
             d,
-            sys,
+            inputs,
         )
         out[ix_range] = injection_ode[ode_range] - dx[ix_range]
     end
@@ -63,7 +63,7 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
             view(I_injections_r, bus_ix),
             view(I_injections_i, bus_ix),
             d,
-            sys,
+            inputs,
         )
     end
 
@@ -76,7 +76,7 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
             view(I_injections_r, bus_ix),
             view(I_injections_i, bus_ix),
             d,
-            sys,
+            inputs,
         )
     end
 
@@ -109,7 +109,7 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
                 ix_range,
                 ode_range,
                 br,
-                sys,
+                inputs,
             )
             out[ix_range] = branches_ode[ode_range] - dx[ix_range]
         end
