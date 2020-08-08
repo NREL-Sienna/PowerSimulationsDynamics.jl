@@ -90,20 +90,10 @@ const Q_ref_index = 4
 
 const MAPPING_DICT = Dict{String, Dict{Symbol, Int64}}
 
-const PSID_COUNTS = "psid_counts"
 const LOCAL_STATE_MAPPING = "local_state_mapping"
 const INPUT_PORT_MAPPING = "input_port_mapping"
 const PORTS = "ports"
-const GLOBAL_INDEX = "global_index"
 const INNER_VARS = "inner_vars"
-const YBUS = "Ybus"
 const CONTROL_REFS = "control_refs"
-const GLOBAL_VARS = "global_vars"
-const VOLTAGE_BUSES_IX = "voltage_buses_ix"
-const CURRENT_BUSES_IX = "current_buses_ix"
-const TOTAL_SHUNTS = "total_shunts"
-const AUX_ARRAYS = "aux_arrays"
-const LOOKUP = "lookup"
-const DYN_LINES = "dyn_lines"
 
 const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation, :system_to_file]
