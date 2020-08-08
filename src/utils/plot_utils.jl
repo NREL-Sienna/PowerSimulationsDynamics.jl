@@ -15,7 +15,7 @@ Function to obtain the voltage magnitude series out of the DAE Solution. It rece
 
 """
 function get_voltagemag_series(sim::Simulation, bus_number::Int64)
-    n_buses = length(PSY.get_components(PSY.Bus, sim.system))
+    n_buses = get_bus_count(sim.simulation_inputs)
     bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, nothing)
     if isnothing(bus_ix)
         @error("Bus number $(bus_number) not found.")
@@ -47,11 +47,12 @@ end
 Function to print initial states. It receives the vector of initial states and the dynamical system.
 """
 function print_device_states(sim::Simulation)
-    bus_size = get_bus_count(sim.system)
+    bus_size = get_bus_count(sim.simulation_inputs)
+    system = get_system(sim.simulation_inputs)
     println("Voltage Variables")
     println("====================")
     buses_sorted =
-        sort(collect(PSY.get_components(PSY.Bus, sim.system)); by = x -> PSY.get_number(x))
+        sort(collect(PSY.get_components(PSY.Bus, system)); by = x -> PSY.get_number(x))
     for bus in buses_sorted
         name = PSY.get_name(bus)
         println(name)
@@ -67,7 +68,7 @@ function print_device_states(sim::Simulation)
         println("====================")
     end
     println("====================")
-    for device in PSY.get_components(PSY.DynamicInjection, sim.system)
+    for device in PSY.get_components(PSY.DynamicInjection, system)
         states = PSY.get_states(device)
         name = PSY.get_name(device)
         println("Differential States")
@@ -79,7 +80,7 @@ function print_device_states(sim::Simulation)
         end
         println("====================")
     end
-    dyn_branches = PSY.get_components(PSY.DynamicBranch, sim.system)
+    dyn_branches = PSY.get_components(PSY.DynamicBranch, system)
     if !isempty(dyn_branches)
         println("====================")
         println("Line Current States")

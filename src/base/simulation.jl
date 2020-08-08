@@ -396,17 +396,18 @@ function make_simulation_inputs(sys::PSY.System)
     )
 
     inputs = SimulationInputs(;
-    sys = sys,
-    counts = counts,
-    Ybus = Ybus,
-    dyn_lines = !isempty(PSY.get_components(PSY.DynamicBranch, sys)),
-    global_index = global_state_index,
-    voltage_buses_ix = voltage_buses_ix,
-    current_buses_ix = current_buses_ix,
-    total_shunts = total_shunts,
-    global_vars = global_vars,
-    lookup = lookup,
-    DAE_vector = DAE_vector)
+        sys = sys,
+        counts = counts,
+        Ybus = Ybus,
+        dyn_lines = !isempty(PSY.get_components(PSY.DynamicBranch, sys)),
+        global_index = global_state_index,
+        voltage_buses_ix = voltage_buses_ix,
+        current_buses_ix = current_buses_ix,
+        total_shunts = total_shunts,
+        global_vars = global_vars,
+        lookup = lookup,
+        DAE_vector = DAE_vector,
+    )
 
     @assert get_ω_sys(inputs) != -1
 

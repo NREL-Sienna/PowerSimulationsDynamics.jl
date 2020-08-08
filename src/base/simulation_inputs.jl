@@ -2,13 +2,13 @@
 mutable struct SimulationInputs
     sys::PSY.System
     counts::Base.ImmutableDict{Symbol, Int}
-    Ybus::SparseMatrixCSC{Complex{Float64},Int64}
+    Ybus::SparseMatrixCSC{Complex{Float64}, Int64}
     dyn_lines::Bool
     voltage_buses_ix::Vector{Int}
     current_buses_ix::Vector{Int}
-    global_index::Dict{String,Dict{Symbol,Int64}}
-    total_shunts::Dict{Int64,Float64}
-    global_vars::Dict{Symbol,Number}
+    global_index::Dict{String, Dict{Symbol, Int64}}
+    total_shunts::Dict{Int64, Float64}
+    global_vars::Dict{Symbol, Number}
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
     aux_arrays::Dict{Int, Vector}
@@ -17,31 +17,31 @@ end
 function SimulationInputs(;
     sys::PSY.System,
     counts::Base.ImmutableDict{Symbol, Int},
-    Ybus::SparseMatrixCSC{Complex{Float64},Int64},
+    Ybus::SparseMatrixCSC{Complex{Float64}, Int64},
     dyn_lines::Bool,
     voltage_buses_ix::Vector{Int} = Vector{Int}(),
     current_buses_ix::Vector{Int} = Vector{Int}(),
-    global_index::Dict{String,Dict{Symbol,Int64}} = Dict{String,Dict{Symbol,Int64}}(),
-    total_shunts::Dict{Int64,Float64} = Dict{Int64,Float64}(),
-    global_vars::Dict{Symbol,Number} = Dict{Symbol,Number}(),
+    global_index::Dict{String, Dict{Symbol, Int64}} = Dict{String, Dict{Symbol, Int64}}(),
+    total_shunts::Dict{Int64, Float64} = Dict{Int64, Float64}(),
+    global_vars::Dict{Symbol, Number} = Dict{Symbol, Number}(),
     lookup::Dict{Int, Int} = Dict{Int, Int}(),
     DAE_vector::Vector{Bool} = Vector{Bool}(),
     aux_arrays::Dict{Int, Vector} = Dict{Int, Vector}(),
-    )
-return SimulationInputs(
-    sys,
-    counts,
-    Ybus,
-    dyn_lines,
-    voltage_buses_ix,
-    current_buses_ix,
-    global_index,
-    total_shunts,
-    global_vars,
-    lookup,
-    DAE_vector,
-    aux_arrays
 )
+    return SimulationInputs(
+        sys,
+        counts,
+        Ybus,
+        dyn_lines,
+        voltage_buses_ix,
+        current_buses_ix,
+        global_index,
+        total_shunts,
+        global_vars,
+        lookup,
+        DAE_vector,
+        aux_arrays,
+    )
 end
 
 get_system(inputs::SimulationInputs) = inputs.sys
@@ -59,8 +59,7 @@ get_aux_arrays(inputs::SimulationInputs) = inputs.aux_arrays
 
 get_injection_pointer(inputs::SimulationInputs) =
     get_counts(inputs)[:first_dyn_injection_pointer]
-get_branches_pointer(inputs::SimulationInputs) =
-    get_counts(inputs)[:first_dyn_branch_point]
+get_branches_pointer(inputs::SimulationInputs) = get_counts(inputs)[:first_dyn_branch_point]
 get_n_injection_states(inputs::SimulationInputs) = get_counts(inputs)[:injection_n_states]
 get_n_branches_states(inputs::SimulationInputs) = get_counts(inputs)[:branches_n_states]
 get_system_state_count(inputs::SimulationInputs) = get_counts(inputs)[:total_states]

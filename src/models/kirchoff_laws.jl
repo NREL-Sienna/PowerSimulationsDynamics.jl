@@ -1,4 +1,12 @@
-function Ybus_current_kirchoff(Ybus, V_r, V_i, I_injections_r, I_injections_i, I_bus, I_balance)
+function Ybus_current_kirchoff(
+    Ybus,
+    V_r,
+    V_i,
+    I_injections_r,
+    I_injections_i,
+    I_bus,
+    I_balance,
+)
     # Note: BLAS doesn't work because the the type of Vr and Vi is not Matrix of Complex
     LinearAlgebra.mul!(I_bus, Ybus, (V_r + V_i .* 1im))
     bus_count = length(I_bus)
@@ -10,12 +18,13 @@ function Ybus_current_kirchoff(Ybus, V_r, V_i, I_injections_r, I_injections_i, I
     return
 end
 
-function voltage_kirchoff(voltage_buses_ix, V_r, V_i, dx)
+function voltage_kirchoff(inputs::SimulationInputs, V_r, V_i, dx)
+    voltage_buses_ix = get_voltage_buses_ix(inputs)
     isempty(voltage_buses_ix) && return
-
+    sys = get_system(inputs)
     sys_f = PSY.get_frequency(sys)
     ω_b = 2.0 * π * sys_f
-    n_buses = length(PSY.get_components(PSY.Bus, sys))
+    n_buses = get_bus_count(inputs)
     shunts = get_total_shunts(sys)
     for bus_ix in voltage_buses_ix
         shunt_multiplier = shunts[bus_ix]
@@ -34,11 +43,18 @@ end
     I_gen_i[j]: Real current injection from all generators connected at bus j.
                 It is zero if no generator is connected at bus j.
 """
-function kirchoff_laws!(inputs::SimulationInputs, V_r, V_i, I_injections_r, I_injections_i, dx)
+function kirchoff_laws!(
+    inputs::SimulationInputs,
+    V_r,
+    V_i,
+    I_injections_r,
+    I_injections_i,
+    dx,
+)
     I_bus = get_aux_arrays(inputs)[5]
     I_balance = get_aux_arrays(inputs)[6]
     Ybus = get_Ybus(inputs)
     Ybus_current_kirchoff(Ybus, V_r, V_i, I_injections_r, I_injections_i, I_bus, I_balance)
-    voltage_kirchoff(get_voltage_buses_ix(inputs), V_r, V_i, dx)
+    voltage_kirchoff(inputs, V_r, V_i, dx)
     return
 end
