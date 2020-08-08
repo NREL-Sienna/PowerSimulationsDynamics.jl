@@ -1,4 +1,7 @@
-function calculate_initial_conditions!(inputs::SimulationInputs, initial_guess::Vector{Float64})
+function calculate_initial_conditions!(
+    inputs::SimulationInputs,
+    initial_guess::Vector{Float64},
+)
     sys = get_system(inputs)
 
     res = PSY.solve_powerflow!(sys)
