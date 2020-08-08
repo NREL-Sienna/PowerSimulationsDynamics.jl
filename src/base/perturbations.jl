@@ -7,7 +7,7 @@ end
 
 function get_affect(::PSY.System, pert::ThreePhaseFault)
     return (integrator) -> begin
-        get_Ybus(integrator.p) = pert.Ybus
+        integrator.p.Ybus = pert.Ybus
     end
 end
 
