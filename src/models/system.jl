@@ -1,17 +1,18 @@
-function update_global_vars!(sys::PSY.System, x::AbstractArray)
-    index = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys_index]
+function update_global_vars!(inputs::SimulationInputs, x::AbstractArray)
+    index = get_global_vars(inputs)[:ω_sys_index]
     index == 0 && return
     #TO DO: Make it general for cases when ω is not a state (droop)!
-    PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys] = x[index]
+    get_global_vars(inputs)[:ω_sys] = x[index]
     return
 end
 
-function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
+function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float64)
 
-    I_injections_r = PSY.get_ext(sys)[AUX_ARRAYS][1]
-    I_injections_i = PSY.get_ext(sys)[AUX_ARRAYS][2]
-    injection_ode = PSY.get_ext(sys)[AUX_ARRAYS][3]
-    branches_ode = PSY.get_ext(sys)[AUX_ARRAYS][4]
+    sys = get_system(inputs)
+    I_injections_r = get_aux_arrays(inputs)[1]
+    I_injections_i = get_aux_arrays(inputs)[2]
+    injection_ode = get_aux_arrays(inputs)[3]
+    branches_ode = get_aux_arrays(inputs)[4]
 
     #Index Setup
     bus_size = get_bus_count(sys)
@@ -32,7 +33,7 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
 
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
+        bus_ix = get_lookup(inputs)[bus_n]
         n_states = PSY.get_n_states(d)
         ix_range = range(injection_start, length = n_states)
         ode_range = range(injection_count, length = n_states)
@@ -55,7 +56,7 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
 
     for d in PSY.get_components(PSY.ElectricLoad, sys)
         bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
+        bus_ix = get_lookup(inputs)[bus_n]
         device!(
             view(V_r, bus_ix),
             view(V_i, bus_ix),
@@ -68,7 +69,7 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
 
     for d in PSY.get_components(PSY.Source, sys)
         bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
+        bus_ix = get_lookup(inputs)[bus_n]
         device!(
             view(V_r, bus_ix),
             view(V_i, bus_ix),
@@ -79,15 +80,15 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
         )
     end
 
-    if PSY.get_ext(sys)[DYN_LINES]
+    if get_dyn_lines(inputs)
         dyn_branches = PSY.get_components(PSY.DynamicBranch, sys)
         for br in dyn_branches
             arc = PSY.get_arc(br)
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
             to_bus_number = PSY.get_number(arc.to)
-            bus_ix_from = PSY.get_ext(sys)[LOOKUP][from_bus_number]
-            bus_ix_to = PSY.get_ext(sys)[LOOKUP][to_bus_number]
+            bus_ix_from = get_lookup(inputs)[from_bus_number]
+            bus_ix_to = get_lookup(inputs)[to_bus_number]
             ix_range = range(branches_start, length = n_states)
             ode_range = range(branches_count, length = n_states)
             branches_count = branches_count + n_states
@@ -115,6 +116,6 @@ function system!(out::Vector{<:Real}, dx, x, sys::PSY.System, t::Float64)
     end
 
     kirchoff_laws!(sys, V_r, V_i, I_injections_r, I_injections_i, dx)
-    out[bus_range] = PSY.get_ext(sys)[AUX_ARRAYS][6]
+    out[bus_range] = get_aux_arrays(inputs)[6]
 
 end
