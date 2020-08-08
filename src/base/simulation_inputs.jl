@@ -1,4 +1,5 @@
-struct SimulationInputs
+#TODO: Make inmmutable later. Requires refactor of ThreePhase Fault callbacks
+mutable struct SimulationInputs
     sys::PSY.System
     counts::Base.ImmutableDict{Symbol, Int}
     Ybus::SparseMatrixCSC{Complex{Float64},Int64}
