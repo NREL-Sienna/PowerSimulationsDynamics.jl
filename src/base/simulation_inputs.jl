@@ -30,13 +30,13 @@ function SimulationInputs(;
 return SimulationInputs(
     sys,
     counts,
+    Ybus,
+    dyn_lines,
     voltage_buses_ix,
     current_buses_ix,
     global_index,
-    Ybus,
     total_shunts,
     global_vars,
-    dyn_lines,
     lookup,
     DAE_vector,
     aux_arrays
