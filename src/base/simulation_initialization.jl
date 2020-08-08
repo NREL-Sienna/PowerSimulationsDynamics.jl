@@ -1,4 +1,5 @@
-function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Float64})
+function calculate_initial_conditions!(inputs::SimulationInputs, initial_guess::Vector{Float64})
+    sys = get_system(inputs)
 
     res = PSY.solve_powerflow!(sys)
     if !res
@@ -19,7 +20,7 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
     for bus in PSY.get_components(PSY.Bus, sys)
         #Write voltage initial guess
         bus_n = PSY.get_number(bus)
-        bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
+        bus_ix = get_lookup(inputs)[bus_n]
         initial_guess[bus_ix] = PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
         initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
     end
@@ -36,7 +37,7 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         bus = PSY.get_bus(d)
         bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = PSY.get_ext(sys)[LOOKUP][bus_n]
+        bus_ix = get_lookup(inputs)[bus_n]
         n_states = PSY.get_n_states(d)
         ix_range = range(injection_start, length = n_states)
         injection_start = injection_start + n_states
@@ -53,8 +54,8 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
             to_bus_number = PSY.get_number(arc.to)
-            bus_ix_from = PSY.get_ext(sys)[LOOKUP][from_bus_number]
-            bus_ix_to = PSY.get_ext(sys)[LOOKUP][to_bus_number]
+            bus_ix_from = get_lookup(inputs)[from_bus_number]
+            bus_ix_to = get_lookup(inputs)[to_bus_number]
             ix_range = range(branches_start, length = n_states)
             branches_start = branches_start + n_states
             x0_branch = initialize_device(br)
@@ -68,7 +69,7 @@ function calculate_initial_conditions!(sys::PSY.System, initial_guess::Vector{Fl
         out,    #output of the function
         dx0,    #derivatives equal to zero
         x,      #states
-        sys,    #Parameters
+        inputs,    #Parameters
         0.0,    #time equals to zero.
     )
     #Refine initial solution
@@ -103,36 +104,37 @@ end
 Returns a Dictionary with the resulting initial conditions of the simulation
 """
 function get_initial_conditions(sim::Simulation)
-    bus_size = get_bus_count(sim.system)
+    system = get_system(sim.simulation_inputs)
+    bus_size = get_bus_count(system)
     V_R = Dict{Int64, Float64}()
     V_I = Dict{Int64, Float64}()
     Vm = Dict{Int64, Float64}()
     θ = Dict{Int64, Float64}()
-    for bus in PSY.get_components(PSY.Bus, sim.system)
+    for bus in PSY.get_components(PSY.Bus, system)
         bus_n = PSY.get_number(bus)
-        bus_ix = PSY.get_ext(sim.system)[LOOKUP][bus_n]
+        bus_ix = get_lookup(sim.simulation_inputs)[bus_n]
         V_R[bus_n] = sim.x0_init[bus_ix]
         V_I[bus_n] = sim.x0_init[bus_ix + bus_size]
         Vm[bus_n] = sqrt(sim.x0_init[bus_ix]^2 + sim.x0_init[bus_ix + bus_size]^2)
         θ[bus_n] = angle(sim.x0_init[bus_ix] + sim.x0_init[bus_ix + bus_size] * 1im)
     end
     results = Dict{String, Any}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
-    for device in PSY.get_components(PSY.DynamicInjection, sim.system)
+    for device in PSY.get_components(PSY.DynamicInjection, system)
         states = PSY.get_states(device)
         name = PSY.get_name(device)
-        global_index = PSY.get_ext(sim.system)[GLOBAL_INDEX][name]
+        global_index = get_global_index(sim.simulation_inputs)[name]
         x0_device = Dict{Symbol, Float64}()
         for (i, s) in enumerate(states)
             x0_device[s] = sim.x0_init[global_index[s]]
         end
         results[name] = x0_device
     end
-    dyn_branches = PSY.get_components(PSY.DynamicBranch, sim.system)
+    dyn_branches = PSY.get_components(PSY.DynamicBranch, system)
     if !isempty(dyn_branches)
         for br in dyn_branches
             states = PSY.get_states(br)
             name = PSY.get_name(br)
-            global_index = PSY.get_ext(sim.system)[GLOBAL_INDEX][name]
+            global_index = get_global_index(sim.simulation_inputs)[name]
             x0_br = Dict{Symbol, Float64}()
             for (i, s) in enumerate(states)
                 x0_br[s] = sim.x0_init[global_index[s]]
