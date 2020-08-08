@@ -54,7 +54,7 @@ get_global_vars(inputs::SimulationInputs) = inputs.global_vars
 get_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
 get_lookup(inputs::SimulationInputs) = inputs.lookup
 get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
-get_aux_array(inputs::SimulationInputs) = inputs.aux_arrays
+get_aux_arrays(inputs::SimulationInputs) = inputs.aux_arrays
 
 get_injection_pointer(inputs::SimulationInputs) =
     get_counts(inputs)[:first_dyn_injection_pointer]
