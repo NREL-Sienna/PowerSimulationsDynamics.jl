@@ -13,9 +13,10 @@ function branch!(
     ix_range::UnitRange{Int64},
     ode_range::UnitRange{Int64},
     branch::PSY.DynamicBranch,
-    sys::PSY.System,
+    inputs::SimulationInputs,
 ) where {T <: Real}
 
+    sys = get_system(inputs)
     #Obtain local device states
     n_states = PSY.get_n_states(branch)
     device_states = @view x[ix_range]
