@@ -471,27 +471,27 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     if sim.reset
         @error("Reset the simulation")
     end
-    _change_vector_type(sim.system)
-    _add_aux_arrays!(sim.system, Real)
-    var_count = PSID.get_variable_count(sim.system)
+    system = get_system(sim.simulation_inputs)
+    _change_vector_type(system)
+    _add_aux_arrays!(sim.simulation_inputs, Real)
+    var_count = get_variable_count(sim.simulation_inputs)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    bus_count = length(PSY.get_components(PSY.Bus, sim.system))
+    bus_count = get_bus_count(sim.simulation_inputs)
     sysf! = (out, x) -> system!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
         x,              #states
-        sim.system,     #Parameters
+        sim.simulation_inputs,     #Parameters
         0.0,            #time equals to zero.
     )
     out = zeros(var_count) #Define a vector of zeros for the output
     x_eval = get(kwargs, :operating_point, sim.x0_init)
     jacobian = ForwardDiff.jacobian(sysf!, out, x_eval)
-    n_buses = length(PSY.get_components(PSY.Bus, sim.system))
     diff_states = collect(trues(var_count))
-    diff_states[1:(2 * n_buses)] .= false
-    for b_ix in get_voltage_bus_ix(sim.system)
+    diff_states[1:(2 * bus_count)] .= false
+    for b_ix in get_voltage_buses_ix(sim.simulation_inputs)
         diff_states[b_ix] = true
-        diff_states[b_ix + n_buses] = true
+        diff_states[b_ix + bus_count] = true
     end
     alg_states = .!diff_states
     fx = @view jacobian[diff_states, diff_states]
@@ -501,7 +501,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     # TODO: Make operation using BLAS!
     reduced_jacobian = fx - fy * inv(gy) * gx
     vals, vect = LinearAlgebra.eigen(reduced_jacobian)
-    sources = collect(PSY.get_components(PSY.Source, sim.system))
+    sources = collect(PSY.get_components(PSY.Source, system))
     if isempty(sources)
         @warn("No Infinite Bus found. Confirm stability directly checking eigenvalues.\nIf all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable.")
         info_evals = "Eigenvalues are:\n"
