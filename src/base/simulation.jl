@@ -71,7 +71,7 @@ function build_simulation(
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
     simulation_inputs = make_simulation_inputs(simulation_system)
-    var_count = get_variable_count(simulation_system)
+    var_count = get_variable_count(simulation_inputs)
 
     flat_start = zeros(var_count)
     bus_count = length(PSY.get_components(PSY.Bus, simulation_system))
@@ -149,11 +149,11 @@ function Simulation(
 end
 
 function _add_aux_arrays!(inputs::SimulationInputs, T)
-    bus_count = get_bus_count(system)
+    bus_count = get_bus_count(inputs)
     get_aux_arrays(inputs)[1] = collect(zeros(T, bus_count))                       #I_injections_r
     get_aux_arrays(inputs)[2] = collect(zeros(T, bus_count))                       #I_injections_i
-    get_aux_arrays(inputs)[3] = collect(zeros(T, get_n_injection_states(system)))  #injection_ode
-    get_aux_arrays(inputs)[4] = collect(zeros(T, get_n_branches_states(system)))   #branches_ode
+    get_aux_arrays(inputs)[3] = collect(zeros(T, get_n_injection_states(inputs)))  #injection_ode
+    get_aux_arrays(inputs)[4] = collect(zeros(T, get_n_branches_states(inputs)))   #branches_ode
     get_aux_arrays(inputs)[5] = collect(zeros(Complex{T}, bus_count))              #I_bus
     get_aux_arrays(inputs)[6] = collect(zeros(T, 2 * bus_count))                   #I_balance
     return
