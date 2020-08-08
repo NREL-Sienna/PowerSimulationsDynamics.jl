@@ -1,10 +1,4 @@
-function Ybus_current_kirchoff(
-    inputs,
-    V_r,
-    V_i,
-    I_injections_r,
-    I_injections_i,
-)
+function Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i)
     I_bus = get_aux_arrays(inputs)[5]
     I_balance = get_aux_arrays(inputs)[6]
     Ybus = get_Ybus(inputs)
