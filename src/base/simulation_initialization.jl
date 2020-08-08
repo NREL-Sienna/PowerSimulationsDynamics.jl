@@ -5,15 +5,15 @@ function calculate_initial_conditions!(inputs::SimulationInputs, initial_guess::
     if !res
         error("Power Flow fail")
     end
-    var_count = get_variable_count(sys)
+    var_count = get_variable_count(inputs)
 
     #Index Setup
-    bus_size = get_bus_count(sys)
+    bus_size = get_bus_count(inputs)
     bus_vars_count = 2 * bus_size
     bus_range = 1:bus_vars_count
-    injection_start = get_injection_pointer(sys)
+    injection_start = get_injection_pointer(inputs)
     injection_count = 1
-    branches_start = get_branches_pointer(sys)
+    branches_start = get_branches_pointer(inputs)
     branches_count = 1
 
     #Update Voltage guess
@@ -105,7 +105,7 @@ Returns a Dictionary with the resulting initial conditions of the simulation
 """
 function get_initial_conditions(sim::Simulation)
     system = get_system(sim.simulation_inputs)
-    bus_size = get_bus_count(system)
+    bus_size = get_bus_count(sim.simulation_inputs)
     V_R = Dict{Int64, Float64}()
     V_I = Dict{Int64, Float64}()
     Vm = Dict{Int64, Float64}()
