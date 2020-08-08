@@ -1,5 +1,4 @@
 mutable struct Simulation
-    system::PSY.System
     reset::Bool
     problem::DiffEqBase.DAEProblem
     perturbations::Vector{<:Perturbation}
@@ -9,6 +8,7 @@ mutable struct Simulation
     callbacks::DiffEqBase.CallbackSet
     solution::Union{Nothing, DiffEqBase.DAESolution}
     simulation_folder::String
+    simulation_inputs::SimulationInputs
     ext::Dict{String, Any}
 end
 
@@ -70,7 +70,7 @@ function build_simulation(
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
-    DAE_vector = _index_dynamic_system!(simulation_system)
+    simulation_inputs = make_simulation_inputs(simulation_system)
     var_count = get_variable_count(simulation_system)
 
     flat_start = zeros(var_count)
@@ -81,24 +81,23 @@ function build_simulation(
     initialize_simulation = get(kwargs, :initialize_simulation, true)
     if initialize_simulation
         @info("Initializing Simulation States")
-        _add_aux_arrays!(simulation_system, Real)
-        initialized = calculate_initial_conditions!(simulation_system, x0_init)
+        _add_aux_arrays!(simulation_inputs, Real)
+        initialized = calculate_initial_conditions!(simulation_inputs, x0_init)
     end
 
     dx0 = zeros(var_count)
     callback_set, tstops = _build_perturbations(simulation_system, perturbations)
-    _add_aux_arrays!(simulation_system, Float64)
+    _add_aux_arrays!(simulation_inputs, Float64)
     prob = DiffEqBase.DAEProblem(
         system!,
         dx0,
         x0_init,
         tspan,
-        simulation_system,
-        differential_vars = DAE_vector;
+        simulation_inputs,
+        differential_vars = get_DAE_vector(simulation_inputs);
         kwargs...,
     )
     return Simulation(
-        simulation_system,
         false,
         prob,
         perturbations,
@@ -108,6 +107,7 @@ function build_simulation(
         callback_set,
         nothing,
         simulation_folder,
+        simulation_inputs,
         Dict{String, Any}(),
     )
 end
@@ -148,17 +148,14 @@ function Simulation(
     )
 end
 
-function _add_aux_arrays!(system::PSY.System, T)
+function _add_aux_arrays!(inputs::SimulationInputs, T)
     bus_count = get_bus_count(system)
-    aux_arrays = Dict(
-        1 => collect(zeros(T, bus_count)),                       #I_injections_r
-        2 => collect(zeros(T, bus_count)),                       #I_injections_i
-        3 => collect(zeros(T, get_n_injection_states(system))),  #injection_ode
-        4 => collect(zeros(T, get_n_branches_states(system))),   #branches_ode
-        5 => collect(zeros(Complex{T}, bus_count)),              #I_bus
-        6 => collect(zeros(T, 2 * bus_count)),                   #I_balance
-    )
-    system.internal.ext[AUX_ARRAYS] = aux_arrays
+    get_aux_array(inputs)[1] = collect(zeros(T, bus_count)),                       #I_injections_r
+    get_aux_array(inputs)[2] = collect(zeros(T, bus_count)),                       #I_injections_i
+    get_aux_array(inputs)[3] = collect(zeros(T, get_n_injection_states(system))),  #injection_ode
+    get_aux_array(inputs)[4] = collect(zeros(T, get_n_branches_states(system))),   #branches_ode
+    get_aux_array(inputs)[5] = collect(zeros(Complex{T}, bus_count)),              #I_bus
+    get_aux_array(inputs)[6] = collect(zeros(T, 2 * bus_count)),                   #I_balance
     return
 end
 
@@ -284,7 +281,7 @@ function _add_states_to_global!(
     return
 end
 
-function _index_dynamic_system!(sys::PSY.System)
+function make_simulation_inputs(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     DAE_vector = collect(falses(n_buses * 2))
     global_state_index = MAPPING_DICT()
@@ -387,7 +384,7 @@ function _index_dynamic_system!(sys::PSY.System)
     @assert total_states == state_space_ix[1] - static_bus_var_count
     @debug total_states
     setdiff!(current_buses_ix, voltage_buses_ix)
-    sys_ext = Dict{String, Any}()
+
     counts = Base.ImmutableDict(
         :total_states => total_states,
         :injection_n_states => injection_n_states,
@@ -398,37 +395,23 @@ function _index_dynamic_system!(sys::PSY.System)
         :bus_count => n_buses,
     )
 
-    sys_ext[PSID_COUNTS] = counts
-    sys_ext[GLOBAL_INDEX] = global_state_index
-    sys_ext[VOLTAGE_BUSES_IX] = voltage_buses_ix
-    sys_ext[CURRENT_BUSES_IX] = current_buses_ix
-    sys_ext[YBUS] = Ybus
-    sys_ext[TOTAL_SHUNTS] = total_shunts
-    sys_ext[GLOBAL_VARS] = global_vars
-    sys_ext[DYN_LINES] = !isempty(PSY.get_components(PSY.DynamicBranch, sys))
-    sys_ext[LOOKUP] = lookup
-    @assert sys_ext[GLOBAL_VARS][:ω_sys_index] != -1
-    sys.internal.ext = sys_ext
-    return DAE_vector
-end
+    inputs = SimulationInputs(;
+    sys = sys,
+    counts = counts,
+    Ybus = Ybus,
+    dyn_lines = !isempty(PSY.get_components(PSY.DynamicBranch, sys)),
+    global_index = global_state_index,
+    voltage_buses_ix = voltage_buses_ix,
+    current_buses_ix = current_buses_ix,
+    total_shunts = total_shunts,
+    global_vars = global_vars,
+    lookup = lookup,
+    DAE_vector = DAE_vector)
 
-get_injection_pointer(sys::PSY.System) =
-    PSY.get_ext(sys)[PSID_COUNTS][:first_dyn_injection_pointer]
-get_branches_pointer(sys::PSY.System) =
-    PSY.get_ext(sys)[PSID_COUNTS][:first_dyn_branch_point]
-get_n_injection_states(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:injection_n_states]
-get_n_branches_states(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:branches_n_states]
-get_system_state_count(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:total_states]
-get_variable_count(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:total_variables]
-get_device_index(sys::PSY.System, device::D) where {D <: PSY.DynamicInjection} =
-    PSY.get_ext(sys)[GLOBAL_INDEX][device.name]
-get_inner_vars(device::PSY.DynamicInjection) = device.ext[INNER_VARS]
-get_ω_sys(sys::PSY.System) = PSY.get_ext(sys)[GLOBAL_VARS][:ω_sys]
-get_current_bus_ix(sys::PSY.System) = PSY.get_ext(sys)[CURRENT_BUSES_IX]
-get_voltage_bus_ix(sys::PSY.System) = PSY.get_ext(sys)[VOLTAGE_BUSES_IX]
-get_total_shunts(sys::PSY.System) = PSY.get_ext(sys)[TOTAL_SHUNTS]
-get_bus_count(sys::PSY.System) = PSY.get_ext(sys)[PSID_COUNTS][:bus_count]
-get_lookup(sys::PSY.System) = PSY.get_ext(sys)[LOOKUP]
+    @assert get_ω_sys(inputs) != -1
+
+    return inputs
+end
 
 function _get_internal_mapping(
     device::PSY.DynamicInjection,
