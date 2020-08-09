@@ -1,7 +1,7 @@
 """
 Validation PSSE/GENSAL:
-This case study defines a three bus system with an infinite bus, GENROU and a load.
-The fault drop the line connecting the infinite bus and GENROU.
+This case study defines a three bus system with an infinite bus, GENSAL and a load.
+The fault drop the line connecting the infinite bus and GENSAL.
 """
 
 ##################################################
@@ -10,28 +10,31 @@ The fault drop the line connecting the infinite bus and GENROU.
 
 #Define dyr files
 
-names = ["GENROU: Normal Saturation", "GENROU: No Saturation", "GENROU: High Saturation"]
+names = ["GENSAL: Normal Saturation",
+         #"GENSAL: No Saturation",
+         #"GENSAL: High Saturation"
+         ]
 
 dyr_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBus_GENROU.dyr"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBus_GENROU_NO_SAT.dyr"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBus_GENROU_HIGH_SAT.dyr"),
+    joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/ThreeBus_GENSAL.dyr"),
+    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/ThreeBus_GENSAL_NO_SAT.dyr"),
+    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/ThreeBus_GENSAL_HIGH_SAT.dyr"),
 ]
 
 csv_files = (
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/TEST_GENROU.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/TEST_GENROU_NO_SAT.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/TEST_GENROU_HIGH_SAT.csv"),
+    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/TEST_GENSAL.csv"),
+    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/TEST_GENSAL_NO_SAT.csv"),
+    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/TEST_GENSAL_HIGH_SAT.csv"),
 )
 
 init_conditions =
-    [test_psse_genrou_init, test_psse_genrou_no_sat_init, test_psse_genrou_high_sat_init]
+    [test_psse_gensal_init, test_psse_gensal_no_sat_init, test_psse_gensal_high_sat_init]
 
-raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBusMulti.raw")
+raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
-function test_genrou(dyr_file, csv_file, init_cond)
-    path = (joinpath(pwd(), "test-psse-genrou"))
+function test_gensal(dyr_file, csv_file, init_cond)
+    path = (joinpath(pwd(), "test-psse-gensal"))
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
@@ -95,13 +98,13 @@ function test_genrou(dyr_file, csv_file, init_cond)
     end
 end
 
-@testset "GENROU Tests" begin
+@testset "GENSAL Tests" begin
     for (ix, name) in enumerate(names)
         @testset "$(name)" begin
             dyr_file = dyr_files[ix]
             csv_file = csv_files[ix]
             init_cond = init_conditions[ix]
-            test_genrou(dyr_file, csv_file, init_cond)
+            test_gensal(dyr_file, csv_file, init_cond)
         end
     end
 end

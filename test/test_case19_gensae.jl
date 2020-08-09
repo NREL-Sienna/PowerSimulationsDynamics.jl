@@ -1,7 +1,7 @@
 """
 Validation PSSE/GENSAE:
-This case study defines a three bus system with an infinite bus, GENROE and a load.
-The fault drop the line connecting the infinite bus and GENROE.
+This case study defines a three bus system with an infinite bus, GENSAE and a load.
+The fault drop the line connecting the infinite bus and GENSAE.
 """
 
 ##################################################
@@ -10,25 +10,27 @@ The fault drop the line connecting the infinite bus and GENROE.
 
 #Define dyr files
 
-names = ["GENROE: Normal Saturation", "GENROE: High Saturation"]
+names = ["GENSAE: Normal Saturation",
+         #"GENSAE: High Saturation"
+         ]
 
 dyr_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/ThreeBus_GENROE.dyr"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/ThreeBus_GENROE_HIGH_SAT.dyr"),
+    joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/ThreeBus_GENSAE.dyr"),
+    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/ThreeBus_GENSAE_HIGH_SAT.dyr"),
 ]
 
 csv_files = (
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/TEST_GENROE.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/TEST_GENROE_HIGH_SAT.csv"),
+    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/TEST_GENSAE.csv"),
+    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/TEST_GENSAE_HIGH_SAT.csv"),
 )
 
-init_conditions = [test_psse_genroe_init, test_psse_genroe_high_sat_init]
+init_conditions = [test_psse_gensae_init, test_psse_gensae_high_sat_init]
 
-raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/ThreeBusMulti.raw")
+raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
-function test_genroe(dyr_file, csv_file, init_cond)
-    path = (joinpath(pwd(), "test-psse-genrou"))
+function test_gensae(dyr_file, csv_file, init_cond)
+    path = (joinpath(pwd(), "test-psse-gensae"))
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
@@ -92,13 +94,13 @@ function test_genroe(dyr_file, csv_file, init_cond)
     end
 end
 
-@testset "GENROE Tests" begin
+@testset "GENSAE Tests" begin
     for (ix, name) in enumerate(names)
         @testset "$(name)" begin
             dyr_file = dyr_files[ix]
             csv_file = csv_files[ix]
             init_cond = init_conditions[ix]
-            test_genroe(dyr_file, csv_file, init_cond)
+            test_gensae(dyr_file, csv_file, init_cond)
         end
     end
 end
