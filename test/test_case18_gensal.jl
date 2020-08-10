@@ -10,10 +10,11 @@ The fault drop the line connecting the infinite bus and GENSAL.
 
 #Define dyr files
 
-names = ["GENSAL: Normal Saturation",
-         #"GENSAL: No Saturation",
-         #"GENSAL: High Saturation"
-         ]
+names = [
+    "GENSAL: Normal Saturation",
+    #"GENSAL: No Saturation",
+    #"GENSAL: High Saturation"
+]
 
 dyr_files = [
     joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/ThreeBus_GENSAL.dyr"),
@@ -21,14 +22,16 @@ dyr_files = [
     #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/ThreeBus_GENSAL_HIGH_SAT.dyr"),
 ]
 
-csv_files = (
-    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/TEST_GENSAL.csv"),
-    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/TEST_GENSAL_NO_SAT.csv"),
-    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/TEST_GENSAL_HIGH_SAT.csv"),
+csv_files = (joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/TEST_GENSAL.csv"),
+#joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/TEST_GENSAL_NO_SAT.csv"),
+#joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/TEST_GENSAL_HIGH_SAT.csv"),
 )
 
-init_conditions =
-    [test_psse_gensal_init, test_psse_gensal_no_sat_init, test_psse_gensal_high_sat_init]
+init_conditions = [
+    test_psse_gensal_init,
+    #test_psse_gensal_no_sat_init,
+    #test_psse_gensal_high_sat_init,
+]
 
 raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)

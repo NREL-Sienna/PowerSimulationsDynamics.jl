@@ -10,21 +10,24 @@ The fault drop the line connecting the infinite bus and GENSAE.
 
 #Define dyr files
 
-names = ["GENSAE: Normal Saturation",
-         #"GENSAE: High Saturation"
-         ]
+names = [
+    "GENSAE: Normal Saturation",
+    #"GENSAE: High Saturation"
+]
 
 dyr_files = [
     joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/ThreeBus_GENSAE.dyr"),
     #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/ThreeBus_GENSAE_HIGH_SAT.dyr"),
 ]
 
-csv_files = (
-    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/TEST_GENSAE.csv"),
-    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/TEST_GENSAE_HIGH_SAT.csv"),
+csv_files = (joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/TEST_GENSAE.csv"),
+#joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/TEST_GENSAE_HIGH_SAT.csv"),
 )
 
-init_conditions = [test_psse_gensae_init, test_psse_gensae_high_sat_init]
+init_conditions = [
+    test_psse_gensae_init,
+    #test_psse_gensae_high_sat_init
+]
 
 raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
