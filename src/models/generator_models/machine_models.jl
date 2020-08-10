@@ -537,7 +537,6 @@ function mdl_machine_ode!(
     return
 end
 
-
 function mdl_machine_ode!(
     device_states,
     output_ode,
