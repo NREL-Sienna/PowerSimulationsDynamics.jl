@@ -587,7 +587,7 @@ function initialize_mach_shaft!(
     I_d0 = imag(I_dq)
     I_q0 = real(I_dq)
     ## Voltages
-    V_dq0 = PSID.ri_dq(δ0) * [real(V); imag(V)]
+    V_dq0 = ri_dq(δ0) * [real(V); imag(V)]
     V_d0 = I_d0 * R + I_q0 * Xq_pp + ψ0pp_q
     V_q0 = -I_d0 * Xd_pp - I_q0 * R + ψ0pp_d
     @assert abs(V_dq0[1] - V_d0) < 1e-6
@@ -664,6 +664,115 @@ function initialize_mach_shaft!(
         machine_states[2] = sol_x0[5] #ed_p
         machine_states[3] = sol_x0[6] #ψ_kd
         machine_states[4] = sol_x0[7] #ψ_kq
+    end
+end
+
+function initialize_mach_shaft!(
+    device_states,
+    device::PSY.DynamicGenerator{M, S, A, TG, P},
+) where {
+    M <: Union{PSY.SalientPoleQuadratic, PSY.SalientPoleExponential},
+    S <: PSY.Shaft,
+    A <: PSY.AVR,
+    TG <: PSY.TurbineGov,
+    P <: PSY.PSS,
+}
+
+    #PowerFlow Data
+    static_gen = PSY.get_static_injector(device)
+    P0 = PSY.get_active_power(static_gen)
+    Q0 = PSY.get_reactive_power(static_gen)
+    Vm = PSY.get_magnitude(PSY.get_bus(static_gen))
+    θ = PSY.get_angle(PSY.get_bus(static_gen))
+    S0 = P0 + Q0 * 1im
+    V_R = Vm * cos(θ)
+    V_I = Vm * sin(θ)
+    V = V_R + V_I * 1im
+    I = conj(S0 / V)
+
+    #Get parameters
+    machine = PSY.get_machine(device)
+    R = PSY.get_R(machine)
+    Td0_p = PSY.get_Td0_p(machine)
+    Td0_pp = PSY.get_Td0_pp(machine)
+    Tq0_pp = PSY.get_Tq0_pp(machine)
+    Xd = PSY.get_Xd(machine)
+    Xq = PSY.get_Xq(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = Xd_pp
+    Xl = PSY.get_Xl(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+
+    ## Initialization ##
+    E = V + (R + Xq * 1im) * I
+    δ0 = angle(E)
+    ## Currents
+    I_d0, I_q0 = ri_dq(δ0) * [real(I); imag(I)]
+    ## Voltages and fluxes
+    V_d0, V_q0 = ri_dq(δ0) * [V_R; V_I]
+    ψ_d0 = V_q0 + R * I_q0
+    ψ_q0 = -V_d0 - R * I_d0
+    ψd_pp0 = V_q0 + I_d0 * Xd_pp + I_q0 * R
+    # States
+    ψq_pp0 = V_d0 - I_q0 * Xq_pp - I_d0 * R
+    eq_p0 = (1 / (γ_d1 + γ_q1)) * (ψd_pp0 + I_d0 * (Xd_p - Xl) * γ_q1)
+    ψ_kd0 = eq_p0 - I_d0 * (Xd_p - Xl)
+    ## External Variables
+    τm0 = ψ_d0 * I_q0 - ψ_q0 * I_d0
+    Se0 = saturation_function(machine, eq_p0)
+    Vf0 = eq_p0 + I_d0 * (Xd - Xd_p) + Se0 * eq_p0
+
+    function f!(out, x)
+        δ = x[1]
+        τm = x[2]
+        Vf = x[3]
+        eq_p = x[4]
+        ψ_kd = x[5]
+        ψq_pp = x[6]
+
+        V_d, V_q = ri_dq(δ0) * [V_R; V_I]
+        I_q = -(1 / (Xq - Xq_pp)) * ψq_pp
+        I_d = (eq_p - ψ_kd) * (1 / (Xd_p - Xl))
+        Se = saturation_function(machine, eq_p)
+        Xad_Ifd = eq_p + (Xd - Xd_p) * I_d + Se * eq_p
+        ψ_d0 = V_q0 + R * I_q0
+        ψ_q0 = -V_d0 - R * I_d0
+        τ_e = ψ_d0 * I_q0 - ψ_q0 * I_d0
+
+        out[1] = τm - τ_e #Mechanical Torque
+        out[2] = P0 - (V_d * I_d + V_q * I_q) #Output Power
+        out[3] = Q0 - (V_q * I_d - V_d * I_q) #Output Reactive Power
+        out[4] = (1.0 / Td0_p) * (Vf - Xad_Ifd) #deq_p/dt
+        out[5] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d) #dψ_kd/dt
+        out[6] = (1.0 / Tq0_pp) * (ψq_pp + (Xq - Xq_pp) * I_q) #ψq_pp/dt
+    end
+    x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0]
+    sol = NLsolve.nlsolve(f!, x0)
+    if !NLsolve.converged(sol)
+        @warn("Initialization in Synch. Machine failed")
+    else
+        sol_x0 = sol.zero
+        #Update terminal voltages
+        get_inner_vars(device)[VR_gen_var] = V_R
+        get_inner_vars(device)[VI_gen_var] = V_I
+        #Update δ and ω of Shaft. Works for every Shaft.
+        shaft_ix = get_local_state_ix(device, S)
+        shaft_states = @view device_states[shaft_ix]
+        shaft_states[1] = sol_x0[1] #δ
+        shaft_states[2] = 1.0 #ω
+        #Update Mechanical and Electrical Torque on Generator
+        get_inner_vars(device)[τe_var] = sol_x0[2]
+        get_inner_vars(device)[τm_var] = sol_x0[2]
+        #Update Vf for AVR in GENSAL Machine.
+        get_inner_vars(device)[Vf_var] = sol_x0[3]
+        #Update states for Machine
+        machine_ix = get_local_state_ix(device, typeof(machine))
+        machine_states = @view device_states[machine_ix]
+        machine_states[1] = sol_x0[4] #eq_p
+        machine_states[3] = sol_x0[5] #ψ_kd
+        machine_states[4] = sol_x0[6] #ψq_pp
     end
 end
 
