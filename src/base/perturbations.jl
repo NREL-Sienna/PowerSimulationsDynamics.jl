@@ -5,8 +5,11 @@ mutable struct ThreePhaseFault <: Perturbation
     Ybus::SparseMatrixCSC{Complex{Float64}, Int64}
 end
 
-get_affect(::PSY.System, pert::ThreePhaseFault) =
-    (integrator) -> PSY.get_ext(integrator.p)["Ybus"] = pert.Ybus
+function get_affect(::PSY.System, pert::ThreePhaseFault)
+    return (integrator) -> begin
+        integrator.p.Ybus = pert.Ybus
+    end
+end
 
 mutable struct ControlReferenceChange <: Perturbation
     time::Float64
