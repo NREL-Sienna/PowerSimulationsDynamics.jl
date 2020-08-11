@@ -9,7 +9,6 @@ mutable struct Simulation
     solution::Union{Nothing, DiffEqBase.DAESolution}
     simulation_folder::String
     simulation_inputs::SimulationInputs
-    ext::Dict{String, Any}
 end
 
 """
