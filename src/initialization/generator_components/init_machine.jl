@@ -704,6 +704,7 @@ function initialize_mach_shaft!(
     Xl = PSY.get_Xl(machine)
     γ_d1 = PSY.get_γ_d1(machine)
     γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
 
     ## Initialization ##
     E = V + (R + Xq * 1im) * I
@@ -716,7 +717,7 @@ function initialize_mach_shaft!(
     ψ_q0 = -V_d0 - R * I_d0
     ψd_pp0 = V_q0 + I_d0 * Xd_pp + I_q0 * R
     # States
-    ψq_pp0 = V_d0 - I_q0 * Xq_pp - I_d0 * R
+    ψq_pp0 = -(V_d0 - I_q0 * Xq_pp - I_d0 * R)
     eq_p0 = (1 / (γ_d1 + γ_q1)) * (ψd_pp0 + I_d0 * (Xd_p - Xl) * γ_q1)
     ψ_kd0 = eq_p0 - I_d0 * (Xd_p - Xl)
     ## External Variables
@@ -732,21 +733,26 @@ function initialize_mach_shaft!(
         ψ_kd = x[5]
         ψq_pp = x[6]
 
-        V_d, V_q = ri_dq(δ0) * [V_R; V_I]
-        I_q = -(1 / (Xq - Xq_pp)) * ψq_pp
-        I_d = (eq_p - ψ_kd) * (1 / (Xd_p - Xl))
+        V_d, V_q = ri_dq(δ) * [V_R; V_I]
+        #Additional Fluxes
+        ψd_pp = γ_d1 * eq_p + γ_q1 * ψ_kd
+
+        #Currents
+        I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d + ψq_pp) + Xd_pp * (ψd_pp - V_q))
+        I_q = (1.0 / (R^2 + Xd_pp^2)) * (Xd_pp * (V_d + ψq_pp) + R * (ψd_pp - V_q))
         Se = saturation_function(machine, eq_p)
-        Xad_Ifd = eq_p + (Xd - Xd_p) * I_d + Se * eq_p
-        ψ_d0 = V_q0 + R * I_q0
-        ψ_q0 = -V_d0 - R * I_d0
-        τ_e = ψ_d0 * I_q0 - ψ_q0 * I_d0
+        Xad_Ifd =
+            eq_p +
+            Se * eq_p +
+            (Xd - Xd_p) * (I_d + γ_d2 * (eq_p - ψ_kd - (Xd_p - Xl) * I_d))
+        τ_e = I_d * (V_d + I_d * R) + I_q * (V_q + I_q * R)
 
         out[1] = τm - τ_e #Mechanical Torque
         out[2] = P0 - (V_d * I_d + V_q * I_q) #Output Power
         out[3] = Q0 - (V_q * I_d - V_d * I_q) #Output Reactive Power
         out[4] = (1.0 / Td0_p) * (Vf - Xad_Ifd) #deq_p/dt
         out[5] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d) #dψ_kd/dt
-        out[6] = (1.0 / Tq0_pp) * (ψq_pp + (Xq - Xq_pp) * I_q) #ψq_pp/dt
+        out[6] = (1.0 / Tq0_pp) * (-ψq_pp - (Xq - Xq_pp) * I_q) #dψq_pp/dt
     end
     x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0]
     sol = NLsolve.nlsolve(f!, x0)
@@ -771,8 +777,8 @@ function initialize_mach_shaft!(
         machine_ix = get_local_state_ix(device, typeof(machine))
         machine_states = @view device_states[machine_ix]
         machine_states[1] = sol_x0[4] #eq_p
-        machine_states[3] = sol_x0[5] #ψ_kd
-        machine_states[4] = sol_x0[6] #ψq_pp
+        machine_states[2] = sol_x0[5] #ψ_kd
+        machine_states[3] = sol_x0[6] #ψq_pp
     end
 end
 
