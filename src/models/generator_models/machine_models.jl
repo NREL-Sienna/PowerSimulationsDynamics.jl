@@ -544,14 +544,8 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{M, S, A, TG, P},
-) where {
-    M <: Union{PSY.SalientPoleQuadratic, PSY.SalientPoleExponential},
-    S <: PSY.Shaft,
-    A <: PSY.AVR,
-    TG <: PSY.TurbineGov,
-    P <: PSY.PSS,
-}
+    device::PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
     machine = PSY.get_machine(device)
@@ -607,6 +601,87 @@ function mdl_machine_ode!(
     output_ode[local_ix[1]] = (1.0 / Td0_p) * (Vf - Xad_Ifd)                        #2.34b eq_p
     output_ode[local_ix[2]] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d)   #2.34c ψ_kd
     output_ode[local_ix[3]] = (1.0 / Tq0_pp) * (-ψq_pp - (Xq - Xq_pp) * I_q)        #2.35b ψq_pp
+
+    #Update inner_vars
+    get_inner_vars(device)[τe_var] = τ_e
+
+    #Compute current from the generator to the grid
+    I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
+
+    #Update current
+    current_r[1] += I_RI[1]
+    current_i[1] += I_RI[2]
+
+    return
+end
+
+function mdl_machine_ode!(
+    device_states,
+    output_ode,
+    current_r,
+    current_i,
+    Sbase::Float64,
+    f0::Float64,
+    device::PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+
+    #Obtain indices for component w/r to device
+    machine = PSY.get_machine(device)
+    local_ix = get_local_state_ix(device, typeof(machine))
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    eq_p = internal_states[1]
+    ψ_kd = internal_states[2]
+    ψq_pp = internal_states[3]
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(device, typeof(machine))
+    δ = device_states[external_ix[1]]
+    ω = device_states[external_ix[2]]
+
+    #Obtain inner variables for component
+    V_tR = get_inner_vars(device)[VR_gen_var]
+    V_tI = get_inner_vars(device)[VI_gen_var]
+    Vf = get_inner_vars(device)[Vf_var] #E_fd: Field voltage
+
+    #Get parameters
+    R = PSY.get_R(machine)
+    Td0_p = PSY.get_Td0_p(machine)
+    Td0_pp = PSY.get_Td0_pp(machine)
+    Tq0_pp = PSY.get_Tq0_pp(machine)
+    Xd = PSY.get_Xd(machine)
+    Xq = PSY.get_Xq(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = Xd_pp
+    Xl = PSY.get_Xl(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+    γ_qd = (Xq - Xl) / (Xd - Xl)
+    basepower = PSY.get_base_power(device)
+
+    #RI to dq transformation
+    V_d, V_q = ri_dq(δ) * [V_tR; V_tI]
+
+    #Additional Fluxes
+    ψd_pp = γ_d1 * eq_p + γ_q1 * ψ_kd
+    ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+
+    #Currents
+    I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d - ψq_pp) + Xq_pp * (-V_q + ψd_pp))
+    I_q = (1.0 / (R^2 + Xd_pp^2)) * (Xd_pp * (V_d - ψq_pp) + R * (-V_q + ψd_pp))
+    Se = saturation_function(machine, ψ_pp)
+    Xad_Ifd =
+        eq_p + Se * ψd_pp + (Xd - Xd_p) * (I_d + γ_d2 * (eq_p - ψ_kd - (Xd_p - Xl) * I_d))
+    τ_e = I_d * (V_d + I_d * R) + I_q * (V_q + I_q * R)
+
+    #Compute ODEs
+    output_ode[local_ix[1]] = (1.0 / Td0_p) * (Vf - Xad_Ifd)                        #2.34b eq_p
+    output_ode[local_ix[2]] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d)   #2.34c ψ_kd
+    output_ode[local_ix[3]] =
+        (1.0 / Tq0_pp) * (-ψq_pp + (Xq - Xq_pp) * I_q - Se * γ_qd * ψq_pp)        #2.35b ψq_pp
 
     #Update inner_vars
     get_inner_vars(device)[τe_var] = τ_e
