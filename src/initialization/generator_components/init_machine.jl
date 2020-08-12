@@ -599,6 +599,8 @@ function initialize_mach_shaft!(
     ed_p0 = I_q0 * (Xq - Xq_p) - Se0 * γ_qd * ψq_pp0
     ψ_kd0 = -I_d0 * (Xd - Xl) - Se0 * ψd_pp0 + Vf0
     ψ_kq0 = I_q0 * (Xq - Xl) - Se0 * γ_qd * ψq_pp0
+    #Auxiliar Variables
+    Xad_Ifd0 = ed_p0 + (Xq - Xq_p) * (γ_q2 * ed_p0 - γ_q2 * ψ_kq0 - γ_q1 * I_q0) + Se0 * ψq_pp0 * γ_qd
 
     function f!(out, x)
         δ = x[1]
@@ -608,6 +610,7 @@ function initialize_mach_shaft!(
         ed_p = x[5]
         ψ_kd = x[6]
         ψ_kq = x[7]
+        Xad_Ifd_aux = x[8]
 
         V_dq = ri_dq(δ) * [V_R; V_I]
         ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
@@ -634,8 +637,9 @@ function initialize_mach_shaft!(
         out[5] = (1.0 / Tq0_p) * (-Xaq_I1q) #ded_p/dt
         out[6] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d) #dψ_kd/dt
         out[7] = (1.0 / Tq0_pp) * (-ψ_kq + ed_p + (Xq_p - Xl) * I_q) #deq_pp/dt
+        out[8] = Xad_Ifd_aux - Xad_Ifd
     end
-    x0 = [δ0, τm0, Vf0, eq_p0, ed_p0, ψ_kd0, ψ_kq0]
+    x0 = [δ0, τm0, Vf0, eq_p0, ed_p0, ψ_kd0, ψ_kq0, Xad_Ifd0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in Synch. Machine failed")
@@ -654,6 +658,8 @@ function initialize_mach_shaft!(
         get_inner_vars(device)[τm_var] = sol_x0[2]
         #Update Vf for AVR in GENROU Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
+        #Update Xad_Ifd for AVR in GENROU Machine
+        get_inner_vars(device)[Xad_Ifd_var] = sol_x0[8]
         #Update states for Machine
         machine_ix = get_local_state_ix(device, typeof(machine))
         machine_states = @view device_states[machine_ix]
@@ -715,6 +721,7 @@ function initialize_mach_shaft!(
     τm0 = ψ_d0 * I_q0 - ψ_q0 * I_d0
     Se0 = saturation_function(machine, eq_p0)
     Vf0 = eq_p0 + I_d0 * (Xd - Xd_p) + Se0 * eq_p0
+    Xad_Ifd0 = eq_p0 + Se0 * eq_p0 + (Xd - Xd_p) * (I_d0 + γ_d2 * (eq_p0 - ψ_kd0 - (Xd_p - Xl) * I_d0))
 
     function f!(out, x)
         δ = x[1]
@@ -723,6 +730,7 @@ function initialize_mach_shaft!(
         eq_p = x[4]
         ψ_kd = x[5]
         ψq_pp = x[6]
+        Xad_Ifd_aux = x[7]
 
         V_d, V_q = ri_dq(δ) * [V_R; V_I]
         #Additional Fluxes
@@ -744,8 +752,9 @@ function initialize_mach_shaft!(
         out[4] = (1.0 / Td0_p) * (Vf - Xad_Ifd) #deq_p/dt
         out[5] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d) #dψ_kd/dt
         out[6] = (1.0 / Tq0_pp) * (-ψq_pp - (Xq - Xq_pp) * I_q) #dψq_pp/dt
+        out[7] = Xad_Ifd_aux - Xad_Ifd
     end
-    x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0]
+    x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0, Xad_Ifd0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in Synch. Machine failed")
@@ -764,6 +773,8 @@ function initialize_mach_shaft!(
         get_inner_vars(device)[τm_var] = sol_x0[2]
         #Update Vf for AVR in GENSAL Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
+        #Update Xad_Ifd for AVR in GENSAL Machine
+        get_inner_vars(device)[Xad_Ifd_var] = sol_x0[7]
         #Update states for Machine
         machine_ix = get_local_state_ix(device, typeof(machine))
         machine_states = @view device_states[machine_ix]
@@ -836,6 +847,7 @@ function initialize_mach_shaft!(
     ## External Variables
     τm0 = ψ_d0 * I_q0 - ψ_q0 * I_d0
     Vf0 = eq_p0 + I_d0 * (Xd - Xd_p) + ψd_pp0 * Se0
+    Xad_Ifd0 = eq_p0 + Se0 * ψd_pp0 + (Xd - Xd_p) * (I_d0 + γ_d2 * (eq_p0 - ψ_kd0 - (Xd_p - Xl) * I_d0))
 
     function f!(out, x)
         δ = x[1]
@@ -844,6 +856,7 @@ function initialize_mach_shaft!(
         eq_p = x[4]
         ψ_kd = x[5]
         ψq_pp = x[6]
+        Xad_Ifd_aux = x[7]
 
         V_d, V_q = ri_dq(δ) * [V_R; V_I]
         #Additional Fluxes
@@ -865,8 +878,9 @@ function initialize_mach_shaft!(
         out[4] = (1.0 / Td0_p) * (Vf - Xad_Ifd) #deq_p/dt
         out[5] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d) #dψ_kd/dt
         out[6] = (1.0 / Tq0_pp) * (-ψq_pp + (Xq - Xq_pp) * I_q - Se * γ_qd * ψq_pp) #dψq_pp/dt
+        out[7] = Xad_Ifd_aux - Xad_Ifd
     end
-    x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0]
+    x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0, Xad_Ifd0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in Synch. Machine failed")
@@ -885,6 +899,8 @@ function initialize_mach_shaft!(
         get_inner_vars(device)[τm_var] = sol_x0[2]
         #Update Vf for AVR in GENSAL Machine.
         get_inner_vars(device)[Vf_var] = sol_x0[3]
+        #Update Xad_Ifd for AVR in GENSAL Machine
+        get_inner_vars(device)[Xad_Ifd_var] = sol_x0[7]
         #Update states for Machine
         machine_ix = get_local_state_ix(device, typeof(machine))
         machine_states = @view device_states[machine_ix]
