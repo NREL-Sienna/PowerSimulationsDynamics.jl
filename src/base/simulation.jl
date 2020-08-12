@@ -192,7 +192,7 @@ function _attach_inner_vars!(
     device::PSY.DynamicGenerator,
     ::Type{T} = Real,
 ) where {T <: Real}
-    device.ext[INNER_VARS] = zeros(T, 8)
+    device.ext[INNER_VARS] = zeros(T, 9)
     return
 end
 
