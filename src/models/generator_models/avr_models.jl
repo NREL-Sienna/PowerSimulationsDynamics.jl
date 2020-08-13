@@ -174,3 +174,83 @@ function mdl_avr_ode!(
 
     return
 end
+
+"""
+Model of Excitation System AC1A in Julia.
+Refer to PSSE diagram block for details.
+"""
+function mdl_avr_ode!(
+    device_states,
+    output_ode,
+    device::PSY.DynamicGenerator{M, S, PSY.AC1A, TG, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+
+    #Obtain references
+    V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
+
+    #Obtain avr
+    avr = PSY.get_avr(device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(device, typeof(avr))
+
+    #Define inner states for component
+    internal_states = @view device_states[local_ix]
+    Vm = internal_states[1]
+    Vr1 = internal_states[2]
+    Vr2 = internal_states[3]
+    Ve = internal_states[4]
+    Vr3 = internal_states[5]
+
+    #Define external states for device
+    V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
+    Vs = get_inner_vars(device)[V_pss_var]
+    Xad_Ifd = get_inner_vars(device)[Xad_Ifd_var]
+
+    #Get parameters
+    Tr = PSY.get_Tr(avr)
+    Tb = PSY.get_Tb(avr)
+    Tc = PSY.get_Tc(avr)
+    Ka = PSY.get_Ka(avr)
+    Ta = PSY.get_Ta(avr)
+    Va_min, Va_max = PSY.get_Va_lim(avr)
+    Te = PSY.get_Te(avr)
+    Kf = PSY.get_Kf(avr)
+    Tf = PSY.get_Tf(avr)
+    Kc = PSY.get_Kc(avr)
+    Kd = PSY.get_Kd(avr)
+    Ke = PSY.get_Ke(avr)
+    E1, E2 = PSY.get_E_sat(avr)
+    SE1, SE2 = PSY.get_Se(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    #Obtain saturation
+    #Se_Vf = saturation_function(Vm)
+
+    #Compute auxiliary parameters
+    I_N = Kc * Xad_Ifd / Ve
+    V_FE = Kd * Xad_Ifd + Ke * Ve
+    V_F = Vr3 + (Kf / Tf) * V_FE
+    V_in = V_ref - Vm - V_F
+    V_out = Vr1 + (Tc / Tb) * V_in
+    Vf = Ve * rectifier_function(I_N)
+    V_R = Vr2
+
+    #Set anti-windup for Vr2. 
+    #if Vr2 > Vr_max
+    #    V_R = Vr_max
+    #elseif Vr2 < Vr_min
+    #    V_R = Vr_min
+    #end
+
+    #Compute 4 States AVR ODE:
+    output_ode[local_ix[1]] = (1.0 / Tr) * (V_th - Vm) #dVm/dt
+    output_ode[local_ix[2]] = (1.0 / Tb) * (V_in * (1 - Tc / Tb) - Vr1) #dVr1/dt
+    output_ode[local_ix[3]] = (1.0 / Ta) * (Ka * V_out - Vr2) #dVr2/dt
+    output_ode[local_ix[4]] = (1.0 / Tf) * (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
+    output_ode[local_ix[5]] = (1.0 / Te) * (V_R - V_FE) #dVe/dt
+
+    #Update inner_vars
+    get_inner_vars(device)[Vf_var] = Vf
+
+    return
+end
