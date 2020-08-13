@@ -600,7 +600,10 @@ function initialize_mach_shaft!(
     ψ_kd0 = -I_d0 * (Xd - Xl) - Se0 * ψd_pp0 + Vf0
     ψ_kq0 = I_q0 * (Xq - Xl) - Se0 * γ_qd * ψq_pp0
     #Auxiliar Variables
-    Xad_Ifd0 = ed_p0 + (Xq - Xq_p) * (γ_q2 * ed_p0 - γ_q2 * ψ_kq0 - γ_q1 * I_q0) + Se0 * ψq_pp0 * γ_qd
+    Xad_Ifd0 =
+        ed_p0 +
+        (Xq - Xq_p) * (γ_q2 * ed_p0 - γ_q2 * ψ_kq0 - γ_q1 * I_q0) +
+        Se0 * ψq_pp0 * γ_qd
 
     function f!(out, x)
         δ = x[1]
@@ -721,7 +724,10 @@ function initialize_mach_shaft!(
     τm0 = ψ_d0 * I_q0 - ψ_q0 * I_d0
     Se0 = saturation_function(machine, eq_p0)
     Vf0 = eq_p0 + I_d0 * (Xd - Xd_p) + Se0 * eq_p0
-    Xad_Ifd0 = eq_p0 + Se0 * eq_p0 + (Xd - Xd_p) * (I_d0 + γ_d2 * (eq_p0 - ψ_kd0 - (Xd_p - Xl) * I_d0))
+    Xad_Ifd0 =
+        eq_p0 +
+        Se0 * eq_p0 +
+        (Xd - Xd_p) * (I_d0 + γ_d2 * (eq_p0 - ψ_kd0 - (Xd_p - Xl) * I_d0))
 
     function f!(out, x)
         δ = x[1]
@@ -847,7 +853,10 @@ function initialize_mach_shaft!(
     ## External Variables
     τm0 = ψ_d0 * I_q0 - ψ_q0 * I_d0
     Vf0 = eq_p0 + I_d0 * (Xd - Xd_p) + ψd_pp0 * Se0
-    Xad_Ifd0 = eq_p0 + Se0 * ψd_pp0 + (Xd - Xd_p) * (I_d0 + γ_d2 * (eq_p0 - ψ_kd0 - (Xd_p - Xl) * I_d0))
+    Xad_Ifd0 =
+        eq_p0 +
+        Se0 * ψd_pp0 +
+        (Xd - Xd_p) * (I_d0 + γ_d2 * (eq_p0 - ψ_kd0 - (Xd_p - Xl) * I_d0))
 
     function f!(out, x)
         δ = x[1]

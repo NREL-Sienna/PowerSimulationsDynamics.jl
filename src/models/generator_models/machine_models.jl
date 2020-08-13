@@ -526,6 +526,7 @@ function mdl_machine_ode!(
 
     #Update inner_vars
     get_inner_vars(device)[τe_var] = τ_e
+    get_inner_vars(device)[Xad_Ifd_var] = Xad_Ifd
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
@@ -604,6 +605,7 @@ function mdl_machine_ode!(
 
     #Update inner_vars
     get_inner_vars(device)[τe_var] = τ_e
+    get_inner_vars(device)[Xad_Ifd_var] = Xad_Ifd
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
@@ -685,6 +687,7 @@ function mdl_machine_ode!(
 
     #Update inner_vars
     get_inner_vars(device)[τe_var] = τ_e
+    get_inner_vars(device)[Xad_Ifd_var] = Xad_Ifd
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
