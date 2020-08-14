@@ -22,8 +22,8 @@ function saturation_function(
     return Sat_B * x^Sat_A
 end
 
-function rectifier_function(I::Float64)
-    if I < 0.0
+function rectifier_function(I)
+    if I <= 0.0
         return 1.0
     elseif I <= 0.433
         return 1 - 0.577 * I
