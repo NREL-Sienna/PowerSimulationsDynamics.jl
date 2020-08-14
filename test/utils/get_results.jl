@@ -52,3 +52,8 @@ function get_csv_delta(str::AbstractString)
     M = readdlm(str, ',')
     return M[:, 1], M[:, 2]
 end
+
+function get_csv_data(str::AbstractString)
+    M = readdlm(str, ',')
+    return M
+end
