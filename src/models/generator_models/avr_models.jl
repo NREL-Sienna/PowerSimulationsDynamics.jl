@@ -213,7 +213,7 @@ function mdl_avr_ode!(
     Tc = PSY.get_Tc(avr)
     Ka = PSY.get_Ka(avr)
     Ta = PSY.get_Ta(avr)
-    Va_min, Va_max = PSY.get_Va_lim(avr)
+    #Va_min, Va_max = PSY.get_Va_lim(avr) #Not used without UEL or OEL
     Te = PSY.get_Te(avr)
     Kf = PSY.get_Kf(avr)
     Tf = PSY.get_Tf(avr)
@@ -236,18 +236,18 @@ function mdl_avr_ode!(
     V_R = Vr2
 
     #Set anti-windup for Vr2. 
-    #if Vr2 > Vr_max
-    #    V_R = Vr_max
-    #elseif Vr2 < Vr_min
-    #    V_R = Vr_min
-    #end
+    if Vr2 > Vr_max
+        V_R = Vr_max
+    elseif Vr2 < Vr_min
+        V_R = Vr_min
+    end
 
     #Compute 4 States AVR ODE:
     output_ode[local_ix[1]] = (1.0 / Tr) * (V_th - Vm) #dVm/dt
     output_ode[local_ix[2]] = (1.0 / Tb) * (V_in * (1 - Tc / Tb) - Vr1) #dVr1/dt
     output_ode[local_ix[3]] = (1.0 / Ta) * (Ka * V_out - Vr2) #dVr2/dt
-    output_ode[local_ix[4]] = (1.0 / Tf) * (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
-    output_ode[local_ix[5]] = (1.0 / Te) * (V_R - V_FE) #dVe/dt
+    output_ode[local_ix[4]] = (1.0 / Te) * (V_R - V_FE) #dVe/dt
+    output_ode[local_ix[5]] = (1.0 / Tf) * (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
 
     #Update inner_vars
     get_inner_vars(device)[Vf_var] = Vf
