@@ -167,6 +167,7 @@ function initialize_avr!(
     #Obtain saturation
     #Se_Vf = saturation_function(Vm)
 
+    #Solve Ve from rectifier function
     function f_Ve!(out, x)
         V_e0 = x[1]
         I_N0 = Kc * Xad_Ifd0 / V_e0
@@ -176,7 +177,7 @@ function initialize_avr!(
     x0 = [1.0]
     sol = NLsolve.nlsolve(f_Ve!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in V_e0 failed")
+        @error("Initialization in V_e0 failed")
     else
         sol_x0 = sol.zero
         V_e0 = sol_x0[1]
@@ -189,10 +190,11 @@ function initialize_avr!(
         @error("Regulator Voltage V_R = $(V_r20) outside the limits")
     end
     V_r30 = -(Kf / Tf) * V_FE0
-    V_F0 = 0.0
     V_r10 = (V_r20 / Ka) - Tc * V_r20 / (Ka * Tb)
     V_ref0 = Vm0 + V_r20 / Ka
 
+    #States of AC1A are Vm, Vr1, Vr2, Ve, Vr3
+    #To solve V_ref, Vr1, Vr2, Ve, Vr3
     function f!(out, x)
         V_ref = x[1]
         Vr1 = x[2]
@@ -200,6 +202,7 @@ function initialize_avr!(
         Ve = x[4]
         Vr3 = x[5]
 
+        #Compute auxiliary variables
         I_N = Kc * Xad_Ifd0 / Ve
         V_FE = Kd * Xad_Ifd0 + Ke * Ve
         V_F = Vr3 + (Kf / Tf) * V_FE
@@ -209,15 +212,15 @@ function initialize_avr!(
         out[1] = (1.0 / Tb) * (V_in * (1 - Tc / Tb) - Vr1) #dVr1/dt
         out[2] = (1.0 / Ta) * (Ka * V_out - Vr2) #dVr2/dt
         out[3] = (1.0 / Tf) * (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
-        out[4] = (1.0 / Te) * (Vr2 - V_FE)
+        out[4] = (1.0 / Te) * (Vr2 - V_FE) #dVe/dt
         out[5] = Vf0 - Ve * rectifier_function(I_N)
     end
-    @show x0 = [V_ref0, V_r10, V_r20, V_e0, V_r30]
+    x0 = [V_ref0, V_r10, V_r20, V_e0, V_r30]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in AVR failed")
     else
-        @show sol_x0 = sol.zero
+        sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
         device.ext[CONTROL_REFS][V_ref_index] = sol_x0[1]
