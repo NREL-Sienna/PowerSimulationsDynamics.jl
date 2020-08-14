@@ -183,8 +183,8 @@ function initialize_avr!(
         V_e0 = sol_x0[1]
         I_N0 = Kc * Xad_Ifd0 / V_e0
     end
-    Se0 = 0.0 #To do saturation function
-    V_FE0 = Kd * Xad_Ifd0 + Ke * V_e0
+    Se0 = saturation_function(avr, V_e0) #To do saturation function
+    V_FE0 = Kd * Xad_Ifd0 + Ke * V_e0 + Se0 * V_e0
     V_r20 = V_FE0
     if (V_r20 > Vr_max) || (V_r20 < Vr_min)
         @error("Regulator Voltage V_R = $(V_r20) outside the limits")
@@ -204,7 +204,8 @@ function initialize_avr!(
 
         #Compute auxiliary variables
         I_N = Kc * Xad_Ifd0 / Ve
-        V_FE = Kd * Xad_Ifd0 + Ke * Ve
+        Se = saturation_function(avr, Ve)
+        V_FE = Kd * Xad_Ifd0 + Ke * Ve + Ve * Se
         V_F = Vr3 + (Kf / Tf) * V_FE
         V_in = V_ref - Vm0 - V_F
         V_out = Vr1 + (Tc / Tb) * V_in

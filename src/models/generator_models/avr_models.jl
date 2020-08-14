@@ -224,11 +224,11 @@ function mdl_avr_ode!(
     SE1, SE2 = PSY.get_Se(avr)
     Vr_min, Vr_max = PSY.get_Vr_lim(avr)
     #Obtain saturation
-    #Se_Vf = saturation_function(Vm)
+    Se = saturation_function(avr, Ve)
 
     #Compute auxiliary parameters
     I_N = Kc * Xad_Ifd / Ve
-    V_FE = Kd * Xad_Ifd + Ke * Ve
+    V_FE = Kd * Xad_Ifd + Ke * Ve + Se * Ve
     V_F = Vr3 + (Kf / Tf) * V_FE
     V_in = V_ref - Vm - V_F
     V_out = Vr1 + (Tc / Tb) * V_in
