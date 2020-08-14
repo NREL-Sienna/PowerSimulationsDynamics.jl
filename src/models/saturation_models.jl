@@ -36,15 +36,12 @@ function rectifier_function(I::Float64)
     end
 end
 
-function saturation_function(
-    avr::PSY.AC1A,
-    x,
-)
+function saturation_function(avr::PSY.AC1A, x)
     Sat_A, Sat_B = PSY.get_saturation_coeffs(avr)
     return Sat_B * (x - Sat_A)^2 / x
 end
 
-function rectifier_function(I::T) where T
+function rectifier_function(I::T) where {T}
     if I <= 0.0
         return one(T)
     elseif I <= 0.433
@@ -57,4 +54,3 @@ function rectifier_function(I::T) where T
         return zero(T)
     end
 end
-
