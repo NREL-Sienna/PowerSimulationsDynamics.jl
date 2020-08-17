@@ -42,11 +42,6 @@ function mdl_avr_ode!(
     return
 end
 
-"""
-Model of AVR Type I in Julia.
-Refer to Power System Modelling and Scripting by F. Milano for the equations
-"""
-
 function mdl_avr_ode!(
     device_states,
     output_ode,
@@ -106,11 +101,6 @@ function mdl_avr_ode!(
 
     return
 end
-
-"""
-Model of AVR Type II in Julia.
-Refer to Power System Modelling and Scripting by F. Milano for the equations
-"""
 
 function mdl_avr_ode!(
     device_states,
@@ -175,10 +165,6 @@ function mdl_avr_ode!(
     return
 end
 
-"""
-Model of Excitation System AC1A in Julia.
-Refer to PSSE diagram block for details.
-"""
 function mdl_avr_ode!(
     device_states,
     output_ode,
@@ -235,7 +221,7 @@ function mdl_avr_ode!(
     Vf = Ve * rectifier_function(I_N)
     V_R = Vr2
 
-    #Set anti-windup for Vr2. 
+    #Set anti-windup for Vr2.
     if Vr2 > Vr_max
         V_R = Vr_max
     elseif Vr2 < Vr_min
