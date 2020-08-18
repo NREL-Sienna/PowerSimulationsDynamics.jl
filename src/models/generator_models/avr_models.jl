@@ -168,7 +168,7 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M, S, PSY.AC1A, TG, P},
+    device::PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
