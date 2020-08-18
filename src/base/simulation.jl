@@ -407,6 +407,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     reset_simulation = get(kwargs, :reset_simulation, false)
     _simulation_pre_step(sim, reset_simulation)
     _change_vector_type!(sim.simulation_inputs, Real)
+    system = get_system(sim.simulation_inputs)
     var_count = get_variable_count(sim.simulation_inputs)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     bus_count = get_bus_count(sim.simulation_inputs)
