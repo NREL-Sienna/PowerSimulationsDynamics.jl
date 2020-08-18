@@ -13,7 +13,8 @@ mutable struct Simulation
     file_level::Base.CoreLogging.LogLevel
 end
 
-function Simulation(
+function Simulation(;
+    simulation_inputs,
     perturbations = Vector{Perturbation}(),
     simulation_folder::String = "",
     console_level = Logging.Warn,
@@ -29,7 +30,7 @@ function Simulation(
         DiffEqBase.CallbackSet(),
         nothing,
         simulation_folder,
-        SimulationInputs(),
+        simulation_inputs,
         console_level,
         file_level,
     )
@@ -73,6 +74,7 @@ function Simulation!(
     check_folder(simulation_folder)
     # Instantiates the Simulation object
     sim = Simulation(
+        simulation_inputs = SimulationInputs(sys = system, tspan = tspan),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
@@ -81,7 +83,7 @@ function Simulation!(
     logger = configure_logging(sim, "w")
     try
         Logging.with_logger(logger) do
-            build_simulation!(sim, system, tspan; kwargs...)
+            build_simulation!(sim; kwargs...)
         end
     finally
         close(logger)
@@ -111,6 +113,7 @@ function Simulation(
     simulation_system = deepcopy(system)
     # Instantiates the Simulation object
     sim = Simulation(
+        simulation_inputs = SimulationInputs(sys = simulation_system, tspan = tspan),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
@@ -119,7 +122,7 @@ function Simulation(
     logger = configure_logging(sim, "w")
     try
         Logging.with_logger(logger) do
-            build_simulation!(sim, simulation_system, tspan; kwargs...)
+            build_simulation!(sim; kwargs...)
         end
     finally
         close(logger)
@@ -152,55 +155,44 @@ end
 
 function build_simulation!(
     sim::Simulation,
-    simulation_system::PSY.System,
-    tspan::NTuple{2, Float64},
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
     kwargs...,
 )
+    simulation_system = get_system(sim.inputs)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
-    simulation_inputs = SimulationInputs(simulation_system, tspan)
+    build!(sim.inputs)
     @debug "Simulation Inputs Created"
     var_count = get_variable_count(simulation_inputs)
 
     flat_start = zeros(var_count)
     bus_count = length(PSY.get_components(PSY.Bus, simulation_system))
     flat_start[1:bus_count] .= 1.0
-    x0_init = get(kwargs, :initial_guess, flat_start)
+    sim.x0_init = get(kwargs, :initial_guess, flat_start)
 
     initialize_simulation = get(kwargs, :initialize_simulation, true)
     if initialize_simulation
         @info("Initializing Simulation States")
         _add_aux_arrays!(simulation_inputs, Float)
-        initialized = calculate_initial_conditions!(simulation_inputs, x0_init)
+        sim.initialized = calculate_initial_conditions!(simulation_inputs, x0_init)
     end
 
     dx0 = zeros(var_count)
-    callback_set, tstops = _build_perturbations(simulation_system, perturbations)
+    sim.callback_set, sim.tstops = _build_perturbations(simulation_system, perturbations)
     _add_aux_arrays!(simulation_inputs, Float64)
-    prob = DiffEqBase.DAEProblem(
+    sim.prob = DiffEqBase.DAEProblem(
         system!,
         dx0,
         x0_init,
-        tspan,
+        get_tspan(sim.inputs),
         simulation_inputs,
         differential_vars = get_DAE_vector(simulation_inputs);
         kwargs...,
     )
-    sim(
-        BUILT,
-        prob,
-        perturbations,
-        x0_init,
-        initialized,
-        tstops,
-        callback_set,
-        nothing,
-        simulation_folder,
-        simulation_inputs,
-    )
+
+    sim.status = BUILT
     @info "Completed Build Successfully. Simulations status = $(sim.status)"
     return nothing
 end
@@ -389,7 +381,7 @@ function run_simulation!(sim::Simulation, solver; kwargs...)
     return
 end
 
-function _change_vector_type!(inputs::SimulationInputs, ::Type{T}) where T <: Number
+function _change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
     sys = get_system(inputs)
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         _attach_inner_vars!(d, T)
