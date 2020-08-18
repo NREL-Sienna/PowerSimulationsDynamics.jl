@@ -1,10 +1,10 @@
 function calculate_initial_conditions!(
+    sim::Simulation,
     inputs::SimulationInputs,
-    initial_guess::Vector{Float64},
 )
     @debug "Start state intialization routine"
     sys = get_system(inputs)
-
+    initial_guess = sim.x0_init
     res = PSY.solve_powerflow!(sys)
     if !res
         error("Power Flow fail")
