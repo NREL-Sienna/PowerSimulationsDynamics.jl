@@ -47,7 +47,7 @@ function SimulationInputs(;
     )
 end
 
-function build(inputs::SimulationInputs)
+function build!(inputs::SimulationInputs)
     sys = get_system(inputs)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     DAE_vector = collect(falses(n_buses * 2))
@@ -154,6 +154,7 @@ function build(inputs::SimulationInputs)
     @debug total_states
     setdiff!(current_buses_ix, voltage_buses_ix)
 
+    inputs.global_vars = global_vars
     inputs.DAE_vector = DAE_vector
     inputs.global_index = global_state_index
     inputs.voltage_buses_ix = voltage_buses_ix
