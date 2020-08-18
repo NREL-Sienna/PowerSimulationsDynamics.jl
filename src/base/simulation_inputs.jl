@@ -12,6 +12,7 @@ mutable struct SimulationInputs
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
     aux_arrays::Dict{Int, Vector}
+    tspan::NTuple{2, Float64}
 end
 
 function SimulationInputs(;
@@ -27,6 +28,7 @@ function SimulationInputs(;
     lookup::Dict{Int, Int} = Dict{Int, Int}(),
     DAE_vector::Vector{Bool} = Vector{Bool}(),
     aux_arrays::Dict{Int, Vector} = Dict{Int, Vector}(),
+    tspan::NTuple{2, Float64} = (0.0, 0.0),
 )
     return SimulationInputs(
         sys,
@@ -41,10 +43,11 @@ function SimulationInputs(;
         lookup,
         DAE_vector,
         aux_arrays,
+        tpsan,
     )
 end
 
-function SimulationInputs(sys::PSY.System)
+function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64})
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     DAE_vector = collect(falses(n_buses * 2))
     global_state_index = MAPPING_DICT()
@@ -170,6 +173,7 @@ function SimulationInputs(sys::PSY.System)
         global_vars = global_vars,
         lookup = lookup,
         DAE_vector = DAE_vector,
+        tpsan = tspan,
     )
 
     @assert get_ω_sys(inputs) != -1
@@ -189,6 +193,7 @@ get_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
 get_lookup(inputs::SimulationInputs) = inputs.lookup
 get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
 get_aux_arrays(inputs::SimulationInputs) = inputs.aux_arrays
+get_tspan(inputs::SimulationInputs) = inputs.tspan
 
 get_injection_pointer(inputs::SimulationInputs) =
     get_counts(inputs)[:first_dyn_injection_pointer]
