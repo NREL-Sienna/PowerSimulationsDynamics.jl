@@ -146,7 +146,7 @@ function Simulation(
     )
 end
 
-function _add_aux_arrays!(inputs::SimulationInputs, T)
+function _add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
     bus_count = get_bus_count(inputs)
     get_aux_arrays(inputs)[1] = collect(zeros(T, bus_count))                       #I_injections_r
     get_aux_arrays(inputs)[2] = collect(zeros(T, bus_count))                       #I_injections_i
@@ -192,7 +192,7 @@ function _attach_inner_vars!(
     device::PSY.DynamicGenerator,
     ::Type{T} = Real,
 ) where {T <: Real}
-    device.ext[INNER_VARS] = zeros(T, 8)
+    device.ext[INNER_VARS] = zeros(T, 9)
     return
 end
 
