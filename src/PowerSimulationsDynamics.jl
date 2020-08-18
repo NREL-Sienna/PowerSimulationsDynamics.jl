@@ -44,12 +44,12 @@ using DocStringExtensions
 include("base/definitions.jl")
 include("base/ports.jl")
 include("base/perturbations.jl")
-include("base/small_signal_results.jl")
 include("base/file_system.jl")
 include("base/simulation_inputs.jl")
 include("base/simulation.jl")
 include("base/supplemental_accesors.jl")
 include("base/simulation_initialization.jl")
+include("base/small_signal.jl")
 
 #Common Models
 include("models/branch.jl")

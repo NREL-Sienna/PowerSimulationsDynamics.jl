@@ -11,6 +11,7 @@ mutable struct Simulation
     simulation_inputs::SimulationInputs
     console_level::Base.CoreLogging.LogLevel
     file_level::Base.CoreLogging.LogLevel
+    multimachine::Bool
 end
 
 function Simulation(;
@@ -33,6 +34,7 @@ function Simulation(;
         simulation_inputs,
         console_level,
         file_level,
+        false,
     )
 end
 
@@ -196,7 +198,7 @@ function build_simulation!(
         differential_vars = get_DAE_vector(simulation_inputs);
         kwargs...,
     )
-
+    sim.multimachine = (get_ω_sys(inputs) != 0)
     sim.status = BUILT
     @info "Completed Build Successfully. Simulations status = $(sim.status)"
     return nothing
@@ -401,54 +403,4 @@ function _determine_stability(vals::Vector{Complex{Float64}})
         real_eig > 0.0 && return false
     end
     return true
-end
-
-function small_signal_analysis(sim::Simulation; kwargs...)
-    reset_simulation = get(kwargs, :reset_simulation, false)
-    _simulation_pre_step(sim, reset_simulation)
-    _change_vector_type!(sim.simulation_inputs, Real)
-    system = get_system(sim.simulation_inputs)
-    var_count = get_variable_count(sim.simulation_inputs)
-    dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    bus_count = get_bus_count(sim.simulation_inputs)
-    sysf! = (out, x) -> system!(
-        out,            #output of the function
-        dx0,            #derivatives equal to zero
-        x,              #states
-        sim.simulation_inputs,     #Parameters
-        0.0,            #time equals to zero.
-    )
-    out = zeros(var_count) #Define a vector of zeros for the output
-    x_eval = get(kwargs, :operating_point, sim.x0_init)
-    jacobian = ForwardDiff.jacobian(sysf!, out, x_eval)
-    diff_states = collect(trues(var_count))
-    diff_states[1:(2 * bus_count)] .= false
-    for b_ix in get_voltage_buses_ix(sim.simulation_inputs)
-        diff_states[b_ix] = true
-        diff_states[b_ix + bus_count] = true
-    end
-    alg_states = .!diff_states
-    fx = @view jacobian[diff_states, diff_states]
-    gy = jacobian[alg_states, alg_states]
-    fy = @view jacobian[diff_states, alg_states]
-    gx = @view jacobian[alg_states, diff_states]
-    # TODO: Make operation using BLAS!
-    reduced_jacobian = fx - fy * inv(gy) * gx
-    vals, vect = LinearAlgebra.eigen(reduced_jacobian)
-    sources = collect(PSY.get_components(PSY.Source, system))
-    if isempty(sources)
-        @warn("No Infinite Bus found. Confirm stability directly checking eigenvalues.\nIf all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable.")
-        info_evals = "Eigenvalues are:\n"
-        for i in vals
-            info_evals = info_evals * string(i) * "\n"
-        end
-        @info(info_evals)
-    end
-    return SmallSignalOutput(
-        reduced_jacobian,
-        vals,
-        vect,
-        _determine_stability(vals),
-        x_eval,
-    )
 end
