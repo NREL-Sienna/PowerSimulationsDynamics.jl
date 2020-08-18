@@ -134,7 +134,11 @@ function Simulation(
 end
 
 function reset_simulation!(sim::Simulation)
-    sim = build_simulation!(sim, get_system(sim.simulation_inputs), get_tspan(sim.simulation_inputs))
+    sim = build_simulation!(
+        sim,
+        get_system(sim.simulation_inputs),
+        get_tspan(sim.simulation_inputs),
+    )
     @info "Simulation reset to status $(sim.status)"
     return sim
 end

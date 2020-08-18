@@ -1,7 +1,4 @@
-function calculate_initial_conditions!(
-    sim::Simulation,
-    inputs::SimulationInputs,
-)
+function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs)
     @debug "Start state intialization routine"
     sys = get_system(inputs)
     initial_guess = sim.x0_init

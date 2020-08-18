@@ -18,7 +18,10 @@ end
 function SimulationInputs(;
     sys::PSY.System,
     counts::Base.ImmutableDict{Symbol, Int} = Base.ImmutableDict{Symbol, Int}(),
-    Ybus::SparseMatrixCSC{Complex{Float64}, Int64} = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(1, 1)),
+    Ybus::SparseMatrixCSC{Complex{Float64}, Int64} = SparseMatrixCSC{
+        Complex{Float64},
+        Int64,
+    }(zeros(1, 1)),
     dyn_lines::Bool = false,
     voltage_buses_ix::Vector{Int} = Vector{Int}(),
     current_buses_ix::Vector{Int} = Vector{Int}(),
