@@ -134,7 +134,7 @@ function Simulation(
 end
 
 function reset_simulation!(sim::Simulation)
-    sim = build_simulation!(sim, get_system(sim.inputs), get_tspan(sim.simulation_inputs))
+    sim = build_simulation!(sim, get_system(sim.simulation_inputs), get_tspan(sim.simulation_inputs))
     @info "Simulation reset to status $(sim.status)"
     return sim
 end
@@ -145,7 +145,7 @@ function configure_logging(sim::Simulation, file_mode)
         console_stream = stderr,
         console_level = sim.console_level,
         file = true,
-        filename = joinpath(simulation_folder, SIMULATION_LOG_FILENAME),
+        filename = joinpath(sim.simulation_folder, SIMULATION_LOG_FILENAME),
         file_level = sim.file_level,
         file_mode = file_mode,
         tracker = nothing,
@@ -158,12 +158,12 @@ function build_simulation!(
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
     kwargs...,
 )
-    simulation_system = get_system(sim.inputs)
+    simulation_system = get_system(sim.simulation_inputs)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
-    build!(sim.inputs)
+    build!(sim.simulation_inputs)
     @debug "Simulation Inputs Created"
     var_count = get_variable_count(simulation_inputs)
 
@@ -186,7 +186,7 @@ function build_simulation!(
         system!,
         dx0,
         x0_init,
-        get_tspan(sim.inputs),
+        get_tspan(sim.simulation_inputs),
         simulation_inputs,
         differential_vars = get_DAE_vector(simulation_inputs);
         kwargs...,
@@ -401,7 +401,7 @@ end
 function small_signal_analysis(sim::Simulation; kwargs...)
     reset_simulation = get(kwargs, :reset_simulation, false)
     _simulation_pre_step(sim, reset_simulation)
-    _change_vector_type!(sim.inputs, Real)_add_aux_arrays!(sim, Real)
+    _change_vector_type!(sim.simulation_inputs, Real)_add_aux_arrays!(sim, Real)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     bus_count = get_bus_count(sim.simulation_inputs)
     sysf! = (out, x) -> system!(
