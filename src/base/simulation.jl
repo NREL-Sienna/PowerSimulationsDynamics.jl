@@ -60,7 +60,7 @@ end
 Builds the simulation object and conducts the indexing process. The initial conditions are stored in the system.
 
 # Accepted Key Words
-- `initialize_simulation::Bool : Runs the initialization rutine. If false, simulation runs based on the operation point stored in System`
+- `initialize_simulation::Bool : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
 - `system_to_file::Bool`: Serializes the initialized system
 - `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 """
@@ -98,7 +98,7 @@ end
 Initializes the simulations and builds the indexing. The input system is not modified during the initialization
 
 # Accepted Key Words
-- `initialize_simulation::Bool : Runs the initialization rutine. If false, simulation runs based on the operation point stored in System`
+- `initialize_simulation::Bool : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
 - `system_to_file::Bool`: Serializes the original input system
 - `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debugg
 """
@@ -406,7 +406,8 @@ end
 function small_signal_analysis(sim::Simulation; kwargs...)
     reset_simulation = get(kwargs, :reset_simulation, false)
     _simulation_pre_step(sim, reset_simulation)
-    _change_vector_type!(sim.simulation_inputs, Real)_add_aux_arrays!(sim, Real)
+    _change_vector_type!(sim.simulation_inputs, Real)
+    var_count = get_variable_count(sim.simulation_inputs)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     bus_count = get_bus_count(sim.simulation_inputs)
     sysf! = (out, x) -> system!(
