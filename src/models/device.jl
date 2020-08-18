@@ -26,7 +26,7 @@ function device!(
     get_inner_vars(device)[VI_gen_var] = voltage_i[1]
 
     #Obtain ODEs and Mechanical Power for Turbine Governor
-    mdl_tg_ode!(device_states, view(output_ode, ode_range), device)
+    mdl_tg_ode!(device_states, view(output_ode, ode_range), sys_ω, device)
 
     #Obtain ODEs for AVR
     mdl_pss_ode!(device_states, view(output_ode, ode_range), sys_ω, device)
