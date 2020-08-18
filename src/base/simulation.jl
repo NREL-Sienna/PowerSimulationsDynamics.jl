@@ -1,6 +1,6 @@
 mutable struct Simulation
-    reset::Bool
-    problem::DiffEqBase.DAEProblem
+    status::BUILD_STATUS
+    problem::Union{Nothing, DiffEqBase.DAEProblem}
     perturbations::Vector{<:Perturbation}
     x0_init::Vector{Float64}
     initialized::Bool
@@ -9,13 +9,59 @@ mutable struct Simulation
     solution::Union{Nothing, DiffEqBase.DAESolution}
     simulation_folder::String
     simulation_inputs::SimulationInputs
+    console_level::Base.CoreLogging.LogLevel
+    file_level::Base.CoreLogging.LogLevel
+end
+
+function Simulation(
+    perturbations = Vector{Perturbation}(),
+    simulation_folder::String = "",
+    console_level = Logging.Warn,
+    file_level = Logging.Debug,
+)
+    return Simulation(
+        BUILD_INCOMPLETE,
+        nothing,
+        perturbations,
+        Vector{Float64}(),
+        false,
+        Vector{Float64}(),
+        DiffEqBase.CallbackSet(),
+        nothing,
+        simulation_folder,
+        SimulationInputs(),
+        console_level,
+        file_level,
+    )
+end
+
+function Simulation!(
+    simulation_folder::String,
+    system::PSY.System,
+    tspan::NTuple{2, Float64},
+    perturbation::Perturbation;
+    kwargs...,
+)
+    return Simulation!(simulation_folder, system, tspan, [perturbation]; kwargs...)
+end
+
+function Simulation(
+    simulation_folder::String,
+    system::PSY.System,
+    tspan::NTuple{2, Float64},
+    perturbation::Perturbation;
+    kwargs...,
+)
+    return Simulation(simulation_folder, system, tspan, [perturbation]; kwargs...)
 end
 
 """
-Initializes the simulations and builds the indexing. The initial conditions are stored in the system.
+Builds the simulation object and conducts the indexing process. The initial conditions are stored in the system.
 
 # Accepted Key Words
+- `initialize_simulation::Bool : Runs the initialization rutine. If false, simulation runs based on the operation point stored in System`
 - `system_to_file::Bool`: Serializes the initialized system
+- `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 """
 function Simulation!(
     simulation_folder::String,
@@ -25,7 +71,21 @@ function Simulation!(
     kwargs...,
 )
     check_folder(simulation_folder)
-    sim = build_simulation(simulation_folder, system, tspan, perturbations; kwargs...)
+    # Instantiates the Simulation object
+    sim = Simulation(
+        simulation_folder = simulation_folder,
+        perturbations = perturbations,
+        console_level = get(kwargs, :console_level, Logging.Warn),
+        file_level = get(kwargs, :file_level, Logging.Debug),
+    )
+    logger = configure_logging(sim, "w")
+    try
+        Logging.with_logger(logger) do
+            build_simulation!(sim, system, tspan; kwargs...)
+        end
+    finally
+        close(logger)
+    end
     if get(kwargs, :system_to_file, false)
         PSY.to_json(system, joinpath(simulation_folder, "initialized_system.json"))
     end
@@ -36,7 +96,9 @@ end
 Initializes the simulations and builds the indexing. The input system is not modified during the initialization
 
 # Accepted Key Words
+- `initialize_simulation::Bool : Runs the initialization rutine. If false, simulation runs based on the operation point stored in System`
 - `system_to_file::Bool`: Serializes the original input system
+- `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debugg
 """
 function Simulation(
     simulation_folder::String,
@@ -47,29 +109,60 @@ function Simulation(
 )
     check_folder(simulation_folder)
     simulation_system = deepcopy(system)
+    # Instantiates the Simulation object
+    sim = Simulation(
+        simulation_folder = simulation_folder,
+        perturbations = perturbations,
+        console_level = get(kwargs, :console_level, Logging.Warn),
+        file_level = get(kwargs, :file_level, Logging.Debug),
+    )
+    logger = configure_logging(sim, "w")
+    try
+        Logging.with_logger(logger) do
+            build_simulation!(sim, simulation_system, tspan; kwargs...)
+        end
+    finally
+        close(logger)
+    end
     if get(kwargs, :system_to_file, false)
         PSY.to_json(system, joinpath(simulation_folder, "input_system.json"))
     end
-    return build_simulation(
-        simulation_folder,
-        simulation_system,
-        tspan,
-        perturbations;
-        kwargs...,
+    return sim
+end
+
+function reset_simulation!(sim::Simulation)
+    sim = build_simulation!(sim, get_system(sim.inputs), get_tspan(sim.simulation_inputs))
+    @info "Simulation reset to status $(sim.status)"
+    return sim
+end
+
+function configure_logging(sim::Simulation, file_mode)
+    return IS.configure_logging(
+        console = true,
+        console_stream = stderr,
+        console_level = sim.console_level,
+        file = true,
+        filename = joinpath(simulation_folder, SIMULATION_LOG_FILENAME),
+        file_level = sim.file_level,
+        file_mode = file_mode,
+        tracker = nothing,
+        set_global = false,
     )
 end
 
-function build_simulation(
-    simulation_folder::String,
+function build_simulation!(
+    sim::Simulation,
     simulation_system::PSY.System,
     tspan::NTuple{2, Float64},
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
     kwargs...,
 )
+    sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
-    simulation_inputs = SimulationInputs(simulation_system)
+    simulation_inputs = SimulationInputs(simulation_system, tspan)
+    @debug "Simulation Inputs Created"
     var_count = get_variable_count(simulation_inputs)
 
     flat_start = zeros(var_count)
@@ -80,7 +173,7 @@ function build_simulation(
     initialize_simulation = get(kwargs, :initialize_simulation, true)
     if initialize_simulation
         @info("Initializing Simulation States")
-        _add_aux_arrays!(simulation_inputs, Real)
+        _add_aux_arrays!(simulation_inputs, Float)
         initialized = calculate_initial_conditions!(simulation_inputs, x0_init)
     end
 
@@ -96,8 +189,8 @@ function build_simulation(
         differential_vars = get_DAE_vector(simulation_inputs);
         kwargs...,
     )
-    return Simulation(
-        false,
+    sim(
+        BUILT,
         prob,
         perturbations,
         x0_init,
@@ -108,45 +201,12 @@ function build_simulation(
         simulation_folder,
         simulation_inputs,
     )
-end
-
-function Simulation!(
-    simulation_folder::String,
-    system::PSY.System,
-    tspan::NTuple{2, Float64},
-    perturbation::Perturbation;
-    initialize_simulation::Bool = true,
-    kwargs...,
-)
-    return Simulation!(
-        simulation_folder,
-        system,
-        tspan,
-        [perturbation];
-        initialize_simulation = initialize_simulation,
-        kwargs...,
-    )
-end
-
-function Simulation(
-    simulation_folder::String,
-    system::PSY.System,
-    tspan::NTuple{2, Float64},
-    perturbation::Perturbation;
-    initialize_simulation::Bool = true,
-    kwargs...,
-)
-    return Simulation(
-        simulation_folder,
-        system,
-        tspan,
-        [perturbation];
-        initialize_simulation = initialize_simulation,
-        kwargs...,
-    )
+    @info "Completed Build Successfully. Simulations status = $(sim.status)"
+    return nothing
 end
 
 function _add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
+    @debug "Auxiliary Arrays created with Type $(T)"
     bus_count = get_bus_count(inputs)
     get_aux_arrays(inputs)[1] = collect(zeros(T, bus_count))                       #I_injections_r
     get_aux_arrays(inputs)[2] = collect(zeros(T, bus_count))                       #I_injections_i
@@ -304,10 +364,20 @@ function get_input_port_ix(
     return _get_internal_mapping(device, INPUT_PORT_MAPPING, ty)
 end
 
-function run_simulation!(sim::Simulation, solver; kwargs...)
-    if sim.reset
-        @error("Reset the simulation")
+function _simulation_pre_step(sim::Simulation, reset_simulation::Bool)
+    if sim.status != BUILT && !reset_simulation
+        @error("The Simulation status is $(sim.status). Use keyword argument reset_simulation = true")
     end
+
+    if reset_simulation
+        reset!(sim)
+    end
+    return
+end
+
+function run_simulation!(sim::Simulation, solver; kwargs...)
+    reset_simulation = get(kwargs, :reset_simulation, false)
+    _simulation_pre_step(sim, reset_simulation)
 
     sim.solution = DiffEqBase.solve(
         sim.problem,
@@ -319,10 +389,13 @@ function run_simulation!(sim::Simulation, solver; kwargs...)
     return
 end
 
-function _change_vector_type(sys::PSY.System)
+function _change_vector_type!(inputs::SimulationInputs, ::Type{T}) where T <: Number
+    sys = get_system(inputs)
     for d in PSY.get_components(PSY.DynamicInjection, sys)
-        _attach_inner_vars!(d, Real)
+        _attach_inner_vars!(d, T)
     end
+    _add_aux_arrays!(inputs, Real)
+    return
 end
 
 function _determine_stability(vals::Vector{Complex{Float64}})
@@ -334,13 +407,9 @@ function _determine_stability(vals::Vector{Complex{Float64}})
 end
 
 function small_signal_analysis(sim::Simulation; kwargs...)
-    if sim.reset
-        @error("Reset the simulation")
-    end
-    system = get_system(sim.simulation_inputs)
-    _change_vector_type(system)
-    _add_aux_arrays!(sim.simulation_inputs, Real)
-    var_count = get_variable_count(sim.simulation_inputs)
+    reset_simulation = get(kwargs, :reset_simulation, false)
+    _simulation_pre_step(sim, reset_simulation)
+    _change_vector_type!(sim.inputs, Real)_add_aux_arrays!(sim, Real)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     bus_count = get_bus_count(sim.simulation_inputs)
     sysf! = (out, x) -> system!(
