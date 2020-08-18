@@ -192,16 +192,14 @@ tg_type1() = TGTypeI(
     0.0, #T3
     12.0, #T4
     50.0, #T5
-    0.3, #P_min
-    1.2,
+    (min = 0.3, max = 1.2),
 ) #P_max
 
 tg_type2() = TGTypeII(
     0.05, #R
     2.0, #T1
     1.0, #T2
-    1.5, #τ_max
-    0.1,
+    (min = 0.1, max = 1.5),
 ) #τ_min
 
 ########  AVR Data #########
