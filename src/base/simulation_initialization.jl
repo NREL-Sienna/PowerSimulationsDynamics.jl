@@ -2,6 +2,7 @@ function calculate_initial_conditions!(
     inputs::SimulationInputs,
     initial_guess::Vector{Float64},
 )
+    @debug "Start state intialization routine"
     sys = get_system(inputs)
 
     res = PSY.solve_powerflow!(sys)
@@ -10,7 +11,7 @@ function calculate_initial_conditions!(
     end
     var_count = get_variable_count(inputs)
 
-    #Index Setup
+    @debug "Setting up initilization indexing"
     bus_size = get_bus_count(inputs)
     bus_vars_count = 2 * bus_size
     bus_range = 1:bus_vars_count
@@ -19,16 +20,18 @@ function calculate_initial_conditions!(
     branches_start = get_branches_pointer(inputs)
     branches_count = 1
 
-    #Update Voltage guess
+    @debug "Updating Voltage guess"
     for bus in PSY.get_components(PSY.Bus, sys)
-        #Write voltage initial guess
+        @debug PSY.get_name(bus)
+        @debug "V_r" PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
+        @debug "V_i" PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
         bus_n = PSY.get_number(bus)
         bus_ix = get_lookup(inputs)[bus_n]
         initial_guess[bus_ix] = PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
         initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
     end
 
-    #Update Source internal voltages
+    @debug "Updating Source internal voltages"
     sources = PSY.get_components(PSY.Source, sys)
     if !isempty(sources)
         for s in sources
@@ -36,8 +39,9 @@ function calculate_initial_conditions!(
         end
     end
 
-    #Update Dynamic Injection internal references and guesses
+    @debug "Updating Dynamic Injection Component Initial Guess"
     for d in PSY.get_components(PSY.DynamicInjection, sys)
+        @debug PSY.get_name(d) typeof(d)
         bus = PSY.get_bus(d)
         bus_n = PSY.get_number(PSY.get_bus(d))
         bus_ix = get_lookup(inputs)[bus_n]
@@ -49,10 +53,11 @@ function calculate_initial_conditions!(
         initial_guess[ix_range] = x0_device
     end
 
-    #Update Dynamic Branch guess
+    @debug "Updating Component Initial Guess"
     dyn_branches = PSY.get_components(PSY.DynamicBranch, sys)
     if !isempty(dyn_branches)
         for br in dyn_branches
+            @debug PSY.get_name(br) typeof(br)
             arc = PSY.get_arc(br)
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
@@ -65,6 +70,8 @@ function calculate_initial_conditions!(
             @assert length(x0_branch) == n_states
             initial_guess[ix_range] = x0_branch
         end
+    else
+        @debug "No Dynamic Branches in the system"
     end
 
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
@@ -76,28 +83,30 @@ function calculate_initial_conditions!(
         0.0,    #time equals to zero.
     )
     #Refine initial solution
+    @debug "Start NLSolve Run"
     sys_solve = NLsolve.nlsolve(
         inif!,
         initial_guess,
-        xtol = :1e-9,
-        ftol = :1e-9,
+        xtol = STRICT_NL_SOLVE_TOLERANCE,
+        ftol = STRICT_NL_SOLVE_TOLERANCE,
         method = :trust_region,
     ) #Solve using initial guess x0
     if !NLsolve.converged(sys_solve)
-        @warn("Initialization failed, initial conditions do not meet conditions for an stable equilibrium.\nTrying to solve again reducing numeric tolerance:")
+        @warn("Initialization failed, initial conditions do not meet conditions for an stable equilibrium.\nTrying to solve again reducing numeric tolerance from $(STRICT_NL_SOLVE_TOLERANCE):")
         sys_solve = NLsolve.nlsolve(
             inif!,
             initial_guess,
-            xtol = :1e-6,
-            ftol = :1e-6,
+            xtol = RELAXED_NL_SOLVE_TOLERANCE,
+            ftol = RELAXED_NL_SOLVE_TOLERANCE,
             method = :trust_region,
         ) #Solve using initial guess x0
         if NLsolve.converged(sys_solve)
-            @info("Initialization succeeded with less tolerance. Saving solution")
+            @info("Initialization succeeded with a relaxed tolerance of $(RELAXED_NL_SOLVE_TOLERANCE). Saving solution")
         else
             @warn("Initialization failed again. Initial conditions do not meet conditions for an stable equilibrium\nSaving best result.")
         end
     end
+    @debug "Write result to initial guess vector"
     initial_guess .= sys_solve.zero
     return NLsolve.converged(sys_solve)
 
