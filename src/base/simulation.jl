@@ -198,7 +198,7 @@ function build_simulation!(
         differential_vars = get_DAE_vector(simulation_inputs);
         kwargs...,
     )
-    sim.multimachine = (get_ω_sys(inputs) != 0)
+    sim.multimachine = (get_ω_sys(simulation_inputs) != 0)
     sim.status = BUILT
     @info "Completed Build Successfully. Simulations status = $(sim.status)"
     return nothing
@@ -377,7 +377,7 @@ end
 function run_simulation!(sim::Simulation, solver; kwargs...)
     reset_simulation = get(kwargs, :reset_simulation, false)
     _simulation_pre_step(sim, reset_simulation)
-
+    sim.status = SIMULATION_STARTED
     sim.solution = DiffEqBase.solve(
         sim.problem,
         solver;
@@ -385,6 +385,11 @@ function run_simulation!(sim::Simulation, solver; kwargs...)
         tstops = sim.tstops,
         kwargs...,
     )
+    if sim.solution.retcode == :Success
+        sim.status = SIMULATION_FINALIZED
+    else
+        sim.status = SIMULATION_FAILED
+    end
     return
 end
 

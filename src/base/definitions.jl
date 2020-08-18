@@ -110,7 +110,7 @@ Defines the status of the simulation object
 @enum BUILD_STATUS begin
     BUILT = 1
     BUILD_INCOMPLETE = -1
-    SIMULATION_FINALIZED = 2
     SIMULATION_STARTED = -2
-    EMPTY = 0
+    SIMULATION_FINALIZED = 2
+    SIMULATION_FAILED = -3
 end
