@@ -17,9 +17,9 @@ end
 
 function SimulationInputs(;
     sys::PSY.System,
-    counts::Base.ImmutableDict{Symbol, Int},
-    Ybus::SparseMatrixCSC{Complex{Float64}, Int64},
-    dyn_lines::Bool,
+    counts::Base.ImmutableDict{Symbol, Int} = Base.ImmutableDict{Symbol, Int}(),
+    Ybus::SparseMatrixCSC{Complex{Float64}, Int64} = Ybus::SparseMatrixCSC{Complex{Float64}, Int64}(),
+    dyn_lines::Bool = false,
     voltage_buses_ix::Vector{Int} = Vector{Int}(),
     current_buses_ix::Vector{Int} = Vector{Int}(),
     global_index::Dict{String, Dict{Symbol, Int64}} = Dict{String, Dict{Symbol, Int64}}(),
@@ -47,7 +47,8 @@ function SimulationInputs(;
     )
 end
 
-function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64})
+function build(inputs::SimulationInputs)
+    sys = get_system(inputs)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     DAE_vector = collect(falses(n_buses * 2))
     global_state_index = MAPPING_DICT()
@@ -66,10 +67,11 @@ function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64})
     found_ref_bus = false
     sys_basepower = PSY.get_base_power(sys)
 
-    Ybus, lookup = _get_Ybus(sys)
+    inputs.Ybus, inputs.lookup = _get_Ybus(sys)
     dyn_branches = PSY.get_components(PSY.DynamicBranch, sys)
 
     if !(isempty(dyn_branches))
+        inputs.dyn_lines = true
         first_dyn_branch_point = state_space_ix[1] + 1
         for br in dyn_branches
             arc = PSY.get_arc(br)
@@ -106,6 +108,7 @@ function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64})
         end
         branches_n_states = state_space_ix[1] - n_buses * 2
     else
+        inputs.dyn_lines = false
         @debug("System doesn't contain Dynamic Branches")
     end
     unique!(voltage_buses_ix)
@@ -151,7 +154,12 @@ function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64})
     @debug total_states
     setdiff!(current_buses_ix, voltage_buses_ix)
 
-    counts = Base.ImmutableDict(
+    inputs.DAE_vector = DAE_vector
+    inputs.global_index = global_state_index
+    inputs.voltage_buses_ix = voltage_buses_ix
+    inputs.current_buses_ix = current_buses_ix
+    inputs.total_shunts = total_shunts
+    inputs.counts = Base.ImmutableDict(
         :total_states => total_states,
         :injection_n_states => injection_n_states,
         :branches_n_states => branches_n_states,
@@ -161,24 +169,8 @@ function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64})
         :bus_count => n_buses,
     )
 
-    inputs = SimulationInputs(;
-        sys = sys,
-        counts = counts,
-        Ybus = Ybus,
-        dyn_lines = !isempty(PSY.get_components(PSY.DynamicBranch, sys)),
-        global_index = global_state_index,
-        voltage_buses_ix = voltage_buses_ix,
-        current_buses_ix = current_buses_ix,
-        total_shunts = total_shunts,
-        global_vars = global_vars,
-        lookup = lookup,
-        DAE_vector = DAE_vector,
-        tpsan = tspan,
-    )
-
     @assert get_ω_sys(inputs) != -1
-
-    return inputs
+    return
 end
 
 get_system(inputs::SimulationInputs) = inputs.sys
