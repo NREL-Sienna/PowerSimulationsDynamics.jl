@@ -1,4 +1,4 @@
-"""
+#=
 Inner variables are used for keeping track of internal variables
 of different dynamic devices. These are not states, since can be computed
 algebraically using states and parameters, and are only used internally in each
@@ -7,7 +7,7 @@ must be added to the vector of states, by handling those as inner variables.
 In some cases, depending on the complexity of the model, some inner vars are
 also defined as states, but for the sake of generality are also added as inner
 variables, since some models may not treat such variables as states.
-"""
+=#
 
 """
 Generator Inner Vars:
@@ -20,7 +20,6 @@ Generator Inner Vars:
 *  ψd_var :: Stator Flux (if defined) in the d-axis
 *  ψq_var :: Stator Flux (if defined) in the q-axis
 """
-
 @enum generator_inner_vars begin
     τe_var = 1
     τm_var = 2
@@ -52,7 +51,6 @@ VI_inv_var :: Imaginary terminal voltage on the inverter
 Vr_cnv_var :: Voltage supplied from the converter in the R-component
 Vi_cnv_var :: Voltage supplied from the converter in the I-component
 """
-
 @enum inverter_inner_vars begin
     md_var = 1
     mq_var = 2
@@ -97,4 +95,22 @@ const PORTS = "ports"
 const INNER_VARS = "inner_vars"
 const CONTROL_REFS = "control_refs"
 
-const SIMULATION_ACCEPTED_KWARGS = [:initial_guess, :initialize_simulation, :system_to_file]
+const SIMULATION_ACCEPTED_KWARGS =
+    [:initialize_simulation, :system_to_file, :file_level, :console_level]
+const SMALL_SIGNAL_ACCEPTED_KWARGS = [:reset_simulation!]
+const RELAXED_NL_SOLVE_TOLERANCE = :1e-6
+const STRICT_NL_SOLVE_TOLERANCE = :1e-9
+const MINIMAL_ACCEPTABLE_NL_SOLVE_TOLERANCE = :1e-3
+
+const SIMULATION_LOG_FILENAME = "power-simulations-dynamics.log"
+
+"""
+Defines the status of the simulation object
+"""
+@enum BUILD_STATUS begin
+    BUILT = 1
+    BUILD_INCOMPLETE = -1
+    SIMULATION_FINALIZED = 2
+    SIMULATION_STARTED = -2
+    EMPTY = 0
+end
