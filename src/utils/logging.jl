@@ -25,7 +25,7 @@ close(logger)
 function configure_logging(;
     console_level = Logging.Error,
     file_level = Logging.Info,
-    filename = "power-simulations.log",
+    filename = LOG_FILENAME,
 )
     return IS.configure_logging(
         console = true,
