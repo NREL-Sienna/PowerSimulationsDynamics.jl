@@ -164,6 +164,7 @@ function build_simulation!(
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     initialized = false
     build!(sim.simulation_inputs)
+    simulation_inputs = sim.simulation_inputs
     @debug "Simulation Inputs Created"
     var_count = get_variable_count(simulation_inputs)
 
@@ -175,17 +176,17 @@ function build_simulation!(
     initialize_simulation = get(kwargs, :initialize_simulation, true)
     if initialize_simulation
         @info("Initializing Simulation States")
-        _add_aux_arrays!(simulation_inputs, Float)
-        sim.initialized = calculate_initial_conditions!(simulation_inputs, x0_init)
+        _add_aux_arrays!(simulation_inputs, Float64)
+        sim.initialized = calculate_initial_conditions!(sim, simulation_inputs)
     end
 
     dx0 = zeros(var_count)
-    sim.callback_set, sim.tstops = _build_perturbations(simulation_system, perturbations)
+    sim.callbacks, sim.tstops = _build_perturbations(simulation_system, perturbations)
     _add_aux_arrays!(simulation_inputs, Float64)
-    sim.prob = DiffEqBase.DAEProblem(
+    sim.problem = DiffEqBase.DAEProblem(
         system!,
         dx0,
-        x0_init,
+        sim.x0_init,
         get_tspan(sim.simulation_inputs),
         simulation_inputs,
         differential_vars = get_DAE_vector(simulation_inputs);
