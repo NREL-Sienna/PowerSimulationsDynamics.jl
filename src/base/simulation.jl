@@ -136,12 +136,17 @@ function Simulation(
 end
 
 function reset!(sim::Simulation)
-    build_simulation!(
-        sim,
-        sim.perturbations
-    )
-    @info "Simulation reset to status $(sim.status)"
-    return sim
+    logger = configure_logging(sim, "a")
+    try
+        Logging.with_logger(logger) do
+            @info "Rebuilding the simulation after reset"
+            build_simulation!(sim, sim.perturbations)
+            @info "Simulation reset to status $(sim.status)"
+        end
+    finally
+        close(logger)
+    end
+    return
 end
 
 function configure_logging(sim::Simulation, file_mode)
@@ -399,12 +404,4 @@ function _change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: N
     end
     _add_aux_arrays!(inputs, Real)
     return
-end
-
-function _determine_stability(vals::Vector{Complex{Float64}})
-    stable = true
-    for real_eig in real(vals)
-        real_eig > 0.0 && return false
-    end
-    return true
 end
