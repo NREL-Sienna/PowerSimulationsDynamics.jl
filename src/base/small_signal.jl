@@ -8,6 +8,7 @@ struct SmallSignalOutput
     stable::Bool
     operating_point::Vector{Float64}
     damping::Dict{String, Dict{Symbol, Float64}}
+    participation_factors::Dict{String, Dict{Symbol, Array{Float64}}}
 end
 
 function _determine_stability(vals::Vector{Complex{Float64}})
@@ -36,9 +37,9 @@ function _calculate_forwardiff_jacobian(sim::Simulation, x_eval::Vector{Float64}
 end
 
 function _make_reduce_jacobian_index(global_index, diff_states)
-    jac_index = Dict{String, Dict{Symbol, Any}}()
+    jac_index = Dict{String, Dict{Symbol, Int}}()
     for (device_name, device_index) in global_index
-        jac_index[device_name] = Dict{Symbol, Any}()
+        jac_index[device_name] = Dict{Symbol, Int}()
         for (state, ix) in device_index
             state_is_differential = diff_states[ix]
             if state_is_differential
@@ -68,7 +69,11 @@ function _get_state_types(sim::Simulation)
     return jac_index, diff_states, alg_states
 end
 
-function _reduce_jacobian(jacobian::Matrix{Float64}, diff_states::Vector{Bool}, alg_states::BitArray{1})
+function _reduce_jacobian(
+    jacobian::Matrix{Float64},
+    diff_states::Vector{Bool},
+    alg_states::BitArray{1},
+)
     fx = @view jacobian[diff_states, diff_states]
     gy = jacobian[alg_states, alg_states]
     fy = @view jacobian[diff_states, alg_states]
@@ -93,7 +98,7 @@ end
 
 function _get_damping(
     eigen_vals::Vector{Complex{Float64}},
-    jac_index,
+    jac_index::Dict{String, Dict{Symbol, Int}},
 )
     damping_results = Dict{String, Dict{Symbol, Float64}}()
     for (device_name, device_index) in jac_index
@@ -108,19 +113,22 @@ function _get_damping(
     return damping_results
 end
 
-#=
-function _get_participation_factors(sim::Simulation, R_eigen_vect)
-    participation_factors_results =
+function _get_participation_factors(
+    R_eigen_vect::Matrix{Complex{Float64}},
+    jac_index::Dict{String, Dict{Symbol, Int}},
+)
     L_eigen_vect = inv(R_eigen_vect)
-
-    participation_factors = zeros(size(L_eigen_vect))
-     den = sum(abs.(L_eigen_vect[:, ix]) .* abs.(R_eigen_vect[ix, :]))
-    participation_factors[ix, :] =
-            abs.(L_eigen_vect[:, ix]) .* abs.(R_eigen_vect[ix, :]) ./ den
-        current_eigenvalue = real(eigen_val)
-
+    participation_factors = Dict{String, Dict{Symbol, Array{Float64}}}()
+    for (device_name, device_index) in jac_index
+        participation_factors[device_name] = Dict{Symbol, Array{Float64}}()
+        for (state, ix) in device_index
+            den = sum(abs.(L_eigen_vect[:, ix]) .* abs.(R_eigen_vect[ix, :]))
+            participation_factors[device_name][state] =
+                abs.(L_eigen_vect[:, ix]) .* abs.(R_eigen_vect[ix, :]) ./ den
+        end
+    end
+    return participation_factors
 end
-=#
 
 function small_signal_analysis(sim::Simulation; kwargs...)
     reset_simulation = get(kwargs, :reset_simulation, false)
@@ -133,6 +141,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, sim.multimachine)
     damping = _get_damping(eigen_vals, jac_index)
     stable = _determine_stability(eigen_vals)
+    participation_factors = _get_participation_factors(R_eigen_vect, jac_index)
     return SmallSignalOutput(
         reduced_jacobian,
         eigen_vals,
@@ -141,5 +150,6 @@ function small_signal_analysis(sim::Simulation; kwargs...)
         stable,
         x_eval,
         damping,
+        participation_factors,
     )
 end
