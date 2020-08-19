@@ -135,11 +135,10 @@ function Simulation(
     return sim
 end
 
-function reset_simulation!(sim::Simulation)
-    sim = build_simulation!(
+function reset!(sim::Simulation)
+    build_simulation!(
         sim,
-        get_system(sim.simulation_inputs),
-        get_tspan(sim.simulation_inputs),
+        sim.perturbations
     )
     @info "Simulation reset to status $(sim.status)"
     return sim
@@ -198,7 +197,7 @@ function build_simulation!(
         differential_vars = get_DAE_vector(simulation_inputs);
         kwargs...,
     )
-    sim.multimachine = (get_ω_sys(simulation_inputs) != 0)
+    sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
     sim.status = BUILT
     @info "Completed Build Successfully. Simulations status = $(sim.status)"
     return nothing
@@ -365,7 +364,7 @@ end
 
 function _simulation_pre_step(sim::Simulation, reset_simulation::Bool)
     if sim.status != BUILT && !reset_simulation
-        @error("The Simulation status is $(sim.status). Use keyword argument reset_simulation = true")
+        error("The Simulation status is $(sim.status). Use keyword argument reset_simulation = true")
     end
 
     if reset_simulation
