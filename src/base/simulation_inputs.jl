@@ -81,8 +81,8 @@ function build!(inputs::SimulationInputs)
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
             to_bus_number = PSY.get_number(arc.to)
-            bus_ix_from = lookup[from_bus_number]
-            bus_ix_to = lookup[to_bus_number]
+            bus_ix_from = get_lookup(inputs)[from_bus_number]
+            bus_ix_to = get_lookup(inputs)[to_bus_number]
             merge!(
                 +,
                 total_shunts,

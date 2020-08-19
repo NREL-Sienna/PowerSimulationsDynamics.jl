@@ -140,7 +140,7 @@ function reset!(sim::Simulation)
     try
         Logging.with_logger(logger) do
             @info "Rebuilding the simulation after reset"
-            build_simulation!(sim, sim.perturbations)
+            build_simulation!(sim)
             @info "Simulation reset to status $(sim.status)"
         end
     finally
