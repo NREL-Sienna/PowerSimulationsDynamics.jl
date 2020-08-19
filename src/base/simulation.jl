@@ -163,10 +163,7 @@ function configure_logging(sim::Simulation, file_mode)
     )
 end
 
-function build_simulation!(
-    sim::Simulation;
-    kwargs...,
-)
+function build_simulation!(sim::Simulation; kwargs...)
     simulation_system = get_system(sim.simulation_inputs)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
