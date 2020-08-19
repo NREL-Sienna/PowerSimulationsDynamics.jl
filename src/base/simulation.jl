@@ -164,8 +164,7 @@ function configure_logging(sim::Simulation, file_mode)
 end
 
 function build_simulation!(
-    sim::Simulation,
-    perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
+    sim::Simulation;
     kwargs...,
 )
     simulation_system = get_system(sim.simulation_inputs)
@@ -191,7 +190,7 @@ function build_simulation!(
     end
 
     dx0 = zeros(var_count)
-    sim.callbacks, sim.tstops = _build_perturbations(simulation_system, perturbations)
+    _build_perturbations!(sim)
     _add_aux_arrays!(simulation_inputs, Float64)
     sim.problem = DiffEqBase.DAEProblem(
         system!,
@@ -220,9 +219,14 @@ function _add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Numbe
     return
 end
 
-function _build_perturbations(system::PSY.System, perturbations::Vector{<:Perturbation})
+function _build_perturbations!(sim::Simulation)
     @info "Attaching Perturbations"
-    isempty(perturbations) && return DiffEqBase.CallbackSet(), [0.0]
+    if isempty(sim.perturbations)
+        @debug "The simulation has no perturbations"
+        return DiffEqBase.CallbackSet(), [0.0]
+    end
+    system = get_system(sim.simulation_inputs)
+    perturbations = sim.perturbations
     perturbations_count = length(perturbations)
     callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
     tstops = Vector{Float64}(undef, perturbations_count)
@@ -233,8 +237,9 @@ function _build_perturbations(system::PSY.System, perturbations::Vector{<:Pertur
         callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
-    callback_set = DiffEqBase.CallbackSet((), tuple(callback_vector...))
-    return callback_set, tstops
+    sim.tstops = tstops
+    sim.callbacks = DiffEqBase.CallbackSet((), tuple(callback_vector...))
+    return
 end
 
 function _index_local_states!(
