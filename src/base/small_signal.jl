@@ -12,6 +12,14 @@ struct SmallSignalOutput
     damping::Dict{String, Dict{Symbol, Float64}}
 end
 
+function _determine_stability(vals::Vector{Complex{Float64}})
+    stable = true
+    for real_eig in real(vals)
+        real_eig > 0.0 && return false
+    end
+    return true
+end
+
 function _calculate_forwardiff_jacobian(sim::Simulation, x_eval::Vector{Float64})
     system = get_system(sim.simulation_inputs)
     var_count = get_variable_count(sim.simulation_inputs)
@@ -63,7 +71,8 @@ function _reduce_jacobian(jacobian::Matrix{Float64}, sim::Simulation)
     gx = @view jacobian[alg_states, diff_states]
     # TODO: Make operation using BLAS!
     reduced_jacobian = fx - fy * inv(gy) * gx
-    jac_index = _make_reduce_jacobian_index(get_global_index(sim.simulation_inputs), diff_states)
+    jac_index =
+        _make_reduce_jacobian_index(get_global_index(sim.simulation_inputs), diff_states)
     return IndexedJacobian(reduced_jacobian, jac_index)
 end
 
@@ -80,7 +89,10 @@ function _get_eigenvalues(reduced_jacobian::IndexedJacobian, multimachine::Bool)
     return eigen_vals, R_eigen_vect
 end
 
-function _get_damping(eigen_vals::Vector{Complex{Float64}}, reduced_jacobian::IndexedJacobian)
+function _get_damping(
+    eigen_vals::Vector{Complex{Float64}},
+    reduced_jacobian::IndexedJacobian,
+)
     damping_results = Dict{String, Dict{Symbol, Float64}}()
     for (device_name, device_index) in reduced_jacobian.index
         damping_results[device_name] = Dict{Symbol, Float64}()
