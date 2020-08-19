@@ -221,11 +221,13 @@ function _add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Numbe
 end
 
 function _build_perturbations(system::PSY.System, perturbations::Vector{<:Perturbation})
+    @info "Attaching Perturbations"
     isempty(perturbations) && return DiffEqBase.CallbackSet(), [0.0]
     perturbations_count = length(perturbations)
     callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
     tstops = Vector{Float64}(undef, perturbations_count)
     for (ix, pert) in enumerate(perturbations)
+        @debug pert
         condition = (x, t, integrator) -> t in [pert.time]
         affect = get_affect(system, pert)
         callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
