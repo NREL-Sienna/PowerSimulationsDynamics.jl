@@ -1,5 +1,10 @@
+struct IndexedJacobian
+    data::Matrix{Float64}
+    index::Dict
+end
+
 struct SmallSignalOutput
-    reduced_jacobian::Matrix{Float64}
+    reduced_jacobian::IndexedJacobian
     eigenvalues::Vector{Complex{Float64}}
     eigenvectors::Matrix{Complex{Float64}}
     stable::Bool
@@ -24,8 +29,27 @@ function _calculate_forwardiff_jacobian(sim::Simulation, x_eval::Vector{Float64}
     return jacobian
 end
 
+function _make_reduce_jacobian_index(global_index, diff_states)
+    jac_index = Dict{String, Dict{Symbol, Any}}()
+    for (device_name, device_index) in global_index
+        jac_index[device_name] = Dict{Symbol, Any}()
+        for (state, ix) in device_index
+            state_is_differential = diff_states[ix]
+            if state_is_differential
+                jac_index[device_name][state] = sum(diff_states[1:ix])
+            elseif !state_is_differential
+                jac_index[device_name][state] = nothing
+            else
+                @assert false
+            end
+        end
+    end
+    return jac_index
+end
+
 function _reduce_jacobian(jacobian::Matrix{Float64}, sim::Simulation)
     var_count = get_variable_count(sim.simulation_inputs)
+    bus_count = get_bus_count(sim.simulation_inputs)
     diff_states = collect(trues(var_count))
     diff_states[1:(2 * bus_count)] .= false
     for b_ix in get_voltage_buses_ix(sim.simulation_inputs)
@@ -39,10 +63,12 @@ function _reduce_jacobian(jacobian::Matrix{Float64}, sim::Simulation)
     gx = @view jacobian[alg_states, diff_states]
     # TODO: Make operation using BLAS!
     reduced_jacobian = fx - fy * inv(gy) * gx
+    jac_index = _make_reduce_jacobian_index(get_global_index(sim.simulation_inputs), diff_states)
+    return IndexedJacobian(reduced_jacobian, jac_index)
 end
 
-function _get_eigenvalues(reduced_jacobian::Matrix{Float64}, multimachine::bool)
-    eigen_vals, R_eigen_vect = LinearAlgebra.eigen(reduced_jacobian)
+function _get_eigenvalues(reduced_jacobian::IndexedJacobian, multimachine::Bool)
+    eigen_vals, R_eigen_vect = LinearAlgebra.eigen(reduced_jacobian.data)
     if multimachine
         @warn("No Infinite Bus found. Confirm stability directly checking eigenvalues.\nIf all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable.")
         info_evals = "Eigenvalues are:\n"
@@ -54,11 +80,12 @@ function _get_eigenvalues(reduced_jacobian::Matrix{Float64}, multimachine::bool)
     return eigen_vals, R_eigen_vect
 end
 
-function _get_damping(sim::Simulation, eigen_vals::Vector{Float64})
+function _get_damping(eigen_vals::Vector{Complex{Float64}}, reduced_jacobian::IndexedJacobian)
     damping_results = Dict{String, Dict{Symbol, Float64}}()
-    for (device_name, device_index) in get_global_index(sim.simulation_inputs)
-        damping_results[device_name] = Dict{Symbol, Float}()
+    for (device_name, device_index) in reduced_jacobian.index
+        damping_results[device_name] = Dict{Symbol, Float64}()
         for (state, ix) in device_index
+            isnothing(ix) && continue
             eigen_val = eigen_vals[ix]
             damping_results[device_name][state] =
                 -1 * real(eigen_val) / sqrt(real(eigen_val)^2 + imag(eigen_val)^2)
@@ -86,10 +113,10 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     _simulation_pre_step(sim, reset_simulation)
     _change_vector_type!(sim.simulation_inputs, Real)
     x_eval = get(kwargs, :operating_point, sim.x0_init)
-    jacobian = _calculate_forwardiff_jacobian(sim, x_val)
+    jacobian = _calculate_forwardiff_jacobian(sim, x_eval)
     reduced_jacobian = _reduce_jacobian(jacobian, sim)
     eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, sim.multimachine)
-    damping = _get_damping(sim, eigen_vals)
+    damping = _get_damping(eigen_vals, reduced_jacobian)
     stable = _determine_stability(eigen_vals)
     return SmallSignalOutput(
         reduced_jacobian,
