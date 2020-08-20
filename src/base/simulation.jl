@@ -119,7 +119,7 @@ function Simulation(
     build!(sim; kwargs...)
     if get(kwargs, :system_to_file, false)
         PSY.to_json(simulation_system, joinpath(simulation_folder, "initialized_system.json"))
-    en
+    end
     return sim
 end
 
