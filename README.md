@@ -15,6 +15,8 @@
 
 - Provide State-of-Art modeling to assess Low-Inertia Power Systems.
 
+Check the [Project Section](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/projects/1) to see the pipelines of new models to be added. 
+
 ## Installation
 
 ```julia
