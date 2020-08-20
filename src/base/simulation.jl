@@ -83,14 +83,7 @@ function Simulation!(
         console_level = get(kwargs, :console_level, Logging.Warn),
         file_level = get(kwargs, :file_level, Logging.Debug),
     )
-    logger = configure_logging(sim, "w")
-    try
-        Logging.with_logger(logger) do
-            build!(sim; kwargs...)
-        end
-    finally
-        close(logger)
-    end
+    build!(sim; kwargs...)
     if get(kwargs, :system_to_file, false)
         PSY.to_json(system, joinpath(simulation_folder, "initialized_system.json"))
     end
@@ -123,31 +116,14 @@ function Simulation(
         console_level = get(kwargs, :console_level, Logging.Warn),
         file_level = get(kwargs, :file_level, Logging.Debug),
     )
-    logger = configure_logging(sim, "w")
-    try
-        Logging.with_logger(logger) do
-            build!(sim; kwargs...)
-        end
-    finally
-        close(logger)
-    end
-    if get(kwargs, :system_to_file, false)
-        PSY.to_json(system, joinpath(simulation_folder, "input_system.json"))
-    end
+    build!(sim; kwargs...)
     return sim
 end
 
 function reset!(sim::Simulation)
-    logger = configure_logging(sim, "a")
-    try
-        Logging.with_logger(logger) do
-            @info "Rebuilding the simulation after reset"
-            build!(sim)
-            @info "Simulation reset to status $(sim.status)"
-        end
-    finally
-        close(logger)
-    end
+    @info "Rebuilding the simulation after reset"
+    build!(sim; file_mode = "a")
+    @info "Simulation reset to status $(sim.status)"
     return
 end
 
@@ -165,7 +141,19 @@ function configure_logging(sim::Simulation, file_mode)
     )
 end
 
-function build!(sim::Simulation; kwargs...)
+function build!(sim; file_mode = "w", kwargs...)
+    logger = configure_logging(sim, file_mode)
+    try
+        Logging.with_logger(logger) do
+            _build!(sim; kwargs...)
+        end
+    finally
+        close(logger)
+    end
+    return
+end
+
+function _build!(sim::Simulation; kwargs...)
     simulation_system = get_system(sim.simulation_inputs)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
