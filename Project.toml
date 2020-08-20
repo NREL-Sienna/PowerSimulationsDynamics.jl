@@ -1,7 +1,7 @@
 name = "PowerSimulationsDynamics"
 uuid = "398b2ede-47ed-4edc-b52e-69e4a48b4336"
 authors = ["Jose Daniel Lara, Rodrigo Henriquez"]
-version = "0.1.3"
+version = "0.2.0"
 
 [deps]
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
@@ -20,5 +20,5 @@ DocStringExtensions = "~0.8.2"
 ForwardDiff = "~v0.10"
 InfrastructureSystems = "~0.15"
 NLsolve = "4"
-PowerSystems = "~0.27"
+PowerSystems = "~0.28"
 julia = "^1.2"
