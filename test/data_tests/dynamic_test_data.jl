@@ -192,17 +192,15 @@ tg_type1() = TGTypeI(
     0.0, #T3
     12.0, #T4
     50.0, #T5
-    0.3, #P_min
-    1.2,
-) #P_max
+    (min = 0.3, max = 1.2), #P_lims
+)
 
 tg_type2() = TGTypeII(
     0.05, #R
     2.0, #T1
     1.0, #T2
-    1.5, #τ_max
-    0.1,
-) #τ_min
+    (min = 0.1, max = 1.5), #τ_lims
+)
 
 ########  AVR Data #########
 
@@ -220,8 +218,7 @@ avr_type1() = AVRTypeI(
     0.314, #Te
     0.35, #Tf
     0.001, #Tr
-    5.0, #Vrmax
-    -5.0, #Vrmin
+    (min = -5.0, max = 5.0),
     0.0039, #Ae - 1st ceiling coefficient
     1.555,
 ) #Be - 2nd ceiling coefficient
@@ -234,8 +231,7 @@ avr_type2() = AVRTypeII(
     0.06, #T4 - 2nd zero
     0.0001, #Te - Field current time constant
     0.0001, #Tr - Measurement time constant
-    50.0, #Vrmax
-    -50.0, #Vrmin
+    (min = -50.0, max = 50.0),
     0.0, #Ae - 1st ceiling coefficient
     0.0,
 ) #Be - 2nd ceiling coefficient
