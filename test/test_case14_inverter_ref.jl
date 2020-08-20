@@ -37,7 +37,7 @@ try
     small_sig = small_signal_analysis(sim)
 
     #Run simulation
-    run_simulation!(
+    execute!(
         sim, #simulation structure
         IDA(),#Sundials DAE Solver
         dtmax = 0.001, #keywords arguments

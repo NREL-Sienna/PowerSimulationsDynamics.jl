@@ -18,7 +18,7 @@ function get_voltagemag_series(sim::Simulation, bus_number::Int64)
     n_buses = get_bus_count(sim.simulation_inputs)
     bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, nothing)
     if isnothing(bus_ix)
-        @error("Bus number $(bus_number) not found.")
+        error("Bus number $(bus_number) not found.")
     else
         return sim.solution.t,
         [sqrt(value[bus_ix]^2 + value[bus_ix + n_buses]^2) for value in sim.solution.u]
