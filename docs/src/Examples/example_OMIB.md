@@ -79,7 +79,7 @@ x0_init = get_initial_conditions(sim)
 Finally, to run the simulation we simply use:
 ```julia
 #Solve problem
-run_simulation!(sim, #simulation structure
+execute!(sim, #simulation structure
                 IDA(), #Sundials DAE Solver
                 dtmax=0.02); #Arguments: Maximum timestep allowed
 ```

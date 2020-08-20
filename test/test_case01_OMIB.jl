@@ -34,7 +34,7 @@ try
     small_sig = small_signal_analysis(sim)
 
     #Solve problem in equilibrium
-    run_simulation!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
+    execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
     #Obtain data for angles
     series = get_state_series(sim, ("generator-102-1", :δ))

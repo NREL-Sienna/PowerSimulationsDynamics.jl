@@ -55,7 +55,7 @@ function test_ac1a(dyr_file, csv_file, init_cond)
         ) #Type of Fault
 
         #Solve problem in equilibrium
-        run_simulation!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
+        execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain small signal results for initial conditions. Testing the simulation reset
         small_sig = small_signal_analysis(sim; reset_simulation = true)

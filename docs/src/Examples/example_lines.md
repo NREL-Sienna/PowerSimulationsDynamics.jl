@@ -85,7 +85,7 @@ x0_init = get_initial_conditions(sim)
 
 ```julia
 #Run the simulation
-run_simulation!(sim, #simulation structure
+execute!(sim, #simulation structure
                 IDA(), #Sundials DAE Solver
                 dtmax = 0.02, #Maximum step size
 )
@@ -143,7 +143,7 @@ Ybus_change_dyn = PowerSimulationsDynamics.ThreePhaseFault(
 
 ```julia
 #Run the simulation
-run_simulation!(sim, #simulation structure
+execute!(sim, #simulation structure
                 IDA(), #Sundials DAE Solver
                 dtmax = 0.02, #Maximum step size
 )

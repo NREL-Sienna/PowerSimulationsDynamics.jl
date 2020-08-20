@@ -6,7 +6,7 @@ module PowerSimulationsDynamics
 # Base Exports
 export Simulation
 export Simulation!
-export run_simulation!
+export execute!
 export ThreePhaseFault
 export ControlReferenceChange
 

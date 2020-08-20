@@ -85,7 +85,7 @@ function Simulation!(
     logger = configure_logging(sim, "w")
     try
         Logging.with_logger(logger) do
-            build_simulation!(sim; kwargs...)
+            build!(sim; kwargs...)
         end
     finally
         close(logger)
@@ -124,7 +124,7 @@ function Simulation(
     logger = configure_logging(sim, "w")
     try
         Logging.with_logger(logger) do
-            build_simulation!(sim; kwargs...)
+            build!(sim; kwargs...)
         end
     finally
         close(logger)
@@ -140,7 +140,7 @@ function reset!(sim::Simulation)
     try
         Logging.with_logger(logger) do
             @info "Rebuilding the simulation after reset"
-            build_simulation!(sim)
+            build!(sim)
             @info "Simulation reset to status $(sim.status)"
         end
     finally
@@ -163,7 +163,7 @@ function configure_logging(sim::Simulation, file_mode)
     )
 end
 
-function build_simulation!(sim::Simulation; kwargs...)
+function build!(sim::Simulation; kwargs...)
     simulation_system = get_system(sim.simulation_inputs)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
@@ -382,7 +382,7 @@ function _simulation_pre_step(sim::Simulation, reset_simulation::Bool)
     return
 end
 
-function run_simulation!(sim::Simulation, solver; kwargs...)
+function execute!(sim::Simulation, solver; kwargs...)
     reset_simulation = get(kwargs, :reset_simulation, false)
     _simulation_pre_step(sim, reset_simulation)
     sim.status = SIMULATION_STARTED
