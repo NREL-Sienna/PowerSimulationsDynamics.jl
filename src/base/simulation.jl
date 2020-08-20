@@ -65,6 +65,7 @@ Builds the simulation object and conducts the indexing process. The initial cond
 - `initialize_simulation::Bool : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
 - `system_to_file::Bool`: Serializes the initialized system
 - `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
+- `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 """
 function Simulation!(
     simulation_folder::String,
@@ -103,6 +104,7 @@ Initializes the simulations and builds the indexing. The input system is not mod
 - `initialize_simulation::Bool : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
 - `system_to_file::Bool`: Serializes the original input system
 - `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debugg
+- `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 """
 function Simulation(
     simulation_folder::String,
