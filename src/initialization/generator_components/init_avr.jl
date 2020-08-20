@@ -97,8 +97,6 @@ function initialize_avr!(
     T3 = PSY.get_T3(avr)
     T4 = PSY.get_T4(avr)
     Tr = PSY.get_Tr(avr)
-    Vr_max = PSY.get_Vr_max(avr)
-    Vr_min = PSY.get_Vr_min(avr)
     Ae = PSY.get_Ae(avr)
     Be = PSY.get_Be(avr)
     #Obtain saturated Vf
@@ -138,7 +136,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device::PSY.DynamicGenerator{M, S, PSY.AC1A, TG, P},
+    device::PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
     Vf0 = get_inner_vars(device)[Vf_var]

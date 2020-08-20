@@ -42,8 +42,6 @@ function mdl_tg_ode!(
     T3 = PSY.get_T3(tg)
     T4 = PSY.get_T4(tg)
     T5 = PSY.get_T5(tg)
-    P_min = PSY.get_P_min(tg)
-    P_max = PSY.get_P_max(tg)
 
     #Compute auxiliary parameters
     P_in = P_ref + (1.0 / R) * (ω_ref - ω[1])
@@ -93,8 +91,6 @@ function mdl_tg_ode!(
     R = PSY.get_R(tg)
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
-    τ_min = PSY.get_τ_min(tg)
-    τ_max = PSY.get_τ_max(tg)
 
     #Compute auxiliary parameters
     τ_m = (1.0 / R) * (T1 / T2) * (ω_ref - ω[1]) + P_ref / 1.0 + xg
