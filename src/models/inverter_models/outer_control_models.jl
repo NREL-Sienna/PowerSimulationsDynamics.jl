@@ -21,7 +21,7 @@ function mdl_outer_ode!(
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(
-        device,
+        dyn_data,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
     vpll_d = device_states[external_ix[1]]
@@ -61,7 +61,7 @@ function mdl_outer_ode!(
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
-        device,
+        dyn_data,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
 

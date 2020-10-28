@@ -19,7 +19,7 @@ function initialize_outer!(
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(
-        device,
+        dyn_data,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
     Vr_filter = device_states[external_ix[4]]
@@ -39,7 +39,7 @@ function initialize_outer!(
     get_inner_vars(dyn_data)[P_ES_var] = p_elec_out
     #Update states
     outer_ix = get_local_state_ix(
-        device,
+        dyn_data,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
     outer_states = @view device_states[outer_ix]

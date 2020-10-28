@@ -26,4 +26,4 @@ end
 #Attach dynamic generator. Currently use PSS/e format based on bus #.
 device = [g for g in get_components(Generator, omib_sys)][1]
 case_inv = inv_darco(device)
-add_component!(omib_sys, case_inv)
+add_component!(omib_sys, case_inv, device)
