@@ -128,5 +128,4 @@ function initialize_inner!(
         inner_states[5] = sol_x0[7] #ϕ_d
         inner_states[6] = sol_x0[8] #ϕ_q
     end
-
 end

@@ -7,7 +7,6 @@ function update_global_vars!(inputs::SimulationInputs, x::AbstractArray)
 end
 
 function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float64)
-
     sys = get_system(inputs)
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
@@ -117,5 +116,4 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
 
     kirchoff_laws!(inputs, V_r, V_i, I_injections_r, I_injections_i, dx)
     out[bus_range] = get_aux_arrays(inputs)[6]
-
 end

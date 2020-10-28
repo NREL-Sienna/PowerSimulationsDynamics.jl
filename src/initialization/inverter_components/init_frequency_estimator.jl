@@ -8,7 +8,6 @@ function initialize_frequency_estimator!(
     DC <: PSY.DCSource,
     F <: PSY.Filter,
 }
-
     Vr_filter = get_inner_vars(device)[Vr_filter_var]
     Vi_filter = get_inner_vars(device)[Vi_filter_var]
 

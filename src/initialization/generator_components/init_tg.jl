@@ -2,7 +2,6 @@ function initialize_tg!(
     device_states,
     device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
-
     tg = PSY.get_prime_mover(device)
     τm0 = get_inner_vars(device)[τm_var]
     eff = PSY.get_efficiency(tg)

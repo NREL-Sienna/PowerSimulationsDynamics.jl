@@ -10,7 +10,6 @@ function device!(
     device::DynG,
     inputs::SimulationInputs,
 ) where {DynG <: PSY.DynamicGenerator}
-
     sys = get_system(inputs)
     #Obtain local device states
     n_states = PSY.get_n_states(device)
@@ -49,7 +48,6 @@ function device!(
     mdl_shaft_ode!(device_states, view(output_ode, ode_range), sys_f0, sys_ω, device)
 
     return
-
 end
 
 function device!(
@@ -90,7 +88,6 @@ function device!(
     device::DynI,
     inputs::SimulationInputs,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
-
     sys = get_system(inputs)
     #Obtain local device states
     n_states = PSY.get_n_states(device)

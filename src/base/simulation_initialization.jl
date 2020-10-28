@@ -106,7 +106,6 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
     @debug "Write result to initial guess vector"
     initial_guess .= sys_solve.zero
     return NLsolve.converged(sys_solve)
-
 end
 
 """

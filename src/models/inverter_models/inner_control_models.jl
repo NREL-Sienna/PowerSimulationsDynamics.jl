@@ -111,5 +111,4 @@ function mdl_inner_ode!(
     #Modulation Commands to Converter
     get_inner_vars(device)[md_var] = Vd_cnv_ref / Vdc
     get_inner_vars(device)[mq_var] = Vq_cnv_ref / Vdc
-
 end
