@@ -316,7 +316,6 @@ function _make_device_index!(device::PSY.StaticInjection)
     _attach_control_refs!(device)
 
     for c in PSY.get_dynamic_components(dyn_data)
-        @show
         device_state_mapping[typeof(c)] = Vector{Int64}(undef, length(PSY.get_states(c)))
         input_port_mapping[typeof(c)] = Vector{Int64}()
         _index_local_states!(device_state_mapping[typeof(c)], states, c)
