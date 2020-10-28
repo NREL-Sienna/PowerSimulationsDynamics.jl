@@ -11,7 +11,7 @@ threebus_sys = System(threebus_file_dir, runchecks = false)
 add_source_to_ref(threebus_sys)
 
 function dyn_gen_second_order(generator)
-    return PSY.DynamicGenerator(
+    return DynamicGenerator(
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_oneDoneQ(), #machine
@@ -23,15 +23,15 @@ function dyn_gen_second_order(generator)
 end
 
 function inv_case78(static_device)
-    return PSY.DynamicInverter(
-        static_device,
-        1.0, # ω_ref,
-        converter_high_power(), #converter
-        outer_control(), #outer control
-        inner_control(), #inner control voltage source
-        dc_source_lv(), #dc source
-        pll(), #pll
-        filt(), #filter
+    return DynamicInverter(
+        name = get_name(static_device),
+        ω_ref = 1.0, # ω_ref,
+        converter = converter_high_power(), #converter
+        outer_control = outer_control(), #outer control
+        inner_control = inner_control(), #inner control voltage source
+        dc_source = dc_source_lv(), #dc source
+        freq_estimator = pll(), #pll
+        filter = filt(), #filter
     )
 end
 
