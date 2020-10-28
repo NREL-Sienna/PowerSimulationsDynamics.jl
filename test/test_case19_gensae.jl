@@ -51,7 +51,7 @@ function test_gensae(dyr_file, csv_file, init_cond)
         )
 
         #Define Simulation Problem
-        sim = Simulation(
+        sim = Simulation!(
             path,
             sys, #system
             tspan, #time span

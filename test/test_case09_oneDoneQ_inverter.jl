@@ -25,7 +25,7 @@ path = (joinpath(pwd(), "test-09"))
 !isdir(path) && mkdir(path)
 try
     #Define Simulation Problem
-    sim = Simulation(path, threebus_sys, tspan, Pref_change)
+    sim = Simulation!(path, threebus_sys, tspan, Pref_change)
 
     small_sig = small_signal_analysis(sim)
 
