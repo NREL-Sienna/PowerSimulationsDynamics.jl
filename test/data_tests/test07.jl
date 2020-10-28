@@ -7,7 +7,7 @@ include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusNetwork.raw")
-threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false)
+threebus_sys = System(threebus_file_dir, runchecks = false)
 add_source_to_ref(threebus_sys)
 #Reduce generator output
 for g in get_components(Generator, threebus_sys)
@@ -17,35 +17,35 @@ res = solve_powerflow!(threebus_sys)
 
 function dyn_gen_five_mass_shaft_order(generator)
     return PSY.DynamicGenerator(
-        generator,
-        1.0, # ω_ref,
-        machine_oneDoneQ(), #machine
-        shaft_fivemass(), #shaft
-        avr_type1(), #avr
-        tg_none(),
-        pss_none(),
+        name = get_name(generator),
+        ω_ref = 1.0, # ω_ref,
+        machine = machine_oneDoneQ(), #machine
+        shaft = shaft_fivemass(), #shaft
+        avr = avr_type1(), #avr
+        prime_mover = tg_none(),
+        pss = pss_none(),
     ) #pss
 end
 
 function dyn_gen_first_order(generator)
     return PSY.DynamicGenerator(
-        generator,
-        1.0, # ω_ref,
-        machine_oneDoneQ(), #machine
-        shaft_damping(), #shaft
-        avr_type1(), #avr
-        tg_none(), #tg
-        pss_none(),
+        name = get_name(generator),
+        ω_ref = 1.0, # ω_ref,
+        machine = machine_oneDoneQ(), #machine
+        shaft = shaft_damping(), #shaft
+        avr = avr_type1(), #avr
+        prime_mover = tg_none(), #tg
+        pss = pss_none(),
     ) #pss
 end
 
 for g in get_components(Generator, threebus_sys)
     if get_number(get_bus(g)) == 103
         case_gen = dyn_gen_five_mass_shaft_order(g)
-        add_component!(threebus_sys, case_gen)
+        add_component!(threebus_sys, case_gen, g)
     elseif get_number(get_bus(g)) == 102
         case_inv = dyn_gen_first_order(g)
-        add_component!(threebus_sys, case_inv)
+        add_component!(threebus_sys, case_inv, g)
     end
 end
 #Compute Y_bus after fault

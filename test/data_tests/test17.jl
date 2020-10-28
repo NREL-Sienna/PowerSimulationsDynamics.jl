@@ -15,20 +15,20 @@ add_source_to_ref(sys)
 
 function dyn_gen_genrou(generator)
     return PSY.DynamicGenerator(
-        generator,
-        1.0, #ω_ref
-        machine_genrou(), #machine
-        shaft_genrou(), #shaft
-        avr_type1(), #avr
-        tg_none(), #tg
-        pss_none(),
+        name = get_name(generator),
+        ω_ref = 1.0, #ω_ref
+        machine = machine_genrou(), #machine
+        shaft = shaft_genrou(), #shaft
+        avr = avr_type1(), #avr
+        prime_mover = tg_none(), #tg
+        pss = pss_none(),
     ) #pss
 end
 
 #Add GENROU to System
 g = get_component(ThermalStandard, sys, "generator-102-1")
 dyn_gen = dyn_gen_genrou(g)
-add_component!(sys, dyn_gen);
+add_component!(sys, dyn_gen, g);
 
 #Compute Ybus_fault
 sys2 = System(raw_file_dir)
