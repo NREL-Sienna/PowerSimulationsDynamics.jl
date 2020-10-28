@@ -9,23 +9,23 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.BaseMachine)
+    external_ix = get_input_port_ix(dyn_data, PSY.BaseMachine)
     δ = device_states[external_ix[1]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
 
     #Get parameters
-    machine = PSY.get_machine(device)
+    machine = PSY.get_machine(dyn_data)
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
     eq_p = PSY.get_eq_p(machine)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -36,7 +36,7 @@ function mdl_machine_ode!(
     Pe = (V_dq[1] + R * i_d) * i_d + (V_dq[2] + R * i_q) * i_q      #15.35
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = Pe #Model assume ω approx 1.0
+    get_inner_vars(dyn_data)[τe_var] = Pe #Model assume ω approx 1.0
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
@@ -59,11 +59,11 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.OneDOneQMachine)
+    local_ix = get_local_state_ix(dyn_data, PSY.OneDOneQMachine)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -71,16 +71,16 @@ function mdl_machine_ode!(
     ed_p = internal_states[2]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.OneDOneQMachine)
+    external_ix = get_input_port_ix(dyn_data, PSY.OneDOneQMachine)
     δ = device_states[external_ix[1]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var]
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var]
 
     #Get parameters
-    machine = PSY.get_machine(device)
+    machine = PSY.get_machine(dyn_data)
     R = PSY.get_R(machine)
     Xd = PSY.get_Xd(machine)
     Xq = PSY.get_Xq(machine)
@@ -88,7 +88,7 @@ function mdl_machine_ode!(
     Xq_p = PSY.get_Xq_p(machine)
     Td0_p = PSY.get_Td0_p(machine)
     Tq0_p = PSY.get_Tq0_p(machine)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -103,7 +103,7 @@ function mdl_machine_ode!(
     output_ode[local_ix[2]] = (1.0 / Tq0_p) * (-ed_p + (Xq - Xq_p) * i_q)          #15.30 ed_p
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = Pe #Model assume ω approx 1.0
+    get_inner_vars(dyn_data)[τe_var] = Pe #Model assume ω approx 1.0
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
@@ -126,11 +126,11 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.MarconatoMachine)
+    local_ix = get_local_state_ix(dyn_data, PSY.MarconatoMachine)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -142,17 +142,17 @@ function mdl_machine_ode!(
     ed_pp = internal_states[6]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.MarconatoMachine)
+    external_ix = get_input_port_ix(dyn_data, PSY.MarconatoMachine)
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var]
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var]
 
     #Get parameters
-    machine = PSY.get_machine(device)
+    machine = PSY.get_machine(dyn_data)
     R = PSY.get_R(machine)
     Xd = PSY.get_Xd(machine)
     Xq = PSY.get_Xq(machine)
@@ -167,7 +167,7 @@ function mdl_machine_ode!(
     T_AA = PSY.get_T_AA(machine)
     γd = PSY.get_γd(machine)
     γq = PSY.get_γq(machine)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -188,7 +188,7 @@ function mdl_machine_ode!(
     output_ode[local_ix[6]] = (1.0 / Tq0_pp) * (-ed_pp + ed_p + (Xq_p - Xq_pp + γq) * i_q) #15.16 ed_pp
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
+    get_inner_vars(dyn_data)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
@@ -211,11 +211,11 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.SimpleMarconatoMachine)
+    local_ix = get_local_state_ix(dyn_data, PSY.SimpleMarconatoMachine)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -225,17 +225,17 @@ function mdl_machine_ode!(
     ed_pp = internal_states[4]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.SimpleMarconatoMachine)
+    external_ix = get_input_port_ix(dyn_data, PSY.SimpleMarconatoMachine)
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var]
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var]
 
     #Get parameters
-    machine = PSY.get_machine(device)
+    machine = PSY.get_machine(dyn_data)
     R = PSY.get_R(machine)
     Xd = PSY.get_Xd(machine)
     Xq = PSY.get_Xq(machine)
@@ -250,7 +250,7 @@ function mdl_machine_ode!(
     T_AA = PSY.get_T_AA(machine)
     γd = PSY.get_γd(machine)
     γq = PSY.get_γq(machine)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -272,7 +272,7 @@ function mdl_machine_ode!(
     output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (-ed_pp + ed_p + (Xq_p - Xq_pp + γq) * i_q) #15.16 ed_pp
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
+    get_inner_vars(dyn_data)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
@@ -295,11 +295,11 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.AndersonFouadMachine)
+    local_ix = get_local_state_ix(dyn_data, PSY.AndersonFouadMachine)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -311,17 +311,17 @@ function mdl_machine_ode!(
     ed_pp = internal_states[6]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.AndersonFouadMachine)
+    external_ix = get_input_port_ix(dyn_data, PSY.AndersonFouadMachine)
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var]
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var]
 
     #Get parameters
-    machine = PSY.get_machine(device)
+    machine = PSY.get_machine(dyn_data)
     R = PSY.get_R(machine)
     Xd = PSY.get_Xd(machine)
     Xq = PSY.get_Xq(machine)
@@ -333,7 +333,7 @@ function mdl_machine_ode!(
     Tq0_p = PSY.get_Tq0_p(machine)
     Td0_pp = PSY.get_Td0_pp(machine)
     Tq0_pp = PSY.get_Tq0_pp(machine)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -352,7 +352,7 @@ function mdl_machine_ode!(
     output_ode[local_ix[6]] = (1.0 / Tq0_pp) * (-ed_pp + ed_p + (Xq_p - Xq_pp) * i_q)      #15.19 ed_pp
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
+    get_inner_vars(dyn_data)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
@@ -375,11 +375,11 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.SimpleAFMachine)
+    local_ix = get_local_state_ix(dyn_data, PSY.SimpleAFMachine)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -389,17 +389,17 @@ function mdl_machine_ode!(
     ed_pp = internal_states[4]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.SimpleAFMachine)
+    external_ix = get_input_port_ix(dyn_data, PSY.SimpleAFMachine)
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var]
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var]
 
     #Get parameters
-    machine = PSY.get_machine(device)
+    machine = PSY.get_machine(dyn_data)
     R = PSY.get_R(machine)
     Xd = PSY.get_Xd(machine)
     Xq = PSY.get_Xq(machine)
@@ -411,7 +411,7 @@ function mdl_machine_ode!(
     Tq0_p = PSY.get_Tq0_p(machine)
     Td0_pp = PSY.get_Td0_pp(machine)
     Tq0_pp = PSY.get_Tq0_pp(machine)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -430,7 +430,7 @@ function mdl_machine_ode!(
     output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (-ed_pp + ed_p + (Xq_p - Xq_pp) * i_q)     #15.19 ed_pp
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
+    get_inner_vars(dyn_data)[τe_var] = τ_e
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [i_d; i_q]
@@ -449,7 +449,7 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{M, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{M, S, A, TG, P},
 ) where {
     M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
     S <: PSY.Shaft,
@@ -459,8 +459,8 @@ function mdl_machine_ode!(
 }
 
     #Obtain indices for component w/r to device
-    machine = PSY.get_machine(device)
-    local_ix = get_local_state_ix(device, typeof(machine))
+    machine = PSY.get_machine(dyn_data)
+    local_ix = get_local_state_ix(dyn_data, typeof(machine))
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -470,14 +470,14 @@ function mdl_machine_ode!(
     ψ_kq = internal_states[4]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, typeof(machine))
+    external_ix = get_input_port_ix(dyn_data, typeof(machine))
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var] #E_fd: Field voltage
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var] #E_fd: Field voltage
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -497,7 +497,7 @@ function mdl_machine_ode!(
     γ_d2 = PSY.get_γ_d2(machine)
     γ_q2 = PSY.get_γ_q2(machine)
     γ_qd = PSY.get_γ_qd(machine)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -525,8 +525,8 @@ function mdl_machine_ode!(
     output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (-ψ_kq + ed_p + (Xq_p - Xl) * I_q)   #2.21c ψ_kq
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
-    get_inner_vars(device)[Xad_Ifd_var] = Xad_Ifd
+    get_inner_vars(dyn_data)[τe_var] = τ_e
+    get_inner_vars(dyn_data)[Xad_Ifd_var] = Xad_Ifd
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
@@ -545,12 +545,12 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    machine = PSY.get_machine(device)
-    local_ix = get_local_state_ix(device, typeof(machine))
+    machine = PSY.get_machine(dyn_data)
+    local_ix = get_local_state_ix(dyn_data, typeof(machine))
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -559,14 +559,14 @@ function mdl_machine_ode!(
     ψq_pp = internal_states[3]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, typeof(machine))
+    external_ix = get_input_port_ix(dyn_data, typeof(machine))
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var] #E_fd: Field voltage
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var] #E_fd: Field voltage
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -582,7 +582,7 @@ function mdl_machine_ode!(
     γ_d1 = PSY.get_γ_d1(machine)
     γ_q1 = PSY.get_γ_q1(machine)
     γ_d2 = PSY.get_γ_d2(machine)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_d, V_q = ri_dq(δ) * [V_tR; V_tI]
@@ -604,8 +604,8 @@ function mdl_machine_ode!(
     output_ode[local_ix[3]] = (1.0 / Tq0_pp) * (-ψq_pp - (Xq - Xq_pp) * I_q)        #2.35b ψq_pp
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
-    get_inner_vars(device)[Xad_Ifd_var] = Xad_Ifd
+    get_inner_vars(dyn_data)[τe_var] = τ_e
+    get_inner_vars(dyn_data)[Xad_Ifd_var] = Xad_Ifd
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
@@ -624,12 +624,12 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    machine = PSY.get_machine(device)
-    local_ix = get_local_state_ix(device, typeof(machine))
+    machine = PSY.get_machine(dyn_data)
+    local_ix = get_local_state_ix(dyn_data, typeof(machine))
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -638,14 +638,14 @@ function mdl_machine_ode!(
     ψq_pp = internal_states[3]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, typeof(machine))
+    external_ix = get_input_port_ix(dyn_data, typeof(machine))
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var] #E_fd: Field voltage
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var] #E_fd: Field voltage
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -662,7 +662,7 @@ function mdl_machine_ode!(
     γ_q1 = PSY.get_γ_q1(machine)
     γ_d2 = PSY.get_γ_d2(machine)
     γ_qd = (Xq - Xl) / (Xd - Xl)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_d, V_q = ri_dq(δ) * [V_tR; V_tI]
@@ -686,8 +686,8 @@ function mdl_machine_ode!(
         (1.0 / Tq0_pp) * (-ψq_pp + (Xq - Xq_pp) * I_q - Se * γ_qd * ψq_pp)        #2.35b ψq_pp
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
-    get_inner_vars(device)[Xad_Ifd_var] = Xad_Ifd
+    get_inner_vars(dyn_data)[τe_var] = τ_e
+    get_inner_vars(dyn_data)[Xad_Ifd_var] = Xad_Ifd
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
@@ -714,11 +714,11 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.FullMachine)
+    local_ix = get_local_state_ix(dyn_data, PSY.FullMachine)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -729,26 +729,26 @@ function mdl_machine_ode!(
     ψ1q = internal_states[5]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.FullMachine)
+    external_ix = get_input_port_ix(dyn_data, PSY.FullMachine)
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var]
-    #ψd = get_inner_vars(device)[ψd_var]
-    #ψq = get_inner_vars(device)[ψq_var]
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var]
+    #ψd = get_inner_vars(dyn_data)[ψd_var]
+    #ψq = get_inner_vars(dyn_data)[ψq_var]
 
     #Get parameters
-    machine = PSY.get_machine(device)
+    machine = PSY.get_machine(dyn_data)
     R = PSY.get_R(machine)
     R_f = PSY.get_R_f(machine)
     R_1d = PSY.get_R_1d(machine)
     R_1q = PSY.get_R_1q(machine)
     inv_d_fluxlink = PSY.get_inv_d_fluxlink(machine)
     inv_q_fluxlink = PSY.get_inv_q_fluxlink(machine)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
@@ -770,9 +770,9 @@ function mdl_machine_ode!(
     τ_e = ψd * i_q1q[1] - ψq * i_df1d[1]            #15.6 in Milano or 3.117 in Kundur
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
-    get_inner_vars(device)[ψd_var] = ψd
-    get_inner_vars(device)[ψq_var] = ψq
+    get_inner_vars(dyn_data)[τe_var] = τ_e
+    get_inner_vars(dyn_data)[ψd_var] = ψd
+    get_inner_vars(dyn_data)[ψq_var] = ψq
 
     #Compute current from the generator to the grid
     I_RI = basepower * dq_ri(δ) * [i_df1d[1]; i_q1q[1]]
@@ -797,11 +797,11 @@ function mdl_machine_ode!(
     current_i,
     Sbase::Float64,
     f0::Float64,
-    device::PSY.DynamicGenerator{PSY.SimpleFullMachine, S, A, TG, P},
+    dyn_data::PSY.DynamicGenerator{PSY.SimpleFullMachine, S, A, TG, P},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.SimpleFullMachine)
+    local_ix = get_local_state_ix(dyn_data, PSY.SimpleFullMachine)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -810,19 +810,19 @@ function mdl_machine_ode!(
     ψ1q = internal_states[3]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.SimpleFullMachine)
+    external_ix = get_input_port_ix(dyn_data, PSY.SimpleFullMachine)
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_gen_var]
-    V_tI = get_inner_vars(device)[VI_gen_var]
-    Vf = get_inner_vars(device)[Vf_var]
-    ψd = get_inner_vars(device)[ψd_var]
-    ψq = get_inner_vars(device)[ψq_var]
+    V_tR = get_inner_vars(dyn_data)[VR_gen_var]
+    V_tI = get_inner_vars(dyn_data)[VI_gen_var]
+    Vf = get_inner_vars(dyn_data)[Vf_var]
+    ψd = get_inner_vars(dyn_data)[ψd_var]
+    ψq = get_inner_vars(dyn_data)[ψq_var]
 
     #Get parameters
-    machine = PSY.get_machine(device)
+    machine = PSY.get_machine(dyn_data)
     R = PSY.get_R(machine)
     R_f = PSY.get_R_f(machine)
     R_1d = PSY.get_R_1d(machine)
@@ -849,9 +849,9 @@ function mdl_machine_ode!(
     τ_e = ψd * i_q1q[1] - ψq * i_df1d[1]            #15.6 in Milano or 3.117 in Kundur
 
     #Update inner_vars
-    get_inner_vars(device)[τe_var] = τ_e
-    get_inner_vars(device)[ψd_var] = ψd
-    get_inner_vars(device)[ψq_var] = ψq
+    get_inner_vars(dyn_data)[τe_var] = τ_e
+    get_inner_vars(dyn_data)[ψd_var] = ψd
+    get_inner_vars(dyn_data)[ψq_var] = ψq
 
     #Compute current from the generator to the grid
     I_RI = (BaseMVA / Sbase) * dq_ri(δ) * [i_df1d[1]; i_q1q[1]]

@@ -30,10 +30,11 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
     fill!(I_injections_r, 0.0)
     fill!(I_injections_i, 0.0)
 
-    for d in PSY.get_components(PSY.DynamicInjection, sys)
+    for d in get_injectors_data(inputs)
+        dyn_data = PSY.get_dynamic_injector(d)
         bus_n = PSY.get_number(PSY.get_bus(d))
         bus_ix = get_lookup(inputs)[bus_n]
-        n_states = PSY.get_n_states(d)
+        n_states = PSY.get_n_states(dyn_data)
         ix_range = range(injection_start, length = n_states)
         ode_range = range(injection_count, length = n_states)
         injection_count = injection_count + n_states
@@ -47,7 +48,7 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
             view(I_injections_i, bus_ix),
             ix_range,
             ode_range,
-            d,
+            dyn_data,
             inputs,
         )
         out[ix_range] = injection_ode[ode_range] - dx[ix_range]

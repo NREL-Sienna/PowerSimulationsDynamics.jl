@@ -249,27 +249,28 @@ function _attach_ports!(component::PSY.DynamicComponent)
 end
 
 function _attach_inner_vars!(
-    device::PSY.DynamicGenerator,
+    dyn_data::PSY.DynamicGenerator,
     ::Type{T} = Real,
 ) where {T <: Real}
-    device.ext[INNER_VARS] = zeros(T, 9)
+    dyn_data.ext[INNER_VARS] = zeros(T, 9)
     return
 end
 
 function _attach_inner_vars!(
-    device::PSY.DynamicInverter,
+    dyn_data::PSY.DynamicInverter,
     ::Type{T} = Real,
 ) where {T <: Real}
-    device.ext[INNER_VARS] = zeros(T, 14)
+    dyn_data.ext[INNER_VARS] = zeros(T, 14)
     return
 end
 
-function _attach_control_refs!(device::PSY.DynamicInjection)
-    device.ext[CONTROL_REFS] = [
-        PSY.get_V_ref(device),
-        PSY.get_ω_ref(device),
-        PSY.get_P_ref(device),
-        PSY.get_reactive_power(PSY.get_static_injector(device)),
+function _attach_control_refs!(device::PSY.StaticInjection)
+    dyn_data = PSY.get_dynamic_injector(device)
+    dyn_data.ext[CONTROL_REFS] = [
+        PSY.get_V_ref(dyn_data),
+        PSY.get_ω_ref(dyn_data),
+        PSY.get_P_ref(dyn_data),
+        PSY.get_reactive_power(device),
     ]
     return
 end
@@ -306,22 +307,23 @@ function _get_Ybus(sys::PSY.System)
     return Ybus, lookup
 end
 
-function _make_device_index!(device::PSY.DynamicInjection)
-    states = PSY.get_states(device)
+function _make_device_index!(device::PSY.StaticInjection)
+    dyn_data = PSY.get_dynamic_injector(device)
+    states = PSY.get_states(dyn_data)
     device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
     input_port_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
-    _attach_inner_vars!(device)
+    _attach_inner_vars!(dyn_data)
     _attach_control_refs!(device)
 
-    for c in PSY.get_dynamic_components(device)
+    for c in PSY.get_dynamic_components(dyn_data)
+        @show
         device_state_mapping[typeof(c)] = Vector{Int64}(undef, length(PSY.get_states(c)))
         input_port_mapping[typeof(c)] = Vector{Int64}()
         _index_local_states!(device_state_mapping[typeof(c)], states, c)
         _index_port_mapping!(input_port_mapping[typeof(c)], states, c)
-        device.ext[LOCAL_STATE_MAPPING] = device_state_mapping
-        device.ext[INPUT_PORT_MAPPING] = input_port_mapping
+        dyn_data.ext[LOCAL_STATE_MAPPING] = device_state_mapping
+        dyn_data.ext[INPUT_PORT_MAPPING] = input_port_mapping
     end
-
     return
 end
 
@@ -340,28 +342,28 @@ function _add_states_to_global!(
 end
 
 function _get_internal_mapping(
-    device::PSY.DynamicInjection,
+    dyn_data::PSY.DynamicInjection,
     key::AbstractString,
     ty::Type{T},
 ) where {T <: PSY.DynamicComponent}
-    device_index = PSY.get_ext(device)[key]
+    device_index = PSY.get_ext(dyn_data)[key]
     val = get(device_index, ty, nothing)
     @assert !isnothing(val)
     return val
 end
 
 function get_local_state_ix(
-    device::PSY.DynamicInjection,
+    dyn_data::PSY.DynamicInjection,
     ty::Type{T},
 ) where {T <: PSY.DynamicComponent}
-    return _get_internal_mapping(device, LOCAL_STATE_MAPPING, ty)
+    return _get_internal_mapping(dyn_data, LOCAL_STATE_MAPPING, ty)
 end
 
 function get_input_port_ix(
-    device::PSY.DynamicInjection,
+    dyn_data::PSY.DynamicInjection,
     ty::Type{T},
 ) where {T <: PSY.DynamicComponent}
-    return _get_internal_mapping(device, INPUT_PORT_MAPPING, ty)
+    return _get_internal_mapping(dyn_data, INPUT_PORT_MAPPING, ty)
 end
 
 function _simulation_pre_step(sim::Simulation, reset_simulation::Bool)

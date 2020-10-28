@@ -1,41 +1,46 @@
-function initialize_device(device::PSY.DynamicGenerator)
+function initialize_device!(dyn_data::PSY.DynamicGenerator, static::PSY.StaticInjection)
     #Obtain States
-    device_states = zeros(PSY.get_n_states(device))
+    device_states = zeros(PSY.get_n_states(dyn_data))
 
     #Initialize Machine and Shaft: δ and ω
-    initialize_mach_shaft!(device_states, device)
+    initialize_mach_shaft!(device_states, static, dyn_data)
     #Initialize extra Shaft states
-    initialize_shaft!(device_states, device)
+    initialize_shaft!(device_states, static, dyn_data)
     #Initialize AVR
-    initialize_avr!(device_states, device)
+    initialize_avr!(device_states, static, dyn_data)
     #Initialize TG
-    initialize_tg!(device_states, device)
+    initialize_tg!(device_states, static, dyn_data)
     #Initialize PSS
-    initialize_pss!(device_states, device)
+    initialize_pss!(device_states, static, dyn_data)
 
     return device_states
 end
 
-function initialize_device(device::PSY.DynamicInverter)
+function initialize_device!(dyn_data::PSY.DynamicInverter, static::PSY.StaticInjection)
     #Obtain States
-    device_states = zeros(PSY.get_n_states(device))
+    device_states = zeros(PSY.get_n_states(dyn_data))
 
     #Initialize Machine and Shaft: V and I
-    initialize_filter!(device_states, device)
+    initialize_filter!(device_states, static, dyn_data)
     #Initialize freq estimator
-    initialize_frequency_estimator!(device_states, device)
+    initialize_frequency_estimator!(device_states, static, dyn_data)
     #Initialize OuterLoop
-    initialize_outer!(device_states, device)
+    initialize_outer!(device_states, static, dyn_data)
     #Initialize DCside
-    initialize_DCside!(device_states, device)
+    initialize_DCside!(device_states, static, dyn_data)
     #Initialize InnerLoop
-    initialize_inner!(device_states, device)
+    initialize_inner!(device_states, static, dyn_data)
     #Initialize Converter
-    initialize_converter!(device_states, device)
+    initialize_converter!(device_states, static, dyn_data)
     return device_states
 end
 
-function initialize_device(device::PSY.Source)
+function initialize_device!(static::PSY.StaticInjection)
+    dyn_data = PSY.get_dynamic_injector(static)
+    return initialize_device!(dyn_data, static)
+end
+
+function initialize_device!(device::PSY.Source)
     #PowerFlow Data
     P0 = PSY.get_active_power(device)
     Q0 = PSY.get_reactive_power(device)
@@ -75,7 +80,7 @@ function initialize_device(device::PSY.Source)
     end
 end
 
-function initialize_device(branch::PSY.DynamicBranch)
+function initialize_device!(branch::PSY.DynamicBranch)
     device_states = zeros(PSY.get_n_states(branch))
     #PowerFlow Data
     arc = PSY.get_arc(branch)

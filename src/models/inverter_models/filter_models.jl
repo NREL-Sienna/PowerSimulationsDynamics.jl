@@ -6,7 +6,7 @@ function mdl_filter_ode!(
     sys_Sbase,
     f0,
     ω_sys,
-    device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter},
+    dyn_data::PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -15,27 +15,27 @@ function mdl_filter_ode!(
     P <: PSY.FrequencyEstimator,
 }
 
-    #external_ix = get_input_port_ix(device, PSY.LCLFilter)
+    #external_ix = get_input_port_ix(dyn_data, PSY.LCLFilter)
     #θ_oc = device_states[external_ix[1]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(device)[VR_inv_var]
-    V_tI = get_inner_vars(device)[VI_inv_var]
-    Vr_cnv = get_inner_vars(device)[Vr_cnv_var]
-    Vi_cnv = get_inner_vars(device)[Vi_cnv_var]
+    V_tR = get_inner_vars(dyn_data)[VR_inv_var]
+    V_tI = get_inner_vars(dyn_data)[VI_inv_var]
+    Vr_cnv = get_inner_vars(dyn_data)[Vr_cnv_var]
+    Vi_cnv = get_inner_vars(dyn_data)[Vi_cnv_var]
 
     #Get parameters
-    filter = PSY.get_filter(device)
+    filter = PSY.get_filter(dyn_data)
     ωb = 2 * pi * f0
     lf = PSY.get_lf(filter)
     rf = PSY.get_rf(filter)
     cf = PSY.get_cf(filter)
     lg = PSY.get_lg(filter)
     rg = PSY.get_rg(filter)
-    basepower = PSY.get_base_power(device)
+    basepower = PSY.get_base_power(dyn_data)
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.LCLFilter)
+    local_ix = get_local_state_ix(dyn_data, PSY.LCLFilter)
 
     #Define internal states for filter
     internal_states = @view device_states[local_ix]
@@ -80,8 +80,8 @@ function mdl_filter_ode!(
     )
 
     #Update inner_vars
-    get_inner_vars(device)[Vr_filter_var] = Vr_filter
-    get_inner_vars(device)[Vi_filter_var] = Vi_filter
+    get_inner_vars(dyn_data)[Vr_filter_var] = Vr_filter
+    get_inner_vars(dyn_data)[Vi_filter_var] = Vi_filter
 
     #Compute current from the inverter to the grid
     I_RI = (basepower / sys_Sbase) * [Ir_filter; Ii_filter]

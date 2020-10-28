@@ -3,7 +3,7 @@ function mdl_outer_ode!(
     output_ode,
     f0,
     ω_sys,
-    device::PSY.DynamicInverter{
+    dyn_data::PSY.DynamicInverter{
         C,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
         IC,
@@ -33,12 +33,12 @@ function mdl_outer_ode!(
     Ii_filter = device_states[external_ix[7]]
 
     #Obtain inner variables for component
-    ω_pll = get_inner_vars(device)[ω_freq_estimator_var]
-    V_tR = get_inner_vars(device)[VR_inv_var]
-    V_tI = get_inner_vars(device)[VI_inv_var]
+    ω_pll = get_inner_vars(dyn_data)[ω_freq_estimator_var]
+    V_tR = get_inner_vars(dyn_data)[VR_inv_var]
+    V_tI = get_inner_vars(dyn_data)[VI_inv_var]
 
     #Get Active Power Controller parameters
-    outer_control = PSY.get_outer_control(device)
+    outer_control = PSY.get_outer_control(dyn_data)
     active_power_control = PSY.get_active_power(outer_control)
     Ta = PSY.get_Ta(active_power_control) #VSM Inertia constant
     kd = PSY.get_kd(active_power_control) #VSM damping constant
@@ -51,13 +51,13 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    pll_control = PSY.get_freq_estimator(device)
+    pll_control = PSY.get_freq_estimator(dyn_data)
     kp_pll = PSY.get_kp_pll(pll_control)
     ki_pll = PSY.get_ki_pll(pll_control)
-    p_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
-    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
-    V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
-    q_ref = PSY.get_ext(device)[CONTROL_REFS][Q_ref_index]
+    p_ref = PSY.get_ext(dyn_data)[CONTROL_REFS][P_ref_index]
+    ω_ref = PSY.get_ext(dyn_data)[CONTROL_REFS][ω_ref_index]
+    V_ref = PSY.get_ext(dyn_data)[CONTROL_REFS][V_ref_index]
+    q_ref = PSY.get_ext(dyn_data)[CONTROL_REFS][Q_ref_index]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -82,7 +82,7 @@ function mdl_outer_ode!(
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
     #Update inner vars
-    get_inner_vars(device)[θ_oc_var] = θ_oc
-    get_inner_vars(device)[ω_oc_var] = ω_oc
-    get_inner_vars(device)[V_oc_var] = V_ref + kq * (q_ref - qm)
+    get_inner_vars(dyn_data)[θ_oc_var] = θ_oc
+    get_inner_vars(dyn_data)[ω_oc_var] = ω_oc
+    get_inner_vars(dyn_data)[V_oc_var] = V_ref + kq * (q_ref - qm)
 end

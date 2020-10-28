@@ -1,12 +1,13 @@
 function mdl_tg_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
+    dyn_data::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Update inner vars
-    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
-    get_inner_vars(device)[τm_var] = P_ref * PSY.get_efficiency(PSY.get_prime_mover(device))
+    P_ref = PSY.get_ext(dyn_data)[CONTROL_REFS][P_ref_index]
+    get_inner_vars(dyn_data)[τm_var] =
+        P_ref * PSY.get_efficiency(PSY.get_prime_mover(dyn_data))
 
     return
 end
@@ -14,15 +15,15 @@ end
 function mdl_tg_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P},
+    dyn_data::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
-    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
+    ω_ref = PSY.get_ext(dyn_data)[CONTROL_REFS][ω_ref_index]
+    P_ref = PSY.get_ext(dyn_data)[CONTROL_REFS][P_ref_index]
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.TGTypeI)
+    local_ix = get_local_state_ix(dyn_data, PSY.TGTypeI)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -31,11 +32,11 @@ function mdl_tg_ode!(
     x_g3 = internal_states[3]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.TGTypeI)
+    external_ix = get_input_port_ix(dyn_data, PSY.TGTypeI)
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    tg = PSY.get_prime_mover(device)
+    tg = PSY.get_prime_mover(dyn_data)
     R = PSY.get_R(tg)
     Ts = PSY.get_Ts(tg)
     Tc = PSY.get_Tc(tg)
@@ -60,7 +61,7 @@ function mdl_tg_ode!(
         (1.0 / T5) * ((1.0 - T4 / T5) * (x_g2 + (T3 / Tc) * x_g1) - x_g3)
 
     #Update mechanical torque
-    get_inner_vars(device)[τm_var] = x_g3 + (T4 / T5) * (x_g2 + (T3 / Tc) * x_g1)
+    get_inner_vars(dyn_data)[τm_var] = x_g3 + (T4 / T5) * (x_g2 + (T3 / Tc) * x_g1)
 
     return
 end
@@ -68,26 +69,26 @@ end
 function mdl_tg_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
+    dyn_data::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = PSY.get_ext(device)[CONTROL_REFS][ω_ref_index]
-    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
+    ω_ref = PSY.get_ext(dyn_data)[CONTROL_REFS][ω_ref_index]
+    P_ref = PSY.get_ext(dyn_data)[CONTROL_REFS][P_ref_index]
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.TGTypeII)
+    local_ix = get_local_state_ix(dyn_data, PSY.TGTypeII)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
     xg = internal_states[1]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.TGTypeII)
+    external_ix = get_input_port_ix(dyn_data, PSY.TGTypeII)
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    tg = PSY.get_prime_mover(device)
+    tg = PSY.get_prime_mover(dyn_data)
     R = PSY.get_R(tg)
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
@@ -106,7 +107,7 @@ function mdl_tg_ode!(
     output_ode[local_ix[1]] = (1.0 / T2) * ((1.0 / R) * (1 - T2 / T1) * (ω_ref - ω[1]) - xg)
 
     #Update mechanical torque
-    get_inner_vars(device)[τm_var] = τ_m
+    get_inner_vars(dyn_data)[τm_var] = τ_m
 
     return
 end
