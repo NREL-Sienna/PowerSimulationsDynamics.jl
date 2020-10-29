@@ -20,7 +20,8 @@ function initialize_avr!(
     Vf0 = get_inner_vars(dynamic_device)[Vf_var]
     #Obtain measured terminal voltage
     Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 + get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
     )
     #Solve V_ref
     V_ref = Vm
@@ -43,7 +44,8 @@ function initialize_avr!(
     Vf0 = get_inner_vars(dynamic_device)[Vf_var]
     #Obtain measured terminal voltage
     Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 + get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
     )
 
     #Get parameters
@@ -96,7 +98,8 @@ function initialize_avr!(
     Vf0 = get_inner_vars(dynamic_device)[Vf_var]
     #Obtain measured terminal voltage
     Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 + get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
     )
 
     #Get parameters
@@ -155,7 +158,8 @@ function initialize_avr!(
     Xad_Ifd0 = get_inner_vars(dynamic_device)[Xad_Ifd_var]
     #Obtain measured terminal voltage
     Vm0 = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 + get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
     )
 
     #Get parameters

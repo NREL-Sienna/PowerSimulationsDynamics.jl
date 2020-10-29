@@ -113,7 +113,10 @@ function initialize_inner!(
         outer_states[2] = sol_x0[1]
         #Update V_ref (#TODO)
         PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[2]
-        PSY.set_V_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), sol_x0[2])
+        PSY.set_V_ref!(
+            PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
+            sol_x0[2],
+        )
         get_inner_vars(dynamic_device)[V_oc_var] = sol_x0[2]
         #Update Converter modulation
         m0_dq = (ri_dq(sol_x0[1] + pi / 2) * [Vr_cnv0; Vi_cnv0]) ./ Vdc

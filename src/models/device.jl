@@ -45,7 +45,13 @@ function device!(
     )
 
     #Obtain ODEs for PSY.Shaft
-    mdl_shaft_ode!(device_states, view(output_ode, ode_range), sys_f0, sys_ω, dynamic_device)
+    mdl_shaft_ode!(
+        device_states,
+        view(output_ode, ode_range),
+        sys_f0,
+        sys_ω,
+        dynamic_device,
+    )
 
     return
 end
@@ -119,7 +125,13 @@ function device!(
     )
 
     #Obtain ODEs for OuterLoop
-    mdl_outer_ode!(device_states, view(output_ode, ode_range), sys_f0, sys_ω, dynamic_device)
+    mdl_outer_ode!(
+        device_states,
+        view(output_ode, ode_range),
+        sys_f0,
+        sys_ω,
+        dynamic_device,
+    )
 
     #Obtain inner controller ODEs and modulation commands
     mdl_inner_ode!(device_states, view(output_ode, ode_range), dynamic_device)

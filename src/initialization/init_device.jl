@@ -1,4 +1,7 @@
-function initialize_device!(dynamic_device::PSY.DynamicGenerator, static::PSY.StaticInjection)
+function initialize_device!(
+    dynamic_device::PSY.DynamicGenerator,
+    static::PSY.StaticInjection,
+)
     #Obtain States
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
@@ -16,7 +19,10 @@ function initialize_device!(dynamic_device::PSY.DynamicGenerator, static::PSY.St
     return device_states
 end
 
-function initialize_device!(dynamic_device::PSY.DynamicInverter, static::PSY.StaticInjection)
+function initialize_device!(
+    dynamic_device::PSY.DynamicInverter,
+    static::PSY.StaticInjection,
+)
     #Obtain States
     device_states = zeros(PSY.get_n_states(dynamic_device))
 

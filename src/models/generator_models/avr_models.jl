@@ -29,7 +29,8 @@ function mdl_avr_ode!(
 
     #Define external states for device
     V_th = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 + get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
     )
 
     #Get Parameters
@@ -65,7 +66,8 @@ function mdl_avr_ode!(
 
     #Define external states for device
     V_th = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 + get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
     )
     Vs = get_inner_vars(dynamic_device)[V_pss_var]
 
@@ -125,7 +127,8 @@ function mdl_avr_ode!(
 
     #Define external states for device
     V_th = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 + get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
     )
     Vs = get_inner_vars(dynamic_device)[V_pss_var]
 
@@ -192,7 +195,8 @@ function mdl_avr_ode!(
 
     #Define external states for device
     V_th = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 + get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
     )
     Vs = get_inner_vars(dynamic_device)[V_pss_var]
     Xad_Ifd = get_inner_vars(dynamic_device)[Xad_Ifd_var]

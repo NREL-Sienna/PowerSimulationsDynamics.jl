@@ -9,5 +9,6 @@ function mdl_DCside_ode!(
 }
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vdc_var] = PSY.get_voltage(PSY.get_dc_source(dynamic_device))
+    get_inner_vars(dynamic_device)[Vdc_var] =
+        PSY.get_voltage(PSY.get_dc_source(dynamic_device))
 end
