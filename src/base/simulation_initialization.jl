@@ -38,12 +38,12 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
 
     @debug "Updating Dynamic Injection Component Initial Guess"
     for d in get_injectors_data(inputs)
-        dyn_data = PSY.get_dynamic_injector(d)
-        @debug PSY.get_name(d) typeof(d) typeof(dyn_data)
+        dynamic_device = PSY.get_dynamic_injector(d)
+        @debug PSY.get_name(d) typeof(d) typeof(dynamic_device)
         bus = PSY.get_bus(d)
         bus_n = PSY.get_number(PSY.get_bus(d))
         bus_ix = get_lookup(inputs)[bus_n]
-        n_states = PSY.get_n_states(dyn_data)
+        n_states = PSY.get_n_states(dynamic_device)
         ix_range = range(injection_start, length = n_states)
         injection_start = injection_start + n_states
         x0_device = initialize_device!(d)

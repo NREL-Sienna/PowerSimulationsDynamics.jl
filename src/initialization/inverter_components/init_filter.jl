@@ -1,7 +1,7 @@
 function initialize_filter!(
     device_states,
     static::PSY.StaticInjection,
-    dyn_data::PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter},
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -23,7 +23,7 @@ function initialize_filter!(
     I_I = imag(I)
 
     #Get Parameters
-    filter = PSY.get_filter(dyn_data)
+    filter = PSY.get_filter(dynamic_device)
     lf = PSY.get_lf(filter)
     rf = PSY.get_rf(filter)
     cf = PSY.get_cf(filter)
@@ -33,7 +33,7 @@ function initialize_filter!(
     #Set parameters
     Ir_filter = I_R
     Ii_filter = I_I
-    ω_sys = PSY.get_ω_ref(dyn_data)
+    ω_sys = PSY.get_ω_ref(dynamic_device)
 
     #To solve Vr_cnv, Vi_cnv, Ir_cnv, Ii_cnv, Vr_filter, Vi_filter
     function f!(out, x)
@@ -64,16 +64,16 @@ function initialize_filter!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dyn_data)[VR_inv_var] = V_R
-        get_inner_vars(dyn_data)[VI_inv_var] = V_I
+        get_inner_vars(dynamic_device)[VR_inv_var] = V_R
+        get_inner_vars(dynamic_device)[VI_inv_var] = V_I
         #Update Converter voltages
-        get_inner_vars(dyn_data)[Vr_cnv_var] = sol_x0[1]
-        get_inner_vars(dyn_data)[Vi_cnv_var] = sol_x0[2]
+        get_inner_vars(dynamic_device)[Vr_cnv_var] = sol_x0[1]
+        get_inner_vars(dynamic_device)[Vi_cnv_var] = sol_x0[2]
         #Update filter voltages
-        get_inner_vars(dyn_data)[Vr_filter_var] = sol_x0[5]
-        get_inner_vars(dyn_data)[Vi_filter_var] = sol_x0[6]
+        get_inner_vars(dynamic_device)[Vr_filter_var] = sol_x0[5]
+        get_inner_vars(dynamic_device)[Vi_filter_var] = sol_x0[6]
         #Update states
-        filter_ix = get_local_state_ix(dyn_data, PSY.LCLFilter)
+        filter_ix = get_local_state_ix(dynamic_device, PSY.LCLFilter)
         filter_states = @view device_states[filter_ix]
         filter_states[1] = sol_x0[3] #Ir_cnv
         filter_states[2] = sol_x0[4] #Ii_cnv

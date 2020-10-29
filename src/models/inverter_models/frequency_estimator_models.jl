@@ -3,7 +3,7 @@ function mdl_freq_estimator_ode!(
     output_ode,
     f0,
     ω_sys,
-    dyn_data::PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F},
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -13,22 +13,22 @@ function mdl_freq_estimator_ode!(
 }
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(dyn_data, PSY.KauraPLL)
+    external_ix = get_input_port_ix(dynamic_device, PSY.KauraPLL)
     Vr_filter = device_states[external_ix[1]]
     Vi_filter = device_states[external_ix[2]]
 
-    #V_tR = get_inner_vars(dyn_data)[VR_inv_var]
-    #V_tI = get_inner_vars(dyn_data)[VI_inv_var]
+    #V_tR = get_inner_vars(dynamic_device)[VR_inv_var]
+    #V_tI = get_inner_vars(dynamic_device)[VI_inv_var]
 
     #Get parameters
-    pll_control = PSY.get_freq_estimator(dyn_data)
+    pll_control = PSY.get_freq_estimator(dynamic_device)
     ω_lp = PSY.get_ω_lp(pll_control)
     kp_pll = PSY.get_kp_pll(pll_control)
     ki_pll = PSY.get_ki_pll(pll_control)
     ωb = 2.0 * pi * f0
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(dyn_data, PSY.KauraPLL)
+    local_ix = get_local_state_ix(dynamic_device, PSY.KauraPLL)
 
     #Define internal states for frequency estimator
     internal_states = @view device_states[local_ix]
@@ -57,6 +57,6 @@ function mdl_freq_estimator_ode!(
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    get_inner_vars(dyn_data)[ω_freq_estimator_var] =
+    get_inner_vars(dynamic_device)[ω_freq_estimator_var] =
         (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + ω_sys)
 end

@@ -58,7 +58,7 @@ function test_ac1a(dyr_file, csv_file, init_cond)
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain small signal results for initial conditions. Testing the simulation reset
-        small_sig = small_signal_analysis(sim; reset_simulation = true)
+        #small_sig = small_signal_analysis(sim; reset_simulation = true)
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :δ))

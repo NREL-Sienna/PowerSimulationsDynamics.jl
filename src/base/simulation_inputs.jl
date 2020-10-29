@@ -141,8 +141,8 @@ function build!(inputs::SimulationInputs)
 
     for d in dynamic_injection
         @debug PSY.get_name(d)
-        dyn_data = PSY.get_dynamic_injector(d)
-        if !(:states in fieldnames(typeof(dyn_data)))
+        dynamic_device = PSY.get_dynamic_injector(d)
+        if !(:states in fieldnames(typeof(dynamic_device)))
             continue
         end
         device_bus = PSY.get_bus(d)
@@ -151,16 +151,16 @@ function build!(inputs::SimulationInputs)
             throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
         end
         _make_device_index!(d)
-        device_n_states = PSY.get_n_states(dyn_data)
+        device_n_states = PSY.get_n_states(dynamic_device)
         DAE_vector = push!(DAE_vector, collect(trues(device_n_states))...)
         total_states += device_n_states
-        _add_states_to_global!(global_state_index, state_space_ix, dyn_data)
+        _add_states_to_global!(global_state_index, state_space_ix, dynamic_device)
         push!(inputs.injectors_data, d)
 
         btype != PSY.BusTypes.REF && continue
-        if typeof(dyn_data) <: PSY.DynamicGenerator
+        if typeof(dynamic_device) <: PSY.DynamicGenerator
             ω_ix = global_state_index[PSY.get_name(d)][:ω]
-        elseif typeof(dyn_data) <: PSY.DynamicInverter
+        elseif typeof(dynamic_device) <: PSY.DynamicInverter
             #TO DO: Make it general for cases when ω is not a state (droop)!
             ω_ix = global_state_index[PSY.get_name(d)][:ω_oc]
         end
