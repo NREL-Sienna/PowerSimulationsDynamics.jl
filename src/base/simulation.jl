@@ -281,7 +281,7 @@ function _index_port_mapping!(
     component::PSY.DynamicComponent,
 )
     _attach_ports!(component)
-    for i in PSY.get_ext(component)[PORTS].states
+    for i in PSY.get_ext(component)[PORTS][:states]
         tmp = [(ix, var) for (ix, var) in enumerate(local_states) if var == i]
         isempty(tmp) && continue
         push!(index_component_inputs, tmp[1][1])

@@ -1,11 +1,5 @@
-### Port struct ###
-mutable struct Ports <: IS.InfrastructureSystemsType
-    states::Vector{Symbol}
-    inner::Vector{Int}
-end
-
 function Ports(states::Vector{Symbol}, inner::Vector)
-    Ports(states, Int.(inner))
+    Dict(:states=>states, :inner=>Int.(inner))
 end
 
 #### AVR Ports ####
