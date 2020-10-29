@@ -1,5 +1,5 @@
 function Ports(states::Vector{Symbol}, inner::Vector)
-    Dict(:states=>states, :inner=>Int.(inner))
+    return Dict(:states=>states, :inner=>Int.(inner))
 end
 
 #### AVR Ports ####
