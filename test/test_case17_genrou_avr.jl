@@ -23,7 +23,7 @@ path = (joinpath(pwd(), "test-psse-genrou-avr"))
 !isdir(path) && mkdir(path)
 try
     #Define Simulation Problem
-    sim = Simulation(
+    sim = Simulation!(
         path,
         sys, #system
         (0.0, 30.0), #time span

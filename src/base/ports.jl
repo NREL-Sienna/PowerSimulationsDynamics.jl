@@ -1,10 +1,5 @@
-### Port struct ###
-mutable struct Ports
-    states::Vector{Symbol}
-    inner::Vector{Int}
-    function Ports(states::Vector{Symbol}, inner::Vector)
-        new(states, Int.(inner))
-    end
+function Ports(states::Vector{Symbol}, inner::Vector)
+    return Dict(:states => states, :inner => Int.(inner))
 end
 
 #### AVR Ports ####

@@ -28,7 +28,7 @@ path = (joinpath(pwd(), "test-07"))
 !isdir(path) && mkdir(path)
 try
     #Define Simulation Problem
-    sim = Simulation(
+    sim = Simulation!(
         path,
         threebus_sys, #system
         tspan, #time span

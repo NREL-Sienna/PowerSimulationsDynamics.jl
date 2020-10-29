@@ -15,7 +15,6 @@ function branch!(
     branch::PSY.DynamicBranch,
     inputs::SimulationInputs,
 ) where {T <: Real}
-
     sys = get_system(inputs)
     #Obtain local device states
     n_states = PSY.get_n_states(branch)

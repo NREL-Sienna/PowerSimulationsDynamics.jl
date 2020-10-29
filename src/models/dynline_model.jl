@@ -12,7 +12,6 @@ function mdl_line_ode!(
     sys_f,
     branch::PSY.DynamicBranch,
 )
-
     L = PSY.get_x(branch)
     R = PSY.get_r(branch)
     ω_b = sys_f * 2 * π
@@ -26,5 +25,4 @@ function mdl_line_ode!(
     current_i_from[1] -= Il_i
     current_r_to[1] += Il_r
     current_i_to[1] += Il_i
-
 end

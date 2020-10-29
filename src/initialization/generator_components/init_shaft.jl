@@ -1,16 +1,15 @@
 function initialize_shaft!(
     device_states,
-    device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
-) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-
-end
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
+) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS} end
 
 function initialize_shaft!(
     device_states,
-    device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-
-    shaft_ix = get_local_state_ix(device, PSY.FiveMassShaft)
+    shaft_ix = get_local_state_ix(dynamic_device, PSY.FiveMassShaft)
     shaft_states = @view device_states[shaft_ix]
     δ0 = shaft_states[1]
     ω = shaft_states[2]
@@ -21,7 +20,7 @@ function initialize_shaft!(
     ω_sys = ω
 
     #Obtain parameters
-    shaft = PSY.get_shaft(device)
+    shaft = PSY.get_shaft(dynamic_device)
     D = PSY.get_D(shaft)
     D_hp = PSY.get_D_hp(shaft)
     D_ip = PSY.get_D_ip(shaft)
@@ -37,8 +36,8 @@ function initialize_shaft!(
     K_ex = PSY.get_K_ex(shaft)
 
     #Obtain inner vars
-    τe = get_inner_vars(device)[τe_var]
-    τm = get_inner_vars(device)[τm_var]
+    τe = get_inner_vars(dynamic_device)[τe_var]
+    τm = get_inner_vars(dynamic_device)[τm_var]
 
     function f!(out, x)
         δ = x[1]
@@ -86,5 +85,4 @@ function initialize_shaft!(
         shaft_states[9] = sol_x0[5] #δ_ex
         shaft_states[10] = ω #ω_ex
     end
-
 end

@@ -7,30 +7,30 @@ include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusNetwork.raw")
-threebus_sys = System(PowerModelsData(threebus_file_dir), runchecks = false)
+threebus_sys = System(threebus_file_dir, runchecks = false)
 add_source_to_ref(threebus_sys)
 
 function dyn_gen_avr_type2(generator)
     return PSY.DynamicGenerator(
-        generator, #static generator
-        1.0, # ω_ref
-        machine_oneDoneQ(), #machine
-        shaft_no_damping(), #shaft
-        avr_type2(), #avr
-        tg_type1(), #tg
-        pss_none(),
+        name = get_name(generator), #static generator
+        ω_ref = 1.0, # ω_ref
+        machine = machine_oneDoneQ(), #machine
+        shaft = shaft_no_damping(), #shaft
+        avr = avr_type2(), #avr
+        prime_mover = tg_type1(), #tg
+        pss = pss_none(),
     ) #pss
 end
 
 function dyn_gen_simple_avr(generator)
     return PSY.DynamicGenerator(
-        generator, #static generator
-        1.0, # ω_ref
-        machine_oneDoneQ(), #machine
-        shaft_no_damping(), #shaft
-        avr_propr(), #avr
-        tg_none(), #tg
-        pss_none(),
+        name = get_name(generator), #static generator
+        ω_ref = 1.0, # ω_ref
+        machine = machine_oneDoneQ(), #machine
+        shaft = shaft_no_damping(), #shaft
+        avr = avr_propr(), #avr
+        prime_mover = tg_none(), #tg
+        pss = pss_none(),
     ) #pss
 end
 
@@ -38,10 +38,10 @@ end
 for g in get_components(Generator, threebus_sys)
     if get_number(get_bus(g)) == 102
         case_gen = dyn_gen_avr_type2(g)
-        add_component!(threebus_sys, case_gen)
+        add_component!(threebus_sys, case_gen, g)
     elseif get_number(get_bus(g)) == 103
         case_gen = dyn_gen_simple_avr(g)
-        add_component!(threebus_sys, case_gen)
+        add_component!(threebus_sys, case_gen, g)
     end
 end
 

@@ -1,6 +1,7 @@
 #TODO: Make inmmutable later. Requires refactor of ThreePhase Fault callbacks
 mutable struct SimulationInputs
     sys::PSY.System
+    injectors_data::Vector{<:PSY.StaticInjection}
     counts::Base.ImmutableDict{Symbol, Int}
     Ybus::SparseMatrixCSC{Complex{Float64}, Int64}
     dyn_lines::Bool
@@ -17,6 +18,7 @@ end
 
 function SimulationInputs(;
     sys::PSY.System,
+    dynamic_injectors = Vector{PSY.StaticInjection}(),
     counts::Base.ImmutableDict{Symbol, Int} = Base.ImmutableDict{Symbol, Int}(),
     Ybus::SparseMatrixCSC{Complex{Float64}, Int64} = SparseMatrixCSC{
         Complex{Float64},
@@ -35,6 +37,7 @@ function SimulationInputs(;
 )
     return SimulationInputs(
         sys,
+        dynamic_injectors,
         counts,
         Ybus,
         dyn_lines,
@@ -125,11 +128,21 @@ function build!(inputs::SimulationInputs)
         global_vars[:ω_sys_index] = 0 #To define 0 if infinite source, bus_number otherwise,
         found_ref_bus = true
     end
-    dynamic_injection = PSY.get_components(PSY.DynamicInjection, sys)
-    isempty(dynamic_injection) &&
+
+    dynamic_injection = PSY.get_components(
+        PSY.StaticInjection,
+        sys,
+        x -> PSY.get_dynamic_injector(x) !== nothing,
+    )
+
+    if isempty(dynamic_injection)
         error("System doesn't contain any DynamicInjection devices")
+    end
+
     for d in dynamic_injection
-        if !(:states in fieldnames(typeof(d)))
+        @debug PSY.get_name(d)
+        dynamic_device = PSY.get_dynamic_injector(d)
+        if !(:states in fieldnames(typeof(dynamic_device)))
             continue
         end
         device_bus = PSY.get_bus(d)
@@ -138,14 +151,16 @@ function build!(inputs::SimulationInputs)
             throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
         end
         _make_device_index!(d)
-        device_n_states = PSY.get_n_states(d)
+        device_n_states = PSY.get_n_states(dynamic_device)
         DAE_vector = push!(DAE_vector, collect(trues(device_n_states))...)
         total_states += device_n_states
-        _add_states_to_global!(global_state_index, state_space_ix, d)
+        _add_states_to_global!(global_state_index, state_space_ix, dynamic_device)
+        push!(inputs.injectors_data, d)
+
         btype != PSY.BusTypes.REF && continue
-        if typeof(d) <: PSY.DynamicGenerator
+        if typeof(dynamic_device) <: PSY.DynamicGenerator
             ω_ix = global_state_index[PSY.get_name(d)][:ω]
-        elseif typeof(d) <: PSY.DynamicInverter
+        elseif typeof(dynamic_device) <: PSY.DynamicInverter
             #TO DO: Make it general for cases when ω is not a state (droop)!
             ω_ix = global_state_index[PSY.get_name(d)][:ω_oc]
         end
@@ -178,6 +193,7 @@ function build!(inputs::SimulationInputs)
 end
 
 get_system(inputs::SimulationInputs) = inputs.sys
+get_injectors_data(inputs::SimulationInputs) = inputs.injectors_data
 get_counts(inputs::SimulationInputs) = inputs.counts
 get_voltage_buses_ix(inputs::SimulationInputs) = inputs.voltage_buses_ix
 get_current_buses_ix(inputs::SimulationInputs) = inputs.current_buses_ix

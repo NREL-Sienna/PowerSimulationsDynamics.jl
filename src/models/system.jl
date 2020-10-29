@@ -7,7 +7,6 @@ function update_global_vars!(inputs::SimulationInputs, x::AbstractArray)
 end
 
 function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float64)
-
     sys = get_system(inputs)
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
@@ -31,10 +30,11 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
     fill!(I_injections_r, 0.0)
     fill!(I_injections_i, 0.0)
 
-    for d in PSY.get_components(PSY.DynamicInjection, sys)
+    for d in get_injectors_data(inputs)
+        dynamic_device = PSY.get_dynamic_injector(d)
         bus_n = PSY.get_number(PSY.get_bus(d))
         bus_ix = get_lookup(inputs)[bus_n]
-        n_states = PSY.get_n_states(d)
+        n_states = PSY.get_n_states(dynamic_device)
         ix_range = range(injection_start, length = n_states)
         ode_range = range(injection_count, length = n_states)
         injection_count = injection_count + n_states
@@ -48,7 +48,7 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
             view(I_injections_i, bus_ix),
             ix_range,
             ode_range,
-            d,
+            dynamic_device,
             inputs,
         )
         out[ix_range] = injection_ode[ode_range] - dx[ix_range]
@@ -117,5 +117,4 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
 
     kirchoff_laws!(inputs, V_r, V_i, I_injections_r, I_injections_i, dx)
     out[bus_range] = get_aux_arrays(inputs)[6]
-
 end

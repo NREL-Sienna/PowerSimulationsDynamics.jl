@@ -1,26 +1,27 @@
 function initialize_tg!(
     device_states,
-    device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
-
-    tg = PSY.get_prime_mover(device)
-    τm0 = get_inner_vars(device)[τm_var]
+    tg = PSY.get_prime_mover(dynamic_device)
+    τm0 = get_inner_vars(dynamic_device)[τm_var]
     eff = PSY.get_efficiency(tg)
     P_ref = τm0 / eff
     PSY.set_P_ref!(tg, P_ref)
     #Update Control Refs
-    device.ext[CONTROL_REFS][P_ref_index] = P_ref
+    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = P_ref
 end
 
 function initialize_tg!(
     device_states,
-    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P},
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
-    τm0 = get_inner_vars(device)[τm_var]
+    τm0 = get_inner_vars(dynamic_device)[τm_var]
     #Get Parameters
-    tg = PSY.get_prime_mover(device)
+    tg = PSY.get_prime_mover(dynamic_device)
     R = PSY.get_R(tg)
     Tc = PSY.get_Tc(tg)
     T3 = PSY.get_T3(tg)
@@ -28,7 +29,7 @@ function initialize_tg!(
     T5 = PSY.get_T5(tg)
 
     #Get References
-    ω_ref = device.ext[CONTROL_REFS][ω_ref_index]
+    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
     ω0 = 1.0
 
     function f!(out, x)
@@ -53,9 +54,9 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        device.ext[CONTROL_REFS][P_ref_index] = sol_x0[1]
+        PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = sol_x0[1]
         #Update states
-        tg_ix = get_local_state_ix(device, PSY.TGTypeI)
+        tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeI)
         tg_states = @view device_states[tg_ix]
         tg_states[1] = sol_x0[2]
         tg_states[2] = sol_x0[3]
@@ -65,17 +66,18 @@ end
 
 function initialize_tg!(
     device_states,
-    device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
-    τm0 = get_inner_vars(device)[τm_var]
+    τm0 = get_inner_vars(dynamic_device)[τm_var]
     #Get parameters
-    tg = PSY.get_prime_mover(device)
+    tg = PSY.get_prime_mover(dynamic_device)
     R = PSY.get_R(tg)
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
-    ω_ref = device.ext[CONTROL_REFS][ω_ref_index]
+    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
     ω0 = ω_ref
 
     function f!(out, x)
@@ -93,9 +95,9 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        device.ext[CONTROL_REFS][P_ref_index] = sol_x0[1]
+        PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = sol_x0[1]
         #Update states
-        tg_ix = get_local_state_ix(device, PSY.TGTypeII)
+        tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeII)
         tg_states = @view device_states[tg_ix]
         tg_states[1] = sol_x0[2]
     end

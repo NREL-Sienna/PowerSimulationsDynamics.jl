@@ -1,7 +1,7 @@
 function mdl_inner_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicInverter{C, O, PSY.CurrentControl, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.CurrentControl, DC, P, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -11,7 +11,7 @@ function mdl_inner_ode!(
 }
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, PSY.CurrentControl)
+    external_ix = get_input_port_ix(dynamic_device, PSY.CurrentControl)
     Ir_filter = device_states[external_ix[1]]
     Ii_filter = device_states[external_ix[2]]
     Ir_cnv = device_states[external_ix[3]]
@@ -20,16 +20,16 @@ function mdl_inner_ode!(
     Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
 
     #Obtain inner variables for component
-    #Vd_filter = get_inner_vars(device)[Vr_filter_var]
-    #Vq_filter = get_inner_vars(device)[Vi_filter_var]
-    ω_oc = get_inner_vars(device)[ω_oc_var]
-    θ_oc = get_inner_vars(device)[θ_oc_var]
-    v_refr = get_inner_vars(device)[V_oc_var]
-    Vdc = get_inner_vars(device)[Vdc_var]
+    #Vd_filter = get_inner_vars(dynamic_device)[Vr_filter_var]
+    #Vq_filter = get_inner_vars(dynamic_device)[Vi_filter_var]
+    ω_oc = get_inner_vars(dynamic_device)[ω_oc_var]
+    θ_oc = get_inner_vars(dynamic_device)[θ_oc_var]
+    v_refr = get_inner_vars(dynamic_device)[V_oc_var]
+    Vdc = get_inner_vars(dynamic_device)[Vdc_var]
 
     #Get Voltage Controller parameters
-    inner_control = PSY.get_inner_control(device)
-    filter = PSY.get_filter(device)
+    inner_control = PSY.get_inner_control(dynamic_device)
+    filter = PSY.get_filter(dynamic_device)
     kpv = PSY.get_kpv(inner_control)
     kiv = PSY.get_kiv(inner_control)
     kffi = PSY.get_kffi(inner_control)
@@ -46,7 +46,7 @@ function mdl_inner_ode!(
     kad = PSY.get_kad(inner_control)
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.CurrentControl)
+    local_ix = get_local_state_ix(dynamic_device, PSY.CurrentControl)
 
     #Define internal states for frequency estimator
     internal_states = @view device_states[local_ix]
@@ -109,7 +109,6 @@ function mdl_inner_ode!(
 
     #Update inner_vars
     #Modulation Commands to Converter
-    get_inner_vars(device)[md_var] = Vd_cnv_ref / Vdc
-    get_inner_vars(device)[mq_var] = Vq_cnv_ref / Vdc
-
+    get_inner_vars(dynamic_device)[md_var] = Vd_cnv_ref / Vdc
+    get_inner_vars(dynamic_device)[mq_var] = Vq_cnv_ref / Vdc
 end

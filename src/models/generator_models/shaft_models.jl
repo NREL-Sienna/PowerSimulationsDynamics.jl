@@ -3,11 +3,11 @@ function mdl_shaft_ode!(
     output_ode,
     f0::Float64,
     ω_sys,
-    device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
+    dynamic_device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.SingleMass)
+    local_ix = get_local_state_ix(dynamic_device, PSY.SingleMass)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -15,11 +15,11 @@ function mdl_shaft_ode!(
     ω = internal_states[2]
 
     #Obtain inner variables for component
-    τe = get_inner_vars(device)[τe_var]
-    τm = get_inner_vars(device)[τm_var]
+    τe = get_inner_vars(dynamic_device)[τe_var]
+    τm = get_inner_vars(dynamic_device)[τm_var]
 
     #Get parameters
-    shaft = PSY.get_shaft(device)
+    shaft = PSY.get_shaft(dynamic_device)
     H = PSY.get_H(shaft)
     D = PSY.get_D(shaft)
 
@@ -35,11 +35,11 @@ function mdl_shaft_ode!(
     output_ode,
     f0::Float64,
     ω_sys,
-    device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
+    dynamic_device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.FiveMassShaft)
+    local_ix = get_local_state_ix(dynamic_device, PSY.FiveMassShaft)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -55,11 +55,11 @@ function mdl_shaft_ode!(
     ω_ex = internal_states[10]
 
     #Obtain inner variables for component
-    τe = get_inner_vars(device)[τe_var]
-    τm = get_inner_vars(device)[τm_var]
+    τe = get_inner_vars(dynamic_device)[τe_var]
+    τm = get_inner_vars(dynamic_device)[τm_var]
 
     #Get parameters
-    shaft = PSY.get_shaft(device)
+    shaft = PSY.get_shaft(dynamic_device)
     H = PSY.get_H(shaft)
     H_hp = PSY.get_H_hp(shaft)
     H_ip = PSY.get_H_ip(shaft)

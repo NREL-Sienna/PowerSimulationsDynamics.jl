@@ -6,7 +6,6 @@ function mdl_source!(
     device::PSY.Source,
     sys::PSY.System,
 )
-
     #Load device parameters
     bus = PSY.get_bus(device)
     V_R = PSY.get_internal_voltage(device) * cos(PSY.get_internal_angle(device))

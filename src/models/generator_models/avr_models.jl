@@ -1,12 +1,12 @@
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P},
+    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #TODO Change EMF name for Vf in PowerSystems
     #Update Vf voltage on inner vars
-    get_inner_vars(device)[Vf_var] = PSY.get_Vf(PSY.get_avr(device))
+    get_inner_vars(dynamic_device)[Vf_var] = PSY.get_Vf(PSY.get_avr(dynamic_device))
 
     return
 end
@@ -14,30 +14,33 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P},
+    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
+    V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.AVRSimple)
+    local_ix = get_local_state_ix(dynamic_device, PSY.AVRSimple)
 
     #Define inner states for component
     internal_states = @view device_states[local_ix]
     Vf = internal_states[1]
 
     #Define external states for device
-    V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
+    V_th = sqrt(
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+    )
 
     #Get Parameters
-    Kv = PSY.get_Kv(PSY.get_avr(device))
+    Kv = PSY.get_Kv(PSY.get_avr(dynamic_device))
 
     #Compute ODEs
     output_ode[local_ix[1]] = Kv * (V_ref - V_th)
 
     #Update inner_vars
-    get_inner_vars(device)[Vf_var] = Vf
+    get_inner_vars(dynamic_device)[Vf_var] = Vf
 
     return
 end
@@ -45,14 +48,14 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P},
+    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
+    V0_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.AVRTypeI)
+    local_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeI)
 
     #Define inner states for component
     internal_states = @view device_states[local_ix]
@@ -62,11 +65,14 @@ function mdl_avr_ode!(
     Vm = internal_states[4]
 
     #Define external states for device
-    V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
-    Vs = get_inner_vars(device)[V_pss_var]
+    V_th = sqrt(
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+    )
+    Vs = get_inner_vars(dynamic_device)[V_pss_var]
 
     #Get parameters
-    avr = PSY.get_avr(device)
+    avr = PSY.get_avr(dynamic_device)
     Ka = PSY.get_Ka(avr)
     Ke = PSY.get_Ke(avr)
     Kf = PSY.get_Kf(avr)
@@ -95,7 +101,7 @@ function mdl_avr_ode!(
     output_ode[local_ix[4]] = (1.0 / Tr) * (V_th - Vm) #16.11
 
     #Update inner_vars
-    get_inner_vars(device)[Vf_var] = Vf
+    get_inner_vars(dynamic_device)[Vf_var] = Vf
 
     return
 end
@@ -103,14 +109,14 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P},
+    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
+    V0_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, PSY.AVRTypeII)
+    local_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeII)
 
     #Define inner states for component
     internal_states = @view device_states[local_ix]
@@ -120,11 +126,14 @@ function mdl_avr_ode!(
     Vm = internal_states[4]
 
     #Define external states for device
-    V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
-    Vs = get_inner_vars(device)[V_pss_var]
+    V_th = sqrt(
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+    )
+    Vs = get_inner_vars(dynamic_device)[V_pss_var]
 
     #Get parameters
-    avr = PSY.get_avr(device)
+    avr = PSY.get_avr(dynamic_device)
     K0 = PSY.get_K0(avr)
     T1 = PSY.get_T1(avr)
     T2 = PSY.get_T2(avr)
@@ -156,7 +165,7 @@ function mdl_avr_ode!(
     output_ode[local_ix[4]] = (1.0 / Tr) * (V_th - Vm) #16.11
 
     #Update inner_vars
-    get_inner_vars(device)[Vf_var] = Vf
+    get_inner_vars(dynamic_device)[Vf_var] = Vf
 
     return
 end
@@ -164,17 +173,17 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    device::PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P},
+    dynamic_device::PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = PSY.get_ext(device)[CONTROL_REFS][V_ref_index]
+    V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
 
     #Obtain avr
-    avr = PSY.get_avr(device)
+    avr = PSY.get_avr(dynamic_device)
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, typeof(avr))
+    local_ix = get_local_state_ix(dynamic_device, typeof(avr))
 
     #Define inner states for component
     internal_states = @view device_states[local_ix]
@@ -185,9 +194,12 @@ function mdl_avr_ode!(
     Vr3 = internal_states[5]
 
     #Define external states for device
-    V_th = sqrt(get_inner_vars(device)[VR_gen_var]^2 + get_inner_vars(device)[VI_gen_var]^2)
-    Vs = get_inner_vars(device)[V_pss_var]
-    Xad_Ifd = get_inner_vars(device)[Xad_Ifd_var]
+    V_th = sqrt(
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+    )
+    Vs = get_inner_vars(dynamic_device)[V_pss_var]
+    Xad_Ifd = get_inner_vars(dynamic_device)[Xad_Ifd_var]
 
     #Get parameters
     Tr = PSY.get_Tr(avr)
@@ -232,7 +244,7 @@ function mdl_avr_ode!(
     output_ode[local_ix[5]] = (1.0 / Tf) * (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
 
     #Update inner_vars
-    get_inner_vars(device)[Vf_var] = Vf
+    get_inner_vars(dynamic_device)[Vf_var] = Vf
 
     return
 end

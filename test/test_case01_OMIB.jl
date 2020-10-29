@@ -23,7 +23,7 @@ path = (joinpath(pwd(), "test-01"))
 !isdir(path) && mkdir(path)
 try
     #Define Simulation Problem
-    sim = Simulation(
+    sim = Simulation!(
         path,
         omib_sys, #system
         (0.0, 20.0), #time span

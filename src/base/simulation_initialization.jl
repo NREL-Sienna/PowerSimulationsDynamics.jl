@@ -32,20 +32,21 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
     sources = PSY.get_components(PSY.Source, sys)
     if !isempty(sources)
         for s in sources
-            initialize_device(s)
+            initialize_device!(s)
         end
     end
 
     @debug "Updating Dynamic Injection Component Initial Guess"
-    for d in PSY.get_components(PSY.DynamicInjection, sys)
-        @debug PSY.get_name(d) typeof(d)
+    for d in get_injectors_data(inputs)
+        dynamic_device = PSY.get_dynamic_injector(d)
+        @debug PSY.get_name(d) typeof(d) typeof(dynamic_device)
         bus = PSY.get_bus(d)
         bus_n = PSY.get_number(PSY.get_bus(d))
         bus_ix = get_lookup(inputs)[bus_n]
-        n_states = PSY.get_n_states(d)
+        n_states = PSY.get_n_states(dynamic_device)
         ix_range = range(injection_start, length = n_states)
         injection_start = injection_start + n_states
-        x0_device = initialize_device(d)
+        x0_device = initialize_device!(d)
         @assert length(x0_device) == n_states
         initial_guess[ix_range] = x0_device
     end
@@ -63,7 +64,7 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
             bus_ix_to = get_lookup(inputs)[to_bus_number]
             ix_range = range(branches_start, length = n_states)
             branches_start = branches_start + n_states
-            x0_branch = initialize_device(br)
+            x0_branch = initialize_device!(br)
             @assert length(x0_branch) == n_states
             initial_guess[ix_range] = x0_branch
         end
@@ -106,7 +107,6 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
     @debug "Write result to initial guess vector"
     initial_guess .= sys_solve.zero
     return NLsolve.converged(sys_solve)
-
 end
 
 """

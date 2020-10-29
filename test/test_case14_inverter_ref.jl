@@ -27,7 +27,7 @@ Ybus_change = ThreePhaseFault(
 path = (joinpath(pwd(), "test-14"))
 !isdir(path) && mkdir(path)
 try
-    sim = Simulation(
+    sim = Simulation!(
         path,
         threebus_sys, #system
         tspan, #time span
