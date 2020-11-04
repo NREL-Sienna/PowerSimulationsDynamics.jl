@@ -1,6 +1,6 @@
 # PowerSimulationsDynamics.jl
 
-[![Build Status](https://travis-ci.com/NREL-SIIP/PowerSimulationsDynamics.jl.svg?branch=master)](https://travis-ci.com/NREL-SIIP/PowerSimulationsDynamics.jl)
+![Master - CI](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/workflows/Master%20-%20CI/badge.svg?branch=master)
 [![codecov](https://codecov.io/gh/NREL-SIIP/PowerSimulationsDynamics.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/NREL-SIIP/PowerSimulationsDynamics.jl)
 [![Documentation](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/workflows/Documentation/badge.svg)](https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable)
 [<img src="https://img.shields.io/badge/slack-@SIIP/PSID-blue.svg?logo=slack">](https://join.slack.com/t/nrel-siip/shared_invite/zt-glam9vdu-o8A9TwZTZqqNTKHa7q3BpQ)
@@ -15,7 +15,7 @@
 
 - Provide State-of-Art modeling to assess Low-Inertia Power Systems.
 
-Check the [Project Section](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/projects/1) to see the pipelines of new models to be added. 
+Check the [Project Section](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/projects/1) to see the pipelines of new models to be added.
 
 ## Installation
 
