@@ -8,7 +8,7 @@ include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusInverter.raw")
 threebus_sys = System(threebus_file_dir, runchecks = false)
 add_source_to_ref(threebus_sys)
-dyn_branch = DynamicBranch(get_component(Branch, threebus_sys, "3"))
+dyn_branch = DynamicBranch(get_component(Branch, threebus_sys, "BUS 2-BUS 3-i_3"))
 add_component!(threebus_sys, dyn_branch)
 
 ############### Data devices ########################
@@ -51,7 +51,7 @@ end
 #Create Ybus_Fault
 sys3 = System(threebus_file_dir, runchecks = false)
 add_source_to_ref(sys3)
-remove_component!(Line, sys3, "3")
+remove_component!(Line, sys3, "BUS 2-BUS 3-i_3")
 #Create Ybus_Fault
 fault_branches2 = get_components(Line, sys3)
 for br in fault_branches2
