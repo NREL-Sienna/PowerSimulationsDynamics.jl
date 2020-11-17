@@ -1,8 +1,8 @@
 0, 100, 33, 0, 0, 50  / 17-Apr-2020 16:48:41 - MATPOWER 7.0.1-dev
 
 
-     101, 'BUS 1       ',       230, 3,    1,    1, 1,        1.00001,           0, 1.06, 0.94, 1.06, 0.94
-     102, 'BUS 2       ',       230, 2,    1,    1, 1,        1.00,           0, 1.06, 0.94, 1.06, 0.94
+     101, 'BUS 1',       230, 3,    1,    1, 1,        1.00001,           0, 1.06, 0.94, 1.06, 0.94
+     102, 'BUS 2',       230, 2,    1,    1, 1,        1.00,           0, 1.06, 0.94, 1.06, 0.94
 0 / END OF BUS DATA, BEGIN LOAD DATA
 0 / END OF LOAD DATA, BEGIN FIXED SHUNT DATA
 0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA

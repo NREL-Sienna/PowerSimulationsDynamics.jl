@@ -1,8 +1,8 @@
 0,   100.00,  32, 0, 1, 60.00     / PSS(R)E 32 RAW created by rawd32  TUE, JUL 21 2020  18:43
 
 
-   101,'BUS 1       ', 230.0000,3,   1,   1,   1,1.05000,   0.0000
-   102,'BUS 2       ', 230.0000,2,   1,   1,   1,1.04000,   1.3118
+   101,'BUS 1', 230.0000,3,   1,   1,   1,1.05000,   0.0000
+   102,'BUS 2', 230.0000,2,   1,   1,   1,1.04000,   1.3118
  0 /End of Bus data, Begin Load data
  0 /End of Load data, Begin Fixed shunt data
  0 /End of Fixed shunt data, Begin Generator data

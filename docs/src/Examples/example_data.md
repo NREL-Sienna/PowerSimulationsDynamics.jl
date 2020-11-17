@@ -43,8 +43,8 @@ There are plenty of ways to define a static system (for Power Flow purposes), bu
 0, 100, 33, 0, 0, 60  / 24-Apr-2020 17:05:49 - MATPOWER 7.0.1-dev
 
 
-     101, 'BUS 1       ',       230, 3,    1,    1, 1,        1.05,           0, 1.06, 0.94, 1.06, 0.94
-     102, 'BUS 2       ',       230, 2,    1,    1, 1,        1.04,           0, 1.06, 0.94, 1.06, 0.94
+     101, 'BUS 1',       230, 3,    1,    1, 1,        1.05,           0, 1.06, 0.94, 1.06, 0.94
+     102, 'BUS 2',       230, 2,    1,    1, 1,        1.04,           0, 1.06, 0.94, 1.06, 0.94
 0 / END OF BUS DATA, BEGIN LOAD DATA
 0 / END OF LOAD DATA, BEGIN FIXED SHUNT DATA
 0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA
@@ -175,9 +175,9 @@ We will now create a three bus system with one inverter and one generator. In or
 0, 100, 33, 0, 0, 60  / 24-Apr-2020 19:28:39 - MATPOWER 7.0.1-dev
 
 
-     101, 'BUS 1       ',       138, 3,    1,    1, 1,           1.02,        0,  1.1,  0.9,  1.1,  0.9
-     102, 'BUS 2       ',       138, 2,    1,    1, 1,           1.0142,           0,  1.1,  0.9,  1.1,  0.9
-     103, 'BUS 3       ',       138, 2,    1,    1, 1,           1.0059,           0,  1.1,  0.9,  1.1,  0.9
+     101, 'BUS 1',       138, 3,    1,    1, 1,           1.02,        0,  1.1,  0.9,  1.1,  0.9
+     102, 'BUS 2',       138, 2,    1,    1, 1,           1.0142,           0,  1.1,  0.9,  1.1,  0.9
+     103, 'BUS 3',       138, 2,    1,    1, 1,           1.0059,           0,  1.1,  0.9,  1.1,  0.9
 0 / END OF BUS DATA, BEGIN LOAD DATA
      101,  1, 1,    1,    1,       50,       10, 0, 0, 0, 0, 1, 1, 0
      102,  1, 1,    1,    1,       100,      30, 0, 0, 0, 0, 1, 1, 0

@@ -37,7 +37,7 @@ function test_ac1a(dyr_file, csv_file, init_cond)
         #Compute Ybus_fault
         sys2 = System(raw_file_dir)
         #Remove line connecting bus 1 to 2.
-        remove_component!(Line, sys2, "1")
+        remove_component!(Line, sys2, "BUS 1-BUS 2-i_1")
         Ybus_fault = Ybus(sys2).data
 
         #Define Fault: Change of YBus
