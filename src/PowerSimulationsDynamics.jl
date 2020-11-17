@@ -35,10 +35,10 @@ const PSID = PowerSimulationsDynamics
 
 using DocStringExtensions
 
-@template (FUNCTIONS, METHODS) = """
-                                 $(TYPEDSIGNATURES)
-                                 $(DOCSTRING)
-                                 """
+#@template (FUNCTIONS, METHODS) = """
+#                                 $(TYPEDSIGNATURES)
+#                                 $(DOCSTRING)
+#                                 """
 
 #Structs for General Devices and System
 include("base/definitions.jl")
