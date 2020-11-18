@@ -208,7 +208,7 @@ function initialize_avr!(
     V_r10 = (V_r20 / Ka) - Tc * V_r20 / (Ka * Tb)
     V_ref0 = Vm0 + V_r20 / Ka
 
-    #States of AC1A are Vm, Vr1, Vr2, Ve, Vr3
+    #States of ESAC1A are Vm, Vr1, Vr2, Ve, Vr3
     #To solve V_ref, Vr1, Vr2, Ve, Vr3
     function f!(out, x)
         V_ref = x[1]

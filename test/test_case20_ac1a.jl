@@ -1,7 +1,7 @@
 """
-Validation PSSE/AC1A:
+Validation PSSE/ESAC1A:
 This case study defines a three bus system with an infinite bus, GENROU and a load.
-The GENROU machine has connected an AC1A Excitation System.
+The GENROU machine has connected an ESAC1A Excitation System.
 The fault drop the line connecting the infinite bus and GENROU.
 """
 
