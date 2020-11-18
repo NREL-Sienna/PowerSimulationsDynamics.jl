@@ -203,10 +203,11 @@ function mdl_avr_ode!(
 
     #Get parameters
     Tr = PSY.get_Tr(avr)
-    Tb = PSY.get_Tb(avr)
+    # Hack to be eliminated
+    Tb = PSY.get_Tb(avr) < eps() ? 1e-3 : PSY.get_Tb(avr)
     Tc = PSY.get_Tc(avr)
     Ka = PSY.get_Ka(avr)
-    Ta = PSY.get_Ta(avr)
+    Ta = PSY.get_Ta(avr) < eps() ? 1e-3 : PSY.get_Ta(avr)
     #Va_min, Va_max = PSY.get_Va_lim(avr) #Not used without UEL or OEL
     Te = PSY.get_Te(avr)
     Kf = PSY.get_Kf(avr)
