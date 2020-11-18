@@ -14,7 +14,8 @@ dyr_file_dir = joinpath(dirname(@__FILE__), "../benchmarks/psse/GAST/14_bus_dyn_
 
 raw_file_dir = joinpath(pwd(), "test/benchmarks/psse/GAST/14bus.raw")
 dyr_file = joinpath(pwd(), "test/benchmarks/psse/GAST/14_bus_dyn_data.dyr")
-
+path = pwd()
+tspan = (0.0, 10.0)
 function test_gast(dyr_file, csv_file, init_cond)
     path = (joinpath(pwd(), "test-psse-gast"))
     !isdir(path) && mkdir(path)
