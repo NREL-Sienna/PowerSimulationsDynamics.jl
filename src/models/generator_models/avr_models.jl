@@ -202,11 +202,11 @@ function mdl_avr_ode!(
     Xad_Ifd = get_inner_vars(dynamic_device)[Xad_Ifd_var]
 
     #Get parameters
-    inv_Tr = PSY.get_Tr(avr) < eps() ? 1.0 : 1/PSY.get_Tr(avr)
-    inv_Tb = PSY.get_Tb(avr) < eps() ? 1.0 : 1/PSY.get_Tb(avr)
+    inv_Tr = PSY.get_Tr(avr) < eps() ? 1.0 : 1 / PSY.get_Tr(avr)
+    inv_Tb = PSY.get_Tb(avr) < eps() ? 1.0 : 1 / PSY.get_Tb(avr)
     Tc_Tb_ratio = PSY.get_Tb(avr) < eps() ? 0.0 : PSY.get_Tc(avr) * inv_Tb
     Ka = PSY.get_Ka(avr)
-    inv_Ta = PSY.get_Ta(avr) < eps() ? 1.0 : 1/PSY.get_Ta(avr)
+    inv_Ta = PSY.get_Ta(avr) < eps() ? 1.0 : 1 / PSY.get_Ta(avr)
     #Va_min, Va_max = PSY.get_Va_lim(avr) #Not used without UEL or OEL
     Te = PSY.get_Te(avr) # Te > 0
     Kf = PSY.get_Kf(avr)
