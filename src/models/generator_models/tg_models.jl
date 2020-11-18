@@ -166,3 +166,59 @@ function mdl_tg_ode!(
 
     return
 end
+
+function mdl_tg_ode!(
+    device_states,
+    output_ode,
+    ω_sys,
+    device::PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+
+    #Obtain TG
+    tg = PSY.get_prime_mover(device)
+    #Obtain references
+    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(device, typeof(tg))
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    x_g1 = internal_states[1]
+    x_g2 = internal_states[2]
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(device, typeof(tg))
+    ω = @view device_states[external_ix]
+
+    #Get Parameters
+    tg = PSY.get_prime_mover(device)
+    R = PSY.get_R(tg)
+    T1 = PSY.get_T1(tg)
+    T2 = PSY.get_T2(tg)
+    V_min, V_max = PSY.get_valve_position_limits(tg)
+    T3 = PSY.get_T3(tg)
+    D_T = PSY.get_D_T(tg)
+
+    #Compute auxiliary parameters
+    x_g1_sat = x_g1
+    ref_in = (1.0 / R) * (P_ref - (ω[1] - ω_sys))
+    Pm = x_g2 + (T2 / T3) * x_g1
+    τ_m = Pm - D_T * (ω[1] - ω_sys)
+
+    #Set anti-windup for x_g1
+    if x_g1_sat > V_max
+        x_g1_sat = V_max
+    elseif x_g1_sat < V_min
+        x_g1_sat = V_min
+    end
+
+    #Compute 2 State TG ODE:
+    output_ode[local_ix[1]] = (1.0 / T1) * (ref_in - x_g1) #dx_g1/dt
+    output_ode[local_ix[2]] = (1.0 / T3) * (x_g1_sat * (1 - T2 / T3) - x_g2) #dx_g2/dt
+
+    #Update mechanical torque
+    get_inner_vars(device)[τm_var] = τ_m
+
+    return
+end
