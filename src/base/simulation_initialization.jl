@@ -4,7 +4,9 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
     initial_guess = sim.x0_init
     res = PSY.solve_powerflow!(sys)
     if !res
-        error("Power Flow fail")
+        sim.status = BUILD_FAILED
+        @error("PowerFlow failed to solve")
+        return false
     end
     var_count = get_variable_count(inputs)
 
@@ -72,6 +74,21 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
         @debug "No Dynamic Branches in the system"
     end
 
+    if any(!isfinite, initial_guess)
+        i = findall(!isfinite, initial_guess)
+        invalid_initial_guess = String[]
+        for (device, states) in get_global_index(sim)
+            for state in states
+                if p.second ∈ i
+                    push!(invalid_initial_guess, "$device - $(p.first)")
+                end
+            end
+        end
+        error("Invalid initial guess values $invalid_initial_guess")
+        sim.status = BUILD_FAILED
+        return false
+    end
+
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     inif! = (out, x) -> system!(
         out,    #output of the function
@@ -81,14 +98,21 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
         0.0,    #time equals to zero.
     )
     #Refine initial solution
-    @debug "Start NLSolve Run"
-    sys_solve = NLsolve.nlsolve(
-        inif!,
-        initial_guess,
-        xtol = STRICT_NL_SOLVE_TOLERANCE,
-        ftol = STRICT_NL_SOLVE_TOLERANCE,
-        method = :trust_region,
-    ) #Solve using initial guess x0
+    @debug "Start NLSolve System Run"
+    @debug initial_guess
+    try
+        sys_solve = NLsolve.nlsolve(
+            inif!,
+            initial_guess,
+            xtol = STRICT_NL_SOLVE_TOLERANCE,
+            ftol = STRICT_NL_SOLVE_TOLERANCE,
+            method = :trust_region,
+        ) #Solve using initial guess x0
+    catch e
+        @error("NLsolve failed to solve $e")
+        sim.status = BUILD_FAILED
+        return false
+    end
     if !NLsolve.converged(sys_solve)
         @warn("Initialization failed, initial conditions do not meet conditions for an stable equilibrium.\nTrying to solve again reducing numeric tolerance from $(STRICT_NL_SOLVE_TOLERANCE):")
         sys_solve = NLsolve.nlsolve(

@@ -108,9 +108,10 @@ const SIMULATION_LOG_FILENAME = "power-simulations-dynamics.log"
 Defines the status of the simulation object
 """
 @enum BUILD_STATUS begin
-    BUILT = 1
-    BUILD_INCOMPLETE = -1
-    SIMULATION_STARTED = -2
-    SIMULATION_FINALIZED = 2
-    SIMULATION_FAILED = -3
+    BUILT = 0
+    BUILD_INCOMPLETE = 1
+    BUILD_FAILED = 2
+    SIMULATION_STARTED = 3
+    SIMULATION_FINALIZED = 4
+    SIMULATION_FAILED = 5
 end
