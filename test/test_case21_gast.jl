@@ -39,7 +39,7 @@ function test_gast(dyr_file, csv_file, init_cond)
             path,
             sys, #system
             tspan, #time span
-            Ybus_change,
+            Ybus_change
         ) #Type of Fault
 
         #Solve problem in equilibrium
