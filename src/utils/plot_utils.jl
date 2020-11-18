@@ -34,7 +34,7 @@ function print_init_states(sim::Simulation)
         println(ix)
         println("====================")
         for (k, val) in val_sys
-            print(k, " ", sim.x0_init[val], "\n")
+            print(k, " ", round(sim.x0_init[val],  digits = 3), "\n")
         end
         println("====================")
     end
