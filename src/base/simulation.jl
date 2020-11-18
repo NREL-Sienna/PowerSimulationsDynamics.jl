@@ -178,7 +178,7 @@ function _build!(sim::Simulation; kwargs...)
         _add_aux_arrays!(simulation_inputs, Float64)
         sim.initialized = calculate_initial_conditions!(sim, simulation_inputs)
         if sim.status == BUILD_FAILED
-            error("Simulation Build Failed. Simulations status = $(sim.status)")
+            @error("Simulation Build Failed. Simulations status = $(sim.status)")
             return nothing
         end
     end
