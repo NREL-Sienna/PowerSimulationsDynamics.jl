@@ -135,7 +135,7 @@ function initialize_tg!(
         PSY.set_P_ref!(tg, sol_x0[1])
         device.ext[CONTROL_REFS][P_ref_index] = sol_x0[1]
         #Update states
-        tg_ix = get_local_state_ix(device, PSY.TGTypeII)
+        tg_ix = get_local_state_ix(device, typeof(tg))
         tg_states = @view device_states[tg_ix]
         tg_states[1] = sol_x0[2]
     end
@@ -173,7 +173,7 @@ function initialize_tg!(
         PSY.set_P_ref!(tg, sol_x0[1])
         device.ext[CONTROL_REFS][P_ref_index] = sol_x0[1]
         #Update states
-        tg_ix = get_local_state_ix(device, PSY.TGTypeII)
+        tg_ix = get_local_state_ix(device, typeof(tg))
         tg_states = @view device_states[tg_ix]
         tg_states[1] = sol_x0[2]
     end
@@ -181,13 +181,14 @@ end
 
 function initialize_tg!(
     device_states,
-    device::PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P},
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
-    τm0 = get_inner_vars(device)[τm_var]
+    τm0 = get_inner_vars(dynamic_device)[τm_var]
     #Get parameters
-    tg = PSY.get_prime_mover(device)
+    tg = PSY.get_prime_mover(dynamic_device)
     R = PSY.get_R(tg)
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
@@ -213,15 +214,15 @@ function initialize_tg!(
     if !NLsolve.converged(sol)
         @warn("Initialization in TG failed")
     else
-        @show sol_x0 = sol.zero
+        sol_x0 = sol.zero
         if (sol_x0[2] > V_max) || (sol_x0[2] < V_min)
-            @error("Valve limits for TG in $(PSY.get_name(device)) are bounded (x_g1 = $(sol_x0[2])). Consider updating their values.")
+            @error("Valve limits for TG in $(PSY.get_name(dynamic_device)) are bounded (x_g1 = $(sol_x0[2])). Consider updating their values.")
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        device.ext[CONTROL_REFS][P_ref_index] = sol_x0[1]
+        dynamic_device.ext[CONTROL_REFS][P_ref_index] = sol_x0[1]
         #Update states
-        tg_ix = get_local_state_ix(device, typeof(tg))
+        tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
         tg_states[1] = sol_x0[2]
         tg_states[2] = sol_x0[3]

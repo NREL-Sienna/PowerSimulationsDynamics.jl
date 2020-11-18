@@ -1,6 +1,7 @@
 function mdl_tg_ode!(
     device_states,
     output_ode,
+    ω_sys,
     dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
@@ -15,6 +16,7 @@ end
 function mdl_tg_ode!(
     device_states,
     output_ode,
+    ω_sys,
     dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
@@ -69,6 +71,7 @@ end
 function mdl_tg_ode!(
     device_states,
     output_ode,
+    ω_sys,
     dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
@@ -105,61 +108,6 @@ function mdl_tg_ode!(
 
     #Compute 1 State TG ODE:
     output_ode[local_ix[1]] = (1.0 / T2) * ((1.0 / R) * (1 - T2 / T1) * (ω_ref - ω[1]) - xg)
-
-    #Update mechanical torque
-    get_inner_vars(dynamic_device)[τm_var] = τ_m
-
-    return
-end
-
-function mdl_tg_ode!(
-    device_states,
-    output_ode,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P},
-) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
-
-    #Obtain TG
-    tg = PSY.get_prime_mover(dynamic_device)
-    #Obtain references
-    P_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
-
-    #Obtain indices for component w/r to dynamic_device
-    local_ix = get_local_state_ix(dynamic_device, typeof(tg))
-
-    #Define internal states for component
-    internal_states = @view device_states[local_ix]
-    x_g1 = internal_states[1]
-    x_g2 = internal_states[2]
-
-    #Obtain external states inputs for component
-    external_ix = get_input_port_ix(dynamic_device, typeof(tg))
-    ω = @view device_states[external_ix]
-
-    #Get Parameters
-    tg = PSY.get_prime_mover(dynamic_device)
-    R = PSY.get_R(tg)
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
-    V_min, V_max = PSY.get_valve_position_limits(tg)
-    T3 = PSY.get_T3(tg)
-    D_T = PSY.get_D_T(tg)
-
-    #Compute auxiliary parameters
-    x_g1_sat = x_g1
-    ref_in = (1.0 / R) * (P_ref - (ω[1] - ω_sys))
-    Pm = x_g2 + (T2 / T3) * x_g1
-    τ_m = Pm - D_T * (ω[1] - ω_sys)
-
-    #Set anti-windup for x_g1
-    if x_g1_sat > V_max
-        x_g1_sat = V_max
-    elseif x_g1_sat < V_min
-        x_g1_sat = V_min
-    end
-
-    #Compute 2 State TG ODE:
-    output_ode[local_ix[1]] = (1.0 / T1) * (ref_in - x_g1) #dx_g1/dt
-    output_ode[local_ix[2]] = (1.0 / T3) * (x_g1_sat * (1 - T2 / T3) - x_g2) #dx_g2/dt
 
     #Update mechanical torque
     get_inner_vars(dynamic_device)[τm_var] = τ_m
