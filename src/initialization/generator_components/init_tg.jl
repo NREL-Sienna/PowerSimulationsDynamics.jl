@@ -22,7 +22,7 @@ function initialize_tg!(
     τm0 = get_inner_vars(dynamic_device)[τm_var]
     #Get Parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    R = PSY.get_R(tg)
+    inv_R = PSY.get_R(tg) < eps() : 0.0 : 1.0 / PSY.get_R(tg)
     Tc = PSY.get_Tc(tg)
     T3 = PSY.get_T3(tg)
     T4 = PSY.get_T4(tg)
@@ -39,7 +39,7 @@ function initialize_tg!(
         x_g3 = x[4]
 
         #Compute auxiliary parameters
-        P_in = P_ref + (1.0 / R) * (ω_ref - ω0)
+        P_in = P_ref + inv_R * (ω_ref - ω0)
 
         out[1] = P_in - x_g1
         out[2] = (1.0 - T3 / Tc) * x_g1 - x_g2
@@ -74,7 +74,7 @@ function initialize_tg!(
     τm0 = get_inner_vars(dynamic_device)[τm_var]
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    R = PSY.get_R(tg)
+    inv_R = PSY.get_R(tg) < eps() : 0.0 : 1.0 / PSY.get_R(tg)
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
     ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
@@ -83,8 +83,8 @@ function initialize_tg!(
     function f!(out, x)
         P_ref = x[1]
         xg = x[2]
-        out[1] = (1.0 / R) * (T1 / T2) * (ω_ref - ω0) + P_ref / 1.0 + xg - τm0
-        out[2] = (1.0 / T2) * ((1.0 / R) * (1 - T2 / T1) * (ω_ref - ω0) - xg)
+        out[1] = inv_R * (T1 / T2) * (ω_ref - ω0) + P_ref / 1.0 + xg - τm0
+        out[2] = (1.0 / T2) * (inv_R * (1 - T2 / T1) * (ω_ref - ω0) - xg)
     end
     x0 = [τm0, 0.0]
     sol = NLsolve.nlsolve(f!, x0)
@@ -113,7 +113,7 @@ function initialize_tg!(
     Δω = 0.0
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    R = PSY.get_R(tg)
+    inv_R = PSY.get_R(tg) < eps() : 0.0 : 1.0 / PSY.get_R(tg)
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
     T3 = PSY.get_T3(tg)
@@ -130,7 +130,7 @@ function initialize_tg!(
         x_g2 = x[3]
         x_g3 = x[4]
 
-        x_in = min((P_ref - (1/R)*Δω), (AT + KT*(AT - x_g3)))
+        x_in = min((P_ref - inv_R*Δω), (AT + KT*(AT - x_g3)))
         out[1] = (x_in - x_g1) #dx_g1/dt
         x_g1_sat = V_min < x_g1 < V_max ? x_g1 : max(V_min, min(V_max, x_g1))
         out[2] = (x_g1_sat - x_g2)
@@ -164,7 +164,7 @@ function initialize_tg!(
     Δω = 0.0
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    R = PSY.get_R(tg)
+    inv_R = PSY.get_R(tg) < eps() : 0.0 : 1.0 / PSY.get_R(tg)
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
     T3 = PSY.get_T3(tg)
@@ -176,7 +176,7 @@ function initialize_tg!(
         x_g1 = x[2]
         x_g2 = x[3]
 
-        ref_in = (1.0 / R) * (P_ref - Δω)
+        ref_in = inv_R * (P_ref - Δω)
         Pm = x_g2 + (T2 / T3) * x_g1
 
         out[1] = (1.0 / T1) * (ref_in - x_g1) #dx_g1/dt
