@@ -33,16 +33,16 @@ try
         sys, #system
         (0.0, 20.0), #time span
         Ybus_change, #Type of Fault
-    ) 
+    )
 
     #Solve problem in equilibrium
-    execute!(sim, IDA(), dtmax=0.005, saveat=0.005)
+    execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
     #Obtain small signal results for initial conditions
     #NOT WORKING DUE TO TYPES ON EXECUTE
     #small_sig = small_signal_analysis(sim)
 
-    series = get_state_series(sim, ("generator-102-1", :δ));
+    series = get_state_series(sim, ("generator-102-1", :δ))
     t = series[1]
     δ = series[2]
     #Clean Extra Point at t = 1.0 from Callback
