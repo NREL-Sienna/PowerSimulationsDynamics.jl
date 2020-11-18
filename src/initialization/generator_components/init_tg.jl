@@ -178,3 +178,52 @@ function initialize_tg!(
         tg_states[1] = sol_x0[2]
     end
 end
+
+function initialize_tg!(
+    device_states,
+    device::PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+
+    #Get mechanical torque to SyncMach
+    τm0 = get_inner_vars(device)[τm_var]
+    #Get parameters
+    tg = PSY.get_prime_mover(device)
+    R = PSY.get_R(tg)
+    T1 = PSY.get_T1(tg)
+    T2 = PSY.get_T2(tg)
+    V_min, V_max = PSY.get_valve_position_limits(tg)
+    T3 = PSY.get_T3(tg)
+    D_T = PSY.get_D_T(tg)
+
+    function f!(out, x)
+        P_ref = x[1]
+        x_g1 = x[2]
+        x_g2 = x[3]
+
+        Δω = 0.0
+        ref_in = (1.0 / R) * (P_ref - Δω)
+        Pm = x_g2 + (T2 / T3) * x_g1
+
+        out[1] = (1.0 / T1) * (ref_in - x_g1) #dx_g1/dt
+        out[2] = (1.0 / T3) * (x_g1 * (1 - T2 / T3) - x_g2) #dx_g2/dt
+        out[3] = (Pm - D_T * Δω) - τm0
+    end
+    x0 = [1.0 * R, τm0, τm0]
+    sol = NLsolve.nlsolve(f!, x0)
+    if !NLsolve.converged(sol)
+        @warn("Initialization in TG failed")
+    else
+        @show sol_x0 = sol.zero
+        if (sol_x0[2] > V_max) || (sol_x0[2] < V_min)
+            @error("Valve limits for TG in $(PSY.get_name(device)) are bounded (x_g1 = $(sol_x0[2])). Consider updating their values.")
+        end
+        #Update Control Refs
+        PSY.set_P_ref!(tg, sol_x0[1])
+        device.ext[CONTROL_REFS][P_ref_index] = sol_x0[1]
+        #Update states
+        tg_ix = get_local_state_ix(device, typeof(tg))
+        tg_states = @view device_states[tg_ix]
+        tg_states[1] = sol_x0[2]
+        tg_states[2] = sol_x0[3]
+    end
+end
