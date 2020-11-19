@@ -204,11 +204,12 @@ function initialize_avr!(
     if (V_r20 > Vr_max) || (V_r20 < Vr_min)
         @error("Regulator Voltage V_R = $(V_r20) outside the limits")
     end
+    Tc_Tb_ratio = Tb <= eps() ? 0.0 : Tc / Tb
     V_r30 = -(Kf / Tf) * V_FE0
-    V_r10 = (V_r20 / Ka) - Tc * V_r20 / (Ka * Tb)
+    V_r10 = (V_r20 / Ka) - (Tc_Tb_ratio) * (V_r20 / Ka)
     V_ref0 = Vm0 + V_r20 / Ka
 
-    #States of AC1A are Vm, Vr1, Vr2, Ve, Vr3
+    #States of ESAC1A are Vm, Vr1, Vr2, Ve, Vr3
     #To solve V_ref, Vr1, Vr2, Ve, Vr3
     function f!(out, x)
         V_ref = x[1]
@@ -218,17 +219,19 @@ function initialize_avr!(
         Vr3 = x[5]
 
         #Compute auxiliary variables
+
         I_N = Kc * Xad_Ifd0 / Ve
         Se = saturation_function(avr, Ve)
         V_FE = Kd * Xad_Ifd0 + Ke * Ve + Ve * Se
         V_F = Vr3 + (Kf / Tf) * V_FE
         V_in = V_ref - Vm0 - V_F
-        V_out = Vr1 + (Tc / Tb) * V_in
+        V_out = Vr1 + (Tc_Tb_ratio) * V_in
 
-        out[1] = (1.0 / Tb) * (V_in * (1 - Tc / Tb) - Vr1) #dVr1/dt
-        out[2] = (1.0 / Ta) * (Ka * V_out - Vr2) #dVr2/dt
-        out[3] = (1.0 / Tf) * (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
-        out[4] = (1.0 / Te) * (Vr2 - V_FE) #dVe/dt
+        # Time Constants eliminated because don't appear in SteadyState
+        out[1] = (V_in * (1 - Tc_Tb_ratio) - Vr1) #dVr1/dt
+        out[2] = (Ka * V_out - Vr2) #dVr2/dt
+        out[3] = (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
+        out[4] = (Vr2 - V_FE) #dVe/dt
         out[5] = Vf0 - Ve * rectifier_function(I_N)
     end
     x0 = [V_ref0, V_r10, V_r20, V_e0, V_r30]

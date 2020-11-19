@@ -177,6 +177,10 @@ function _build!(sim::Simulation; kwargs...)
         @info("Initializing Simulation States")
         _add_aux_arrays!(simulation_inputs, Float64)
         sim.initialized = calculate_initial_conditions!(sim, simulation_inputs)
+        if sim.status == BUILD_FAILED
+            @error("Simulation Build Failed. Simulations status = $(sim.status)")
+            return nothing
+        end
     end
 
     dx0 = zeros(var_count)
@@ -232,22 +236,6 @@ function _build_perturbations!(sim::Simulation)
     return
 end
 
-function _index_local_states!(
-    component_state_index::Vector{Int64},
-    local_states::Vector{Symbol},
-    component::PSY.DynamicComponent,
-)
-    for (ix, s) in enumerate(PSY.get_states(component))
-        component_state_index[ix] = findfirst(x -> x == s, local_states)
-    end
-    return
-end
-
-function _attach_ports!(component::PSY.DynamicComponent)
-    PSY.get_ext(component)[PORTS] = Ports(component)
-    return
-end
-
 function _attach_inner_vars!(
     dynamic_device::PSY.DynamicGenerator,
     ::Type{T} = Real,
@@ -275,21 +263,6 @@ function _attach_control_refs!(device::PSY.StaticInjection)
     return
 end
 
-function _index_port_mapping!(
-    index_component_inputs::Vector{Int64},
-    local_states::Vector{Symbol},
-    component::PSY.DynamicComponent,
-)
-    _attach_ports!(component)
-    for i in PSY.get_ext(component)[PORTS][:states]
-        tmp = [(ix, var) for (ix, var) in enumerate(local_states) if var == i]
-        isempty(tmp) && continue
-        push!(index_component_inputs, tmp[1][1])
-    end
-
-    return
-end
-
 function _get_Ybus(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     dyn_lines = PSY.get_components(PSY.DynamicBranch, sys)
@@ -305,25 +278,6 @@ function _get_Ybus(sys::PSY.System)
         lookup = Dict{Int.Int}()
     end
     return Ybus, lookup
-end
-
-function _make_device_index!(device::PSY.StaticInjection)
-    dynamic_device = PSY.get_dynamic_injector(device)
-    states = PSY.get_states(dynamic_device)
-    device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
-    input_port_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
-    _attach_inner_vars!(dynamic_device)
-    _attach_control_refs!(device)
-
-    for c in PSY.get_dynamic_components(dynamic_device)
-        device_state_mapping[typeof(c)] = Vector{Int64}(undef, length(PSY.get_states(c)))
-        input_port_mapping[typeof(c)] = Vector{Int64}()
-        _index_local_states!(device_state_mapping[typeof(c)], states, c)
-        _index_port_mapping!(input_port_mapping[typeof(c)], states, c)
-        dynamic_device.ext[LOCAL_STATE_MAPPING] = device_state_mapping
-        dynamic_device.ext[INPUT_PORT_MAPPING] = input_port_mapping
-    end
-    return
 end
 
 function _add_states_to_global!(

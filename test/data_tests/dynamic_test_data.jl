@@ -75,7 +75,7 @@ machine_simple_anderson() = SimpleAFMachine(
     0.23, #Xd_pp
     0.4, #Xq_pp
     3.0, #Td0_p
-    0.1, #Tq0_p 
+    0.1, #Tq0_p
     0.01, #Td0_pp
     0.033, #Tq0_pp
 )

@@ -14,7 +14,6 @@ export ControlReferenceChange
 export small_signal_analysis
 export get_state_series
 export get_voltagemag_series
-export print_init_states
 export print_device_states
 export get_initial_conditions
 
@@ -46,6 +45,7 @@ include("base/ports.jl")
 include("base/perturbations.jl")
 include("base/file_system.jl")
 include("base/simulation_inputs.jl")
+include("base/device_indexing.jl")
 include("base/simulation.jl")
 include("base/supplemental_accesors.jl")
 include("base/simulation_initialization.jl")

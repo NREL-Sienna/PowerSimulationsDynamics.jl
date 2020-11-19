@@ -3,7 +3,6 @@ Function to obtain series of states out of DAE Solution. It receives the solutio
 and a tuple containing the symbol name of the Dynamic Injection device and the symbol of the state.
 
 """
-
 function get_state_series(sim::Simulation, ref::Tuple{String, Symbol})
     global_state_index = get_global_index(sim.simulation_inputs)
     ix = get(global_state_index[ref[1]], ref[2], nothing)
@@ -23,24 +22,6 @@ function get_voltagemag_series(sim::Simulation, bus_number::Int64)
         return sim.solution.t,
         [sqrt(value[bus_ix]^2 + value[bus_ix + n_buses]^2) for value in sim.solution.u]
     end
-end
-
-"""
-Function to print initial states. It receives the vector of initial states and the dynamical system.
-"""
-function print_init_states(sim::Simulation)
-    for (ix, val_sys) in get_global_index(sim.simulation_inputs)
-        println("Differential States")
-        println(ix)
-        println("====================")
-        for (k, val) in val_sys
-            print(k, " ", sim.x0_init[val], "\n")
-        end
-        println("====================")
-    end
-
-    # println("Algebraic States") # TODO: Print Buses Voltages
-    return
 end
 
 """

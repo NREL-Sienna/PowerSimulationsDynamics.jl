@@ -202,15 +202,15 @@ function mdl_avr_ode!(
     Xad_Ifd = get_inner_vars(dynamic_device)[Xad_Ifd_var]
 
     #Get parameters
-    Tr = PSY.get_Tr(avr)
-    Tb = PSY.get_Tb(avr)
-    Tc = PSY.get_Tc(avr)
+    inv_Tr = PSY.get_Tr(avr) < eps() ? 1.0 : 1 / PSY.get_Tr(avr)
+    inv_Tb = PSY.get_Tb(avr) < eps() ? 1.0 : 1 / PSY.get_Tb(avr)
+    Tc_Tb_ratio = PSY.get_Tb(avr) < eps() ? 0.0 : PSY.get_Tc(avr) * inv_Tb
     Ka = PSY.get_Ka(avr)
-    Ta = PSY.get_Ta(avr)
+    inv_Ta = PSY.get_Ta(avr) < eps() ? 1.0 : 1 / PSY.get_Ta(avr)
     #Va_min, Va_max = PSY.get_Va_lim(avr) #Not used without UEL or OEL
-    Te = PSY.get_Te(avr)
+    Te = PSY.get_Te(avr) # Te > 0
     Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
+    Tf = PSY.get_Tf(avr) # Te > 0
     Kc = PSY.get_Kc(avr)
     Kd = PSY.get_Kd(avr)
     Ke = PSY.get_Ke(avr)
@@ -225,7 +225,7 @@ function mdl_avr_ode!(
     V_FE = Kd * Xad_Ifd + Ke * Ve + Se * Ve
     V_F = Vr3 + (Kf / Tf) * V_FE
     V_in = V_ref - Vm - V_F
-    V_out = Vr1 + (Tc / Tb) * V_in
+    V_out = Vr1 + (Tc_Tb_ratio) * V_in
     Vf = Ve * rectifier_function(I_N)
     V_R = Vr2
 
@@ -237,9 +237,9 @@ function mdl_avr_ode!(
     end
 
     #Compute 4 States AVR ODE:
-    output_ode[local_ix[1]] = (1.0 / Tr) * (V_th - Vm) #dVm/dt
-    output_ode[local_ix[2]] = (1.0 / Tb) * (V_in * (1 - Tc / Tb) - Vr1) #dVr1/dt
-    output_ode[local_ix[3]] = (1.0 / Ta) * (Ka * V_out - Vr2) #dVr2/dt
+    output_ode[local_ix[1]] = inv_Tr * (V_th - Vm) #dVm/dt
+    output_ode[local_ix[2]] = inv_Tb * (V_in * (1 - Tc_Tb_ratio) - Vr1) #dVr1/dt
+    output_ode[local_ix[3]] = inv_Ta * (Ka * V_out - Vr2) #dVr2/dt
     output_ode[local_ix[4]] = (1.0 / Te) * (V_R - V_FE) #dVe/dt
     output_ode[local_ix[5]] = (1.0 / Tf) * (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
 

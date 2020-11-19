@@ -44,7 +44,6 @@ try
     clean_extra_timestep!(t, δ)
 
     series2 = get_voltagemag_series(sim, 102)
-    print_init_states(sim)
 
     #Obtain PSAT benchmark data
     psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test01/Test01_delta.csv")
