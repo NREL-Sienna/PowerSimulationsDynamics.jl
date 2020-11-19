@@ -28,24 +28,6 @@ end
 """
 Function to print initial states. It receives the vector of initial states and the dynamical system.
 """
-function print_init_states(sim::Simulation)
-    for (ix, val_sys) in get_global_index(sim.simulation_inputs)
-        println("Differential States")
-        println(ix)
-        println("====================")
-        for (k, val) in val_sys
-            print(k, " ", round(sim.x0_init[val], digits = 3), "\n")
-        end
-        println("====================")
-    end
-
-    # println("Algebraic States") # TODO: Print Buses Voltages
-    return
-end
-
-"""
-Function to print initial states. It receives the vector of initial states and the dynamical system.
-"""
 function print_device_states(sim::Simulation)
     bus_size = get_bus_count(sim.simulation_inputs)
     system = get_system(sim.simulation_inputs)
