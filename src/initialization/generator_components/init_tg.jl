@@ -184,7 +184,7 @@ function initialize_tg!(
         out[2] = (1.0 / T3) * (x_g1_sat * (1 - T2 / T3) - x_g2) #dx_g2/dt
         out[3] = (Pm - D_T * Δω) - τm0
     end
-    x0 = [1.0 * R, τm0, τm0]
+    x0 = [1.0 / inv_R, τm0, τm0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in TG failed")
