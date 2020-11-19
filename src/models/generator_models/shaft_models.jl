@@ -25,7 +25,7 @@ function mdl_shaft_ode!(
 
     #Compute 2 states ODEs
     output_ode[local_ix[1]] = 2 * π * f0 * (ω - ω_sys)                    #15.5
-    output_ode[local_ix[2]] = (1 / (2 * H)) * (τm - τe - D * (ω - ω_sys))   #15.5
+    output_ode[local_ix[2]] = (1 / (2 * H)) * (τm - τe - D * (ω - 1.0))   #15.5
 
     return
 end
@@ -84,7 +84,7 @@ function mdl_shaft_ode!(
 
     output_ode[local_ix[2]] =
         (1.0 / (2.0 * H)) * (
-            -τe - D * (ω - ω_sys) - D_34 * (ω - ω_lp) - D_45 * (ω - ω_ex) +
+            -τe - D * (ω - 1.0) - D_34 * (ω - ω_lp) - D_45 * (ω - ω_ex) +
             K_lp * (δ_lp - δ) +
             K_ex * (δ_ex - δ)
         )
@@ -93,13 +93,13 @@ function mdl_shaft_ode!(
 
     output_ode[local_ix[4]] =
         (1.0 / (2.0 * H_hp)) *
-        (τm - D_hp * (ω_hp - ω_sys) - D_12 * (ω_hp - ω_ip) + K_hp * (δ_ip - δ_hp))
+        (τm - D_hp * (ω_hp - 1.0) - D_12 * (ω_hp - ω_ip) + K_hp * (δ_ip - δ_hp))
 
     output_ode[local_ix[5]] = 2 * π * f0 * (ω_ip - ω_sys)
 
     output_ode[local_ix[6]] =
         (1.0 / (2 * H_ip)) * (
-            -D_ip * (ω_ip - ω_sys) - D_12 * (ω_ip - ω_hp) - D_23 * (ω_ip - ω_lp) +
+            -D_ip * (ω_ip - 1.0) - D_12 * (ω_ip - ω_hp) - D_23 * (ω_ip - ω_lp) +
             K_hp * (δ_hp - δ_ip) +
             K_ip * (δ_lp - δ_ip)
         )
@@ -108,7 +108,7 @@ function mdl_shaft_ode!(
 
     output_ode[local_ix[8]] =
         (1.0 / (2.0 * H_lp)) * (
-            -D_lp * (ω_lp - ω_sys) - D_23 * (ω_lp - ω_ip) - D_34 * (ω_lp - ω) +
+            -D_lp * (ω_lp - 1.0) - D_23 * (ω_lp - ω_ip) - D_34 * (ω_lp - ω) +
             K_ip * (δ_ip - δ_lp) +
             K_lp * (δ - δ_lp)
         )
@@ -117,7 +117,7 @@ function mdl_shaft_ode!(
 
     output_ode[local_ix[10]] =
         (1.0 / (2.0 * H_ex)) *
-        (-D_ex * (ω_ex - ω_sys) - D_45 * (ω_ex - ω) + K_ex * (δ - δ_ex))
+        (-D_ex * (ω_ex - 1.0) - D_45 * (ω_ex - ω) + K_ex * (δ - δ_ex))
 
     return
 end
