@@ -1,16 +1,16 @@
 """
 Validation PSSE/TGOV1:
-This case study defines a three bus system with an infinite bus, GENROU+AC1A+TGOV1 and a load.
-The fault drop the line connecting the infinite bus and GENROU.
+This case study defines a three bus system with an infinite bus, GENROU+AC1A+GAST and a load.
+The fault drop the line connecting the infinite bus and GENROU
 """
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-raw_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/ThreeBusMulti.raw")
-dyr_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/ThreeBus_TGOV1.dyr")
-csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/TEST_TGOV1.csv")
+raw_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/ThreeBusMulti.raw")
+dyr_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/ThreeBus_GAST.dyr")
+csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
 
 #Construct system
 sys = System(raw_file, dyr_file);
@@ -25,7 +25,7 @@ Ybus_change = ThreePhaseFault(
     Ybus_fault, #New YBus
 );
 
-path = (joinpath(pwd(), "test-psse-tgov1"))
+path = (joinpath(pwd(), "test-psse-gast"))
 !isdir(path) && mkdir(path)
 try
     sim = Simulation!(
@@ -53,7 +53,7 @@ try
 
     diff = [0.0]
     res = get_init_values_for_comparison(sim)
-    for (k, v) in test_psse_tgov1_init
+    for (k, v) in test_psse_gast_init
         diff[1] += LinearAlgebra.norm(res[k] - v)
     end
     #Test Initial Condition

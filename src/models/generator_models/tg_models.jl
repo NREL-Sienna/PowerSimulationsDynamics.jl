@@ -150,9 +150,9 @@ function mdl_tg_ode!(
 
     #Compute auxiliary parameters
     x_g1_sat = V_min < x_g1 < V_max ? x_g1 : max(V_min, min(V_max, x_g1))
-    ref_in = inv_R * (P_ref - (ω[1] - ω_sys))
+    ref_in = inv_R * (P_ref - (ω[1] - 1.0))
     Pm = x_g2 + (T2 / T3) * x_g1
-    τ_m = Pm - D_T * (ω[1] - ω_sys)
+    τ_m = Pm - D_T * (ω[1] - 1.0)
 
     #Compute 2 State TG ODE:
     output_ode[local_ix[1]] = (1.0 / T1) * (ref_in - x_g1) #dx_g1/dt
@@ -200,9 +200,9 @@ function mdl_tg_ode!(
     V_min, V_max = PSY.get_V_lim(tg)
 
     #Compute auxiliary parameters
-    x_in = min((P_ref - inv_R * (ω[1] - ω_sys)), (AT + KT * (AT - x_g3)))
+    x_in = min((P_ref - inv_R * (ω[1] - 1.0)), (AT + KT * (AT - x_g3)))
     x_g1_sat = V_min < x_g1 < V_max ? x_g1 : max(V_min, min(V_max, x_g1))
-    τ_m = x_g2 - D_turb * (ω[1] - ω_sys)
+    τ_m = x_g2 - D_turb * (ω[1] - 1.0)
 
     #Compute 1 State TG ODE:
     output_ode[local_ix[1]] = (1.0 / T1) * (x_in - x_g1)
