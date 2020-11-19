@@ -3,7 +3,6 @@ Function to obtain series of states out of DAE Solution. It receives the solutio
 and a tuple containing the symbol name of the Dynamic Injection device and the symbol of the state.
 
 """
-
 function get_state_series(sim::Simulation, ref::Tuple{String, Symbol})
     global_state_index = get_global_index(sim.simulation_inputs)
     ix = get(global_state_index[ref[1]], ref[2], nothing)
