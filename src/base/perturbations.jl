@@ -1,11 +1,46 @@
 abstract type Perturbation end
 
+
+mutable struct BranchTrip <: Perturbation
+    time::Float64
+    branch::ACBranch
+end
+
+function get_affect(::PSY.System, pert::BranchTrip)
+    return (integrator) -> begin
+        0.0
+    end
+end
+
+mutable struct BusTrip <: Perturbation
+    time::Float64
+    bus::Bus
+end
+
+function get_affect(::PSY.System, pert::BranchTrip)
+    return (integrator) -> begin
+        0.0
+    end
+end
+
 mutable struct ThreePhaseFault <: Perturbation
+    time::Float64
+    bus::Bus
+    impedance::Complex
+end
+
+function get_affect(::PSY.System, pert::ThreePhaseFault)
+    return (integrator) -> begin
+        0.0
+    end
+end
+
+mutable struct NetworkSwitch <: Perturbation
     time::Float64
     Ybus::SparseMatrixCSC{Complex{Float64}, Int64}
 end
 
-function get_affect(::PSY.System, pert::ThreePhaseFault)
+function get_affect(::PSY.System, pert::NetworkSwitch)
     return (integrator) -> begin
         integrator.p.Ybus = pert.Ybus
     end

@@ -20,7 +20,7 @@ sys2 = System(raw_file)
 line_name = "BUS 1-BUS 2-i_1"
 remove_component!(Line, sys2, line_name)
 Ybus_fault = Ybus(sys2).data;
-Ybus_change = ThreePhaseFault(
+Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault, #New YBus
 );

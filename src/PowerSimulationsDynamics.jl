@@ -7,7 +7,7 @@ module PowerSimulationsDynamics
 export Simulation
 export Simulation!
 export execute!
-export ThreePhaseFault
+export NetworkSwitch
 export ControlReferenceChange
 
 # Export for routines

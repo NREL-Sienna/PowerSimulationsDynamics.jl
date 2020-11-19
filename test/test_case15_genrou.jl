@@ -43,7 +43,7 @@ function test_genrou(dyr_file, csv_file, init_cond)
         Ybus_fault = Ybus(sys2).data
 
         #Define Fault: Change of YBus
-        Ybus_change = ThreePhaseFault(
+        Ybus_change = NetworkSwitch(
             1.0, #change at t = 1.0
             Ybus_fault, #New YBus
         )

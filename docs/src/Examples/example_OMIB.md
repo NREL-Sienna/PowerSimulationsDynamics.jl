@@ -34,7 +34,7 @@ The next step is to create the simulation structure. This will create the indexi
 - Three Phase Fault
 - Change in Reference Parameter
 
-In here, he will use a Three Phase Fault, that is modeled by modifying the admittance matrix of the system. To do so we create a ThreePhaseFault perturbation as follows:
+In here, he will use a Three Phase Fault, that is modeled by modifying the admittance matrix of the system. To do so we create a NetworkSwitch perturbation as follows:
 ```julia
 #Compute the Y_bus after fault
 #Collect the branch of the system as:
@@ -45,7 +45,7 @@ fault_branch.x = fault_branch.x * 2
 Ybus_fault = Ybus([fault_branch], get_components(Bus, omib_sys))[:, :]
 
 #Construct the perturbation
-perturbation_Ybus = ThreePhaseFault(
+perturbation_Ybus = NetworkSwitch(
     1.0, #change will occur at t = 1.0s
     Ybus_fault, #new Ybus
 )

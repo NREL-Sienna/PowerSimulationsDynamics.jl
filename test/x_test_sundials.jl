@@ -30,7 +30,7 @@ solver_list = [
 tspan = (0.0, 40.0)
 
 #Define Fault: Change of YBus
-Ybus_change = ThreePhaseFault(
+Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
 ) #New YBus
