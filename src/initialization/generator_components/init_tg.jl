@@ -22,7 +22,7 @@ function initialize_tg!(
     τm0 = get_inner_vars(dynamic_device)[τm_var]
     #Get Parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps():0.0:(1.0 / PSY.get_R(tg))
+    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     Tc = PSY.get_Tc(tg)
     T3 = PSY.get_T3(tg)
     T4 = PSY.get_T4(tg)
@@ -74,7 +74,7 @@ function initialize_tg!(
     τm0 = get_inner_vars(dynamic_device)[τm_var]
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps():0.0:(1.0 / PSY.get_R(tg))
+    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
     ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
@@ -113,7 +113,7 @@ function initialize_tg!(
     Δω = 0.0
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps():0.0:(1.0 / PSY.get_R(tg))
+    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
     T3 = PSY.get_T3(tg)
@@ -137,7 +137,7 @@ function initialize_tg!(
         out[3] = (x_g2 - x_g3)
         out[4] = (x_g2 - D_turb * Δω) - τm0
     end
-    x0 = [1.0 * R, τm0, τm0, τm0]
+    x0 = [1.0 / inv_R, τm0, τm0, τm0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in Synch. Machine failed")
@@ -164,7 +164,7 @@ function initialize_tg!(
     Δω = 0.0
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps():0.0:(1.0 / PSY.get_R(tg))
+    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
     T3 = PSY.get_T3(tg)

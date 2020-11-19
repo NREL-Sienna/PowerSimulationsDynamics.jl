@@ -73,6 +73,7 @@ function build!(inputs::SimulationInputs)
     found_ref_bus = false
     sys_basepower = PSY.get_base_power(sys)
 
+    #jd/TODO: Check logic here
     inputs.Ybus, inputs.lookup = _get_Ybus(sys)
     dyn_branches = PSY.get_components(PSY.DynamicBranch, sys)
 
@@ -142,17 +143,15 @@ function build!(inputs::SimulationInputs)
     for d in dynamic_injection
         @debug PSY.get_name(d)
         dynamic_device = PSY.get_dynamic_injector(d)
-        if !(:states in fieldnames(typeof(dynamic_device)))
-            continue
-        end
+        isempty(PSY.get_states(dynamic_device)) && continue
         device_bus = PSY.get_bus(d)
         btype = PSY.get_bustype(device_bus)
         if (btype == PSY.BusTypes.REF) && found_ref_bus
             throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
         end
-        _make_device_index!(d)
+        state_types = make_device_index!(d)
         device_n_states = PSY.get_n_states(dynamic_device)
-        DAE_vector = push!(DAE_vector, collect(trues(device_n_states))...)
+        DAE_vector = push!(DAE_vector, state_types...)
         total_states += device_n_states
         _add_states_to_global!(global_state_index, state_space_ix, dynamic_device)
         push!(inputs.injectors_data, d)

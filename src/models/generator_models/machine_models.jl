@@ -460,7 +460,7 @@ function mdl_machine_ode!(
 
     #Obtain indices for component w/r to device
     machine = PSY.get_machine(dynamic_device)
-    local_ix = get_local_state_ix(dynamic_device, typeof(machine))
+    local_ix = get_local_state_ix(dynamic_device, M)
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -470,7 +470,7 @@ function mdl_machine_ode!(
     ψ_kq = internal_states[4]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(dynamic_device, typeof(machine))
+    external_ix = get_input_port_ix(dynamic_device, M)
     δ = device_states[external_ix[1]]
     ω = device_states[external_ix[2]]
 

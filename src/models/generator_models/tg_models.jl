@@ -39,7 +39,7 @@ function mdl_tg_ode!(
 
     #Get Parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps():0.0:(1.0 / PSY.get_R(tg))
+    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     Ts = PSY.get_Ts(tg)
     Tc = PSY.get_Tc(tg)
     T3 = PSY.get_T3(tg)
@@ -92,7 +92,7 @@ function mdl_tg_ode!(
 
     #Get Parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps():0.0:(1.0 / PSY.get_R(tg))
+    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
 
@@ -141,7 +141,7 @@ function mdl_tg_ode!(
 
     #Get Parameters
     tg = PSY.get_prime_mover(device)
-    inv_R = PSY.get_R(tg) < eps():0.0:(1.0 / PSY.get_R(tg))
+    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
     V_min, V_max = PSY.get_valve_position_limits(tg)
@@ -190,7 +190,7 @@ function mdl_tg_ode!(
 
     #Get Parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps():0.0:(1.0 / PSY.get_R(tg))
+    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
     T3 = PSY.get_T3(tg)
