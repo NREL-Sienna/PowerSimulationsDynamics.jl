@@ -125,8 +125,10 @@ end
 
 function reset!(sim::Simulation)
     @info "Rebuilding the simulation after reset"
-    sim.simulation_inputs = SimulationInputs(sys = get_system(sim.simulation_inputs),
-                                             tspan = sim.simulation_inputs.tspan)
+    sim.simulation_inputs = SimulationInputs(
+        sys = get_system(sim.simulation_inputs),
+        tspan = sim.simulation_inputs.tspan,
+    )
     build!(sim; file_mode = "a")
     @info "Simulation reset to status $(sim.status)"
     return
