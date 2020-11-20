@@ -16,7 +16,7 @@ makedocs(
             "Small Signal" => "Models/small.md",
         ],
         "Public API Reference" => "api/public.md",
-        "Internal API Reference" => "api/internal.md"
+        "Internal API Reference" => "api/internal.md",
     ],
 )
 
@@ -26,6 +26,6 @@ deploydocs(
     branch = "gh-pages",
     devbranch = "master",
     devurl = "dev",
-    push_preview=true,
-    versions = ["stable" => "v^", "v#.#"]
+    push_preview = true,
+    versions = ["stable" => "v^", "v#.#"],
 )
