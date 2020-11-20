@@ -7,7 +7,7 @@ makedocs(
     pages = Any[ # Compat: `Any` for 0.4 compat
         "Welcome Page" => "index.md",
         # "User Guide" => "man/guide.md",
-        "Tutorials" => "tutorial_page.md",
+        "Tutorials" => "tutorials_page.md",
         "Models" => Any[
             "Network" => "Models/network.md",
             "Reference Frames" => "Models/srf.md",
