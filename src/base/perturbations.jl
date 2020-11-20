@@ -8,7 +8,7 @@ mutable struct BranchTrip <: Perturbation
     branch_name::String
 end
 
-function _ybus_update!(
+function ybus_update!(
     ybus::SparseMatrixCSC{ComplexF64, Int64},
     b::PSY.ACBranch,
     num_bus::Dict{Int64, Int64},
@@ -31,7 +31,7 @@ function _ybus_update!(
     return
 end
 
-function _ybus_update!(
+function ybus_update!(
     ybus::SparseMatrixCSC{ComplexF64, Int64},
     b::PSY.TapTransformer,
     num_bus::Dict{Int64, Int64},
@@ -57,7 +57,7 @@ function _ybus_update!(
     return
 end
 
-function _ybus_update!(
+function ybus_update!(
     ybus::SparseMatrixCSC{ComplexF64, Int64},
     b::PSY.PhaseShiftingTransformer,
     num_bus::Dict{Int64, Int64},
@@ -83,7 +83,7 @@ function _ybus_update!(
     return
 end
 
-function _ybus_update!(
+function ybus_update!(
     ybus::SparseMatrixCSC{ComplexF64, Int64},
     fa::PSY.FixedAdmittance,
     num_bus::Dict{Int64, Int64},
@@ -95,8 +95,8 @@ function _ybus_update!(
     return
 end
 
-function _ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
-    _ybus_update!(integrator_params.Ybus, branch, integrator_params.lookup, mult)
+function ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
+    ybus_update!(integrator_params.Ybus, branch, integrator_params.lookup, mult)
     return
 end
 
@@ -107,7 +107,7 @@ function get_affect(sys::PSY.System, pert::BranchTrip)
         x -> PSY.get_name(x) == pert.branch_name,
     ))
     return (integrator) -> begin
-        _ybus_update!(integrator.p, branch, -1.0)
+        ybus_update!(integrator.p, branch, -1.0)
     end
     return
 end
