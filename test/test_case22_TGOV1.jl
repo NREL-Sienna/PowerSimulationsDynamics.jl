@@ -18,7 +18,6 @@ sys = System(raw_file, dyr_file);
 path = (joinpath(pwd(), "test-psse-tgov1"))
 !isdir(path) && mkdir(path)
 try
-
     sim = Simulation!(
         path,
         sys, #system

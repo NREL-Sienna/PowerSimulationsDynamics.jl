@@ -1,11 +1,9 @@
 abstract type Perturbation end
 
-
 mutable struct BranchTrip <: Perturbation
     time::Float64
     branch_name::String
 end
-
 
 function _ybus_update!(
     ybus::SparseMatrixCSC{ComplexF64, Int64},
@@ -95,19 +93,20 @@ function _ybus_update!(
 end
 
 function _ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
-   _ybus_update!(integrator_params.Ybus, branch, integrator_params.lookup, mult)
-   return
+    _ybus_update!(integrator_params.Ybus, branch, integrator_params.lookup, mult)
+    return
 end
 
 function get_affect(sys::PSY.System, pert::BranchTrip)
-    branch = first(PSY.get_components(PSY.ACBranch,
-                   sys, x -> PSY.get_name(x) == pert.branch_name)
-                   )
+    branch = first(PSY.get_components(
+        PSY.ACBranch,
+        sys,
+        x -> PSY.get_name(x) == pert.branch_name,
+    ))
     return (integrator) -> begin
         _ybus_update!(integrator.p, branch, -1.0)
     end
     return
-
 end
 
 # Pending implementation

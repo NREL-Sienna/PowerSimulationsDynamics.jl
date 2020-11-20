@@ -17,12 +17,12 @@ path = (joinpath(pwd(), "test-psse-gast"))
 !isdir(path) && mkdir(path)
 
 try
-    sys = System(raw_file, dyr_file);
+    sys = System(raw_file, dyr_file)
     sim = Simulation!(
         path,
         sys, #system
         (0.0, 20.0), #time span
-       BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault
+        BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault
     )
 
     #Solve problem in equilibrium
