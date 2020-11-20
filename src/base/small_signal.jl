@@ -134,6 +134,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     reset_simulation = get(kwargs, :reset_simulation, false)
     _simulation_pre_step(sim, reset_simulation)
     _change_vector_type!(sim.simulation_inputs, Real)
+    sim.status = CONVERTED_FOR_SMALL_SIGNAL
     x_eval = get(kwargs, :operating_point, sim.x0_init)
     jacobian = _calculate_forwardiff_jacobian(sim, x_eval)
     jac_index, diff_states, alg_states = _get_state_types(sim)

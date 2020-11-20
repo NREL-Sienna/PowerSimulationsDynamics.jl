@@ -114,4 +114,5 @@ Defines the status of the simulation object
     SIMULATION_STARTED = 3
     SIMULATION_FINALIZED = 4
     SIMULATION_FAILED = 5
+    CONVERTED_FOR_SMALL_SIGNAL = 6
 end
