@@ -1,17 +1,13 @@
-using Documenter, DocStringExtensions, PowerSimulationsDynamics
+using Documenter, PowerSystems, DocStringExtensions, PowerSimulationsDynamics
 
 makedocs(
     modules = [PowerSimulationsDynamics],
     format = Documenter.HTML(mathengine = Documenter.MathJax()),
     sitename = "PowerSimulationsDynamics.jl",
     pages = Any[ # Compat: `Any` for 0.4 compat
-        "Home" => "index.md",
+        "Welcome Page" => "index.md",
         # "User Guide" => "man/guide.md",
-        "Tutorials" => Any[
-            "Tutorial 0: Data Creation" => "Examples/example_data.md",
-            "Tutorial 1: OMIB" => "Examples/example_OMIB.md",
-            "Tutorial 2: Dynamic Lines" => "Examples/example_lines.md",
-        ],
+        "Tutorials" => "tutorial_page.md",
         "Models" => Any[
             "Network" => "Models/network.md",
             "Reference Frames" => "Models/srf.md",
@@ -19,6 +15,8 @@ makedocs(
             "Inverter" => "Models/inverters.md",
             "Small Signal" => "Models/small.md",
         ],
+        "Public API Reference" => "api/public.md",
+        "Internal API Reference" => "api/internal.md"
     ],
 )
 
@@ -28,5 +26,6 @@ deploydocs(
     branch = "gh-pages",
     devbranch = "master",
     devurl = "dev",
-    versions = ["stable" => "v^", "v#.#"],
+    push_preview=true,
+    versions = ["stable" => "v^", "v#.#"]
 )
