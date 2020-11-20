@@ -110,6 +110,8 @@ function get_affect(sys::PSY.System, pert::BranchTrip)
 
 end
 
+# Pending implementation
+#=
 mutable struct BusTrip <: Perturbation
     time::Float64
     bus::PSY.Bus
@@ -132,6 +134,7 @@ function get_affect(::PSY.System, pert::ThreePhaseFault)
         0.0
     end
 end
+=#
 
 mutable struct NetworkSwitch <: Perturbation
     time::Float64
