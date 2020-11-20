@@ -152,7 +152,6 @@ function get_affect(::PSY.System, pert::NetworkSwitch)
     end
 end
 
-
 """
 Use to model control reference changes in devices of the model
 """
