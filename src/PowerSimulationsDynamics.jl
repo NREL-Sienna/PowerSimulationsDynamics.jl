@@ -7,8 +7,10 @@ module PowerSimulationsDynamics
 export Simulation
 export Simulation!
 export execute!
-export ThreePhaseFault
+export NetworkSwitch
 export ControlReferenceChange
+export BranchTrip
+# export BusTrip
 
 # Export for routines
 export small_signal_analysis
@@ -102,7 +104,6 @@ include("initialization/inverter_components/init_outer.jl")
 include("models/system.jl")
 
 #Utils
-include("utils/ybus_utils.jl")
 include("utils/plot_utils.jl")
 include("utils/immutable_dicts.jl")
 include("utils/print.jl")

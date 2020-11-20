@@ -19,7 +19,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test14.jl"))
 tspan = (0.0, 10.0)
 
 #Define Fault: Change of YBus
-Ybus_change = ThreePhaseFault(
+Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
 ) #New YBus

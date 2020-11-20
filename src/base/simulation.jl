@@ -125,6 +125,8 @@ end
 
 function reset!(sim::Simulation)
     @info "Rebuilding the simulation after reset"
+    sim.simulation_inputs = SimulationInputs(sys = get_system(sim.simulation_inputs),
+                                             tspan = sim.simulation_inputs.tspan)
     build!(sim; file_mode = "a")
     @info "Simulation reset to status $(sim.status)"
     return
@@ -271,7 +273,7 @@ function _get_Ybus(sys::PSY.System)
         Ybus = Ybus_[:, :]
         lookup = Ybus_.lookup[1]
         for br in dyn_lines
-            ybus!(Ybus, br, lookup, -1.0)
+            ybus_update!(Ybus, br, lookup, -1.0)
         end
     else
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
@@ -331,7 +333,9 @@ function _simulation_pre_step(sim::Simulation, reset_simulation::Bool)
 end
 
 function execute!(sim::Simulation, solver; kwargs...)
+    @show "status before execute" sim.status
     reset_simulation = get(kwargs, :reset_simulation, false)
+    reset_simulation = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_simulation
     _simulation_pre_step(sim, reset_simulation)
     sim.status = SIMULATION_STARTED
     sim.solution = DiffEqBase.solve(

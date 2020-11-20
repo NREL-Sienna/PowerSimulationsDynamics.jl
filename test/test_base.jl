@@ -9,7 +9,7 @@ omib_sys_file = System(PowerModelsData(omib_file_dir), runchecks = false)
 ############### SOLVE PROBLEM ####################
 ##################################################
 #Define Fault: Change of YBus
-Ybus_change = ThreePhaseFault(
+Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
 ) #New YBus

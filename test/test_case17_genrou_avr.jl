@@ -13,11 +13,6 @@ include(joinpath(dirname(@__FILE__), "data_tests/test17.jl"))
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
-#Define Fault: Change of YBus
-Ybus_change = ThreePhaseFault(
-    1.0, #change at t = 1.0
-    Ybus_fault, #New YBus
-)
 
 path = (joinpath(pwd(), "test-psse-genrou-avr"))
 !isdir(path) && mkdir(path)
@@ -27,7 +22,7 @@ try
         path,
         sys, #system
         (0.0, 30.0), #time span
-        Ybus_change,
+        BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault,
     ) #Type of Fault
 
     #Obtain small signal results for initial conditions
