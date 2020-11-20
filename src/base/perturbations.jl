@@ -1,5 +1,8 @@
 abstract type Perturbation end
 
+"""
+Use to model the trip of an AC Branch in in the system. Accepts lines or transformer lines
+"""
 mutable struct BranchTrip <: Perturbation
     time::Float64
     branch_name::String
@@ -135,6 +138,9 @@ function get_affect(::PSY.System, pert::ThreePhaseFault)
 end
 =#
 
+"""
+Use to model a change in the network by switching the underlying Ybus in the simulation
+"""
 mutable struct NetworkSwitch <: Perturbation
     time::Float64
     Ybus::SparseMatrixCSC{Complex{Float64}, Int64}
@@ -146,6 +152,10 @@ function get_affect(::PSY.System, pert::NetworkSwitch)
     end
 end
 
+
+"""
+Use to model control reference changes in devices of the model
+"""
 mutable struct ControlReferenceChange <: Perturbation
     time::Float64
     device::PSY.DynamicInjection
