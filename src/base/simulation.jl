@@ -335,7 +335,7 @@ function _simulation_pre_step(sim::Simulation, reset_simulation::Bool)
 end
 
 function execute!(sim::Simulation, solver; kwargs...)
-    @show "status before execute" sim.status
+    @debug "status before execute" sim.status
     reset_simulation = get(kwargs, :reset_simulation, false)
     reset_simulation = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_simulation
     _simulation_pre_step(sim, reset_simulation)
