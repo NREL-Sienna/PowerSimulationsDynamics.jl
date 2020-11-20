@@ -15,24 +15,15 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/TEST_TGOV1.csv")
 #Construct system
 sys = System(raw_file, dyr_file);
 
-#Construct fault
-sys2 = System(raw_file)
-line_name = "BUS 1-BUS 2-i_1"
-remove_component!(Line, sys2, line_name)
-Ybus_fault = Ybus(sys2).data;
-Ybus_change = NetworkSwitch(
-    1.0, #change at t = 1.0
-    Ybus_fault, #New YBus
-);
-
 path = (joinpath(pwd(), "test-psse-tgov1"))
 !isdir(path) && mkdir(path)
 try
+
     sim = Simulation!(
         path,
         sys, #system
         (0.0, 20.0), #time span
-        Ybus_change, #Type of Fault
+        BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault
     )
 
     #Solve problem in equilibrium

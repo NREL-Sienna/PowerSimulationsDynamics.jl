@@ -42,24 +42,12 @@ function test_gensal(dyr_file, csv_file, init_cond)
     try
         sys = System(raw_file_dir, dyr_file)
 
-        #Compute Ybus_fault
-        sys2 = System(raw_file_dir)
-        #Remove line connecting bus 1 to 2.
-        remove_component!(Line, sys2, "BUS 1-BUS 2-i_1")
-        Ybus_fault = Ybus(sys2).data
-
-        #Define Fault: Change of YBus
-        Ybus_change = NetworkSwitch(
-            1.0, #change at t = 1.0
-            Ybus_fault, #New YBus
-        )
-
         #Define Simulation Problem
         sim = Simulation!(
             path,
             sys, #system
             tspan, #time span
-            Ybus_change,
+            BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
         #Obtain small signal results for initial conditions
