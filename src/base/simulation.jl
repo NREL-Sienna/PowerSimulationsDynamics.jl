@@ -271,7 +271,7 @@ function _get_Ybus(sys::PSY.System)
         Ybus = Ybus_[:, :]
         lookup = Ybus_.lookup[1]
         for br in dyn_lines
-            ybus!(Ybus, br, lookup, -1.0)
+            ybus_update!(Ybus, br, lookup, -1.0)
         end
     else
         Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))

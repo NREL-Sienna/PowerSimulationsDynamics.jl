@@ -29,9 +29,3 @@ end
 g = get_component(ThermalStandard, sys, "generator-102-1")
 dyn_gen = dyn_gen_genrou(g)
 add_component!(sys, dyn_gen, g);
-
-#Compute Ybus_fault
-sys2 = System(raw_file_dir)
-#Remove line connecting bus 1 to 2.
-remove_component!(Line, sys2, "BUS 1-BUS 2-i_1")
-Ybus_fault = Ybus(sys2).data

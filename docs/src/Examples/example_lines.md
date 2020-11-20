@@ -51,7 +51,7 @@ end
 #Obtain the new Ybus
 Ybus_fault = Ybus(sys2).data
 #Define Fault: Change of YBus
-Ybus_change = PowerSimulationsDynamics.ThreePhaseFault(
+Ybus_change = PowerSimulationsDynamics.NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault, #New YBus
 )
@@ -133,7 +133,7 @@ end
 #Obtain the new Ybus
 Ybus_fault_dyn = Ybus(sys3).data
 #Define Fault: Change of YBus
-Ybus_change_dyn = PowerSimulationsDynamics.ThreePhaseFault(
+Ybus_change_dyn = PowerSimulationsDynamics.NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault_dyn, #New YBus
 )
