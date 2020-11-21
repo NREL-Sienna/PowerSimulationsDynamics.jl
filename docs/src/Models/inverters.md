@@ -11,9 +11,7 @@ Here we discuss the structure and models used to model inverters in PowerSimulat
 
 The following figure summarizes the components of a inverter and which variables they share:
 
-```@raw html
-<img src="../../assets/inv_metamodel.png" width="75%"/>
-``` ⠀
+![inv_meta](https://github.com/NREL-SIIP/PowerSystems.jl/blob/master/docs/src/assets/inv_metamodel.png)
 
 Contrary to the generator, there are many control structures that can be used to model inverter controllers (e.g. grid-following, grid feeding or virtual synchronous machine). For this purpose, more variables are shared among the components in order to cover all these posibilities.
 
