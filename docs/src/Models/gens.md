@@ -10,9 +10,7 @@ Here we discuss the structure and models used to model generators in PowerSimula
 
 The following figure summarizes the components of a generator and which variables they share:
 
-```@raw html
-<img src="../../assets/gen_metamodel.png" width="75%"/>
-``` ⠀
+![gen_meta](https://github.com/NREL-SIIP/PowerSystems.jl/blob/master/docs/src/assets/gen_metamodel.png)
 
 Models are based from Federico Milano's book: "Power System Modelling and Scripting" and Prabha Kundur's book: "Power System's Stability and Control" and structures are defined in ```PowerSystems.jl``` abbreviated as ```PSY```.
 
