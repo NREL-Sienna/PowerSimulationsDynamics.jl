@@ -1,9 +1,9 @@
 # Network model
 
-Here we discuss the models used to describe the network in *PowerSimulationsDynamics.jl*. This is based on a standard current injection model as defined in Federico Milano's book: *Power System Modelling and Scripting*. The numerical advantages of current injection models outweigh the complexities of
+Here we discuss the models used to describe the network in *`PowerSimulationsDynamics.jl`. This is based on a standard current injection model as defined in Federico Milano's book: *Power System Modelling and Scripting*. The numerical advantages of current injection models outweigh the complexities of
 implementing constant power loads for longer-term transient stability analysis. The network is defined in a synchronous reference frame (SRF), named the RI (real-imaginary) reference frame, rotating at the constant base frequency ``\Omega_b``.
 
-In simple terms, *PowerSimulationsDynamics.jl* internally tracks the current-injection balances at the nodal level from all the devices on the system. Based on the buses and branches information, the system constructor computes the admittance matrix ``\boldsymbol{Y}`` assuming nominal frequency and this is used for static branch modeling. The algebraic equations for the static portions of the network are as follows:
+In simple terms, *`PowerSimulationsDynamics.jl` internally tracks the current-injection balances at the nodal level from all the devices on the system. Based on the buses and branches information, the system constructor computes the admittance matrix ``\boldsymbol{Y}`` assuming nominal frequency and this is used for static branch modeling. The algebraic equations for the static portions of the network are as follows:
 
 ```math
  \begin{align}

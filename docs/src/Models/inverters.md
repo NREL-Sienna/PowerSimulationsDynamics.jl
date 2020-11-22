@@ -1,6 +1,6 @@
 # Inverter Models
 
-Here we discuss the structure and models used to model inverters in PowerSimulationsDynamics.jl. Each inverter is a data structure that is defined by the following components:
+Here we discuss the structure and models used to model inverters in `PowerSimulationsDynamics.jl`. Each inverter is a data structure that is defined by the following components:
 
 - DC Source: Defines the dynamics of the DC side of the converter.
 - Frequency Estimator: That describes how the frequency of the grid can be estimated using the grid voltages. Typically a phase-locked loop (PLL).
@@ -116,7 +116,7 @@ In here the transformation to the ``dq`` reference frame is using the outer-loop
 ```math
 \begin{align*}
 v_d + jv_q = (v_r + jv_i)e^{-j\delta\theta_{olc}} \\
-i_d + ji_q = (i_r + ji_i)e^{-j\delta\theta_{olc}} 
+i_d + ji_q = (i_r + ji_i)e^{-j\delta\theta_{olc}}
 \end{align*}
 ```
 that again ``v_r + jv_i`` could be in the capacitor or the last branch of the filter (i.e. the point of common coupling). For LCL filters it is considered in the capacitor. In the case of the converter, the transformation is directly
@@ -160,7 +160,7 @@ A standard LCL filter is proposed to connect the output of the converter to the 
     \dot{i}_{i} &= \frac{\Omega_b}{l_g}\left( v_i^{\text{cv}} - v_i^{\text{grid}} - r_g i_{i} - \omega_{\text{grid}} l_g i_{r,\text{cv}} \right) \tag{5f}
 \end{align}
 ```
-on which 
+on which
 ```math
 \begin{align*}
 v_r^\text{cv} + jv_i^\text{cv} = (v_d^\text{cv} + jv_q^\text{cv})e^{j\delta\theta_{olc}}

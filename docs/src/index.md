@@ -6,7 +6,7 @@ CurrentModule = PowerSystems
 
 ## Overview
 
-*PowerSimulationsDynamics.jl* is a [`Julia`](http://www.julialang.org) package for
+`PowerSimulationsDynamics.jl` is a [`Julia`](http://www.julialang.org) package for
 doing Power Systems Dynamic Modeling with Low Inertia Energy Sources.
 
 ## Installation
@@ -14,7 +14,7 @@ doing Power Systems Dynamic Modeling with Low Inertia Energy Sources.
 The latest stable release of PowerSimulationsDynamics can be installed using the Julia package manager with
 
 ```julia
-] addPowerSimulationsDynamics
+] add PowerSimulationsDynamics
 ```
 
 For the current development version, "checkout" this package with

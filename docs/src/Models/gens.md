@@ -1,6 +1,7 @@
 # Generator Models
 
-Here we discuss the structure and models used to model generators in PowerSimulationsDynamics.jl. Each generator is a data structure that is defined by the following components:
+Here we discuss the structure and models used to model generators in `PowerSimulationsDynamics.jl`.
+Each generator is a data structure that is defined by the following components:
 
 - Machine: That defines the stator electro-magnetic dynamics.
 - Shaft: That describes the rotor electro-mechanical dynamics.
@@ -19,6 +20,7 @@ Models are based from Federico Milano's book: "Power System Modelling and Script
 The machine component describes the stator-rotor electromagnetic dynamics.
 
 ### Classical Model (Zero Order) ```[BaseMachine]```
+
 This is the classical order model that does not have differential equations in its machine model (``\delta`` and ``\omega`` are defined in the shaft):
 
 ```math
@@ -29,6 +31,7 @@ p_e \approx \tau_e &= (v_q + r_a i_q)i_q + (v_d + r_ai_d)i_d \tag{1b}
 ```
 
 ### One d- One q- Model (2th Order) ```[OneDOneQMachine]```
+
 This model includes two transient emf with their respective differential equations:
 
 ```math
@@ -91,7 +94,6 @@ with
 \end{align*}
 ```
 
-
 ### Anderson-Fouad Machine (6th Order) ```[AndersonFouadMachine]```
 
 The Anderson-Fouad model also defines 6 differential equations, two for stator fluxes and 4 for transient and subtransient emfs and is derived from the Marconato model by defining ``\gamma_d \approx \gamma_q \approx T_{AA} \approx 0``:
@@ -140,6 +142,7 @@ Similar to the Simplified Marconato Model, this model neglects the derivative of
 ```
 
 with:
+
 ```math
 \begin{align}
 \gamma_{d1} &= \frac{x_d'' - x_l}{x_d' - x_l} \tag{7e}\\
@@ -158,18 +161,23 @@ X_{aq}I_{1q} &= e_d' + (x_q - x_q') (\gamma_{q2} e_d' - \gamma_{q2}\psi_{kq} - \
 ```
 
 The difference between GENROU and GENROE occurs in which additive saturation function ``\text{Se}(\psi'')`` is used. Input data is provided by the saturation values at ``\psi'' = 1.0`` and ``\psi'' = 1.2`` p.u. For the GENROU model, the function used is:
-```math
+
+py```math
 \begin{align}
 \text{Se}(\psi'') &= \frac{B(\psi'' - A)^2 }{\psi''} \tag{7q}
 \end{align}
 ```
+
 and for the GENROE model the function used is:
+
 ```math
 \begin{align}
 \text{Se}(\psi'') &= B(\psi'')^A \tag{7r}
 \end{align}
 ```
-The parameters ``A`` and ``B`` for each function are computed using the two points given ``(1.0, \text{Se}(1.0))`` and ``(1.2, \text{Se}(1.2))``.
+
+The parameters ``A`` and ``B`` for each function are computed using the two points given
+``(1.0, \text{Se}(1.0))`` and ``(1.2, \text{Se}(1.2))``.
 
 ## Shafts
 
@@ -185,7 +193,6 @@ This is the standard model, on which one single mass (typically the rotor) is us
 \dot{\omega} &= \frac{1}{2H}(\tau_m - \tau_e - D(\omega-\omega_s)) \tag{8b}
 \end{align}
 ```
-
 
 ### Five-Mass Shaft ```[FiveMassShaft]```
 
@@ -267,7 +274,6 @@ S_e(v_f) &= A_e \exp(B_e|v_f|)
 \end{align*}
 ```
 
-
 ## Power System Stabilizers (PSS)
 
 PSS are used to add an additional signal ``v_s`` to the field voltage: ``v_f = v_f^{\text{avr}} + v_s``.
@@ -325,7 +331,6 @@ This turbine governor is a simplified model of the Type I.
 \tau_m &= P_{\text{ref}} + \frac{1}{R}\frac{T_1}{T_2}(\omega_s - \omega) \tag{14b}
 \end{align}
 ```
-
 
 ## Reference
 
