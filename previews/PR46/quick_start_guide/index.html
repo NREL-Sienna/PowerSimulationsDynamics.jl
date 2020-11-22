@@ -4,16 +4,11 @@
 julia&gt; DATA_DIR = download(PowerSystems.UtilsData.TestData, folder = pwd())
 &quot;/home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/build/data&quot;
 
-julia&gt; system_data = System(joinpath(DATA_DIR, &quot;psse_raw/OMIB.raw&quot;),
+julia&gt; omib_sys = System(joinpath(DATA_DIR, &quot;psse_raw/OMIB.raw&quot;),
                             joinpath(DATA_DIR, &quot;psse_raw/OMIB.dyr&quot;))
 [ Info: The PSS(R)E parser currently supports buses, loads, shunts, generators, branches, transformers, and dc lines
-[ Info: Version 32 of PTI format is unsupported, parser may not function correctly.
-[ Info: The following fields in BUS are missing: NVHI, NVLO, EVHI, EVLO
-[ Info: The following fields in BUS are missing: NVHI, NVLO, EVHI, EVLO
-[ Info: The following fields in GENERATOR are missing: O2, F2, O3, F3, O4, F4, WMOD, WPF
-[ Info: The following fields in GENERATOR are missing: O2, F2, O3, F3, O4, F4, WMOD, WPF
-[ Info: The following fields in BRANCH are missing: O2, F2, O3, F3, O4, F4
-[ Info: The following fields in BRANCH are missing: O2, F2, O3, F3, O4, F4
+[ Info: the voltage setpoint on generator 1 does not match the value at bus 102
+[ Info: the voltage setpoint on generator 2 does not match the value at bus 102
 ┌ Info: Constructing System from Power Models
 │   data[&quot;name&quot;] = &quot;omib&quot;
 └   data[&quot;source_type&quot;] = &quot;pti&quot;
@@ -22,16 +17,16 @@ julia&gt; system_data = System(joinpath(DATA_DIR, &quot;psse_raw/OMIB.raw&quot;)
 ┌ Warning: Invalid range
 │   valid_info.struct_name = &quot;ThermalStandard&quot;
 │   field_name = &quot;active_power&quot;
-│   field_value = -0.5
+│   field_value = 5.0
 │   valid_range = &quot;active_power_limits&quot;
 │   valid_info.ist_struct =
-│    generator-101-1 (ThermalStandard):
-│       name: generator-101-1
+│    generator-102-1 (ThermalStandard):
+│       name: generator-102-1
 │       available: true
 │       status: true
-│       bus: BUS 1 (Bus)
-│       active_power: -0.5
-│       reactive_power: 0.21572
+│       bus: BUS 2 (Bus)
+│       active_power: 5.0
+│       reactive_power: 0.0
 │       rating: 1.4142135623730951
 │       active_power_limits: (min = 0.0, max = 1.0)
 │       reactive_power_limits: (min = -1.0, max = 1.0)
@@ -44,19 +39,10 @@ julia&gt; system_data = System(joinpath(DATA_DIR, &quot;psse_raw/OMIB.raw&quot;)
 │       services: 0-element Array{Service,1}
 │       time_at_status: 1.0e6
 │       dynamic_injector: nothing
-│       ext: Dict{String,Any}(&quot;z_source&quot; =&gt; (r = 0.0, x = 1.0e-5))
+│       ext: Dict{String,Any}(&quot;z_source&quot; =&gt; (r = 0.0, x = 1.0))
 │       time_series_container: InfrastructureSystems.TimeSeriesContainer: 0
 └ @ InfrastructureSystems ~/.julia/packages/InfrastructureSystems/6GZHV/src/validation.jl:217
-[ Info: Reading branch data
-┌ Warning: Rate provided for BUS 1-BUS 2-i_1 is larger than the SIL Inf in the range of (min = 134.0, max = 145.0).
-└ @ PowerSystems ~/.julia/packages/PowerSystems/eF3Pv/src/utils/IO/branchdata_checks.jl:147
-┌ Warning: Rate provided for BUS 1-BUS 2-i_2 is larger than the SIL Inf in the range of (min = 134.0, max = 145.0).
-└ @ PowerSystems ~/.julia/packages/PowerSystems/eF3Pv/src/utils/IO/branchdata_checks.jl:147
-[ Info: Reading branch data
-[ Info: Reading DC Line data
-┌ Warning: There are no ElectricLoad Components in the System
-└ @ PowerSystems ~/.julia/packages/PowerSystems/eF3Pv/src/utils/IO/system_checks.jl:56
-ERROR: SystemError: opening file &quot;/home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/build/data/psse_raw/OMIB.dyr&quot;: No such file or directory</code></pre><p>For more details about loading data and adding more dynamic components check the <a href="https://nrel-siip.github.io/PowerSystems.jl/stable/modeler_guide/system_dynamic_data/">Creating a System with Dynamic devices</a> section of the documentation in <code>PowerSystems.jl</code></p><h2 id="Define-the-Simulation"><a class="docs-heading-anchor" href="#Define-the-Simulation">Define the Simulation</a><a id="Define-the-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Define-the-Simulation" title="Permalink"></a></h2><pre><code class="language-julia-repl">julia&gt; time_span = (0.0, 30.0)
+ERROR: ArgumentError: generator-102-1 is already stored for type ThermalStandard</code></pre><p>For more details about loading data and adding more dynamic components check the <a href="https://nrel-siip.github.io/PowerSystems.jl/stable/modeler_guide/system_dynamic_data/">Creating a System with Dynamic devices</a> section of the documentation in <code>PowerSystems.jl</code></p><h2 id="Define-the-Simulation"><a class="docs-heading-anchor" href="#Define-the-Simulation">Define the Simulation</a><a id="Define-the-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Define-the-Simulation" title="Permalink"></a></h2><pre><code class="language-julia-repl">julia&gt; time_span = (0.0, 30.0)
 (0.0, 30.0)
 
 julia&gt; perturbation_trip = BranchTrip(1.0, &quot;BUS 1-BUS 2-i_1&quot;)
@@ -69,5 +55,11 @@ ERROR: UndefVarError: sim not defined</code></pre><h2 id="Execute-the-simulation
 ERROR: UndefVarError: sim not defined</code></pre><h2 id="Make-a-plot-of-the-results"><a class="docs-heading-anchor" href="#Make-a-plot-of-the-results">Make a plot of the results</a><a id="Make-a-plot-of-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Make-a-plot-of-the-results" title="Permalink"></a></h2><pre><code class="language-julia-repl">julia&gt; angle = get_state_series(sim, (&quot;generator-102-1&quot;, :δ));
 ERROR: UndefVarError: sim not defined
 
-julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;rotor angle&quot;)
-Plot{Plots.GRBackend() n=1}</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../tutorials_page/">Tutorials »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 22 November 2020 02:06">Sunday 22 November 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;rotor angle&quot;);
+
+/home/runner/.julia/packages/GR/RlE5Y/src/../deps/gr/bin/gksqt: error while loading shared libraries: libQt5Widgets.so.5: cannot open shared object file: No such file or directory
+connect: Connection refused
+GKS: can&#39;t connect to GKS socket application
+
+GKS: Open failed in routine OPEN_WS
+GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../f-plot.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../tutorials_page/">Tutorials »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 22 November 2020 02:23">Sunday 22 November 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
