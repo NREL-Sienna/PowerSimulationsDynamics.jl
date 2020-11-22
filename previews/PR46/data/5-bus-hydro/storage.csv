@@ -1,0 +1,3 @@
+GEN UID,Storage,Max Volume GWh,Initial Volume GWh,Start Energy,Inflow Limit GWh,Rating MVA
+HydroDispatch1,HydroReservoir1,2,1,1.0,150,5
+HydroDispatch3,HydroReservoir2,2,0.75,1.0,400,75
