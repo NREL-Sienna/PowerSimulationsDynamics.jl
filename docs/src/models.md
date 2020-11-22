@@ -33,7 +33,7 @@ components in a way that resembles current practices for synchronoues machine mo
 - [`DC Source`](https://nrel-siip.github.io/PowerSystems.jl/stable/model_library/generated_DCSource/#DCSource): Defines the dynamics of the DC side of the converter.
 - [`Frequency Estimator`](https://nrel-siip.github.io/PowerSystems.jl/stable/model_library/generated_FrequencyEstimator/#FrequencyEstimator): That describes how the frequency of the grid can be estimated using the grid voltages. Typically a phase-locked loop (PLL).
 - [`Outer Loop Control`](https://nrel-siip.github.io/PowerSystems.jl/stable/model_library/outer_control/#OuterControl): That describes the active and reactive power control dynamics.
-- [`Inner Loop Control`]: That can describe virtual impedance, voltage control and current control dynamics.
+- [`Inner Loop Control`](https://nrel-siip.github.io/PowerSystems.jl/stable/model_library/generated_InnerControl/#InnerControl): That can describe virtual impedance, voltage control and current control dynamics.
 - [`Converter`](https://nrel-siip.github.io/PowerSystems.jl/stable/model_library/generated_Converter/#Converter): That describes the dynamics of the pulse width modulation (PWM) or space vector modulation (SVM).
 - Filter: Used to connect the converter output to the grid.
 
