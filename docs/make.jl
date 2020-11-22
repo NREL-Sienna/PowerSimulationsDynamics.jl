@@ -16,7 +16,7 @@ makedocs(
             "Machine" => "component_models/machines.md",
             "PSS" => "component_models/pss.md",
             "Shaft" => "component_models/shafts.md",
-            "Turbine and Governor" => "component_models/turbine_gov.md"
+            "Turbine and Governor" => "component_models/turbine_gov.md",
         ],
         "CIG Component Library" => Any[
             "Converter" => "component_models/converter.md",
@@ -27,9 +27,7 @@ makedocs(
             "Outer Control" => "component_models/outer_control.md",
         ],
         "Branch Models" => Any["Network" => "component_models/network.md",],
-        "Code Base Developer Guide" =>
-            Any["Developer Guide" => "code_base_developer_guide/developer.md",
-            ],
+        "Code Base Developer Guide" => Any["Developer Guide" => "code_base_developer_guide/developer.md",],
         "Public API Reference" => "api/public.md",
         "Internal API Reference" => "api/internal.md",
     ],
