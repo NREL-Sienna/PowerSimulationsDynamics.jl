@@ -19,6 +19,8 @@ export get_voltagemag_series
 export print_device_states
 export get_initial_conditions
 
+export configure_logging
+
 ####################################### Package Imports ####################################
 import Logging
 import InfrastructureSystems
