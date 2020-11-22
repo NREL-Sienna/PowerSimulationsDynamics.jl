@@ -49,7 +49,7 @@ x0_init = get_initial_conditions(sim)
 
 ```@repl quick_start_guide
 angle = get_state_series(sim, ("generator-102-1", :δ));
-plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "rotor angle");
+plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "gen-102-1");
 savefig("f-plot.svg"); nothing # hide
 ```
 
@@ -60,7 +60,7 @@ If you miss PSS/e's plotting aesthetics and want something that resembles that, 
 ```@repl quick_start_guide
 using UnicodePlots
 unicodeplots()
-plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "rotor angle");
+plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "gen-102-1");
 ```
 
 ![plot](assets/unicode.png)
