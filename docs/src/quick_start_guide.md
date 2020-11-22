@@ -1,7 +1,7 @@
 # Quick Start Guide
 
 You can access example data in the [Power Systems Test Data Repository](https://github.com/NREL-SIIP/PowerSystemsTestData),
-the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`
+the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`.
 
 ## Loading data
 
@@ -11,12 +11,12 @@ Data can be loaded from a pss/e raw file and a pss/e dyr file.
 using PowerSystems, PowerSimulationsDynamics, Sundials, Plots
 DATA_DIR = download(PowerSystems.UtilsData.TestData, folder = pwd())
 omib_sys = System(joinpath(DATA_DIR, "psse_raw/OMIB.raw"),
-                     joinpath(DATA_DIR, "psse_raw/OMIB.dyr"))
+                     joinpath(DATA_DIR, "psse_dyr/OMIB.dyr"))
 ```
 
 For more details about loading data and adding more dynamic components check the
 [Creating a System with Dynamic devices](https://nrel-siip.github.io/PowerSystems.jl/stable/modeler_guide/system_dynamic_data/)
-section of the documentation in `PowerSystems.jl`
+section of the documentation in `PowerSystems.jl`.
 
 ## Define the Simulation
 
