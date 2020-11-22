@@ -11,7 +11,8 @@ Data can be loaded from a pss/e raw file and a pss/e dyr file.
 using PowerSystems, PowerSimulationsDynamics, Sundials, Plots
 DATA_DIR = download(PowerSystems.UtilsData.TestData, folder = pwd())
 omib_sys = System(joinpath(DATA_DIR, "psse_raw/OMIB.raw"),
-                     joinpath(DATA_DIR, "psse_dyr/OMIB.dyr"))
+                     joinpath(DATA_DIR, "psse_dyr/OMIB.dyr");
+                     time_series_in_memory = true)
 ```
 
 For more details about loading data and adding more dynamic components check the
