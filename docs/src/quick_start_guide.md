@@ -54,3 +54,13 @@ savefig("f-plot.svg"); nothing # hide
 ```
 
 ![plot](f-plot.svg)
+
+If you miss PSS/e's plotting aesthetics and want something that resembles that, you can use [`UnicodePlots`](https://github.com/Evizero/UnicodePlots.jl).
+
+```@repl quick_start_guide
+using UnicodePlots
+unicodeplots()
+plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "rotor angle");
+```
+
+![plot](assets/unicode.png)
