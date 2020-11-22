@@ -10,7 +10,7 @@ Data can be loaded from a pss/e raw file and a pss/e dyr file.
 ```@repl quick_start_guide
 using PowerSystems, PowerSimulationsDynamics, Sundials, Plots
 DATA_DIR = download(PowerSystems.UtilsData.TestData, folder = pwd())
-system_data = System(joinpath(DATA_DIR, "psse_raw/OMIB.raw"),
+omib_sys = System(joinpath(DATA_DIR, "psse_raw/OMIB.raw"),
                      joinpath(DATA_DIR, "psse_raw/OMIB.dyr"))
 ```
 
@@ -48,5 +48,8 @@ x0_init = get_initial_conditions(sim)
 
 ```@repl quick_start_guide
 angle = get_state_series(sim, ("generator-102-1", :δ));
-plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "rotor angle")
+plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "rotor angle");
+savefig("f-plot.svg"); nothing # hide
 ```
+
+![plot](f-plot.svg)
