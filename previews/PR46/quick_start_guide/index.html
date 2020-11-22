@@ -14,34 +14,6 @@ julia&gt; omib_sys = System(joinpath(DATA_DIR, &quot;psse_raw/OMIB.raw&quot;),
 └   data[&quot;source_type&quot;] = &quot;pti&quot;
 [ Info: Reading bus data
 [ Info: Reading generator data
-┌ Warning: Invalid range
-│   valid_info.struct_name = &quot;ThermalStandard&quot;
-│   field_name = &quot;active_power&quot;
-│   field_value = 5.0
-│   valid_range = &quot;active_power_limits&quot;
-│   valid_info.ist_struct =
-│    generator-101-1 (ThermalStandard):
-│       name: generator-101-1
-│       available: true
-│       status: true
-│       bus: BUS 1 (Bus)
-│       active_power: 5.0
-│       reactive_power: 0.0
-│       rating: 1.4142135623730951
-│       active_power_limits: (min = 0.0, max = 1.0)
-│       reactive_power_limits: (min = -1.0, max = 1.0)
-│       ramp_limits: (up = 0.01, down = 0.01)
-│       operation_cost: ThreePartCost
-│       base_power: 100.0
-│       time_limits: nothing
-│       prime_mover: OT
-│       fuel: OTHER
-│       services: 0-element Array{Service,1}
-│       time_at_status: 1.0e6
-│       dynamic_injector: nothing
-│       ext: Dict{String,Any}(&quot;z_source&quot; =&gt; (r = 0.0, x = 1.0))
-│       time_series_container: InfrastructureSystems.TimeSeriesContainer: 0
-└ @ InfrastructureSystems ~/.julia/packages/InfrastructureSystems/6GZHV/src/validation.jl:217
 [ Info: Reading branch data
 ┌ Warning: Rate provided for BUS 1-BUS 2-i_1 is larger than the SIL Inf in the range of (min = 134.0, max = 145.0).
 └ @ PowerSystems ~/.julia/packages/PowerSystems/eF3Pv/src/utils/IO/branchdata_checks.jl:147
@@ -71,9 +43,9 @@ Num components: 11
    2 │ Area                               AggregationTopology &lt;: Topology …
    3 │ Bus                                Topology &lt;: Component &lt;: Infrast…
    4 │ DynamicGenerator{BaseMachine,Sin…  DynamicInjection &lt;: Device &lt;: Co…
-   5 │ FixedAdmittance                    ElectricLoad &lt;: StaticInjection …    ⋯
-   6 │ Line                               ACBranch &lt;: Branch &lt;: Device &lt;: …
-   7 │ LoadZone                           AggregationTopology &lt;: Topology …
+   5 │ Line                               ACBranch &lt;: Branch &lt;: Device &lt;: …    ⋯
+   6 │ LoadZone                           AggregationTopology &lt;: Topology …
+   7 │ PowerLoad                          StaticLoad &lt;: ElectricLoad &lt;: St…
    8 │ Source                             StaticInjection &lt;: Device &lt;: Com…
    9 │ ThermalStandard                    ThermalGen &lt;: Generator &lt;: Stati…    ⋯
                                                                 1 column omitted
@@ -89,8 +61,8 @@ julia&gt; perturbation_trip = BranchTrip(1.0, &quot;BUS 1-BUS 2-i_1&quot;)
 BranchTrip(1.0, &quot;BUS 1-BUS 2-i_1&quot;)
 
 julia&gt; sim = Simulation(pwd(), omib_sys, time_span, perturbation_trip)
-[ Info: Serialized time series data to /tmp/jl_LZ76Os/sys_time_series_storage.h5.
-[ Info: Serialized System to /tmp/jl_LZ76Os/sys.json
+[ Info: Serialized time series data to /tmp/jl_gHV36D/sys_time_series_storage.h5.
+[ Info: Serialized System to /tmp/jl_gHV36D/sys.json
 ERROR: MethodError: no method matching root_module(::Nothing)
 Closest candidates are:
   root_module(!Matched::Module, !Matched::Symbol) at loading.jl:969
@@ -107,4 +79,4 @@ connect: Connection refused
 GKS: can&#39;t connect to GKS socket application
 
 GKS: Open failed in routine OPEN_WS
-GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../f-plot.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../tutorials_page/">Tutorials »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 22 November 2020 04:28">Sunday 22 November 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+GKS: GKS not in proper state. GKS must be either in the state WSOP or WSAC in routine ACTIVATE_WS</code></pre><p><img src="../f-plot.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../tutorials_page/">Tutorials »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Sunday 22 November 2020 04:47">Sunday 22 November 2020</span>. Using Julia version 1.5.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
