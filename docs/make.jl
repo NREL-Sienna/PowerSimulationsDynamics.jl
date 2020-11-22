@@ -11,6 +11,7 @@ makedocs(
         "Small Signal" => "small.md",
         "Reference Frames" => "reference_frames.md",
         "Models" => "models.md",
+        "Initialization" => "initialization.md",
         "Generator Component Library" => Any[
             "AVR" => "component_models/avr.md",
             "Machine" => "component_models/machines.md",
