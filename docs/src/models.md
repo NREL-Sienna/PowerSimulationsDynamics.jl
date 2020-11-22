@@ -47,9 +47,6 @@ Contrary to the generator, there are many control structures that can be used to
 For this purpose, more variables are shared among the components in order to cover all
 these posibilities.
 
-Models are based from the paper: ["A Virtual Synchronous Machine implementation for
-distributed control of power converters in SmartGrids"](https://www.sciencedirect.com/science/article/pii/S0378779615000024)
-
 ## Reference
 
 For models, check the library in [PowerSystems.jl](https://nrel-siip.github.io/PowerSystems.jl/stable/)
