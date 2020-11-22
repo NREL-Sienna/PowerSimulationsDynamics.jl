@@ -4,17 +4,31 @@ makedocs(
     modules = [PowerSimulationsDynamics],
     format = Documenter.HTML(mathengine = Documenter.MathJax()),
     sitename = "PowerSimulationsDynamics.jl",
-    pages = Any[ # Compat: `Any` for 0.4 compat
+    pages = Any[
         "Welcome Page" => "index.md",
-        # "User Guide" => "man/guide.md",
         "Tutorials" => "tutorials_page.md",
-        "Models" => Any[
-            "Network" => "Models/network.md",
-            "Reference Frames" => "Models/srf.md",
-            "Generator" => "Models/gens.md",
-            "Inverter" => "Models/inverters.md",
-            "Small Signal" => "Models/small.md",
+        "Small Signal" => "small.md",
+        "Reference Frames" => "reference_frames.md",
+        "Models" => "models.md",
+        "Generator Component Library" => Any[
+            "AVR" => "component_models/avr.md",
+            "Machine" => "component_models/machines.md",
+            "PSS" => "component_models/pss.md",
+            "Shaft" => "component_models/shafts.md",
+            "Turbine and Governor" => "component_models/turbine_gov.md"
         ],
+        "CIG Component Library" => Any[
+            "Converter" => "component_models/converter.md",
+            "DC Sources" => "component_models/dc_source.md",
+            "Filter" => "component_models/filters.md",
+            "Frequency Estimators" => "component_models/freq_esti.md",
+            "Inner Control" => "component_models/inner_control.md",
+            "Outer Control" => "component_models/outer_control.md",
+        ],
+        "Branch Models" => Any["Network" => "component_models/network.md",],
+        "Code Base Developer Guide" =>
+            Any["Developer Guide" => "code_base_developer_guide/developer.md",
+            ],
         "Public API Reference" => "api/public.md",
         "Internal API Reference" => "api/internal.md",
     ],
