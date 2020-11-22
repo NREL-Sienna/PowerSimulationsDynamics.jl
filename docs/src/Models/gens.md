@@ -284,7 +284,7 @@ This is a simple model that set the stabilization signal to be equal to a desire
 
 ### Simple PSS ```[PSSSimple]```
 
-This is the most basic PSS that can be implemented, on which the stabilization signal is simply a proportional controller over the frequency and electrical power:
+This is the most basic PSS that can be implemented, on which the stabilization signal is  a proportional controller over the frequency and electrical power:
 
 ```math
 \begin{align}

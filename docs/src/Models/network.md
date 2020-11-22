@@ -13,8 +13,7 @@ In simple terms, *`PowerSimulationsDynamics.jl` internally tracks the current-in
 
 where ``\boldsymbol{i}`` is the vector of the sum of complex current injections from devices, ``\boldsymbol{x}`` is the vector of states and ``\boldsymbol{v}`` is the vector of complex bus voltages. Equations (1) connect all the port variables, i.e., currents, defined for each injection device. Components that contribute to (1) by modifying the current ``\boldsymbol{i}`` are (i) static injection devices, (ii) dynamic injection devices, and (iii) dynamic network branches. Components that contribute to modify the admittance matrix ``\boldsymbol{Y}`` are static branches.
 
-## Static Branches (or simply Branches)
-
+## Static Branches (or Algebraic Branches)
 
 ### Lines
 
@@ -32,7 +31,6 @@ Y_{mn} &+\!= \frac{-1}{r+jx} \\
 ### Two-Windings Transformers
 
 Similarly to lines these are defined by a series reactance and impedance. The equations are equivalently of the lines without the shunt capacitance.
-
 
 ## Dynamic Branches
 

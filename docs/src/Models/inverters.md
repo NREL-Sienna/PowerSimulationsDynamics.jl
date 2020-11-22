@@ -132,7 +132,7 @@ This component can be used to model the dynamics of the switching process.
 
 ### Average Model ```[AverageConverter]```
 
-The average model simply output the desired reference signal since:
+The average model outputs the desired reference signal since:
 
 ```math
 \begin{align}
