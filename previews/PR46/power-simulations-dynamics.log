@@ -1,144 +1,144 @@
-┌ Info: 2020-11-22T05:23:37.061 [4053:1]: Unit System changed to DEVICE_BASE
+┌ Info: 2020-11-22T06:01:39.987 [3812:1]: Unit System changed to DEVICE_BASE
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/base.jl:282
-┌ Info: 2020-11-22T05:23:37.427 [4053:1]: The System has no islands
+┌ Info: 2020-11-22T06:01:40.438 [3812:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/utils/network_calculations/ybus_calculations.jl:137
-┌ Debug: 2020-11-22T05:23:37.427 [4053:1]: System doesn't contain Dynamic Branches
+┌ Debug: 2020-11-22T06:01:40.438 [3812:1]: System doesn't contain Dynamic Branches
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:119
-┌ Debug: 2020-11-22T05:23:37.702 [4053:1]: generator-102-1
+┌ Debug: 2020-11-22T06:01:40.745 [3812:1]: generator-102-1
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:144
-┌ Debug: 2020-11-22T05:23:39.218 [4053:1]: 2
+┌ Debug: 2020-11-22T06:01:42.621 [3812:1]: 2
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:171
-┌ Debug: 2020-11-22T05:23:39.259 [4053:1]: Simulation Inputs Created
+┌ Debug: 2020-11-22T06:01:42.672 [3812:1]: Simulation Inputs Created
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:171
-┌ Info: 2020-11-22T05:23:39.259 [4053:1]: Initializing Simulation States
+┌ Info: 2020-11-22T06:01:42.672 [3812:1]: Initializing Simulation States
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:181
-┌ Debug: 2020-11-22T05:23:39.259 [4053:1]: Auxiliary Arrays created with Type Float64
+┌ Debug: 2020-11-22T06:01:42.672 [3812:1]: Auxiliary Arrays created with Type Float64
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:209
-┌ Debug: 2020-11-22T05:23:39.259 [4053:1]: Start state intialization routine
+┌ Debug: 2020-11-22T06:01:42.673 [3812:1]: Start state intialization routine
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:2
-┌ Info: 2020-11-22T05:23:39.259 [4053:1]: Unit System changed to SYSTEM_BASE
+┌ Info: 2020-11-22T06:01:42.673 [3812:1]: Unit System changed to SYSTEM_BASE
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/base.jl:282
-┌ Info: 2020-11-22T05:23:39.259 [4053:1]: The System has no islands
+┌ Info: 2020-11-22T06:01:42.673 [3812:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/utils/network_calculations/ybus_calculations.jl:137
-┌ Info: 2020-11-22T05:23:40.705 [4053:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2020-11-22T06:01:44.433 [3812:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/utils/power_flow.jl:307
-┌ Info: 2020-11-22T05:23:40.705 [4053:1]: Unit System changed to DEVICE_BASE
+┌ Info: 2020-11-22T06:01:44.433 [3812:1]: Unit System changed to DEVICE_BASE
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/base.jl:288
-┌ Debug: 2020-11-22T05:23:40.705 [4053:1]: Setting up initilization indexing
+┌ Debug: 2020-11-22T06:01:44.433 [3812:1]: Setting up initilization indexing
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:13
-┌ Debug: 2020-11-22T05:23:40.705 [4053:1]: Updating Voltage guess
+┌ Debug: 2020-11-22T06:01:44.433 [3812:1]: Updating Voltage guess
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:22
-┌ Debug: 2020-11-22T05:23:40.705 [4053:1]: BUS 1
+┌ Debug: 2020-11-22T06:01:44.433 [3812:1]: BUS 1
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:24
-┌ Debug: 2020-11-22T05:23:40.811 [4053:1]: V_r
+┌ Debug: 2020-11-22T06:01:44.564 [3812:1]: V_r
 │   PSY.get_magnitude(bus) * cos(PSY.get_angle(bus)) = 1.05
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:25
-┌ Debug: 2020-11-22T05:23:40.907 [4053:1]: V_i
+┌ Debug: 2020-11-22T06:01:44.684 [3812:1]: V_i
 │   PSY.get_magnitude(bus) * sin(PSY.get_angle(bus)) = 0.0
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:26
-┌ Debug: 2020-11-22T05:23:40.907 [4053:1]: BUS 2
+┌ Debug: 2020-11-22T06:01:44.684 [3812:1]: BUS 2
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:24
-┌ Debug: 2020-11-22T05:23:40.907 [4053:1]: V_r
+┌ Debug: 2020-11-22T06:01:44.684 [3812:1]: V_r
 │   PSY.get_magnitude(bus) * cos(PSY.get_angle(bus)) = 1.039727418725999
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:25
-┌ Debug: 2020-11-22T05:23:40.907 [4053:1]: V_i
+┌ Debug: 2020-11-22T06:01:44.684 [3812:1]: V_i
 │   PSY.get_magnitude(bus) * sin(PSY.get_angle(bus)) = 0.023809551641536846
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:26
-┌ Debug: 2020-11-22T05:23:40.907 [4053:1]: Updating Source internal voltages
+┌ Debug: 2020-11-22T06:01:44.684 [3812:1]: Updating Source internal voltages
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:33
-┌ Debug: 2020-11-22T05:23:43.399 [4053:1]: Updating Dynamic Injection Component Initial Guess
+┌ Debug: 2020-11-22T06:01:47.819 [3812:1]: Updating Dynamic Injection Component Initial Guess
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:41
-┌ Debug: 2020-11-22T05:23:43.504 [4053:1]: generator-102-1
+┌ Debug: 2020-11-22T06:01:47.952 [3812:1]: generator-102-1
 │   typeof(d) = ThermalStandard
 │   typeof(dynamic_device) = DynamicGenerator{BaseMachine,SingleMass,AVRFixed,TGFixed,PSSFixed}
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:44
-┌ Debug: 2020-11-22T05:23:44.103 [4053:1]: Updating Component Initial Guess
+┌ Debug: 2020-11-22T06:01:48.671 [3812:1]: Updating Component Initial Guess
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:56
-┌ Debug: 2020-11-22T05:23:44.103 [4053:1]: No Dynamic Branches in the system
+┌ Debug: 2020-11-22T06:01:48.671 [3812:1]: No Dynamic Branches in the system
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:74
-┌ Debug: 2020-11-22T05:23:44.103 [4053:1]: Start NLSolve System Run
+┌ Debug: 2020-11-22T06:01:48.671 [3812:1]: Start NLSolve System Run
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:101
-┌ Debug: 2020-11-22T05:23:44.261 [4053:1]: [1.05, 1.039727418725999, 0.0, 0.023809551641536846, 0.539920981973487, 1.0]
+┌ Debug: 2020-11-22T06:01:48.862 [3812:1]: [1.05, 1.039727418725999, 0.0, 0.023809551641536846, 0.539920981973487, 1.0]
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:102
-┌ Debug: 2020-11-22T05:23:45.551 [4053:1]: Write result to initial guess vector
+┌ Debug: 2020-11-22T06:01:50.427 [3812:1]: Write result to initial guess vector
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:131
-┌ Info: 2020-11-22T05:23:45.551 [4053:1]: Attaching Perturbations
+┌ Info: 2020-11-22T06:01:50.428 [3812:1]: Attaching Perturbations
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:221
-┌ Debug: 2020-11-22T05:23:45.636 [4053:1]: BranchTrip(1.0, "BUS 1-BUS 2-i_1")
+┌ Debug: 2020-11-22T06:01:50.535 [3812:1]: BranchTrip(1.0, "BUS 1-BUS 2-i_1")
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:232
-┌ Debug: 2020-11-22T05:23:45.733 [4053:1]: Auxiliary Arrays created with Type Float64
+┌ Debug: 2020-11-22T06:01:50.65 [3812:1]: Auxiliary Arrays created with Type Float64
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:209
-┌ Info: 2020-11-22T05:23:45.942 [4053:1]: Completed Build Successfully. Simulations status = BUILT
+┌ Info: 2020-11-22T06:01:50.854 [3812:1]: Completed Build Successfully. Simulations status = BUILT
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:204
-┌ Info: 2020-11-22T05:24:12.594 [4053:1]: Unit System changed to DEVICE_BASE
+┌ Info: 2020-11-22T06:02:23.92 [3812:1]: Unit System changed to DEVICE_BASE
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/base.jl:282
-┌ Info: 2020-11-22T05:24:12.594 [4053:1]: The System has no islands
+┌ Info: 2020-11-22T06:02:23.92 [3812:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/utils/network_calculations/ybus_calculations.jl:137
-┌ Debug: 2020-11-22T05:24:12.594 [4053:1]: System doesn't contain Dynamic Branches
+┌ Debug: 2020-11-22T06:02:23.92 [3812:1]: System doesn't contain Dynamic Branches
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:119
-┌ Debug: 2020-11-22T05:24:12.594 [4053:1]: generator-102-1
+┌ Debug: 2020-11-22T06:02:23.92 [3812:1]: generator-102-1
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:144
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: 2
+┌ Debug: 2020-11-22T06:02:23.92 [3812:1]: 2
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:171
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: Simulation Inputs Created
+┌ Debug: 2020-11-22T06:02:23.92 [3812:1]: Simulation Inputs Created
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:171
-┌ Info: 2020-11-22T05:24:12.595 [4053:1]: Initializing Simulation States
+┌ Info: 2020-11-22T06:02:23.92 [3812:1]: Initializing Simulation States
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:181
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: Auxiliary Arrays created with Type Float64
+┌ Debug: 2020-11-22T06:02:23.92 [3812:1]: Auxiliary Arrays created with Type Float64
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:209
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: Start state intialization routine
+┌ Debug: 2020-11-22T06:02:23.92 [3812:1]: Start state intialization routine
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:2
-┌ Info: 2020-11-22T05:24:12.595 [4053:1]: Unit System changed to SYSTEM_BASE
+┌ Info: 2020-11-22T06:02:23.92 [3812:1]: Unit System changed to SYSTEM_BASE
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/base.jl:282
-┌ Info: 2020-11-22T05:24:12.595 [4053:1]: The System has no islands
+┌ Info: 2020-11-22T06:02:23.92 [3812:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/utils/network_calculations/ybus_calculations.jl:137
-┌ Info: 2020-11-22T05:24:12.595 [4053:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2020-11-22T06:02:23.921 [3812:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/utils/power_flow.jl:307
-┌ Info: 2020-11-22T05:24:12.595 [4053:1]: Unit System changed to DEVICE_BASE
+┌ Info: 2020-11-22T06:02:23.921 [3812:1]: Unit System changed to DEVICE_BASE
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/eF3Pv/src/base.jl:288
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: Setting up initilization indexing
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: Setting up initilization indexing
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:13
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: Updating Voltage guess
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: Updating Voltage guess
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:22
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: BUS 1
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: BUS 1
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:24
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: V_r
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: V_r
 │   PSY.get_magnitude(bus) * cos(PSY.get_angle(bus)) = 1.05
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:25
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: V_i
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: V_i
 │   PSY.get_magnitude(bus) * sin(PSY.get_angle(bus)) = 0.0
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:26
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: BUS 2
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: BUS 2
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:24
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: V_r
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: V_r
 │   PSY.get_magnitude(bus) * cos(PSY.get_angle(bus)) = 1.039727418725999
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:25
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: V_i
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: V_i
 │   PSY.get_magnitude(bus) * sin(PSY.get_angle(bus)) = 0.023809551641536846
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:26
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: Updating Source internal voltages
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: Updating Source internal voltages
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:33
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: Updating Dynamic Injection Component Initial Guess
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: Updating Dynamic Injection Component Initial Guess
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:41
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: generator-102-1
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: generator-102-1
 │   typeof(d) = ThermalStandard
 │   typeof(dynamic_device) = DynamicGenerator{BaseMachine,SingleMass,AVRFixed,TGFixed,PSSFixed}
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:44
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: Updating Component Initial Guess
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: Updating Component Initial Guess
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:56
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: No Dynamic Branches in the system
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: No Dynamic Branches in the system
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:74
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: Start NLSolve System Run
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: Start NLSolve System Run
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:101
-┌ Debug: 2020-11-22T05:24:12.595 [4053:1]: [1.05, 1.039727418725999, 0.0, 0.023809551641536846, 0.539920981973487, 1.0]
+┌ Debug: 2020-11-22T06:02:23.921 [3812:1]: [1.05, 1.039727418725999, 0.0, 0.023809551641536846, 0.539920981973487, 1.0]
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:102
-┌ Debug: 2020-11-22T05:24:12.596 [4053:1]: Write result to initial guess vector
+┌ Debug: 2020-11-22T06:02:23.922 [3812:1]: Write result to initial guess vector
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:131
-┌ Info: 2020-11-22T05:24:12.596 [4053:1]: Attaching Perturbations
+┌ Info: 2020-11-22T06:02:23.922 [3812:1]: Attaching Perturbations
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:221
-┌ Debug: 2020-11-22T05:24:12.596 [4053:1]: BranchTrip(1.0, "BUS 1-BUS 2-i_1")
+┌ Debug: 2020-11-22T06:02:23.922 [3812:1]: BranchTrip(1.0, "BUS 1-BUS 2-i_1")
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:232
-┌ Debug: 2020-11-22T05:24:12.596 [4053:1]: Auxiliary Arrays created with Type Float64
+┌ Debug: 2020-11-22T06:02:23.922 [3812:1]: Auxiliary Arrays created with Type Float64
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:209
-┌ Info: 2020-11-22T05:24:12.596 [4053:1]: Completed Build Successfully. Simulations status = BUILT
+┌ Info: 2020-11-22T06:02:23.922 [3812:1]: Completed Build Successfully. Simulations status = BUILT
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:204
