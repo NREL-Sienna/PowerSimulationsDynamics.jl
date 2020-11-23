@@ -30,7 +30,9 @@ tolerance. If the non-linear solver is unable to get a solution, it might usuall
 small signal stability problems in the system. In a second attempt, the tolerances are relaxed.
 If the solver succeeds, the simulation continues, but the user is warned.
 
-![init_system](assets/sys_init.png)
+```@raw html
+<img src="./assets/sys_init.png" width="65%" aling="center"/>
+``` ⠀
 
 ## Initialization of the Synchronous Machines
 
@@ -56,3 +58,13 @@ detailed documentation of the process.
    used in the outer control and the ``V`` and ``I`` needed in the inner controls.
 2. Based on the bus voltage in the system's reference frame ``V_r`` and the bus angle ``\theta``
    the PLL's can be initialized to obtain the angle and frequency estimates needed by the
+   outer control.
+3. The Outer Control calculates the internal angle ``\delta_{oc}`` required by the inner control
+   to estimate the voltage and current phase difference.
+4. The DC Source uses the power set-point consistent with the power outputs of the filter
+   to initialize the ``V_dc`` set-points. This value is used in the inner control.
+5. The inner control takes the phase angle ``\delta_{oc}`` and the ``V_dc`` to estimate the
+   modulation values of the PWM converter.
+
+**Note:** The initialization of an inverter through the proposed meta-model is actively under
+development and subject to change. This page will maintain the latest version of the sequence.

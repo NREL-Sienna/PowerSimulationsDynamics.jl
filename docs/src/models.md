@@ -19,6 +19,7 @@ share values across components.
 ```@raw html
 <img src="https://github.com/NREL-SIIP/PowerSystems.jl/blob/master/docs/src/assets/gen_metamodel.png?raw=true" width="75%">
 ```
+
 ## Inverter Models
 
 Here we discuss the structure and models used to model inverters in `PowerSimulationsDynamics.jl`. See [`PowerSystems.jl` dynamic devices](https://nrel-siip.github.io/PowerSystems.jl/stable/modeler_guide/example_dynamic_data/)
