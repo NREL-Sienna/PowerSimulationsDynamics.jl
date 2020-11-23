@@ -13,7 +13,7 @@ p_e \approx \tau_e &= (v_q + r_a i_q)i_q + (v_d + r_ai_d)i_d \tag{1b}
 \end{align}
 ```
 
-## One d- One q- Model (2th Order) ```[OneDOneQMachine]```
+## One d- One q- Model (2nd Order) ```[OneDOneQMachine]```
 
 This model includes two transient emf with their respective differential equations:
 
@@ -156,6 +156,53 @@ and for the GENROE model the function used is:
 ```math
 \begin{align}
 \text{Se}(\psi'') &= B(\psi'')^A \tag{7r}
+\end{align}
+```
+
+The parameters ``A`` and ``B`` for each function are computed using the two points given
+``(1.0, \text{Se}(1.0))`` and ``(1.2, \text{Se}(1.2))``.
+
+
+## Salient Pole Machine (3rd Order) ```[SalientPoleQuadratic, SalientPoleExponential]```
+
+This model represents the traditional round rotor models GENSAL/GENSAE models implemented in PSLF/PSSE/PowerWorld.
+Similar to the GENROU Model, this model neglects the derivative of stator fluxes (``\dot{\psi}_d`` and  ``\dot{\psi}_q``).
+
+```math
+\begin{align}
+\dot{e}_q' &= \frac{1}{T_{d0}'} \left[v_f - X_{ad}I_{fd}\right] \tag{8a}\\
+\dot{\psi}_{kd} &= \frac{1}{T_{d0}''} \left[-\psi_{kd} + e_q' - (x_d'-x_l)i_d \right] \tag{8b} \\
+\dot{\psi}_{q}'' &= \frac{1}{T_{q0}''} \left[-\psi_{q}'' - (x_q-x_q'')i_q \right] \tag{8c} \\
+\end{align}
+```
+
+with:
+
+```math
+\begin{align}
+\gamma_{d1} &= \frac{x_d'' - x_l}{x_d' - x_l} \tag{8d}\\
+\gamma_{q1} &= \frac{x_q'' - x_l}{x_q' - x_l} \tag{8e}\\
+\gamma_{d2} &= \frac{x_d' - x_d''}{(x_d'-x_l)^2} \tag{8f}\\
+\psi_d'' &= \gamma_{d1} e_q' + \gamma_{q1} \psi_{kd} \tag{8g}\\
+\left[ \begin{array}{c} i_d \\ i_q \end{array} \right] &= \left[ \begin{array}{cc} -r_a & x_q'' \\ -x_d'' & r_a \end{array} \right]^{-1}  \left[ \begin{array}{c} v_d - \psi_q'' \\ -v_q + \psi_d'' \end{array} \right] \tag{8h}\\
+X_{ad}I_{fd} &= e_q' + \text{Se}(e_q') e_q' + (x_d - x_d') (i_d + \gamma_{d2} (e_q' - \psi_{kd} - (x_d' - x_l)i_d) \tag{8i}\\
+\tau_e &= i_d (r_a i_d + v_d) + i_q(r_a i_q + v_q) \tag{8j}
+\end{align}
+```
+
+The difference between GENSAL and GENSAE occurs in which additive saturation function ``\text{Se}(e_q')`` is used. Input data is provided by the saturation values at ``e_q' = 1.0`` and ``e_q' = 1.2`` p.u. For the GENSAL model, the function used is:
+
+```math
+\begin{align}
+\text{Se}(e_q') &= \frac{B(e_q' - A)^2 }{\e_q'} \tag{8k}
+\end{align}
+```
+
+and for the GENROE model the function used is:
+
+```math
+\begin{align}
+\text{Se}(e_q') &= B(e_q')^A \tag{8l}
 \end{align}
 ```
 
