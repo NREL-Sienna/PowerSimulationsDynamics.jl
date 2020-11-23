@@ -7,28 +7,8 @@ DocTestSetup  = quote
 end
 ```
 
-API documentation
-
-```@contents
-Pages = ["PowerSimulationsDynamics.md"]
-```
-
-## Index
-
-```@index
-Pages = ["PowerSimulationsDynamics.md"]
-```
-
-## Exported
-
 ```@autodocs
 Modules = [PowerSimulationsDynamics]
+Public = true
 Private = false
-```
-
-## Internal
-
-```@autodocs
-Modules = [PowerSimulationsDynamics]
-Public = false
 ```

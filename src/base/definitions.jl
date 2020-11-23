@@ -11,14 +11,14 @@ variables, since some models may not treat such variables as states.
 
 """
 Generator Inner Vars:
-*  τe_var :: Electric torque
-*  τm_var :: Mechanical torque
-*  Vf_var :: Field voltage
-*  V_pss_var :: Additional PSS voltage
-*  VR_gen_var :: Real part of the terminal voltage
-*  VI_gen_var :: Imaginary part of the terminal voltage
-*  ψd_var :: Stator Flux (if defined) in the d-axis
-*  ψq_var :: Stator Flux (if defined) in the q-axis
+*  `τe_var` :: Electric torque
+*  `τm_var` :: Mechanical torque
+*  `Vf_var` :: Field voltage
+*  `V_pss_var` :: Additional PSS voltage
+*  `VR_gen_var` :: Real part of the terminal voltage
+*  `VI_gen_var` :: Imaginary part of the terminal voltage
+*  `ψd_var` :: Stator Flux (if defined) in the d-axis
+*  `ψq_var` :: Stator Flux (if defined) in the q-axis
 """
 @enum generator_inner_vars begin
     τe_var = 1
@@ -36,20 +36,19 @@ Base.to_index(ix::generator_inner_vars) = Int(ix)
 
 """
 Inverter Inner Vars:
-@enum inverter_inner_vars begin
-md_var :: Modulation signal on the d-component
-mq_var :: Modulation signal on the q-component
-Vdc_var :: DC voltage supplied by the DC source
-Vr_filter_var :: Voltage seen in the capacitor of the filter in the R-component
-Vi_filter_var :: Voltage seen in the capacitor of the filter in the I-component
-ω_freq_estimator_var :: Frequency estimated by the frequency estimator.
-V_oc_var :: Control voltage supplied from the outer loop control to the inner loop
-ω_oc_var :: Control frequency supplied from the outer loop control the inner loop
-θ_oc_var :: Variation of the angle (PLL or VSM) of the inverter
-VR_inv_var :: Real terminal voltage on the inverter
-VI_inv_var :: Imaginary terminal voltage on the inverter
-Vr_cnv_var :: Voltage supplied from the converter in the R-component
-Vi_cnv_var :: Voltage supplied from the converter in the I-component
+* `md_var` :: Modulation signal on the d-component
+* `mq_var` :: Modulation signal on the q-component
+* `Vdc_var` :: DC voltage supplied by the DC source
+* `Vr_filter_var` :: Voltage seen in the capacitor of the filter in the R-component
+* `Vi_filter_var` :: Voltage seen in the capacitor of the filter in the I-component
+* `ω_freq_estimator_var` :: Frequency estimated by the frequency estimator.
+* `V_oc_var` :: Control voltage supplied from the outer loop control to the inner loop
+* `ω_oc_var` :: Control frequency supplied from the outer loop control the inner loop
+* `θ_oc_var` :: Variation of the angle (PLL or VSM) of the inverter
+* `VR_inv_var` :: Real terminal voltage on the inverter
+* `VI_inv_var` :: Imaginary terminal voltage on the inverter
+* `Vr_cnv_var` :: Voltage supplied from the converter in the R-component
+* `Vi_cnv_var` :: Voltage supplied from the converter in the I-component
 """
 @enum inverter_inner_vars begin
     md_var = 1

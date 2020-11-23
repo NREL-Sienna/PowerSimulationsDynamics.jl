@@ -6,15 +6,21 @@ CurrentModule = PowerSystems
 
 ## Overview
 
-*PowerSimulationsDynamics.jl* is a [`Julia`](http://www.julialang.org) package for
+`PowerSimulationsDynamics.jl` is a [`Julia`](http://www.julialang.org) package for
 doing Power Systems Dynamic Modeling with Low Inertia Energy Sources.
+
+The synchronous machine components supported here are based on commercial models and
+the academic components are derived from [Power System Modelling and Scripting](https://www.springer.com/gp/book/9783642136689).
+
+Inverter models support the model in ["A Virtual Synchronous Machine implementation for
+distributed control of power converters in SmartGrids"](https://www.sciencedirect.com/science/article/pii/S0378779615000024)
 
 ## Installation
 
 The latest stable release of PowerSimulationsDynamics can be installed using the Julia package manager with
 
 ```julia
-] addPowerSimulationsDynamics
+] add PowerSimulationsDynamics
 ```
 
 For the current development version, "checkout" this package with
