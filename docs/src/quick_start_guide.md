@@ -8,7 +8,8 @@ the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`.
 Data can be loaded from a pss/e raw file and a pss/e dyr file.
 
 ```@repl quick_start_guide
-using PowerSystems, PowerSimulationsDynamics, Sundials, Plots
+using PowerSystems, PowerSimulationsDynamics, Sundials, Plots, Logging
+logger = configure_logging(console_level = Logging.Error, file_level = Logging.Info)
 DATA_DIR = download(PowerSystems.UtilsData.TestData, folder = pwd())
 omib_sys = System(joinpath(DATA_DIR, "psse_raw/OMIB.raw"),
                      joinpath(DATA_DIR, "psse_dyr/OMIB.dyr");

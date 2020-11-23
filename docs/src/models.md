@@ -19,11 +19,6 @@ share values across components.
 ```@raw html
 <img src="https://github.com/NREL-SIIP/PowerSystems.jl/blob/master/docs/src/assets/gen_metamodel.png?raw=true" width="75%">
 ```
-
-Models are based from Federico Milano's book: "Power System Modelling and Scripting" and
-Prabha Kundur's book: "Power System's Stability and Control" and structures are defined
-in ```PowerSystems.jl```.
-
 ## Inverter Models
 
 Here we discuss the structure and models used to model inverters in `PowerSimulationsDynamics.jl`. See [`PowerSystems.jl` dynamic devices](https://nrel-siip.github.io/PowerSystems.jl/stable/modeler_guide/example_dynamic_data/)
@@ -43,7 +38,8 @@ The following figure summarizes the components of a inverter and which variables
 <img src="https://github.com/NREL-SIIP/PowerSystems.jl/blob/master/docs/src/assets/inv_metamodel.png?raw=true" width="75%">
 ```
 
-Contrary to the generator, there are many control structures that can be used to model inverter controllers (e.g. grid-following, grid feeding or virtual synchronous machine).
+Contrary to the generator, there are many control structures that can be used to model
+inverter controllers (e.g. grid-following, grid feeding or virtual synchronous machine).
 For this purpose, more variables are shared among the components in order to cover all
 these posibilities.
 
