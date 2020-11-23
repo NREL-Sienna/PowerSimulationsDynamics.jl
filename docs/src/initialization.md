@@ -30,19 +30,29 @@ tolerance. If the non-linear solver is unable to get a solution, it might usuall
 small signal stability problems in the system. In a second attempt, the tolerances are relaxed.
 If the solver succeeds, the simulation continues, but the user is warned.
 
-![init_system][assets/init.png]
+![init_system](assets/sys_init.png)
 
 ## Initialization of the Synchronous Machines
 
 The initialization of Synchronous Machines is standard in power systems and follows the scheme
 shown in the figure. Other internal variables are calculated recursively from the power flow
-solution for the node on which the dynamic device isconnected. (The figure is an adapatation
+solution for the node on which the dynamic device isconnected. (Adapted from
 [Power System Modelling and Scripting](https://www.springer.com/gp/book/9783642136689) Figure 9.2)
 
 ![init_machine](assets/synch_init.png)
 
 ## Initialization of the Inverters
 
-
+Initializing the inverters follows the sequence shown in the figure and has been developed
+to be compatible with the implementation of custom dynamic components. Given that the process
+is less studied and standard than the one of the synchronous machine, this page contains more
+detailed documentation of the process.
 
 ![init_machine](assets/inverter_init.png)
+
+1. The first component to be initialized is the filter. Given that the filter is an RLC
+   circuit connected to the grid, its currents and voltages need to match the results of the
+   power flow. The initialization of the filter provides the values for the ``P`` and ``Q``
+   used in the outer control and the ``V`` and ``I`` needed in the inner controls.
+2. Based on the bus voltage in the system's reference frame ``V_r`` and the bus angle ``\theta``
+   the PLL's can be initialized to obtain the angle and frequency estimates needed by the
