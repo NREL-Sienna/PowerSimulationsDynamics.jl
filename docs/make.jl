@@ -8,10 +8,10 @@ makedocs(
         "Welcome Page" => "index.md",
         "Quick Start Guide" => "quick_start_guide.md",
         "Tutorials" => "tutorials_page.md",
-        "Small Signal" => "small.md",
-        "Reference Frames" => "reference_frames.md",
         "Models" => "models.md",
         "Initialization" => "initialization.md",
+        "Small Signal" => "small.md",
+        "Reference Frames" => "reference_frames.md",
         "Generator Component Library" => Any[
             "Machine" => "component_models/machines.md",
             "Shaft" => "component_models/shafts.md",

@@ -7,6 +7,9 @@ the voltage of those buses are treated as differential variables). In addition, 
 device can add differential variables (or states) that are concatenated to construct the
 system of differential algebraic equations.
 
+**Note:** The validation of small signal results is still work in progress due to the differences
+in the way that different software packages perform the calculations.
+
 ## Automatic Differentiation
 
 Once an equilibrium point is found, the complete jacobian of the non-linear system can be

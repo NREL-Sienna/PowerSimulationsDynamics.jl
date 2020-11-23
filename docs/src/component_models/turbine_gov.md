@@ -64,7 +64,7 @@ x_{g1}^\text{sat} &= \left\{ \begin{array}{cl}
 \end{align}
 ```
 
-### GAST ```[GasTG]```
+## GAST ```[GasTG]```
 
 This turbine governor represents the Gas Turbine representation, known as GAST.
 

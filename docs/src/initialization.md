@@ -31,7 +31,7 @@ small signal stability problems in the system. In a second attempt, the toleranc
 If the solver succeeds, the simulation continues, but the user is warned.
 
 ```@raw html
-<img src="./assets/sys_init.png" width="65%" aling="center"/>
+<img src="./assets/sys_init.png" width="65%" align="center"/>
 ```
 
 ## Initialization of the Synchronous Machines
