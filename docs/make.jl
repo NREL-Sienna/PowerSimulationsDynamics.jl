@@ -13,10 +13,10 @@ makedocs(
         "Models" => "models.md",
         "Initialization" => "initialization.md",
         "Generator Component Library" => Any[
-            "AVR" => "component_models/avr.md",
             "Machine" => "component_models/machines.md",
-            "PSS" => "component_models/pss.md",
             "Shaft" => "component_models/shafts.md",
+            "AVR" => "component_models/avr.md",
+            "PSS" => "component_models/pss.md",
             "Turbine and Governor" => "component_models/turbine_gov.md",
         ],
         "CIG Component Library" => Any[
