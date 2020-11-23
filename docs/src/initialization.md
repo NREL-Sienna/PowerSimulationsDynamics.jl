@@ -59,11 +59,11 @@ detailed documentation of the process.
 2. Based on the bus voltage in the system's reference frame ``V_r`` and the bus angle ``\theta``
    the PLL's can be initialized to obtain the angle and frequency estimates needed by the
    outer control.
-3. The Outer Control calculates the internal angle ``\delta_{oc}`` required by the inner control
+3. The Outer Control calculates the internal angle ``\delta_{olc}`` required by the inner control
    to estimate the voltage and current phase difference.
 4. The DC Source uses the power set-point consistent with the power outputs of the filter
-   to initialize the ``V_dc`` set-points. This value is used in the inner control.
-5. The inner control takes the phase angle ``\delta_{oc}`` and the ``V_dc`` to estimate the
+   to initialize the ``V_{dc}`` set-points. This value is used in the inner control.
+5. The inner control takes the phase angle ``\delta_{olc}`` and the ``V_{dc}`` to estimate the
    modulation values of the PWM converter.
 
 **Note:** The initialization of an inverter through the proposed meta-model is actively under
