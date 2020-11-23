@@ -50,7 +50,8 @@ This represents a classical Steam-Turbine Governor, known as TGOV1.
 \end{align}
 ```
 
-with 
+with
+
 ```math
 \begin{align}
 \text{ref}_{in} &= \frac{1}{R} (P_{ref} - (\omega - 1.0)) \tag{3c} \\
@@ -76,6 +77,7 @@ This turbine governor represents the Gas Turbine representation, known as GAST.
 ```
 
 with
+
 ```math
 \begin{align}
 x_{in} &= \min\left\{P_{ref} - \frac{1}{R}(\omega - 1.0), A_T + K_T (A_T - x_{g3}) \right\} \tag{4d} \\

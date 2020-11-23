@@ -4,7 +4,8 @@ The machine component describes the stator-rotor electromagnetic dynamics.
 
 ## Classical Model (Zero Order) ```[BaseMachine]```
 
-This is the classical order model that does not have differential equations in its machine model (``\delta`` and ``\omega`` are defined in the shaft):
+This is the classical order model that does not have differential equations in its machine model
+(``\delta`` and ``\omega`` are defined in the shaft):
 
 ```math
 \begin{align}

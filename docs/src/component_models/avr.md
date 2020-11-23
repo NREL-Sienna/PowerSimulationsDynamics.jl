@@ -84,7 +84,7 @@ V_{F1} &= V_{r3} + \frac{K_f}{T_f} V_{FE} \\
 V_{in} &= V_{ref} - V_m - V_{F1} \\
 V_{out} &= V_{r1} + \frac{T_c}{T_b} V_{in} \\
 V_f &= V_e f(I_N) \\
-f(I_N) &= \left\{\begin{array}{cl} 
+f(I_N) &= \left\{\begin{array}{cl}
     1 & \text{ if }I_N \le 0 \\
     1 - 0.577 I_N & \text{ if } 0 < I_N \le 0.433 \\
     \sqrt{0.75 - I_N^2} & \text{ if } 0.433 < I_N \le 0.75 \\
@@ -94,5 +94,3 @@ f(I_N) &= \left\{\begin{array}{cl}
 ```
 
 on which ``X_{ad}I_{fd}`` is the field current coming from the generator and ``V_{h}`` is the terminal voltage, and ``A,B`` are the saturation coefficients computed using the ``E_1, E_2, S_e(E_1), S_e(E_2)`` data.
-
-
