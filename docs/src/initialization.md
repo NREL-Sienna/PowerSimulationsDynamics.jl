@@ -32,7 +32,7 @@ If the solver succeeds, the simulation continues, but the user is warned.
 
 ```@raw html
 <img src="./assets/sys_init.png" width="65%" aling="center"/>
-``` ⠀
+```
 
 ## Initialization of the Synchronous Machines
 

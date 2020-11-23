@@ -31,7 +31,7 @@ components in a way that resembles current practices for synchronoues machine mo
 - [`Outer Loop Control`](https://nrel-siip.github.io/PowerSystems.jl/stable/model_library/outer_control/#OuterControl): That describes the active and reactive power control dynamics.
 - [`Inner Loop Control`](https://nrel-siip.github.io/PowerSystems.jl/stable/model_library/generated_InnerControl/#InnerControl): That can describe virtual impedance, voltage control and current control dynamics.
 - [`Converter`](https://nrel-siip.github.io/PowerSystems.jl/stable/model_library/generated_Converter/#Converter): That describes the dynamics of the pulse width modulation (PWM) or space vector modulation (SVM).
-- Filter: Used to connect the converter output to the grid.
+- [`Filter`](https://nrel-siip.github.io/PowerSystems.jl/stable/model_library/generated_Filter/): Used to connect the converter output to the grid.
 
 The following figure summarizes the components of a inverter and which variables they share:
 
