@@ -198,7 +198,7 @@ The difference between GENSAL and GENSAE occurs in which additive saturation fun
 \end{align}
 ```
 
-and for the GENROE model the function used is:
+and for the GENSAE model the function used is:
 
 ```math
 \begin{align}
