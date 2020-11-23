@@ -10,12 +10,12 @@ impedance.
 
 ```math
 \begin{align}
-    \dot{i}_{r,\text{cv}} &= \frac{\Omega_b}{l_f}\left( v_r^{\text{cv}} - v_r  - r_f i_{r,\text{cv}} + \omega_{\text{grid}} l_f i_{i,\text{cv}} \right) \tag{5a} \\
-    \dot{i}_{i,\text{cv}} &= \frac{\Omega_b}{l_f}\left( v_i^{\text{cv}} - v_i  - r_f i_{i,\text{cv}} - \omega_{\text{grid}} l_f i_{r,\text{cv}} \right) \tag{5b} \\
-    \dot{v}_{r} &=  \frac{\Omega_b}{c_f}\left( i_r^{\text{cv}} - i_r + \omega_{\text{grid}} c_f v_i \right) \tag{5c} \\
-    \dot{v}_{i} &=  \frac{\Omega_b}{c_f}\left( i_i^{\text{cv}} - i_i - \omega_{\text{grid}} c_f v_r \right) \tag{5d} \\
-    \dot{i}_{r} &= \frac{\Omega_b}{l_g}\left( v_r^{\text{cv}} - v_r^{\text{grid}} - r_g i_{r} + \omega_{\text{grid}} l_g i_{i,\text{cv}} \right) \tag{5e} \\
-    \dot{i}_{i} &= \frac{\Omega_b}{l_g}\left( v_i^{\text{cv}} - v_i^{\text{grid}} - r_g i_{i} - \omega_{\text{grid}} l_g i_{r,\text{cv}} \right) \tag{5f}
+    \dot{i}_{r,\text{cv}} &= \frac{\Omega_b}{l_f}\left( v_r^{\text{cv}} - v_r  - r_f i_{r,\text{cv}} + \omega_{\text{grid}} l_f i_{i,\text{cv}} \right) \tag{1a} \\
+    \dot{i}_{i,\text{cv}} &= \frac{\Omega_b}{l_f}\left( v_i^{\text{cv}} - v_i  - r_f i_{i,\text{cv}} - \omega_{\text{grid}} l_f i_{r,\text{cv}} \right) \tag{1b} \\
+    \dot{v}_{r} &=  \frac{\Omega_b}{c_f}\left( i_r^{\text{cv}} - i_r + \omega_{\text{grid}} c_f v_i \right) \tag{1c} \\
+    \dot{v}_{i} &=  \frac{\Omega_b}{c_f}\left( i_i^{\text{cv}} - i_i - \omega_{\text{grid}} c_f v_r \right) \tag{1d} \\
+    \dot{i}_{r} &= \frac{\Omega_b}{l_g}\left( v_r^{\text{cv}} - v_r^{\text{grid}} - r_g i_{r} + \omega_{\text{grid}} l_g i_{i,\text{cv}} \right) \tag{1e} \\
+    \dot{i}_{i} &= \frac{\Omega_b}{l_g}\left( v_i^{\text{cv}} - v_i^{\text{grid}} - r_g i_{i} - \omega_{\text{grid}} l_g i_{r,\text{cv}} \right) \tag{1f}
 \end{align}
 ```
 

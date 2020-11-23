@@ -12,6 +12,6 @@ This is the most basic PSS that can be implemented, on which the stabilization s
 
 ```math
 \begin{align}
-v_s = K_{\omega}(\omega - \omega_s) + K_p(\omega \tau_e - P_{\text{ref}}) \tag{12a}
+v_s = K_{\omega}(\omega - \omega_s) + K_p(\omega \tau_e - P_{\text{ref}}) \tag{1a}
 \end{align}
 ```

@@ -14,12 +14,12 @@ the voltage reference signal for the converters.
 
 ```math
 \begin{align*}
-    \dot{\xi}_d &= v_{d,\text{vi}}^{\text{ref}} - v_d \tag{3a} \\
-    \dot{\xi}_q &= v_{q,\text{vi}}^{\text{ref}} - v_q \tag{3b} \\
-    \dot{\gamma}_d &= i_{d,\text{cv}}^{\text{ref}} - i_{d,\text{cv}} \tag{3c} \\
-    \dot{\gamma}_q &= i_{q,\text{cv}}^{\text{ref}} - i_{q,\text{cv}} \tag{3d} \\
-    \dot{\phi}_d &= \omega_{\text{ad}}(v_d - \phi_d) \tag{3e} \\
-    \dot{\phi}_q &= \omega_{\text{ad}}(v_q - \phi_q) \tag{3f}
+    \dot{\xi}_d &= v_{d,\text{vi}}^{\text{ref}} - v_d \tag{1a} \\
+    \dot{\xi}_q &= v_{q,\text{vi}}^{\text{ref}} - v_q \tag{1b} \\
+    \dot{\gamma}_d &= i_{d,\text{cv}}^{\text{ref}} - i_{d,\text{cv}} \tag{1c} \\
+    \dot{\gamma}_q &= i_{q,\text{cv}}^{\text{ref}} - i_{q,\text{cv}} \tag{1d} \\
+    \dot{\phi}_d &= \omega_{\text{ad}}(v_d - \phi_d) \tag{1e} \\
+    \dot{\phi}_q &= \omega_{\text{ad}}(v_q - \phi_q) \tag{1f}
 \end{align*}
 ```
 
@@ -27,12 +27,12 @@ with
 
 ```math
 \begin{align}
-    v_{d,\text{vi}}^{\text{ref}} &= v_{\text{olc}}^{\text{ref}} - r_v i_d + \omega_{\text{olc}} l_v i_q \tag{3g} \\
-    v_{q,\text{vi}}^{\text{ref}} &= - r_v i_q - \omega_{\text{olc}} l_v i_d \tag{3h} \\
-    i_{d,\text{cv}}^{\text{ref}} &= k_{pv}\left(v_{d,\text{vi}}^{\text{ref}} - v_q\right) + k_{iv} \xi_d - c_f \omega_{\text{olc}} v_q + k_{\text{ffi}}i_d \tag{3i} \\
-    i_{q,\text{cv}}^{\text{ref}} &= k_{pv}\left(v_{q,\text{vi}}^{\text{ref}} - v_q\right) + k_{iv} \xi_q + c_f \omega_{\text{olc}} v_d + k_{\text{ffi}}i_q \tag{3j} \\
-    v_d^{\text{ref-signal}} &= k_{pc} \left(i_{d,\text{cv}}^{\text{ref}} - i_{d,\text{cv}}\right) + k_{ic} \gamma_d - \omega_{\text{olc}} l_f i_{q,\text{cv}} + k_{\text{ffv}}v_d - k_{\text{ad}}(v_d - \phi_d) \tag{3k} \\
-    v_q^{\text{ref-signal}} &= k_{pc} \left(i_{q,\text{cv}}^{\text{ref}} - i_{q,\text{cv}}\right) + k_{ic} \gamma_q + \omega_{\text{olc}} l_f i_{d,\text{cv}} + k_{\text{ffv}}v_q - k_{\text{ad}}(v_q - \phi_q) \tag{3l}
+    v_{d,\text{vi}}^{\text{ref}} &= v_{\text{olc}}^{\text{ref}} - r_v i_d + \omega_{\text{olc}} l_v i_q \tag{1g} \\
+    v_{q,\text{vi}}^{\text{ref}} &= - r_v i_q - \omega_{\text{olc}} l_v i_d \tag{1h} \\
+    i_{d,\text{cv}}^{\text{ref}} &= k_{pv}\left(v_{d,\text{vi}}^{\text{ref}} - v_d\right) + k_{iv} \xi_d - c_f \omega_{\text{olc}} v_q + k_{\text{ffi}}i_d \tag{1i} \\
+    i_{q,\text{cv}}^{\text{ref}} &= k_{pv}\left(v_{q,\text{vi}}^{\text{ref}} - v_q\right) + k_{iv} \xi_q + c_f \omega_{\text{olc}} v_d + k_{\text{ffi}}i_q \tag{1j} \\
+    v_d^{\text{ref-signal}} &= k_{pc} \left(i_{d,\text{cv}}^{\text{ref}} - i_{d,\text{cv}}\right) + k_{ic} \gamma_d - \omega_{\text{olc}} l_f i_{q,\text{cv}} + k_{\text{ffv}}v_d - k_{\text{ad}}(v_d - \phi_d) \tag{1k} \\
+    v_q^{\text{ref-signal}} &= k_{pc} \left(i_{q,\text{cv}}^{\text{ref}} - i_{q,\text{cv}}\right) + k_{ic} \gamma_q + \omega_{\text{olc}} l_f i_{d,\text{cv}} + k_{\text{ffv}}v_q - k_{\text{ad}}(v_q - \phi_q) \tag{1l}
 \end{align}
 ```
 
