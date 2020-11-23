@@ -69,7 +69,8 @@ J[y_{eq}, x_{eq}, p] =
 For small signal analyses, we are interested in the stability of the differential states,
 while still considering that those need to evolve in the manifold defined by the linearized
 algebraic equations. Assuming that ``g_y`` is not singular (see chapter 7 of Federico
-Milano's book: "Power System Modelling and Scripting" or [the following paper](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1323205))
+Milano's book: [Power System Modelling and Scripting](https://www.springer.com/gp/book/9783642136689)
+or [the following paper](https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1323205))
 we can eliminate the algebraic variables to obtain the reduced jacobian:
 
 ```math
