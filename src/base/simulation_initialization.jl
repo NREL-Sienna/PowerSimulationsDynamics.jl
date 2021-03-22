@@ -114,7 +114,9 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
         return false
     end
     if !NLsolve.converged(sys_solve)
-        @warn("Initialization failed, initial conditions do not meet conditions for an stable equilibrium.\nTrying to solve again reducing numeric tolerance from $(STRICT_NL_SOLVE_TOLERANCE):")
+        @warn(
+            "Initialization failed, initial conditions do not meet conditions for an stable equilibrium.\nTrying to solve again reducing numeric tolerance from $(STRICT_NL_SOLVE_TOLERANCE):"
+        )
         sys_solve = NLsolve.nlsolve(
             inif!,
             initial_guess,
@@ -123,9 +125,13 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
             method = :trust_region,
         ) #Solve using initial guess x0
         if NLsolve.converged(sys_solve)
-            @info("Initialization succeeded with a relaxed tolerance of $(RELAXED_NL_SOLVE_TOLERANCE). Saving solution")
+            @info(
+                "Initialization succeeded with a relaxed tolerance of $(RELAXED_NL_SOLVE_TOLERANCE). Saving solution"
+            )
         else
-            @warn("Initialization failed again. Initial conditions do not meet conditions for an stable equilibrium\nSaving best result.")
+            @warn(
+                "Initialization failed again. Initial conditions do not meet conditions for an stable equilibrium\nSaving best result."
+            )
         end
     end
     @debug "Write result to initial guess vector"

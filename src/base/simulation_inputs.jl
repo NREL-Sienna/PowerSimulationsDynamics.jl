@@ -23,7 +23,9 @@ function SimulationInputs(;
     Ybus::SparseMatrixCSC{Complex{Float64}, Int64} = SparseMatrixCSC{
         Complex{Float64},
         Int64,
-    }(zeros(1, 1)),
+    }(
+        zeros(1, 1),
+    ),
     dyn_lines::Bool = false,
     voltage_buses_ix::Vector{Int} = Vector{Int}(),
     current_buses_ix::Vector{Int} = Vector{Int}(),
@@ -123,7 +125,11 @@ function build!(inputs::SimulationInputs)
     for s in sources
         btype = PSY.get_bustype(PSY.get_bus(s))
         if (btype == PSY.BusTypes.REF) && found_ref_bus
-            throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
+            throw(
+                IS.ConflictingInputsError(
+                    "The system can't have more than one source or generator in the REF Bus",
+                ),
+            )
         end
         btype != PSY.BusTypes.REF && continue
         global_vars[:ω_sys_index] = 0 #To define 0 if infinite source, bus_number otherwise,
@@ -147,7 +153,11 @@ function build!(inputs::SimulationInputs)
         device_bus = PSY.get_bus(d)
         btype = PSY.get_bustype(device_bus)
         if (btype == PSY.BusTypes.REF) && found_ref_bus
-            throw(IS.ConflictingInputsError("The system can't have more than one source or generator in the REF Bus"))
+            throw(
+                IS.ConflictingInputsError(
+                    "The system can't have more than one source or generator in the REF Bus",
+                ),
+            )
         end
         state_types = make_device_index!(d)
         device_n_states = PSY.get_n_states(dynamic_device)

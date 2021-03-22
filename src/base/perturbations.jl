@@ -101,11 +101,9 @@ function ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
 end
 
 function get_affect(sys::PSY.System, pert::BranchTrip)
-    branch = first(PSY.get_components(
-        PSY.ACBranch,
-        sys,
-        x -> PSY.get_name(x) == pert.branch_name,
-    ))
+    branch = first(
+        PSY.get_components(PSY.ACBranch, sys, x -> PSY.get_name(x) == pert.branch_name),
+    )
     return (integrator) -> begin
         ybus_update!(integrator.p, branch, -1.0)
     end

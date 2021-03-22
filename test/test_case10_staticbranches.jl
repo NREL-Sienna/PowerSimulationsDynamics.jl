@@ -44,8 +44,8 @@ try
     series = get_voltagemag_series(sim, 102)
 
     zoom = [
-        (series[1][ix], series[2][ix])
-        for (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
+        (series[1][ix], series[2][ix]) for
+        (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
     ]
 
     diff = [0.0]

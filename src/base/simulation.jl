@@ -325,7 +325,9 @@ end
 
 function _simulation_pre_step(sim::Simulation, reset_simulation::Bool)
     if sim.status != BUILT && !reset_simulation
-        error("The Simulation status is $(sim.status). Use keyword argument reset_simulation = true")
+        error(
+            "The Simulation status is $(sim.status). Use keyword argument reset_simulation = true",
+        )
     end
 
     if reset_simulation

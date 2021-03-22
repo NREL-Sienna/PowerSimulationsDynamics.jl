@@ -191,7 +191,9 @@ function initialize_tg!(
     else
         sol_x0 = sol.zero
         if (sol_x0[2] > V_max) || (sol_x0[2] < V_min)
-            @error("Valve limits for TG in $(PSY.get_name(dynamic_device)) are bounded (x_g1 = $(sol_x0[2])). Consider updating their values.")
+            @error(
+                "Valve limits for TG in $(PSY.get_name(dynamic_device)) are bounded (x_g1 = $(sol_x0[2])). Consider updating their values."
+            )
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
