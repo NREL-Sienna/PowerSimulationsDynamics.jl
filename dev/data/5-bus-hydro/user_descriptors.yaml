@@ -57,9 +57,10 @@ simulation_objects: []
 storage:
 - {custom_name: GEN UID, name: generator_name}
 - {custom_name: Storage, name: name}
-- {custom_name: Max Volume GWh, name: storage_capacity}
-- {custom_name: Inflow Limit GWh, name: input_active_power_limit_max}
+- {custom_name: Max Volume MWh, name: storage_capacity, unit: MWh, unit_system: natural_units}
+- {custom_name: Inflow Limit, name: input_active_power_limit_max, unit_system: device_base}
 - {custom_name: Rating MVA, name: output_active_power_limit_max}
-- {custom_name: Initial Volume GWh, name: energy_level}
+- {custom_name: Initial Volume MWh, name: energy_level, unit: MWh, unit_system: natural_units}
 - {custom_name: Rating MVA, name: rating} #TODO: add data to connecting gen.rating
 - {custom_name: Rating MVA, name: base_power} #TODO: add ref to connecting gen.base_power
+- {custom_name: position, name: position}

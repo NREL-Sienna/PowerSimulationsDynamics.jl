@@ -5,6 +5,9 @@ HydroEnergyReservoir:
 - {fuel: HYDRO, type: HYDRO} # uncomment this lines to enable hydro energy scheduling
 - {fuel: HYDRO, type: INFLOW}
 
+HydroPumpedStorage:
+- {fuel: HYDRO, type: PS}
+
 HydroDispatch:
 - {fuel: HYDRO, type: ROR}
 #- {fuel: HYDRO, type: null} # comment this lines to enable hydro energy scheduling
