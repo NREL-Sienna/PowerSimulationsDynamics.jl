@@ -54,8 +54,6 @@ function test_genrou(dyr_file, csv_file, init_cond)
         series = get_state_series(sim, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
-        #Clean Extra Point at t = 1.0 from Callback
-        clean_extra_timestep!(t, δ)
 
         series2 = get_voltagemag_series(sim, 102)
 

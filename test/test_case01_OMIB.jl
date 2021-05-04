@@ -41,7 +41,6 @@ try
     t = series[1]
     δ = series[2]
     #Clean Extra Point at t = 1.0 from Callback
-    clean_extra_timestep!(t, δ)
 
     series2 = get_voltagemag_series(sim, 102)
 

@@ -46,9 +46,6 @@ try
     psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test02/Test02_delta.csv")
     t_psat, δ_psat = get_csv_delta(psat_csv)
 
-    #Clean Extra Point at t = 1.0 from Callback
-    clean_extra_timestep!(t, δ)
-
     diff = [0.0]
     res = get_init_values_for_comparison(sim)
     for (k, v) in test02_x0_init
