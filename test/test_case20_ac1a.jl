@@ -56,12 +56,10 @@ function test_ac1a(dyr_file, csv_file, init_cond)
         δ = series[2]
         t_v = deepcopy(series2[1])
         V = series2[2]
-        #Clean Extra Point at t = 1.0 from Callback
-        clean_extra_timestep!(t, δ)
-        clean_extra_timestep!(t_v, V)
 
         M = get_csv_data(csv_file)
-        t_psse, δ_psse, V_psse = M[:, 1], M[:, 2], M[:, 3]
+        t_psse, δ_psse = clean_extra_timestep!(M[:, 1], M[:, 2])
+        _,      V_psse = clean_extra_timestep!(M[:, 1], M[:, 3])
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -77,7 +75,7 @@ function test_ac1a(dyr_file, csv_file, init_cond)
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
-        @test LinearAlgebra.norm(V - V_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(V - V_psse, Inf) <= 1e-1
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
 
     finally
