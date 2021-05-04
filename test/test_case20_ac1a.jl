@@ -59,7 +59,7 @@ function test_ac1a(dyr_file, csv_file, init_cond)
 
         M = get_csv_data(csv_file)
         t_psse, δ_psse = clean_extra_timestep!(M[:, 1], M[:, 2])
-        _,      V_psse = clean_extra_timestep!(M[:, 1], M[:, 3])
+        _, V_psse = clean_extra_timestep!(M[:, 1], M[:, 3])
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
