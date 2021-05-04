@@ -259,6 +259,8 @@ pll() = KauraPLL(
     ki_pll = 4.69,   #PLL integral gain
 )
 
+no_pll() = PSY.FixedFrequency()
+
 ###### Outer Control ######
 function outer_control()
     function virtual_inertia()
@@ -268,6 +270,26 @@ function outer_control()
         return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)
     end
     return OuterControl(virtual_inertia(), reactive_droop())
+end
+
+function outer_control_nopll()
+    function virtual_inertia()
+        return VirtualInertia(Ta = 2.0, kd = 0.0, kω = 20.0)
+    end
+    function reactive_droop()
+        return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)
+    end
+    return OuterControl(virtual_inertia(), reactive_droop())
+end
+
+function outer_control_droop()
+    function active_droop()
+        return PSY.ActivePowerDroop(Rp = 0.05, ωz = 2 * pi * 5)
+    end
+    function reactive_droop()
+        return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)
+    end
+    return OuterControl(active_droop(), reactive_droop())
 end
 
 ######## Inner Control ######
