@@ -24,13 +24,10 @@ function mdl_outer_ode!(
         dynamic_device,
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
-    vpll_d = device_states[external_ix[1]]
-    vpll_q = device_states[external_ix[2]]
-    ϵ_pll = device_states[external_ix[3]]
-    Vr_filter = device_states[external_ix[4]]
-    Vi_filter = device_states[external_ix[5]]
-    Ir_filter = device_states[external_ix[6]]
-    Ii_filter = device_states[external_ix[7]]
+    Vr_filter = device_states[external_ix[1]]
+    Vi_filter = device_states[external_ix[2]]
+    Ir_filter = device_states[external_ix[3]]
+    Ii_filter = device_states[external_ix[4]]
 
     #Obtain inner variables for component
     ω_pll = get_inner_vars(dynamic_device)[ω_freq_estimator_var]
@@ -51,9 +48,6 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    pll_control = PSY.get_freq_estimator(dynamic_device)
-    kp_pll = PSY.get_kp_pll(pll_control)
-    ki_pll = PSY.get_ki_pll(pll_control)
     p_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
     ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
     V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
@@ -65,7 +59,7 @@ function mdl_outer_ode!(
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
 
-    #Define internal states for frequency estimator
+    #Define internal states for Outer Control
     internal_states = @view device_states[local_ix]
     ω_oc = internal_states[1]
     θ_oc = internal_states[2]
@@ -81,6 +75,90 @@ function mdl_outer_ode!(
     output_ode[local_ix[2]] = ωb * (ω_oc - ω_sys)
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
+    #Update inner vars
+    get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
+    get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc
+    get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
+end
+
+
+function mdl_outer_ode!(
+    device_states,
+    output_ode,
+    f0,
+    ω_sys,
+    dynamic_device::PSY.DynamicInverter{
+        C,
+        PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
+        IC,
+        DC,
+        P,
+        F,
+    },
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
+    )
+    Vr_filter = device_states[external_ix[1]]
+    Vi_filter = device_states[external_ix[2]]
+    Ir_filter = device_states[external_ix[3]]
+    Ii_filter = device_states[external_ix[4]]
+
+    #Obtain inner variables for component
+    V_tR = get_inner_vars(dynamic_device)[VR_inv_var]
+    V_tI = get_inner_vars(dynamic_device)[VI_inv_var]
+
+    #Get Active Power Controller parameters
+    outer_control = PSY.get_outer_control(dynamic_device)
+    active_power_control = PSY.get_active_power(outer_control)
+    Rp = PSY.get_Rp(active_power_control) #Droop Gain
+    ωz = PSY.get_ωz(active_power_control) #Frequency cutoff frequency
+    ωb = 2 * pi * f0 #Rated angular frequency
+
+    #Get Reactive Power Controller parameters
+    reactive_power_control = PSY.get_reactive_power(outer_control)
+    kq = PSY.get_kq(reactive_power_control) #Reactive power droop gain
+    ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
+
+    #Obtain external parameters
+    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
+    ω_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.ω_ref_index]
+    V_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.V_ref_index]
+    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
+    )
+
+    #Define internal states for frequency estimator
+    internal_states = @view device_states[local_ix]
+    θ_oc = internal_states[1]
+    pm = internal_states[2]
+    qm = internal_states[3]
+
+    #Obtain additional expressions
+    p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
+    q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
+    
+    #Compute Frequency from Droop
+    ω_oc = ω_ref + Rp * (p_ref - pm)
+
+    #Compute 3 states ODEs
+    output_ode[local_ix[1]] = ωb * (ω_oc - ω_sys)
+    output_ode[local_ix[2]] = (ωz * (p_elec_out - pm))
+    output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
+    
     #Update inner vars
     get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
     get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc
