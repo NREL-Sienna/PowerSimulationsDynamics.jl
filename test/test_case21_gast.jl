@@ -35,8 +35,6 @@ try
     series = get_state_series(sim, ("generator-102-1", :δ))
     t = series[1]
     δ = series[2]
-    #Clean Extra Point at t = 1.0 from Callback
-    clean_extra_timestep!(t, δ)
 
     #Obtain PSSE results
     t_psse, δ_psse = get_csv_delta(csv_file)
