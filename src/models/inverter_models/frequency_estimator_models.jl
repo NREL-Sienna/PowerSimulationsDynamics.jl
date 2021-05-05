@@ -60,3 +60,26 @@ function mdl_freq_estimator_ode!(
     get_inner_vars(dynamic_device)[ω_freq_estimator_var] =
         (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + ω_sys)
 end
+
+function mdl_freq_estimator_ode!(
+    device_states,
+    output_ode,
+    f0,
+    ω_sys,
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    F <: PSY.Filter,
+}
+
+    #Get parameters
+    pll_control = PSY.get_freq_estimator(dynamic_device)
+    frequency = PSY.get_frequency(pll_control)
+
+    #Update inner_vars
+    #PLL frequency
+    get_inner_vars(dynamic_device)[ω_freq_estimator_var] = frequency
+end

@@ -32,3 +32,22 @@ function initialize_frequency_estimator!(
     #Update guess of frequency estimator
     get_inner_vars(dynamic_device)[ω_freq_estimator_var] = PSY.get_ω_ref(dynamic_device)
 end
+
+function initialize_frequency_estimator!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    F <: PSY.Filter,
+}
+    #Get parameters
+    pll_control = PSY.get_freq_estimator(dynamic_device)
+    frequency = PSY.get_frequency(pll_control)
+
+    #Update guess of frequency estimator
+    get_inner_vars(dynamic_device)[ω_freq_estimator_var] = frequency
+end
