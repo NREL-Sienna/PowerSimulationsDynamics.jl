@@ -81,7 +81,6 @@ function mdl_outer_ode!(
     get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
 end
 
-
 function mdl_outer_ode!(
     device_states,
     output_ode,
@@ -150,7 +149,7 @@ function mdl_outer_ode!(
     #Obtain additional expressions
     p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
-    
+
     #Compute Frequency from Droop
     ω_oc = ω_ref + Rp * (p_ref - pm)
 
@@ -158,7 +157,7 @@ function mdl_outer_ode!(
     output_ode[local_ix[1]] = ωb * (ω_oc - ω_sys)
     output_ode[local_ix[2]] = (ωz * (p_elec_out - pm))
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
-    
+
     #Update inner vars
     get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
     get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc

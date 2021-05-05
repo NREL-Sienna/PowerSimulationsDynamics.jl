@@ -56,7 +56,6 @@ function initialize_outer!(
     PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = q_elec_out
 end
 
-
 function PSID.initialize_outer!(
     device_states,
     static::PSY.StaticInjection,

@@ -33,7 +33,6 @@ function initialize_frequency_estimator!(
     get_inner_vars(dynamic_device)[ω_freq_estimator_var] = PSY.get_ω_ref(dynamic_device)
 end
 
-
 function initialize_frequency_estimator!(
     device_states,
     static::PSY.StaticInjection,

@@ -61,7 +61,6 @@ function mdl_freq_estimator_ode!(
         (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + ω_sys)
 end
 
-
 function mdl_freq_estimator_ode!(
     device_states,
     output_ode,
