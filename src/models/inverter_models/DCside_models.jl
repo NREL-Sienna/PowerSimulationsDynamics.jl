@@ -1,4 +1,8 @@
 function mdl_DCside_ode!(
+    device_states,
+    output_ode,
+    f0,
+    ω_sys,
     dynamic_device::PSY.DynamicInverter{C, O, IC, PSY.FixedDCSource, P, F},
 ) where {
     C <: PSY.Converter,
