@@ -113,7 +113,13 @@ function device!(
     get_inner_vars(dynamic_device)[V_oc_var] = V_ref
 
     #Obtain ODES for DC side
-    mdl_DCside_ode!(dynamic_device)
+    mdl_DCside_ode!(
+        device_states,
+        view(output_ode, ode_range),
+        sys_f0,
+        sys_ω,
+        dynamic_device,
+    )
 
     #Obtain ODEs for PLL
     mdl_freq_estimator_ode!(
