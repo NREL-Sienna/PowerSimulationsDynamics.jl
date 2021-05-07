@@ -15,12 +15,12 @@ for the static portions of the network are as follows:
 
 ```math
  \begin{align}
- 0 = \boldsymbol{i}(\boldsymbol{x}, \boldsymbol{v}) - \boldsymbol{Y}\boldsymbol{x}
+ 0 = \boldsymbol{i}(\boldsymbol{x}, \boldsymbol{v}) - \boldsymbol{Y}\boldsymbol{v}
  \end{align}
 ```
 
-where ``\boldsymbol{i}`` is the vector of the sum of complex current injections from devices
-, ``\boldsymbol{x}`` is the vector of states and ``\boldsymbol{v}`` is the vector of complex
+where ``\boldsymbol{i} = i_r + ji_i`` is the vector of the sum of complex current injections from devices
+, ``\boldsymbol{x}`` is the vector of states and ``\boldsymbol{v} = v_r + jv_i`` is the vector of complex
 bus voltages. Equations (1) connect all the port variables, i.e., currents, defined for each
 injection device. Components that contribute to (1) by modifying the current ``\boldsymbol{i}``
 are (i) static injection devices, (ii) dynamic injection devices, and (iii) dynamic network
@@ -58,9 +58,9 @@ new additional differential equations per line (6 in total for real and imaginar
 
 ```math
 \begin{align}
-    \frac{l}{\Omega_b} \frac{di_{\ell}}{dt} &= (v_n - v_m) - (r+jl) i_{\ell} \\
-     \frac{c_n}{\Omega_b} \frac{dv_n}{dt} &=  i_n^{\text{cap}} - jc_nv_n   \\
-      \frac{c_m}{\Omega_b} \frac{dv_m}{dt} &= i_m^{\text{cap}} - jc_mv_m
+    \frac{l}{\Omega_b} \frac{d\boldsymbol{i}_{\ell}}{dt} &= (\boldsymbol{v}_n - \boldsymbol{v}_m) - (r+jl) \boldsymbol{i}_{\ell} \\
+     \frac{c_n}{\Omega_b} \frac{d\boldsymbol{v}_n}{dt} &=  \boldsymbol{i}_n^{\text{cap}} - jc_n\boldsymbol{v}_n   \\
+      \frac{c_m}{\Omega_b} \frac{d\boldsymbol{v}_m}{dt} &= \boldsymbol{i}_m^{\text{cap}} - jc_m\boldsymbol{v}_m
 \end{align}
 ```
 
