@@ -2,6 +2,12 @@
 
 This component is used to estimate the frequency of the grid based on the voltage at the bus.
 
+## Fixed Frequency ```[FixedFrequency]```
+
+This is a simple model that set the measured frequency to a desired constant value (i.e. does not measure the frequency)
+``\omega_{pll} = \omega_{\text{fix}}`` (usually ``\omega_{\text{fix}} = 1.0`` p.u.). Used by default when grid-forming 
+inverters do not use frequency estimators. 
+
 ## Phase-Locked Loop (PLL) for VSM ```[KauraPLL]```
 
 The following equations present a PLL used to estimate the frequency and PLL angle of
