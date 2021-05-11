@@ -93,8 +93,8 @@ function build!(inputs::SimulationInputs)
                 +,
                 total_shunts,
                 Dict(
-                    bus_ix_from => 1 / PSY.get_b(br).from,
-                    bus_ix_to => 1 / PSY.get_b(br).to,
+                    bus_ix_from => PSY.get_b(br).from,
+                    bus_ix_to => PSY.get_b(br).to,
                 ),
             )
             push!(voltage_buses_ix, bus_ix_from, bus_ix_to)

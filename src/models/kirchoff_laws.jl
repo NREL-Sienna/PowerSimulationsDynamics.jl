@@ -25,9 +25,9 @@ function voltage_kirchoff(inputs::SimulationInputs, V_r, V_i, dx)
     for bus_ix in voltage_buses_ix
         shunt_multiplier = shunts[bus_ix]
         I_balance[bus_ix] =
-            -ω_b * I_balance[bus_ix] * shunt_multiplier + ω_b * V_i[bus_ix] - dx[bus_ix]
+            -ω_b * I_balance[bus_ix] / shunt_multiplier + ω_b * V_i[bus_ix] - dx[bus_ix]
         I_balance[bus_ix + n_buses] =
-            -ω_b * I_balance[bus_ix + n_buses] * shunt_multiplier - ω_b * V_r[bus_ix] -
+            -ω_b * I_balance[bus_ix + n_buses] / shunt_multiplier - ω_b * V_r[bus_ix] -
             dx[bus_ix + n_buses]
     end
 end
