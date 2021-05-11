@@ -92,6 +92,7 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
             ix_range = range(branches_start, length = n_states)
             ode_range = range(branches_count, length = n_states)
             branches_count = branches_count + n_states
+            branches_start += n_states
             branch!(
                 x,
                 dx,
