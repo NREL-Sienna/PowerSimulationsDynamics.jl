@@ -55,25 +55,55 @@ function SimulationInputs(;
     )
 end
 
+
+function _add_dynamic_bus_states!(DAE_vector::Vector{Bool}, voltage_buses_ix::Vector{Int}, bus_ix::Int, n_buses::Int)
+    push!(voltage_buses_ix, bus_ix)
+    DAE_vector[bus_ix] = DAE_vector[bus_ix + n_buses] = true
+    return
+end
+
+function _index_dynamic_lines!(inputs::SimulationInputs, branch::PSY.DynamicBranch, n_buses::Int)
+    DAE_vector = get_DAE_vector(inputs)
+    voltage_buses_ix = get_voltage_buses_ix(inputs)
+    arc = PSY.get_arc(branch)
+    from_bus_number = PSY.get_number(arc.from)
+    to_bus_number = PSY.get_number(arc.to)
+    bus_ix_from = get_lookup(inputs)[from_bus_number]
+    bus_ix_to = get_lookup(inputs)[to_bus_number]
+    b_from = PSY.get_b(branch).from
+    b_to = PSY.get_b(branch).to
+    merge!(
+        +,
+        get_total_shunts(inputs),
+        Dict(bus_ix_from => b_from, bus_ix_to => b_to),
+    )
+    get_total_shunts(inputs)
+    n_states = PSY.get_n_states(branch)
+    b_from > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_from, n_buses)
+    b_to > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_to, n_buses)
+    DAE_vector = push!(DAE_vector, collect(trues(n_states))...)
+    return
+end
+
+
 function build!(inputs::SimulationInputs)
     sys = get_system(inputs)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
-    DAE_vector = collect(falses(n_buses * 2))
-    global_state_index = MAPPING_DICT()
+    DAE_vector = inputs.DAE_vector = collect(falses(n_buses * 2))
+    global_state_index = inputs.global_index = MAPPING_DICT()
     state_space_ix = [n_buses * 2]
-    current_buses_ix = collect(1:n_buses)
-    static_bus_var_count = 2 * length(current_buses_ix)
-    voltage_buses_ix = Vector{Int}()
+    current_buses_ix = inputs.current_buses_ix = collect(1:n_buses)
+    static_bus_var_count = 2 * n_buses
+    voltage_buses_ix = inputs.voltage_buses_ix = Vector{Int}()
     total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
-    global_vars = Dict{Symbol, Number}(
+    global_vars = inputs.global_vars = Dict{Symbol, Number}(
         :ω_sys => 1.0,
         :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
     )
-    total_shunts = Dict{Int, Float64}()
+    inputs.total_shunts = Dict{Int, Float64}()
     found_ref_bus = false
-    sys_basepower = PSY.get_base_power(sys)
 
     #jd/TODO: Check logic here
     inputs.Ybus, inputs.lookup = _get_Ybus(sys)
@@ -83,25 +113,8 @@ function build!(inputs::SimulationInputs)
         inputs.dyn_lines = true
         first_dyn_branch_point = state_space_ix[1] + 1
         for br in dyn_branches
-            arc = PSY.get_arc(br)
-            n_states = PSY.get_n_states(br)
-            from_bus_number = PSY.get_number(arc.from)
-            to_bus_number = PSY.get_number(arc.to)
-            bus_ix_from = get_lookup(inputs)[from_bus_number]
-            bus_ix_to = get_lookup(inputs)[to_bus_number]
-            merge!(
-                +,
-                total_shunts,
-                Dict(
-                    bus_ix_from => PSY.get_b(br).from,
-                    bus_ix_to => PSY.get_b(br).to,
-                ),
-            )
-            push!(voltage_buses_ix, bus_ix_from, bus_ix_to)
-            DAE_vector[bus_ix_from] = DAE_vector[bus_ix_from + n_buses] = true
-            DAE_vector[bus_ix_to] = DAE_vector[bus_ix_to + n_buses] = true
-            DAE_vector = push!(DAE_vector, collect(trues(n_states))...)
-            total_states += n_states
+            _index_dynamic_lines!(inputs, br, n_buses)
+            total_states += PSY.get_n_states(br)
             _add_states_to_global!(global_state_index, state_space_ix, br)
         end
 
@@ -181,12 +194,6 @@ function build!(inputs::SimulationInputs)
     @debug total_states
     setdiff!(current_buses_ix, voltage_buses_ix)
 
-    inputs.global_vars = global_vars
-    inputs.DAE_vector = DAE_vector
-    inputs.global_index = global_state_index
-    inputs.voltage_buses_ix = voltage_buses_ix
-    inputs.current_buses_ix = current_buses_ix
-    inputs.total_shunts = total_shunts
     inputs.counts = Base.ImmutableDict(
         :total_states => total_states,
         :injection_n_states => injection_n_states,
