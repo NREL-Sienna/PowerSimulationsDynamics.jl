@@ -4,7 +4,6 @@ authors = ["Jose Daniel Lara, Rodrigo Henriquez"]
 version = "0.5.0"
 
 [deps]
-Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -14,9 +13,7 @@ LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 NLsolve = "2774e3e8-f4cf-5e23-947b-6d7e65073b56"
 PowerSystems = "bcd98974-b02a-5e2f-9ee0-a103f5c450dd"
-Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 
 [compat]
 DiffEqBase = "6"
