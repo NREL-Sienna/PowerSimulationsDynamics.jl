@@ -62,6 +62,11 @@ function _add_dynamic_bus_states!(DAE_vector::Vector{Bool}, voltage_buses_ix::Ve
     return
 end
 
+function _add_to_total_shunts!(total_shunts::Dict{Int, Float64}, pairs...)
+    merge!(+, total_shunts, Dict(pairs...), )
+    return
+end
+
 function _index_dynamic_lines!(inputs::SimulationInputs, branch::PSY.DynamicBranch, n_buses::Int)
     DAE_vector = get_DAE_vector(inputs)
     voltage_buses_ix = get_voltage_buses_ix(inputs)
@@ -72,15 +77,12 @@ function _index_dynamic_lines!(inputs::SimulationInputs, branch::PSY.DynamicBran
     bus_ix_to = get_lookup(inputs)[to_bus_number]
     b_from = PSY.get_b(branch).from
     b_to = PSY.get_b(branch).to
-    merge!(
-        +,
-        get_total_shunts(inputs),
-        Dict(bus_ix_from => b_from, bus_ix_to => b_to),
-    )
-    get_total_shunts(inputs)
-    n_states = PSY.get_n_states(branch)
+    total_shunts = get_total_shunts(inputs)
+    b_from > 0.0 && _add_to_total_shunts!(total_shunts, bus_ix_from => b_from)
+    b_to > 0.0 && _add_to_total_shunts!(total_shunts, bus_ix_to => b_to)
     b_from > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_from, n_buses)
     b_to > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_to, n_buses)
+    n_states = PSY.get_n_states(branch)
     DAE_vector = push!(DAE_vector, collect(trues(n_states))...)
     return
 end
