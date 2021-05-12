@@ -13,6 +13,8 @@ import Aqua
 Aqua.test_unbound_args(PowerSimulationsDynamics)
 Aqua.test_undefined_exports(PowerSimulationsDynamics)
 Aqua.test_ambiguities(PowerSimulationsDynamics)
+Aqua.test_stale_deps(PowerSimulationsDynamics)
+Aqua.test_deps_compat(PowerSimulationsDynamics)
 
 const IS = InfrastructureSystems
 const PSY = PowerSystems
