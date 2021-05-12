@@ -55,19 +55,27 @@ function SimulationInputs(;
     )
 end
 
-
-function _add_dynamic_bus_states!(DAE_vector::Vector{Bool}, voltage_buses_ix::Vector{Int}, bus_ix::Int, n_buses::Int)
+function _add_dynamic_bus_states!(
+    DAE_vector::Vector{Bool},
+    voltage_buses_ix::Vector{Int},
+    bus_ix::Int,
+    n_buses::Int,
+)
     push!(voltage_buses_ix, bus_ix)
     DAE_vector[bus_ix] = DAE_vector[bus_ix + n_buses] = true
     return
 end
 
 function _add_to_total_shunts!(total_shunts::Dict{Int, Float64}, pairs...)
-    merge!(+, total_shunts, Dict(pairs...), )
+    merge!(+, total_shunts, Dict(pairs...))
     return
 end
 
-function _index_dynamic_lines!(inputs::SimulationInputs, branch::PSY.DynamicBranch, n_buses::Int)
+function _index_dynamic_lines!(
+    inputs::SimulationInputs,
+    branch::PSY.DynamicBranch,
+    n_buses::Int,
+)
     DAE_vector = get_DAE_vector(inputs)
     voltage_buses_ix = get_voltage_buses_ix(inputs)
     arc = PSY.get_arc(branch)
@@ -80,13 +88,13 @@ function _index_dynamic_lines!(inputs::SimulationInputs, branch::PSY.DynamicBran
     total_shunts = get_total_shunts(inputs)
     b_from > 0.0 && _add_to_total_shunts!(total_shunts, bus_ix_from => b_from)
     b_to > 0.0 && _add_to_total_shunts!(total_shunts, bus_ix_to => b_to)
-    b_from > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_from, n_buses)
+    b_from > 0.0 &&
+        _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_from, n_buses)
     b_to > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_to, n_buses)
     n_states = PSY.get_n_states(branch)
     DAE_vector = push!(DAE_vector, collect(trues(n_states))...)
     return
 end
-
 
 function build!(inputs::SimulationInputs)
     sys = get_system(inputs)
@@ -100,10 +108,11 @@ function build!(inputs::SimulationInputs)
     total_states = 0
     first_dyn_branch_point = -1
     branches_n_states = 0
-    global_vars = inputs.global_vars = Dict{Symbol, Number}(
-        :ω_sys => 1.0,
-        :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
-    )
+    global_vars =
+        inputs.global_vars = Dict{Symbol, Number}(
+            :ω_sys => 1.0,
+            :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
+        )
     inputs.total_shunts = Dict{Int, Float64}()
     found_ref_bus = false
 

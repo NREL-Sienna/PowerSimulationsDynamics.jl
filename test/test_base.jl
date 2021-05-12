@@ -76,8 +76,10 @@ end
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
     add_source_to_ref(threebus_sys_dyns)
 
-    dyn_branch12 = DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 1-BUS 2-i_2"))
-    dyn_branch23 = DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 2-BUS 3-i_3"))
+    dyn_branch12 =
+        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 1-BUS 2-i_2"))
+    dyn_branch23 =
+        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 2-BUS 3-i_3"))
 
     add_component!(threebus_sys_dyns, dyn_branch12)
     add_component!(threebus_sys_dyns, dyn_branch23)
@@ -104,7 +106,6 @@ end
     end
     voltage_buses_ix = PSID.get_voltage_buses_ix(sim_inputs)
     @test length(voltage_buses_ix) == 3
-
 
     # Tests for dynamic lines with b = 0
     set_b!(dyn_branch12, (from = 0.0, to = 0.0))

@@ -306,7 +306,6 @@ inner_control() = CurrentControl(
     kad = 0.2,
 )
 
-
 function dyn_gen_second_order(generator)
     return PSY.DynamicGenerator(
         name = get_name(generator),

@@ -32,9 +32,9 @@ function initialize_frequency_estimator!(
 
         V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
 
-        out[1] = (V_dq_pll[d] - vpll_d) 
+        out[1] = (V_dq_pll[d] - vpll_d)
         out[2] = (V_dq_pll[q] - vpll_q)
-        out[3] = atan(vpll_q / vpll_d) 
+        out[3] = atan(vpll_q / vpll_d)
         out[4] = (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll)
     end
 
