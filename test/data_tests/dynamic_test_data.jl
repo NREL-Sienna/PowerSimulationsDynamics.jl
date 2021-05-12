@@ -305,3 +305,29 @@ inner_control() = CurrentControl(
     ωad = 50.0,     #Active damping low pass filter cut-off frequency
     kad = 0.2,
 )
+
+
+function dyn_gen_second_order(generator)
+    return PSY.DynamicGenerator(
+        name = get_name(generator),
+        ω_ref = 1.0, # ω_ref,
+        machine = machine_oneDoneQ(), #machine
+        shaft = shaft_no_damping(), #shaft
+        avr = avr_type1(), #avr
+        prime_mover = tg_none(), #tg
+        pss = pss_none(), #pss
+    )
+end
+
+function inv_case78(static_device)
+    return DynamicInverter(
+        name = get_name(static_device),
+        ω_ref = 1.0, # ω_ref,
+        converter = converter_high_power(), #converter
+        outer_control = outer_control(), #outer control
+        inner_control = inner_control(), #inner control voltage source
+        dc_source = dc_source_lv(), #dc source
+        freq_estimator = pll(), #pll
+        filter = filt(), #filter
+    )
+end
