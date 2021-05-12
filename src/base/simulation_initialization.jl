@@ -109,7 +109,8 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
             method = :trust_region,
         ) #Solve using initial guess x0
     catch e
-        @error("NLsolve failed to solve: $e")
+        bt = catch_backtrace()
+        @error "NLsolve failed to solve" exception = e, bt
         sim.status = BUILD_FAILED
         return false
     end
