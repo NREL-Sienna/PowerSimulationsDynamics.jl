@@ -18,6 +18,7 @@ export get_state_series
 export get_voltagemag_series
 export print_device_states
 export get_initial_conditions
+export get_activepower_series
 
 ####################################### Package Imports ####################################
 import Logging
