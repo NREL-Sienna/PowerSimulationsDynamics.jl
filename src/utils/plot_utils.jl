@@ -38,11 +38,8 @@ function get_activepower_series(sim::Simulation, name::String)
     V_R = [value[bus_ix] for value in solution.u]
     V_I = [value[bus_ix + n_buses] for value in solution.u]
     dyn_device = PSY.get_dynamic_injector(device)
-    if typeof(dyn_device) <: PSY.DynamicGenerator
-        I_R, I_I = compute_output_current(sim, dyn_device)
-        return solution.t, V_R .* I_R + V_I .* I_I
-    end
-    return
+    I_R, I_I = compute_output_current(sim, dyn_device)
+    return solution.t, V_R .* I_R + V_I .* I_I
 end
 
 """
