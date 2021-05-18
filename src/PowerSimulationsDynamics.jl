@@ -104,6 +104,10 @@ include("initialization/inverter_components/init_outer.jl")
 #System Model
 include("models/system.jl")
 
+#PostProcessing 
+include("post_processing/pp_common.jl")
+include("post_processing/pp_generator.jl")
+
 #Utils
 include("utils/plot_utils.jl")
 include("utils/immutable_dicts.jl")
