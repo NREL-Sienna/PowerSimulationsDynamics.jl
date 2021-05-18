@@ -1,4 +1,4 @@
-function _pp_state_series(solution, ix::Int64)    
+function _pp_state_series(solution, ix::Int64)
     numel = length(solution.t)::Int64
     state = zeros(Float64, numel)
     for i in 1:numel
