@@ -19,6 +19,7 @@ export get_voltagemag_series
 export print_device_states
 export get_initial_conditions
 export get_activepower_series
+export get_reactivepower_series
 
 ####################################### Package Imports ####################################
 import Logging
@@ -107,6 +108,7 @@ include("models/system.jl")
 #PostProcessing 
 include("post_processing/post_proc_common.jl")
 include("post_processing/post_proc_generator.jl")
+include("post_processing/post_proc_inverter.jl")
 
 #Utils
 include("utils/plot_utils.jl")
