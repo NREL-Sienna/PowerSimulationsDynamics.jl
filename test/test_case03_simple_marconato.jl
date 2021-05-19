@@ -58,6 +58,11 @@ try
     @test small_sig.stable
     @test LinearAlgebra.norm(t - t_psat) == 0.0
     @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
+
+    power = PSID.get_activepower_series(sim, "generator-102-1")
+    rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+    @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
+    @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
 finally
     @info("removing test files")
     rm(path, force = true, recursive = true)

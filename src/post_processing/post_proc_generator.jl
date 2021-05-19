@@ -1,5 +1,5 @@
 """
-Function to obtain the output current time series of a Base Machine model out of the DAE Solution. It receives the simulation inputs,
+Function to obtain the output current time series of a Dynamic Generator model out of the DAE Solution. It receives the simulation inputs,
 the dynamic device and bus voltage. It is dispatched for device type to compute the specific current.
 
 """
@@ -99,12 +99,11 @@ function _machine_current(
     return I_R, I_I
 end
 
-
 """
 Function to obtain the output current time series of a SimpleMarconato or SimpleAndersonFouad model out of the DAE Solution. It is dispatched via the machine type.
 """
 function _machine_current(
-    machine::PSY.Union{SimpleMarconatoMachine, PSY.SimpleAFMachine},
+    machine::PSY.Union{PSY.SimpleMarconatoMachine, PSY.SimpleAFMachine},
     name::String,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
@@ -129,9 +128,11 @@ function _machine_current(
         V_d, V_q = ri_dq(v) * [V_R[ix]; V_I[ix]]
         #Obtain electric current
         i_dq[1] =
-        (1.0 / (R^2 + Xd_pp * Xq_pp)) * (Xq_pp * (eq_pp[ix] - V_q) + R * (ed_pp[ix] - V_d))      #15.25
+            (1.0 / (R^2 + Xd_pp * Xq_pp)) *
+            (Xq_pp * (eq_pp[ix] - V_q) + R * (ed_pp[ix] - V_d))      #15.25
         i_dq[2] =
-        (1.0 / (R^2 + Xd_pp * Xq_pp)) * (-Xd_pp * (ed_pp[ix] - V_d) + R * (eq_pp[ix] - V_q))      #15.25
+            (1.0 / (R^2 + Xd_pp * Xq_pp)) *
+            (-Xd_pp * (ed_pp[ix] - V_d) + R * (eq_pp[ix] - V_q))      #15.25
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
@@ -153,7 +154,7 @@ function _machine_current(
     eq_pp = post_proc_state_series(sim, (name, :eq_pp))
     ed_pp = post_proc_state_series(sim, (name, :ed_pp))
     ψd = post_proc_state_series(sim, (name, :ψd))
-    ψq= post_proc_state_series(sim, (name, :ψq))
+    ψq = post_proc_state_series(sim, (name, :ψq))
 
     #Get parameters
     Xd_pp = PSY.get_Xd_pp(machine)
@@ -174,7 +175,6 @@ function _machine_current(
     end
     return I_R, I_I
 end
-
 
 """
 Function to obtain the output current time series of a GENROU/GENROE model out of the DAE Solution. It is dispatched via the machine type.
@@ -219,13 +219,13 @@ function _machine_current(
             (1.0 / (R^2 + Xq_pp * Xd_pp)) *
             (-R * (V_d - ψq_pp[ix]) + Xq_pp * (-V_q + ψd_pp[ix]))
         i_dq[2] =
-            (1.0 / (R^2 + Xq_pp * Xd_pp)) * (Xd_pp * (V_d - ψq_pp[ix]) + R * (-V_q + ψd_pp[ix]))
+            (1.0 / (R^2 + Xq_pp * Xd_pp)) *
+            (Xd_pp * (V_d - ψq_pp[ix]) + R * (-V_q + ψd_pp[ix]))
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
     return I_R, I_I
 end
-
 
 """
 Function to obtain the output current time series of a GENSAL/GENSAE model out of the DAE Solution. It is dispatched via the machine type.
@@ -260,8 +260,10 @@ function _machine_current(
         V_d, V_q = ri_dq(v) * [V_R[ix]; V_I[ix]]
 
         #Obtain electric current
-        i_dq[1] = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d + ψq_pp[ix]) + Xd_pp * (ψd_pp[ix] - V_q))
-        i_dq[2] = (1.0 / (R^2 + Xd_pp^2)) * (Xd_pp * (V_d + ψq_pp[ix]) + R * (ψd_pp[ix] - V_q))
+        i_dq[1] =
+            (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d + ψq_pp[ix]) + Xd_pp * (ψd_pp[ix] - V_q))
+        i_dq[2] =
+            (1.0 / (R^2 + Xd_pp^2)) * (Xd_pp * (V_d + ψq_pp[ix]) + R * (ψd_pp[ix] - V_q))
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
