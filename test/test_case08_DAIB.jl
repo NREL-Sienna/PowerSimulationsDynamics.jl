@@ -45,8 +45,8 @@ try
 
     #Obtain PSCAD benchmark data
     M = get_csv_data(csv_file)
-    t_pscad = M[:,1] .- t_offset
-    ω_pscad = M[:,2]
+    t_pscad = M[:, 1] .- t_offset
+    ω_pscad = M[:, 2]
 
     print_device_states(sim)
 
