@@ -28,7 +28,8 @@ Function to obtain voltage and output currents for a dynamic device. It receives
 of the Dynamic Device.
 
 """
-function post_proc_voltage_current_series(sim::Simulation, name::String)
+function post_proc_voltage_current_series(sim::Simulation, name::String)::NTuple{4, Vector{Float64}}
+    #Note: Type annotation since get_dynamic_injector is type unstable and solution is Union{Nothing, DAESol}
     sim_inputs = sim.simulation_inputs
     n_buses = get_bus_count(sim_inputs)
     solution = sim.solution
