@@ -1,6 +1,6 @@
 """
-Function to obtain the output current time series of a Base Machine model out of the DAE Solution. It receives the simulation inputs and
-the dynamic device. It is dispatched for device type to compute the specific current.
+Function to obtain the output current time series of a Base Machine model out of the DAE Solution. It receives the simulation inputs,
+the dynamic device and bus voltage. It is dispatched for device type to compute the specific current.
 
 """
 function compute_output_current(
@@ -28,6 +28,10 @@ function compute_output_current(
     )
 end
 
+"""
+Function to obtain the output current time series of a Classic Machine model out of the DAE Solution. It is dispatched via the machine type.
+
+"""
 function _machine_current(
     machine::PSY.BaseMachine,
     name::String,
@@ -59,9 +63,7 @@ function _machine_current(
 end
 
 """
-Function to obtain the output current time series of a One-D-One-Q model out of the DAE Solution. It receives the simulation inputs and
-the dynamic device. It is dispatched for device type to compute the specific current.
-
+Function to obtain the output current time series of a One-D-One-Q model out of the DAE Solution. It is dispatched via the machine type.
 """
 function _machine_current(
     machine::PSY.OneDOneQMachine,
