@@ -33,10 +33,10 @@ Function to obtain the output current time series of a LCL Filter model out of t
 
 """
 function _filter_current(
-    filt::PSY.LCLFilter,
+    ::PSY.LCLFilter,
     name::String,
-    V_R::Vector{Float64},
-    V_I::Vector{Float64},
+    ::Vector{Float64},
+    ::Vector{Float64},
     base_power_ratio::Float64,
     sim::Simulation,
 )
