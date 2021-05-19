@@ -36,7 +36,7 @@ function _machine_current(
     base_power_ratio::Float64,
     sim::Simulation,
 )
-    δ = pp_state_series(sim, (name, :δ))
+    δ = post_state_series(sim, (name, :δ))
 
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
@@ -71,9 +71,9 @@ function _machine_current(
     base_power_ratio::Float64,
     sim::Simulation,
 )
-    δ = pp_state_series(sim, (name, :δ))
-    eq_p = pp_state_series(sim, (name, :eq_p))
-    ed_p = pp_state_series(sim, (name, :ed_p))
+    δ = post_state_series(sim, (name, :δ))
+    eq_p = post_state_series(sim, (name, :eq_p))
+    ed_p = post_state_series(sim, (name, :ed_p))
 
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)

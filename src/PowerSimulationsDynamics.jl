@@ -105,8 +105,8 @@ include("initialization/inverter_components/init_outer.jl")
 include("models/system.jl")
 
 #PostProcessing 
-include("post_processing/pp_common.jl")
-include("post_processing/pp_generator.jl")
+include("post_processing/post_common.jl")
+include("post_processing/post_generator.jl")
 
 #Utils
 include("utils/plot_utils.jl")
