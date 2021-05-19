@@ -58,6 +58,11 @@ try
     @test (diff[1] < 1e-3)
     @test sim.solution.retcode == :Success
     @test small_sig.stable
+
+    power = PSID.get_activepower_series(sim, "generator-102-1")
+    rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+    @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
+    @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4
     @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 

@@ -227,7 +227,6 @@ function mdl_machine_ode!(
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(dynamic_device, PSY.SimpleMarconatoMachine)
     δ = device_states[external_ix[1]]
-    ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
     V_tR = get_inner_vars(dynamic_device)[VR_gen_var]
@@ -472,7 +471,6 @@ function mdl_machine_ode!(
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(dynamic_device, M)
     δ = device_states[external_ix[1]]
-    ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
     V_tR = get_inner_vars(dynamic_device)[VR_gen_var]
@@ -561,7 +559,6 @@ function mdl_machine_ode!(
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(dynamic_device, typeof(machine))
     δ = device_states[external_ix[1]]
-    ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
     V_tR = get_inner_vars(dynamic_device)[VR_gen_var]
@@ -640,7 +637,6 @@ function mdl_machine_ode!(
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(dynamic_device, typeof(machine))
     δ = device_states[external_ix[1]]
-    ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
     V_tR = get_inner_vars(dynamic_device)[VR_gen_var]
