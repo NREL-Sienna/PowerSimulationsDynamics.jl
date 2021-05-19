@@ -4,7 +4,7 @@ and a tuple containing the string name of the Dynamic Injection device and the s
 
 """
 function get_state_series(sim::Simulation, ref::Tuple{String, Symbol})
-    return sim.solution.t, post_state_series(sim, ref)
+    return sim.solution.t, post_proc_state_series(sim, ref)
 end
 
 """
@@ -13,9 +13,9 @@ Function to obtain the voltage magnitude series out of the DAE Solution. It rece
 """
 function get_voltagemag_series(sim::Simulation, bus_number::Int64)
     n_buses = get_bus_count(sim.simulation_inputs)
-    bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, 0)    
-    V_R, V_I= post_voltage_current_series(sim, bus_ix, n_buses)
-    return sim.solution.t, sqrt.(V_R.^2 + V_I.^2)    
+    bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, 0)
+    V_R, V_I = post_proc_voltage_current_series(sim, bus_ix, n_buses)
+    return sim.solution.t, sqrt.(V_R .^ 2 + V_I .^ 2)
 end
 
 """
@@ -23,8 +23,8 @@ Function to obtain the active power output time series of a Dynamic Injection se
 string name of the Dynamic Injection device.
 
 """
-function get_activepower_series(sim::Simulation, name::String)    
-    return solution.t, post_activepower_series(sim, name)
+function get_activepower_series(sim::Simulation, name::String)
+    return solution.t, post_proc_activepower_series(sim, name)
 end
 
 """
@@ -32,8 +32,8 @@ Function to obtain the active power output time series of a Dynamic Injection se
 string name of the Dynamic Injection device.
 
 """
-function get_reactivepower_series(sim::Simulation, name::String)    
-    return solution.t, post_reactivepower_series(sim, name)
+function get_reactivepower_series(sim::Simulation, name::String)
+    return solution.t, post_proc_reactivepower_series(sim, name)
 end
 
 """
