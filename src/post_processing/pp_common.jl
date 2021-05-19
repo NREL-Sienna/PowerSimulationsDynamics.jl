@@ -13,20 +13,41 @@ function pp_state_series(sim::Simulation, ref::Tuple{String, Symbol})
     return _pp_state_series(sim.solution, ix)
 end
 
+function pp_device_voltage_current_series(sim::Simulation, name::String)
+    sim_inputs = sim.simulation_inputs
+    n_buses = get_bus_count(sim_inputs)
+    solution = sim.solution
+    device = PSY.get_component(PSY.StaticInjection, sim_inputs.sys, name)
+    bus_ix = get(get_lookup(sim_inputs), PSY.get_number(PSY.get_bus(device)), -1)        
+    V_R, V_I = pp_voltage_series(solution, bus_ix, n_buses)
+    dyn_device = PSY.get_dynamic_injector(device)
+    I_R, I_I = compute_output_current(sim, dyn_device, V_R, V_I)
+    return V_R, V_I, I_R, I_I 
+end
+
+function pp_voltage_series(solution, bus_ix::Int, n_buses::Int)
+    bus_ix < 0 && error("Bus number $(bus_number) not found.")
+    V_R = Float64[value[bus_ix] for value in solution.u]
+    V_I = Float64[value[bus_ix + n_buses] for value in solution.u]
+    return V_R, V_I
+end
+
 """
 Function to obtain the active power output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
 string name of the Dynamic Injection device.
 
 """
-function get_activepower_series(sim::Simulation, name::String)
-    sim_inputs = sim.simulation_inputs
-    n_buses = get_bus_count(sim_inputs)
-    solution = sim.solution
-    device = PSY.get_component(PSY.StaticInjection, sim_inputs.sys, name)
-    bus_ix = get(get_lookup(sim_inputs), PSY.get_number(PSY.get_bus(device)), nothing)
-    V_R = Float64[value[bus_ix] for value in solution.u]
-    V_I = Float64[value[bus_ix + n_buses] for value in solution.u]
-    dyn_device = PSY.get_dynamic_injector(device)
-    I_R, I_I = compute_output_current(sim, dyn_device, V_R, V_I)
-    return solution.t, V_R .* I_R + V_I .* I_I
+function pp_activepower_series(sim::Simulation, name::String)
+    V_R, V_I, I_R, I_I = pp_device_voltage_current_series(sim, name)
+    return V_R .* I_R + V_I .* I_I
+end
+
+"""
+Function to obtain the active power output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
+string name of the Dynamic Injection device.
+
+"""
+function pp_reactivepower_series(sim::Simulation, name::String)
+    V_R, V_I, I_R, I_I = pp_device_voltage_current_series(sim, name)
+    return V_R .* I_I - V_I .* I_R
 end
