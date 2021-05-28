@@ -5,8 +5,8 @@ function device!(
     voltage_i,
     current_r,
     current_i,
-    ix_range::UnitRange{Int64},
-    ode_range::UnitRange{Int64},
+    ix_range::UnitRange{Int},
+    ode_range::UnitRange{Int},
     dynamic_device::DynG,
     inputs::SimulationInputs,
 ) where {DynG <: PSY.DynamicGenerator}
@@ -89,8 +89,8 @@ function device!(
     voltage_i,
     current_r,
     current_i,
-    ix_range::UnitRange{Int64},
-    ode_range::UnitRange{Int64},
+    ix_range::UnitRange{Int},
+    ode_range::UnitRange{Int},
     dynamic_device::DynI,
     inputs::SimulationInputs,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}

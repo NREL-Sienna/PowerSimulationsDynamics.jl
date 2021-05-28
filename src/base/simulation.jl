@@ -1,12 +1,12 @@
 mutable struct Simulation
     status::BUILD_STATUS
-    problem::Union{Nothing, DiffEqBase.DAEProblem}
+    problem::Union{Nothing, SciMLBase.DEProblem}
     perturbations::Vector{<:Perturbation}
     x0_init::Vector{Float64}
     initialized::Bool
     tstops::Vector{Float64}
     callbacks::DiffEqBase.CallbackSet
-    solution::Union{Nothing, DiffEqBase.DAESolution}
+    solution::Union{Nothing, SciMLBase.AbstractODESolution}
     simulation_folder::String
     simulation_inputs::SimulationInputs
     console_level::Base.CoreLogging.LogLevel
@@ -190,7 +190,7 @@ function _build!(sim::Simulation; kwargs...)
     dx0 = zeros(var_count)
     _build_perturbations!(sim)
     _add_aux_arrays!(simulation_inputs, Float64)
-    sim.problem = DiffEqBase.DAEProblem(
+    sim.problem = SciMLBase.DAEProblem(
         system!,
         dx0,
         sim.x0_init,
@@ -278,7 +278,7 @@ function _get_Ybus(sys::PSY.System)
             ybus_update!(Ybus, br, lookup, -1.0)
         end
     else
-        Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
+        Ybus = SparseMatrixCSC{Complex{Float64}, Int}(zeros(n_buses, n_buses))
         lookup = Dict{Int.Int}()
     end
     return Ybus, lookup
@@ -286,7 +286,7 @@ end
 
 function _add_states_to_global!(
     global_state_index::MAPPING_DICT,
-    state_space_ix::Vector{Int64},
+    state_space_ix::Vector{Int},
     device::PSY.Device,
 )
     global_state_index[PSY.get_name(device)] = Dict{Symbol, Int}()
@@ -342,7 +342,7 @@ function execute!(sim::Simulation, solver; kwargs...)
     reset_simulation = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_simulation
     _simulation_pre_step(sim, reset_simulation)
     sim.status = SIMULATION_STARTED
-    sim.solution = DiffEqBase.solve(
+    sim.solution = SciMLBase.solve(
         sim.problem,
         solver;
         callback = sim.callbacks,

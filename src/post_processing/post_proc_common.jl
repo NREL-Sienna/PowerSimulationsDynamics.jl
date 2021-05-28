@@ -3,8 +3,8 @@ Internal function to obtain as a Vector of Float64 of a specific state. It recei
 global index for a state.
 
 """
-function _post_proc_state_series(solution, ix::Int64)
-    numel = length(solution.t)::Int64
+function _post_proc_state_series(solution, ix::Int)
+    numel = length(solution.t)::Int
     state = zeros(Float64, numel)
     for i in 1:numel
         state[i] = solution.u[i][ix]
@@ -45,7 +45,7 @@ function post_proc_voltage_current_series(
 end
 
 """
-Function to obtain voltage using the bus index (and not the bus number). It receives the solution, the bus index and 
+Function to obtain voltage using the bus index (and not the bus number). It receives the solution, the bus index and
 the total number of buses.
 
 """

@@ -3,15 +3,16 @@ mutable struct SimulationInputs
     sys::PSY.System
     injectors_data::Vector{<:PSY.StaticInjection}
     counts::Base.ImmutableDict{Symbol, Int}
-    Ybus::SparseMatrixCSC{Complex{Float64}, Int64}
+    Ybus::SparseMatrixCSC{Complex{Float64}, Int}
     dyn_lines::Bool
     voltage_buses_ix::Vector{Int}
     current_buses_ix::Vector{Int}
-    global_index::Dict{String, Dict{Symbol, Int64}}
-    total_shunts::Dict{Int64, Float64}
+    global_index::Dict{String, Dict{Symbol, Int}}
+    total_shunts::Dict{Int, Float64}
     global_vars::Dict{Symbol, Number}
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
+    mass_matrix::SparseMatrixCSC{Float64, Int}
     aux_arrays::Dict{Int, Vector}
     tspan::NTuple{2, Float64}
 end
@@ -20,20 +21,18 @@ function SimulationInputs(;
     sys::PSY.System,
     dynamic_injectors = Vector{PSY.StaticInjection}(),
     counts::Base.ImmutableDict{Symbol, Int} = Base.ImmutableDict{Symbol, Int}(),
-    Ybus::SparseMatrixCSC{Complex{Float64}, Int64} = SparseMatrixCSC{
-        Complex{Float64},
-        Int64,
-    }(
+    Ybus::SparseMatrixCSC{Complex{Float64}, Int} = SparseMatrixCSC{Complex{Float64}, Int}(
         zeros(1, 1),
     ),
     dyn_lines::Bool = false,
     voltage_buses_ix::Vector{Int} = Vector{Int}(),
     current_buses_ix::Vector{Int} = Vector{Int}(),
-    global_index::Dict{String, Dict{Symbol, Int64}} = Dict{String, Dict{Symbol, Int64}}(),
-    total_shunts::Dict{Int64, Float64} = Dict{Int64, Float64}(),
+    global_index::Dict{String, Dict{Symbol, Int}} = Dict{String, Dict{Symbol, Int}}(),
+    total_shunts::Dict{Int, Float64} = Dict{Int, Float64}(),
     global_vars::Dict{Symbol, Number} = Dict{Symbol, Number}(),
     lookup::Dict{Int, Int} = Dict{Int, Int}(),
     DAE_vector::Vector{Bool} = Vector{Bool}(),
+    mass_matrix::SparseMatrixCSC{Float64, Int} = SparseMatrixCSC{Float64, Int}(zeros(1, 1)),
     aux_arrays::Dict{Int, Vector} = Dict{Int, Vector}(),
     tspan::NTuple{2, Float64} = (0.0, 0.0),
 )
@@ -50,6 +49,7 @@ function SimulationInputs(;
         global_vars,
         lookup,
         DAE_vector,
+        mass_matrix,
         aux_arrays,
         tspan,
     )

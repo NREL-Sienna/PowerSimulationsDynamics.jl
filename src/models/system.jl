@@ -26,7 +26,6 @@ function system!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float6
     #Network quantities
     V_r = @view x[1:bus_size]
     V_i = @view x[(bus_size + 1):bus_vars_count]
-    Sbase = PSY.get_base_power(sys)
     fill!(I_injections_r, 0.0)
     fill!(I_injections_i, 0.0)
 

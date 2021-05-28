@@ -33,7 +33,7 @@ end
 #### Turbine Governor Ports ####
 function Ports(::PSY.TurbineGov)
     state_input = [:ω]
-    inner_input = Vector{Int64}()
+    inner_input = Vector{Int}()
     return Ports(state_input, inner_input)
 end
 
@@ -50,7 +50,7 @@ end
 #### DC Source Ports ####
 function Ports(::PSY.DCSource)
     state_input = Vector{Symbol}()
-    inner_input = Vector{Int64}()
+    inner_input = Vector{Int}()
     return Ports(state_input, inner_input)
 end
 
