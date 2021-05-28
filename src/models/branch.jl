@@ -10,8 +10,8 @@ function branch!(
     current_i_from,
     current_r_to,
     current_i_to,
-    ix_range::UnitRange{Int64},
-    ode_range::UnitRange{Int64},
+    ix_range::UnitRange{Int},
+    ode_range::UnitRange{Int},
     branch::PSY.DynamicBranch,
     inputs::SimulationInputs,
 ) where {T <: Real}

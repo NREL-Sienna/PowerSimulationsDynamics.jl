@@ -1,12 +1,12 @@
 mutable struct Simulation
     status::BUILD_STATUS
-    problem::Union{Nothing, DiffEqBase.DAEProblem}
+    problem::Union{Nothing, SciMLBase.DEProblem}
     perturbations::Vector{<:Perturbation}
     x0_init::Vector{Float64}
     initialized::Bool
     tstops::Vector{Float64}
     callbacks::DiffEqBase.CallbackSet
-    solution::Union{Nothing, DiffEqBase.DAESolution}
+    solution::Union{Nothing, SciMLBase.AbstractODESolution}
     simulation_folder::String
     simulation_inputs::SimulationInputs
     console_level::Base.CoreLogging.LogLevel
@@ -278,7 +278,7 @@ function _get_Ybus(sys::PSY.System)
             ybus_update!(Ybus, br, lookup, -1.0)
         end
     else
-        Ybus = SparseMatrixCSC{Complex{Float64}, Int64}(zeros(n_buses, n_buses))
+        Ybus = SparseMatrixCSC{Complex{Float64}, Int}(zeros(n_buses, n_buses))
         lookup = Dict{Int.Int}()
     end
     return Ybus, lookup
@@ -286,7 +286,7 @@ end
 
 function _add_states_to_global!(
     global_state_index::MAPPING_DICT,
-    state_space_ix::Vector{Int64},
+    state_space_ix::Vector{Int},
     device::PSY.Device,
 )
     global_state_index[PSY.get_name(device)] = Dict{Symbol, Int}()

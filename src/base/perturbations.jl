@@ -9,9 +9,9 @@ mutable struct BranchTrip <: Perturbation
 end
 
 function ybus_update!(
-    ybus::SparseMatrixCSC{ComplexF64, Int64},
+    ybus::SparseMatrixCSC{ComplexF64, Int},
     b::PSY.ACBranch,
-    num_bus::Dict{Int64, Int64},
+    num_bus::Dict{Int, Int},
     mult::Float64 = 1.0,
 )
     arc = PSY.get_arc(b)
@@ -32,9 +32,9 @@ function ybus_update!(
 end
 
 function ybus_update!(
-    ybus::SparseMatrixCSC{ComplexF64, Int64},
+    ybus::SparseMatrixCSC{ComplexF64, Int},
     b::PSY.TapTransformer,
-    num_bus::Dict{Int64, Int64},
+    num_bus::Dict{Int, Int},
     mult::Float64 = 1.0,
 )
     arc = PSY.get_arc(b)
@@ -58,9 +58,9 @@ function ybus_update!(
 end
 
 function ybus_update!(
-    ybus::SparseMatrixCSC{ComplexF64, Int64},
+    ybus::SparseMatrixCSC{ComplexF64, Int},
     b::PSY.PhaseShiftingTransformer,
-    num_bus::Dict{Int64, Int64},
+    num_bus::Dict{Int, Int},
     mult::Float64 = 1.0,
 )
     arc = PSY.get_arc(b)
@@ -84,9 +84,9 @@ function ybus_update!(
 end
 
 function ybus_update!(
-    ybus::SparseMatrixCSC{ComplexF64, Int64},
+    ybus::SparseMatrixCSC{ComplexF64, Int},
     fa::PSY.FixedAdmittance,
-    num_bus::Dict{Int64, Int64},
+    num_bus::Dict{Int, Int},
     mult::Float64 = 1.0,
 )
     bus = PSY.get_bus(fa)
@@ -141,7 +141,7 @@ Use to model a change in the network by switching the underlying Ybus in the sim
 """
 mutable struct NetworkSwitch <: Perturbation
     time::Float64
-    Ybus::SparseMatrixCSC{Complex{Float64}, Int64}
+    Ybus::SparseMatrixCSC{Complex{Float64}, Int}
 end
 
 function get_affect(::PSY.System, pert::NetworkSwitch)
@@ -156,7 +156,7 @@ Use to model control reference changes in devices of the model
 mutable struct ControlReferenceChange <: Perturbation
     time::Float64
     device::PSY.DynamicInjection
-    signal_index::Int64
+    signal_index::Int
     ref_value::Float64
 end
 

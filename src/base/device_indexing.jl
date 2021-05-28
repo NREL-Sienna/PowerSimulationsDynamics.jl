@@ -4,7 +4,7 @@ function _attach_ports!(component::PSY.DynamicComponent)
 end
 
 function index_local_states(component::PSY.DynamicComponent, device_states::Vector{Symbol})
-    component_state_index = Vector{Int64}(undef, PSY.get_n_states(component))
+    component_state_index = Vector{Int}(undef, PSY.get_n_states(component))
     component_states = PSY.get_states(component)
     for (ix, s) in enumerate(component_states)
         component_state_index[ix] = findfirst(x -> x == s, device_states)
@@ -14,7 +14,7 @@ end
 
 function index_port_mapping!(component::PSY.DynamicComponent, device_states::Vector{Symbol})
     _attach_ports!(component)
-    index_component_inputs = Vector{Int64}()
+    index_component_inputs = Vector{Int}()
     for i in PSY.get_ext(component)[PORTS][:states]
         tmp = [(ix, var) for (ix, var) in enumerate(device_states) if var == i]
         isempty(tmp) && continue
@@ -29,8 +29,8 @@ Indexes the devices states and maps to the ports
 function make_device_index!(device::PSY.StaticInjection)
     dynamic_device = PSY.get_dynamic_injector(device)
     device_states = PSY.get_states(dynamic_device)
-    device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
-    input_port_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int64}}()
+    device_state_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int}}()
+    input_port_mapping = Dict{Type{<:PSY.DynamicComponent}, Vector{Int}}()
     _attach_inner_vars!(dynamic_device)
     _attach_control_refs!(device)
     dae_vector = collect(trues(PSY.get_n_states(dynamic_device)))

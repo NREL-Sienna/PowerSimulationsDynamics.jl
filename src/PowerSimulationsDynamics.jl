@@ -24,7 +24,7 @@ export get_reactivepower_series
 ####################################### Package Imports ####################################
 import Logging
 import InfrastructureSystems
-import DiffEqBase
+import SciMLBase
 import ForwardDiff
 import SparseArrays: SparseMatrixCSC
 import LinearAlgebra
@@ -105,7 +105,7 @@ include("initialization/inverter_components/init_outer.jl")
 #System Model
 include("models/system.jl")
 
-#PostProcessing 
+#PostProcessing
 include("post_processing/post_proc_common.jl")
 include("post_processing/post_proc_generator.jl")
 include("post_processing/post_proc_inverter.jl")
