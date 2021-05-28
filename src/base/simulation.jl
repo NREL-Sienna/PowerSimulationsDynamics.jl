@@ -190,7 +190,7 @@ function _build!(sim::Simulation; kwargs...)
     dx0 = zeros(var_count)
     _build_perturbations!(sim)
     _add_aux_arrays!(simulation_inputs, Float64)
-    sim.problem = DiffEqBase.DAEProblem(
+    sim.problem = SciMLBase.DAEProblem(
         system!,
         dx0,
         sim.x0_init,
@@ -342,7 +342,7 @@ function execute!(sim::Simulation, solver; kwargs...)
     reset_simulation = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_simulation
     _simulation_pre_step(sim, reset_simulation)
     sim.status = SIMULATION_STARTED
-    sim.solution = DiffEqBase.solve(
+    sim.solution = SciMLBase.solve(
         sim.problem,
         solver;
         callback = sim.callbacks,

@@ -25,6 +25,7 @@ export get_reactivepower_series
 import Logging
 import InfrastructureSystems
 import SciMLBase
+import DiffEqBase
 import ForwardDiff
 import SparseArrays: SparseMatrixCSC
 import LinearAlgebra

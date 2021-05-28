@@ -1,5 +1,5 @@
 #TODO: Make inmmutable later. Requires refactor of ThreePhase Fault callbacks
-mutable struct SimulationInputs <: SimulationInputs
+mutable struct SimulationInputs
     sys::PSY.System
     injectors_data::Vector{<:PSY.StaticInjection}
     counts::Base.ImmutableDict{Symbol, Int}
@@ -35,7 +35,12 @@ function SimulationInputs(;
     global_vars::Dict{Symbol, Number} = Dict{Symbol, Number}(),
     lookup::Dict{Int, Int} = Dict{Int, Int}(),
     DAE_vector::Vector{Bool} = Vector{Bool}(),
-    mass_matrix::SparseMatrixCSC{Float64, Int}(),
+    mass_matrix::SparseMatrixCSC{Float64, Int} = SparseMatrixCSC{
+        Complex{Float64},
+        Int,
+    }(
+        zeros(1, 1),
+    ),
     aux_arrays::Dict{Int, Vector} = Dict{Int, Vector}(),
     tspan::NTuple{2, Float64} = (0.0, 0.0),
 )

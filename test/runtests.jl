@@ -2,7 +2,7 @@ using PowerSimulationsDynamics
 using PowerSystems
 using Test
 using NLsolve
-using DiffEqBase
+using SciMLBase
 using Sundials
 using DelimitedFiles
 using InfrastructureSystems
