@@ -35,6 +35,7 @@ function SimulationInputs(;
     global_vars::Dict{Symbol, Number} = Dict{Symbol, Number}(),
     lookup::Dict{Int, Int} = Dict{Int, Int}(),
     DAE_vector::Vector{Bool} = Vector{Bool}(),
+    mass_matrix::SparseMatrixCSC{Float64, Int}(),
     aux_arrays::Dict{Int, Vector} = Dict{Int, Vector}(),
     tspan::NTuple{2, Float64} = (0.0, 0.0),
 )
@@ -51,6 +52,7 @@ function SimulationInputs(;
         global_vars,
         lookup,
         DAE_vector,
+        mass_matrix,
         aux_arrays,
         tspan,
     )
