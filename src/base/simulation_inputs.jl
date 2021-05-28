@@ -21,10 +21,7 @@ function SimulationInputs(;
     sys::PSY.System,
     dynamic_injectors = Vector{PSY.StaticInjection}(),
     counts::Base.ImmutableDict{Symbol, Int} = Base.ImmutableDict{Symbol, Int}(),
-    Ybus::SparseMatrixCSC{Complex{Float64}, Int} = SparseMatrixCSC{
-        Complex{Float64},
-        Int,
-    }(
+    Ybus::SparseMatrixCSC{Complex{Float64}, Int} = SparseMatrixCSC{Complex{Float64}, Int}(
         zeros(1, 1),
     ),
     dyn_lines::Bool = false,
@@ -35,12 +32,7 @@ function SimulationInputs(;
     global_vars::Dict{Symbol, Number} = Dict{Symbol, Number}(),
     lookup::Dict{Int, Int} = Dict{Int, Int}(),
     DAE_vector::Vector{Bool} = Vector{Bool}(),
-    mass_matrix::SparseMatrixCSC{Float64, Int} = SparseMatrixCSC{
-        Complex{Float64},
-        Int,
-    }(
-        zeros(1, 1),
-    ),
+    mass_matrix::SparseMatrixCSC{Float64, Int} = SparseMatrixCSC{Float64, Int}(zeros(1, 1)),
     aux_arrays::Dict{Int, Vector} = Dict{Int, Vector}(),
     tspan::NTuple{2, Float64} = (0.0, 0.0),
 )
