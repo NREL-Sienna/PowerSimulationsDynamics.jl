@@ -41,6 +41,7 @@ function test_sundials(solver)
     try
         #Define Simulation Problem
         sim = Simulation!(
+            ImplicitModel,
             path,
             threebus_sys, #system
             tspan, #time span

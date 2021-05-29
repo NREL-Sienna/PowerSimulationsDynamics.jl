@@ -12,6 +12,9 @@ export ControlReferenceChange
 export BranchTrip
 # export BusTrip
 
+export ImplicitModel
+export MassMatrixModel
+
 # Export for routines
 export small_signal_analysis
 export get_state_series
