@@ -1,8 +1,3 @@
-abstract type SimulationModel end
-
-struct MassMatrixModel <: SimulationModel end
-struct ImplicitModel <: SimulationModel end
-
 mutable struct Simulation{T <: SimulationModel}
     status::BUILD_STATUS
     problem::Union{Nothing, SciMLBase.DEProblem}
@@ -172,14 +167,12 @@ function build!(sim; file_mode = "w", kwargs...)
     return
 end
 
-function _build!(sim::Simulation; kwargs...)
+function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     simulation_system = get_system(sim.simulation_inputs)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
-    initialized = false
-    build!(sim.simulation_inputs)
-    simulation_inputs = sim.simulation_inputs
+    simulation_inputs = build!(sim.simulation_inputs, T)
     @debug "Simulation Inputs Created"
     var_count = get_variable_count(simulation_inputs)
 

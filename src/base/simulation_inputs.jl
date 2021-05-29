@@ -96,7 +96,7 @@ function _index_dynamic_lines!(
     return
 end
 
-function build!(inputs::SimulationInputs)
+function build!(inputs::SimulationInputs, ::Type{ImplicitModel})
     sys = get_system(inputs)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     DAE_vector = inputs.DAE_vector = collect(falses(n_buses * 2))
@@ -216,7 +216,130 @@ function build!(inputs::SimulationInputs)
     )
 
     @assert get_ω_sys(inputs) != -1
-    return
+    return inputs
+end
+
+function build!(inputs::SimulationInputs, ::Type{MassMatrixModel})
+    sys = get_system(inputs)
+    n_buses = length(PSY.get_components(PSY.Bus, sys))
+    DAE_vector = inputs.DAE_vector = collect(falses(n_buses * 2))
+    global_state_index = inputs.global_index = MAPPING_DICT()
+    state_space_ix = [n_buses * 2]
+    current_buses_ix = inputs.current_buses_ix = collect(1:n_buses)
+    static_bus_var_count = 2 * n_buses
+    voltage_buses_ix = inputs.voltage_buses_ix = Vector{Int}()
+    total_states = 0
+    first_dyn_branch_point = -1
+    branches_n_states = 0
+    global_vars =
+        inputs.global_vars = Dict{Symbol, Number}(
+            :ω_sys => 1.0,
+            :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
+        )
+    inputs.total_shunts = Dict{Int, Float64}()
+    found_ref_bus = false
+
+    #jd/TODO: Check logic here
+    inputs.Ybus, inputs.lookup = _get_Ybus(sys)
+    dyn_branches = PSY.get_components(PSY.DynamicBranch, sys)
+
+    if !(isempty(dyn_branches))
+        inputs.dyn_lines = true
+        first_dyn_branch_point = state_space_ix[1] + 1
+        for br in dyn_branches
+            _index_dynamic_lines!(inputs, br, n_buses)
+            total_states += PSY.get_n_states(br)
+            _add_states_to_global!(global_state_index, state_space_ix, br)
+        end
+
+        for (ix, val) in enumerate(DAE_vector[1:n_buses])
+            if val
+                #This V_ix should be V_number.
+                global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
+                total_states += 2
+                static_bus_var_count -= 2
+                push!(voltage_buses_ix, ix)
+                @assert static_bus_var_count >= 0
+            end
+        end
+        branches_n_states = state_space_ix[1] - n_buses * 2
+    else
+        inputs.dyn_lines = false
+        @debug("System doesn't contain Dynamic Branches")
+    end
+    unique!(voltage_buses_ix)
+    sources = PSY.get_components(PSY.Source, sys)
+    for s in sources
+        btype = PSY.get_bustype(PSY.get_bus(s))
+        if (btype == PSY.BusTypes.REF) && found_ref_bus
+            throw(
+                IS.ConflictingInputsError(
+                    "The system can't have more than one source or generator in the REF Bus",
+                ),
+            )
+        end
+        btype != PSY.BusTypes.REF && continue
+        global_vars[:ω_sys_index] = 0 #To define 0 if infinite source, bus_number otherwise,
+        found_ref_bus = true
+    end
+
+    dynamic_injection = PSY.get_components(
+        PSY.StaticInjection,
+        sys,
+        x -> PSY.get_dynamic_injector(x) !== nothing,
+    )
+
+    if isempty(dynamic_injection)
+        error("System doesn't contain any DynamicInjection devices")
+    end
+
+    for d in dynamic_injection
+        @debug PSY.get_name(d)
+        dynamic_device = PSY.get_dynamic_injector(d)
+        isempty(PSY.get_states(dynamic_device)) && continue
+        device_bus = PSY.get_bus(d)
+        btype = PSY.get_bustype(device_bus)
+        if (btype == PSY.BusTypes.REF) && found_ref_bus
+            throw(
+                IS.ConflictingInputsError(
+                    "The system can't have more than one source or generator in the REF Bus",
+                ),
+            )
+        end
+        state_types = make_device_index!(d)
+        device_n_states = PSY.get_n_states(dynamic_device)
+        DAE_vector = push!(DAE_vector, state_types...)
+        total_states += device_n_states
+        _add_states_to_global!(global_state_index, state_space_ix, dynamic_device)
+        push!(inputs.injectors_data, d)
+
+        btype != PSY.BusTypes.REF && continue
+        if typeof(dynamic_device) <: PSY.DynamicGenerator
+            ω_ix = global_state_index[PSY.get_name(d)][:ω]
+        elseif typeof(dynamic_device) <: PSY.DynamicInverter
+            #TO DO: Make it general for cases when ω is not a state (droop)!
+            ω_ix = global_state_index[PSY.get_name(d)][:ω_oc]
+        end
+        global_vars[:ω_sys_index] = ω_ix #To define 0 if infinite source, bus_number otherwise,
+        found_ref_bus = true
+    end
+    injection_n_states = state_space_ix[1] - branches_n_states - n_buses * 2
+    @assert total_states == state_space_ix[1] - static_bus_var_count
+    @debug total_states
+    setdiff!(current_buses_ix, voltage_buses_ix)
+
+    inputs.counts = Base.ImmutableDict(
+        :total_states => total_states,
+        :injection_n_states => injection_n_states,
+        :branches_n_states => branches_n_states,
+        :first_dyn_injection_pointer => 2 * n_buses + branches_n_states + 1,
+        :first_dyn_branch_point => first_dyn_branch_point,
+        :total_variables => total_states + static_bus_var_count,
+        :bus_count => n_buses,
+    )
+
+    @assert get_ω_sys(inputs) != -1
+    return inputs
 end
 
 get_system(inputs::SimulationInputs) = inputs.sys
