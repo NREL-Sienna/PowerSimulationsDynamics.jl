@@ -1,4 +1,9 @@
-mutable struct Simulation
+abstract type SimulationModel end
+
+struct MassMatrixModel <: SimulationModel end
+struct ImplicitModel <: SimulationModel end
+
+mutable struct Simulation{T <: SimulationModel}
     status::BUILD_STATUS
     problem::Union{Nothing, SciMLBase.DEProblem}
     perturbations::Vector{<:Perturbation}
@@ -14,14 +19,15 @@ mutable struct Simulation
     multimachine::Bool
 end
 
-function Simulation(;
+function Simulation(
+    ::Type{T};
     simulation_inputs,
     perturbations = Vector{Perturbation}(),
     simulation_folder::String = "",
     console_level = Logging.Warn,
     file_level = Logging.Debug,
-)
-    return Simulation(
+) where {T <: SimulationModel}
+    return Simulation{T}(
         BUILD_INCOMPLETE,
         nothing,
         perturbations,
@@ -39,23 +45,25 @@ function Simulation(;
 end
 
 function Simulation!(
-    simulation_folder::String,
+    ::Type{T},
     system::PSY.System,
+    simulation_folder::String,
     tspan::NTuple{2, Float64},
     perturbation::Perturbation;
     kwargs...,
-)
-    return Simulation!(simulation_folder, system, tspan, [perturbation]; kwargs...)
+) where {T <: SimulationModel}
+    return Simulation!(T, system, simulation_folder, tspan, [perturbation]; kwargs...)
 end
 
 function Simulation(
-    simulation_folder::String,
+    ::Type{T},
     system::PSY.System,
+    simulation_folder::String,
     tspan::NTuple{2, Float64},
     perturbation::Perturbation;
     kwargs...,
-)
-    return Simulation(simulation_folder, system, tspan, [perturbation]; kwargs...)
+) where {T <: SimulationModel}
+    return Simulation(T, system, simulation_folder, tspan, [perturbation]; kwargs...)
 end
 
 """
@@ -68,15 +76,17 @@ Builds the simulation object and conducts the indexing process. The initial cond
 - `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 """
 function Simulation!(
-    simulation_folder::String,
+    ::Type{T},
     system::PSY.System,
+    simulation_folder::String,
     tspan::NTuple{2, Float64},
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
     kwargs...,
-)
+) where {T <: SimulationModel}
     check_folder(simulation_folder)
     # Instantiates the Simulation object
     sim = Simulation(
+        T;
         simulation_inputs = SimulationInputs(sys = system, tspan = tspan),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
@@ -100,16 +110,18 @@ Initializes the simulations and builds the indexing. The input system is not mod
 - `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 """
 function Simulation(
-    simulation_folder::String,
+    ::Type{T},
     system::PSY.System,
+    simulation_folder::String,
     tspan::NTuple{2, Float64},
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
     kwargs...,
-)
+) where {T <: SimulationModel}
     check_folder(simulation_folder)
     simulation_system = deepcopy(system)
     # Instantiates the Simulation object
     sim = Simulation(
+        T;
         simulation_inputs = SimulationInputs(sys = simulation_system, tspan = tspan),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
