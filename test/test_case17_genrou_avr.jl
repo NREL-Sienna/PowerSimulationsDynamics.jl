@@ -19,8 +19,9 @@ path = (joinpath(pwd(), "test-psse-genrou-avr"))
 try
     #Define Simulation Problem
     sim = Simulation!(
-        path,
+        ImplicitModel,
         sys, #system
+        path,
         (0.0, 30.0), #time span
         BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault,
     ) #Type of Fault

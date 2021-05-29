@@ -19,8 +19,9 @@ path = (joinpath(pwd(), "test-psse-tgov1"))
 !isdir(path) && mkdir(path)
 try
     sim = Simulation!(
-        path,
+        ImplicitModel,
         sys, #system
+        path,
         (0.0, 20.0), #time span
         BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault
     )

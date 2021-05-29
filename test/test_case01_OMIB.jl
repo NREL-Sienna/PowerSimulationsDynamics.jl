@@ -24,8 +24,9 @@ path = (joinpath(pwd(), "test-01"))
 try
     #Define Simulation Problem
     sim = Simulation!(
-        path,
+        ImplicitModel,
         omib_sys, #system
+        path,
         (0.0, 20.0), #time span
         Ybus_change,
     ) #Type of Fault

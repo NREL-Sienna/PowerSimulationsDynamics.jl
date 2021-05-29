@@ -47,8 +47,9 @@ function test_genroe(dyr_file, csv_file, init_cond)
 
         #Define Simulation Problem
         sim = Simulation!(
-            path,
+            ImplicitModel,
             sys, #system
+            path,
             tspan, #time span
             Ybus_change,
         ) #Type of Fault

@@ -45,8 +45,9 @@ function test_gensal(dyr_file, csv_file, init_cond)
 
         #Define Simulation Problem
         sim = Simulation!(
-            path,
+            ImplicitModel,
             sys, #system
+            path,
             tspan, #time span
             BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault

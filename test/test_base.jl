@@ -20,8 +20,9 @@ Ybus_change = NetworkSwitch(
     try
         #Define Simulation Problem
         sim = Simulation(
-            path1,
+            ImplicitModel,
             omib_sys, #system
+            path1,
             (0.0, 30.0), #time span
             Ybus_change;
             system_to_file = true,
@@ -45,8 +46,9 @@ Ybus_change = NetworkSwitch(
     try
         #Define Simulation Problem
         sim = Simulation!(
-            path2,
+            ImplicitModel,
             omib_sys, #system
+            path2,
             (0.0, 30.0), #time span
             Ybus_change;
             system_to_file = true,
@@ -96,7 +98,7 @@ end
     end
 
     # Tests for all Dynamic Lines
-    sim = Simulation(pwd(), threebus_sys_dyns, (0.0, 10.0))
+    sim = Simulation(ImplicitModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
     sim_inputs = sim.simulation_inputs
     dae_vector = PSID.get_DAE_vector(sim_inputs)
     @test all(dae_vector)
@@ -110,7 +112,7 @@ end
     # Tests for dynamic lines with b = 0
     set_b!(dyn_branch12, (from = 0.0, to = 0.0))
     set_b!(dyn_branch23, (from = 0.0, to = 0.0))
-    sim = Simulation(pwd(), threebus_sys_dyns, (0.0, 10.0))
+    sim = Simulation(ImplicitModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
     sim_inputs = sim.simulation_inputs
     dae_vector = PSID.get_DAE_vector(sim_inputs)
     @test sum(.!dae_vector) == 6

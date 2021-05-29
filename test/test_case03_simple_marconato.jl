@@ -28,8 +28,9 @@ path = (joinpath(pwd(), "test-03"))
 try
     #Define Simulation Problem
     sim = Simulation!(
-        path,
+        ImplicitModel,
         threebus_sys, #system
+        path,
         tspan, #time span
         Ybus_change, #Type of Fault
     )

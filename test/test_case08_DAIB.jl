@@ -31,7 +31,13 @@ path = (joinpath(pwd(), "test-08"))
 !isdir(path) && mkdir(path)
 try
     #Define Simulation Problem
-    sim = Simulation!(path, omib_sys, tspan, Pref_change)
+    sim = Simulation!(
+        ImplicitModel,
+        omib_sys, # system
+        path,
+        tspan,
+        Pref_change,
+    )
 
     small_sig = small_signal_analysis(sim)
 
