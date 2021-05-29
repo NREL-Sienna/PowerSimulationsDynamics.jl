@@ -74,7 +74,8 @@ function initialize_inner!(
         Iq_cnv_ref = (
             kpv * (Vq_filter_ref - V_dq_filter[q]) +
             kiv * ξ_q +
-            cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
+            cf * ω_oc * V_dq_filter[d] +
+            kffi * I_dq_filter[q]
         )
 
         #References for Converter Output Voltage
@@ -83,7 +84,9 @@ function initialize_inner!(
             kffv * V_dq_filter[d] - kad * (V_dq_filter[d] - ϕ_d)
         )
         Vq_cnv_ref = (
-            kpc * (Iq_cnv_ref - I_dq_cnv[q]) + kic * γ_q + ω_oc * lf * I_dq_cnv[d] +
+            kpc * (Iq_cnv_ref - I_dq_cnv[q]) +
+            kic * γ_q +
+            ω_oc * lf * I_dq_cnv[d] +
             kffv * V_dq_filter[q] - kad * (V_dq_filter[q] - ϕ_q)
         )
 
