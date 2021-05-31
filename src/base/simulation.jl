@@ -289,7 +289,7 @@ function _get_Ybus(sys::PSY.System)
     return Ybus, lookup
 end
 
-function _add_states_to_global!(
+function add_states_to_global!(
     global_state_index::MAPPING_DICT,
     state_space_ix::Vector{Int},
     device::PSY.Device,
