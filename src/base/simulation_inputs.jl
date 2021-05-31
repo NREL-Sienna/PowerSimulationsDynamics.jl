@@ -124,7 +124,7 @@ function _dynamic_injection_inputs!(
         @debug PSY.get_name(d)
         _attach_control_refs!(d)
         dynamic_injector = PSY.get_dynamic_injector(d)
-        dynamic_injection_states += PSY.get_n_states(dynamic_device)
+        dynamic_injection_states += PSY.get_n_states(dynamic_injector)
         index_dynamic_injection(inputs, dynamic_injector, state_space_ix)
     end
     return dynamic_injection_states
@@ -141,12 +141,22 @@ function build!(inputs::SimulationInputs, ::Type{ImplicitModel})
     _static_injection_inputs!(inputs, state_space_ix, sys)
     injection_n_states = _dynamic_injection_inputs!(inputs, state_space_ix)
 
-    set_frequency_reference(inputs, sys)
+    set_frequency_reference!(inputs, sys)
 
     total_states = branches_n_states + injection_n_states
     @assert injection_n_states == state_space_ix[1] - branches_n_states - n_buses * 2
     @assert total_states == state_space_ix[1] - static_bus_var_count
     @debug total_states
+
+    inputs.counts = Base.ImmutableDict(
+        :total_states => total_states,
+        :injection_n_states => injection_n_states,
+        :branches_n_states => branches_n_states,
+        :first_dyn_injection_pointer => 2 * n_buses + branches_n_states + 1,
+        :first_dyn_branch_point => 2 * n_buses + 1,
+        :total_variables => total_states + static_bus_var_count,
+        :bus_count => n_buses,
+    )
 
     @assert get_ω_sys(inputs) != -1
 
