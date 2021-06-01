@@ -77,7 +77,6 @@ function index_dynamic_injection(
     return
 end
 
-
 function _attach_inner_vars!(
     dynamic_device::PSY.DynamicGenerator,
     ::Type{T} = Real,

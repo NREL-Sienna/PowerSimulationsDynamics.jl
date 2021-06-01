@@ -19,10 +19,7 @@ struct SimulationInputs
     tspan::NTuple{2, Float64}
 end
 
-function SimulationInputs(;
-    sys::PSY.System,
-    tspan::NTuple{2, Float64} = (0.0, 0.0),
-)
+function SimulationInputs(; sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0.0))
     injector_data = PSY.get_components(
         PSY.StaticInjection,
         sys,
@@ -55,7 +52,8 @@ function SimulationInputs(;
     counts = Base.ImmutableDict(
         :injection_n_states => injector_state_count,
         :branches_n_states => branch_state_counts,
-        :first_dyn_injection_pointer => isempty(dynamic_branches) ? 0 : 2 * n_buses + branch_state_counts + 1,
+        :first_dyn_injection_pointer =>
+            isempty(dynamic_branches) ? 0 : 2 * n_buses + branch_state_counts + 1,
         :first_dyn_branch_point => isempty(dynamic_branches) ? 0 : 2 * n_buses + 1,
         :total_variables => var_count,
         :bus_count => n_buses,
