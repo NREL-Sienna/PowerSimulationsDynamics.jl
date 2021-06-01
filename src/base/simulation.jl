@@ -246,18 +246,15 @@ function _build!(sim::Simulation{MassMatrixModel}; kwargs...)
     _initialize_simulation!(sim::Simulation; kwargs...)
     _build_perturbations!(sim)
     simulation_inputs = get_simulation_inputs(sim)
-    add_aux_arrays!(simulation_inputs, Float64)
-    var_count = get_variable_count(simulation_inputs)
-    dx0 = zeros(var_count)
+    add_aux_arrays!(simulation_inputs, Real)
     sim.problem = SciMLBase.ODEProblem(
         SciMLBase.ODEFunction(
             system_mass_matrix!,
             mass_matrix = get_mass_matrix(simulation_inputs),
         ),
-        dx0,
         sim.x0_init,
         get_tspan(sim.simulation_inputs),
-        simulation_inputs,
+        simulation_inputs;
         kwargs...,
     )
     sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
