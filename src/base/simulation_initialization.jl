@@ -130,10 +130,62 @@ function _calculate_initial_conditions!(sim::Simulation, inputs::SimulationInput
     return NLsolve.converged(sys_solve)
 end
 
-function calculate_initial_conditions!(sim::Simulation{ImplicitModel}, inputs::SimulationInputs)
+function calculate_initial_conditions!(
+    sim::Simulation{ImplicitModel},
+    inputs::SimulationInputs,
+)
     return _calculate_initial_conditions!(sim, inputs)
 end
 
-function calculate_initial_conditions!(sim::Simulation{MassMatrixModel}, inputs::SimulationInputs)
+function calculate_initial_conditions!(
+    sim::Simulation{MassMatrixModel},
+    inputs::SimulationInputs,
+)
     return _calculate_initial_conditions!(sim, inputs)
+end
+
+"""
+Returns a Dictionary with the resulting initial conditions of the simulation
+"""
+function get_initial_conditions(sim::Simulation)
+    system = get_system(sim)
+    bus_size = get_bus_count(sim.simulation_inputs)
+    V_R = Dict{Int, Float64}()
+    V_I = Dict{Int, Float64}()
+    Vm = Dict{Int, Float64}()
+    θ = Dict{Int, Float64}()
+    for bus in PSY.get_components(PSY.Bus, system)
+        bus_n = PSY.get_number(bus)
+        bus_ix = get_lookup(sim.simulation_inputs)[bus_n]
+        V_R[bus_n] = sim.x0_init[bus_ix]
+        V_I[bus_n] = sim.x0_init[bus_ix + bus_size]
+        Vm[bus_n] = sqrt(sim.x0_init[bus_ix]^2 + sim.x0_init[bus_ix + bus_size]^2)
+        θ[bus_n] = angle(sim.x0_init[bus_ix] + sim.x0_init[bus_ix + bus_size] * 1im)
+    end
+    results = Dict{String, Any}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
+    for device in PSY.get_components(PSY.DynamicInjection, system)
+        states = PSY.get_states(device)
+        name = PSY.get_name(device)
+        global_index = get_global_index(sim.simulation_inputs)[name]
+        x0_device = Dict{Symbol, Float64}()
+        for s in states
+            x0_device[s] = sim.x0_init[global_index[s]]
+        end
+        results[name] = x0_device
+    end
+    dyn_branches = PSY.get_components(PSY.DynamicBranch, system)
+    if !isempty(dyn_branches)
+        for br in dyn_branches
+            states = PSY.get_states(br)
+            name = PSY.get_name(br)
+            global_index = get_global_index(sim.simulation_inputs)[name]
+            x0_br = Dict{Symbol, Float64}()
+            for s in states
+                x0_br[s] = sim.x0_init[global_index[s]]
+            end
+            printed_name = "Line " * name
+            results[printed_name] = x0_br
+        end
+    end
+    return results
 end

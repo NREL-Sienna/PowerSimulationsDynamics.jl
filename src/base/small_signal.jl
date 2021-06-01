@@ -18,10 +18,13 @@ function _determine_stability(vals::Vector{Complex{Float64}})
     return true
 end
 
-function _calculate_forwardiff_jacobian(sim::Simulation, x_eval::Vector{Float64})
+function _calculate_forwardiff_jacobian(
+    sim::Simulation{ImplicitModel},
+    x_eval::Vector{Float64},
+)
     var_count = get_variable_count(sim.simulation_inputs)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    sysf! = (out, x) -> system!(
+    sysf! = (out, x) -> system_implicit!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
         x,              #states
