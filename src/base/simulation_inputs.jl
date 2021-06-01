@@ -156,7 +156,6 @@ function build!(inputs::SimulationInputs, ::Type{ImplicitModel})
 
     IS.@assert_op injection_n_states == state_space_ix[1] - branches_n_states - n_buses * 2
     IS.@assert_op n_buses * 2 - static_bus_var_count >= 0
-
     IS.@assert_op length(inputs.DAE_vector) == state_space_ix[1]
 
     inputs.counts = Base.ImmutableDict(
