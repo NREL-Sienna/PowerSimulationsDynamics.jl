@@ -67,7 +67,7 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
         invalid_initial_guess = String[]
         for (device, states) in get_global_index(sim)
             for state in states
-                if p.second ∈ i
+                if state.second ∈ i
                     push!(invalid_initial_guess, "$device - $(p.first)")
                 end
             end
@@ -152,7 +152,7 @@ function get_initial_conditions(sim::Simulation)
         name = PSY.get_name(device)
         global_index = get_global_index(sim.simulation_inputs)[name]
         x0_device = Dict{Symbol, Float64}()
-        for (i, s) in enumerate(states)
+        for s in states
             x0_device[s] = sim.x0_init[global_index[s]]
         end
         results[name] = x0_device
@@ -164,7 +164,7 @@ function get_initial_conditions(sim::Simulation)
             name = PSY.get_name(br)
             global_index = get_global_index(sim.simulation_inputs)[name]
             x0_br = Dict{Symbol, Float64}()
-            for (i, s) in enumerate(states)
+            for s in states
                 x0_br[s] = sim.x0_init[global_index[s]]
             end
             printed_name = "Line " * name

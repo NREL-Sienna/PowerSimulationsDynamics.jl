@@ -52,8 +52,7 @@ function SimulationInputs(; sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0
     counts = Base.ImmutableDict(
         :injection_n_states => injector_state_count,
         :branches_n_states => branch_state_counts,
-        :first_dyn_injection_pointer =>
-            isempty(dynamic_branches) ? 0 : 2 * n_buses + branch_state_counts + 1,
+        :first_dyn_injection_pointer => 2 * n_buses + branch_state_counts + 1,
         :first_dyn_branch_point => isempty(dynamic_branches) ? 0 : 2 * n_buses + 1,
         :total_variables => var_count,
         :bus_count => n_buses,
@@ -124,7 +123,7 @@ function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Number
 end
 
 function _change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
-    for d in PSY.get_dynamic_injector(get_injectors_data(inputs))
+    for d in PSY.get_dynamic_injector.(get_injectors_data(inputs))
         _attach_inner_vars!(d, T)
     end
     add_aux_arrays!(inputs, Real)
