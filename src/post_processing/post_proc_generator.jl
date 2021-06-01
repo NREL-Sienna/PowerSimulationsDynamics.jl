@@ -11,7 +11,7 @@ function compute_output_current(
 ) where {G <: PSY.DynamicGenerator}
 
     #Obtain Data
-    sys = get_system(sim.simulation_inputs)
+    sys = get_system(sim)
 
     #Get machine
     machine = PSY.get_machine(dynamic_device)

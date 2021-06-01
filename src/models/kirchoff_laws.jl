@@ -17,8 +17,7 @@ function voltage_kirchoff(inputs::SimulationInputs, V_r, V_i, dx)
     I_balance = get_aux_arrays(inputs)[6]
     voltage_buses_ix = get_voltage_buses_ix(inputs)
     isempty(voltage_buses_ix) && return
-    sys = get_system(inputs)
-    sys_f = PSY.get_frequency(sys)
+    sys_f = get_base_frequency(inputs)
     ω_b = 2.0 * π * sys_f
     n_buses = get_bus_count(inputs)
     shunts = get_total_shunts(inputs)

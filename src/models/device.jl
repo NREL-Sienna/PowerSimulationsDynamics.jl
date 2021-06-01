@@ -10,14 +10,12 @@ function device!(
     dynamic_device::DynG,
     inputs::SimulationInputs,
 ) where {DynG <: PSY.DynamicGenerator}
-    sys = get_system(inputs)
     #Obtain local device states
-    n_states = PSY.get_n_states(dynamic_device)
     device_states = @view x[ix_range]
 
     #Obtain references
-    sys_Sbase = PSY.get_base_power(sys)
-    sys_f0 = PSY.get_frequency(sys)
+    sys_Sbase = get_base_power(inputs)
+    sys_f0 = get_base_frequency(inputs)
     sys_ω = get_ω_sys(inputs)
 
     #Update Voltage data
@@ -62,10 +60,9 @@ function device!(
     current_r,
     current_i,
     device::PSY.Source,
-    inputs::SimulationInputs,
+    ::SimulationInputs,
 )
-    sys = get_system(inputs)
-    mdl_source!(voltage_r, voltage_i, current_r, current_i, device, sys)
+    mdl_source!(voltage_r, voltage_i, current_r, current_i, device)
     return
 end
 
@@ -75,10 +72,9 @@ function device!(
     current_r,
     current_i,
     device::PSY.PowerLoad,
-    inputs::SimulationInputs,
+    ::SimulationInputs,
 )
-    sys = get_system(inputs)
-    mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device, sys)
+    mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device)
     return
 end
 
@@ -94,14 +90,12 @@ function device!(
     dynamic_device::DynI,
     inputs::SimulationInputs,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
-    sys = get_system(inputs)
     #Obtain local device states
-    n_states = PSY.get_n_states(dynamic_device)
     device_states = @view x[ix_range]
 
     #Obtain references
-    Sbase = PSY.get_base_power(sys)
-    sys_f0 = PSY.get_frequency(sys)
+    Sbase = get_base_power(inputs)
+    sys_f0 = get_base_frequency(inputs)
     sys_ω = get_ω_sys(inputs)
 
     #Update Voltage data
