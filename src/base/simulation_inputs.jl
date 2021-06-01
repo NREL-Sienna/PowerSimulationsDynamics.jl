@@ -66,6 +66,19 @@ function SimulationInputs(;
     )
 end
 
+
+function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
+    @debug "Auxiliary Arrays created with Type $(T)"
+    bus_count = get_bus_count(inputs)
+    get_aux_arrays(inputs)[1] = collect(zeros(T, bus_count))                       #I_injections_r
+    get_aux_arrays(inputs)[2] = collect(zeros(T, bus_count))                       #I_injections_i
+    get_aux_arrays(inputs)[3] = collect(zeros(T, get_n_injection_states(inputs)))  #injection_ode
+    get_aux_arrays(inputs)[4] = collect(zeros(T, get_n_branches_states(inputs)))   #branches_ode
+    get_aux_arrays(inputs)[5] = collect(zeros(Complex{T}, bus_count))              #I_bus
+    get_aux_arrays(inputs)[6] = collect(zeros(T, 2 * bus_count))                   #I_balance
+    return
+end
+
 function _init_DAE_vector!(inputs::SimulationInputs, n_buses::Int)
     push!(inputs.DAE_vector, collect(falses(n_buses * 2))...)
 end
@@ -80,27 +93,25 @@ function _dynamic_lines_inputs!(
     if inputs.dyn_lines
         global_state_index = inputs.global_index
         for br in get_dynamic_branches(inputs)
-            _index_dynamic_lines!(inputs, br, n_buses)
-            total_states += PSY.get_n_states(br)
+            index_dynamic_lines!(inputs, br, n_buses)
             add_states_to_global!(global_state_index, state_space_ix, br)
+            branches_n_states += PSY.get_n_states(br)
         end
 
         for (ix, val) in enumerate(inputs.DAE_vector[1:n_buses])
             if val
                 #This V_ix should be V_number.
                 global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
-                total_states += 2
                 static_bus_var_count -= 2
                 push!(inputs.voltage_buses_ix, ix)
                 @assert static_bus_var_count >= 0
             end
         end
-        branches_n_states = state_space_ix[1] - n_buses * 2
         unique!(inputs.voltage_buses_ix)
+        setdiff!(inputs.current_buses_ix, inputs.voltage_buses_ix)
     else
         @debug("System doesn't contain Dynamic Branches")
     end
-    setdiff!(inputs.current_buses_ix, inputs.voltage_buses_ix)
     return branches_n_states, static_bus_var_count
 end
 
@@ -142,23 +153,22 @@ function build!(inputs::SimulationInputs, ::Type{ImplicitModel})
     injection_n_states = _dynamic_injection_inputs!(inputs, state_space_ix)
 
     set_frequency_reference!(inputs, sys)
+    IS.@assert_op get_ω_sys(inputs) != -1
 
-    total_states = branches_n_states + injection_n_states
-    @assert injection_n_states == state_space_ix[1] - branches_n_states - n_buses * 2
-    @assert total_states == state_space_ix[1] - static_bus_var_count
-    @debug total_states
+    IS.@assert_op injection_n_states == state_space_ix[1] - branches_n_states - n_buses * 2
+    IS.@assert_op n_buses * 2 - static_bus_var_count >= 0
 
     inputs.counts = Base.ImmutableDict(
-        :total_states => total_states,
+        :total_states => state_space_ix[1] - static_bus_var_count,
         :injection_n_states => injection_n_states,
         :branches_n_states => branches_n_states,
         :first_dyn_injection_pointer => 2 * n_buses + branches_n_states + 1,
         :first_dyn_branch_point => 2 * n_buses + 1,
-        :total_variables => total_states + static_bus_var_count,
+        :total_variables => state_space_ix[1],
         :bus_count => n_buses,
     )
 
-    @assert get_ω_sys(inputs) != -1
+    @debug inputs.counts
 
     return inputs
 end
