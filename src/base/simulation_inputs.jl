@@ -98,6 +98,7 @@ get_global_vars(inputs::SimulationInputs) = inputs.global_vars
 get_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
 get_lookup(inputs::SimulationInputs) = inputs.lookup
 get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
+get_mass_matrix(inputs::SimulationInputs) = inputs.mass_matrix
 get_aux_arrays(inputs::SimulationInputs) = inputs.aux_arrays
 get_tspan(inputs::SimulationInputs) = inputs.tspan
 
