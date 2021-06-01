@@ -1,6 +1,7 @@
 mutable struct Simulation{T <: SimulationModel}
     status::BUILD_STATUS
     problem::Union{Nothing, SciMLBase.DEProblem}
+    sys::PSY.System
     perturbations::Vector{<:Perturbation}
     x0_init::Vector{Float64}
     initialized::Bool
@@ -14,8 +15,11 @@ mutable struct Simulation{T <: SimulationModel}
     multimachine::Bool
 end
 
+get_system(sim::Simulation) = sim.sys
+
 function Simulation(
-    ::Type{T};
+    ::Type{T},
+    sys::PSY.System;
     simulation_inputs,
     perturbations = Vector{Perturbation}(),
     simulation_folder::String = "",
@@ -25,6 +29,7 @@ function Simulation(
     return Simulation{T}(
         BUILD_INCOMPLETE,
         nothing,
+        sys,
         perturbations,
         Vector{Float64}(),
         false,
@@ -81,7 +86,8 @@ function Simulation!(
     check_folder(simulation_folder)
     # Instantiates the Simulation object
     sim = Simulation(
-        T;
+        T,
+        system;
         simulation_inputs = SimulationInputs(sys = system, tspan = tspan),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
@@ -116,7 +122,8 @@ function Simulation(
     simulation_system = deepcopy(system)
     # Instantiates the Simulation object
     sim = Simulation(
-        T;
+        T,
+        simulation_system;
         simulation_inputs = SimulationInputs(sys = simulation_system, tspan = tspan),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
@@ -130,12 +137,10 @@ function Simulation(
     return sim
 end
 
-function reset!(sim::Simulation)
+function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
-    sim.simulation_inputs = SimulationInputs(
-        sys = get_system(sim.simulation_inputs),
-        tspan = sim.simulation_inputs.tspan,
-    )
+    sim.simulation_inputs =
+        SimulationInputs(sys = get_system(sim), tspan = sim.simulation_inputs.tspan)
     build!(sim; file_mode = "a")
     @info "Simulation reset to status $(sim.status)"
     return
@@ -168,11 +173,11 @@ function build!(sim; file_mode = "w", kwargs...)
 end
 
 function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
-    simulation_system = get_system(sim.simulation_inputs)
+    simulation_system = get_system(sim)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
-    simulation_inputs = build!(sim.simulation_inputs, T)
+    simulation_inputs = build!(sim.simulation_inputs, T, simulation_system)
     @debug "Simulation Inputs Created"
     var_count = get_variable_count(simulation_inputs)
 
@@ -188,7 +193,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
         sim.initialized = calculate_initial_conditions!(sim, simulation_inputs)
         if sim.status == BUILD_FAILED
             @error("Simulation Build Failed. Simulations status = $(sim.status)")
-            return nothing
+            return
         end
     end
 
@@ -207,7 +212,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
     sim.status = BUILT
     @info "Completed Build Successfully. Simulations status = $(sim.status)"
-    return nothing
+    return
 end
 
 function _build_perturbations!(sim::Simulation)
@@ -216,7 +221,7 @@ function _build_perturbations!(sim::Simulation)
         @debug "The simulation has no perturbations"
         return DiffEqBase.CallbackSet(), [0.0]
     end
-    system = get_system(sim.simulation_inputs)
+    system = get_system(sim)
     perturbations = sim.perturbations
     perturbations_count = length(perturbations)
     callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
@@ -231,89 +236,6 @@ function _build_perturbations!(sim::Simulation)
     sim.tstops = tstops
     sim.callbacks = DiffEqBase.CallbackSet((), tuple(callback_vector...))
     return
-end
-
-function _attach_inner_vars!(
-    dynamic_device::PSY.DynamicGenerator,
-    ::Type{T} = Real,
-) where {T <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(T, 9)
-    return
-end
-
-function _attach_inner_vars!(
-    dynamic_device::PSY.DynamicInverter,
-    ::Type{T} = Real,
-) where {T <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(T, 14)
-    return
-end
-
-function _attach_control_refs!(device::PSY.StaticInjection)
-    dynamic_device = PSY.get_dynamic_injector(device)
-    dynamic_device.ext[CONTROL_REFS] = [
-        PSY.get_V_ref(dynamic_device),
-        PSY.get_ω_ref(dynamic_device),
-        PSY.get_P_ref(dynamic_device),
-        PSY.get_reactive_power(device),
-    ]
-    return
-end
-
-function _get_Ybus(sys::PSY.System)
-    n_buses = length(PSY.get_components(PSY.Bus, sys))
-    dyn_lines = PSY.get_components(PSY.DynamicBranch, sys)
-    if !isempty(PSY.get_components(PSY.ACBranch, sys))
-        Ybus_ = PSY.Ybus(sys)
-        Ybus = Ybus_[:, :]
-        lookup = Ybus_.lookup[1]
-        for br in dyn_lines
-            ybus_update!(Ybus, br, lookup, -1.0)
-        end
-    else
-        Ybus = SparseMatrixCSC{Complex{Float64}, Int}(zeros(n_buses, n_buses))
-        lookup = Dict{Int.Int}()
-    end
-    return Ybus, lookup
-end
-
-function add_states_to_global!(
-    global_state_index::MAPPING_DICT,
-    state_space_ix::Vector{Int},
-    device::PSY.Device,
-)
-    global_state_index[PSY.get_name(device)] = Dict{Symbol, Int}()
-    for s in PSY.get_states(device)
-        state_space_ix[1] += 1
-        global_state_index[PSY.get_name(device)][s] = state_space_ix[1]
-    end
-
-    return
-end
-
-function _get_internal_mapping(
-    dynamic_device::PSY.DynamicInjection,
-    key::AbstractString,
-    ty::Type{T},
-) where {T <: PSY.DynamicComponent}
-    device_index = PSY.get_ext(dynamic_device)[key]
-    val = get(device_index, ty, nothing)
-    @assert !isnothing(val)
-    return val
-end
-
-function get_local_state_ix(
-    dynamic_device::PSY.DynamicInjection,
-    ty::Type{T},
-) where {T <: PSY.DynamicComponent}
-    return _get_internal_mapping(dynamic_device, LOCAL_STATE_MAPPING, ty)
-end
-
-function get_input_port_ix(
-    dynamic_device::PSY.DynamicInjection,
-    ty::Type{T},
-) where {T <: PSY.DynamicComponent}
-    return _get_internal_mapping(dynamic_device, INPUT_PORT_MAPPING, ty)
 end
 
 function _simulation_pre_step(sim::Simulation, reset_simulation::Bool)
@@ -347,14 +269,5 @@ function execute!(sim::Simulation, solver; kwargs...)
     else
         sim.status = SIMULATION_FAILED
     end
-    return
-end
-
-function _change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
-    sys = get_system(inputs)
-    for d in PSY.get_components(PSY.DynamicInjection, sys)
-        _attach_inner_vars!(d, T)
-    end
-    add_aux_arrays!(inputs, Real)
     return
 end

@@ -1,6 +1,6 @@
 function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs)
     @debug "Start state intialization routine"
-    sys = get_system(inputs)
+    sys = get_system(sim)
     initial_guess = sim.x0_init
     res = PSY.solve_powerflow!(sys)
     if !res
@@ -12,12 +12,8 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
 
     @debug "Setting up initilization indexing"
     bus_size = get_bus_count(inputs)
-    bus_vars_count = 2 * bus_size
-    bus_range = 1:bus_vars_count
     injection_start = get_injection_pointer(inputs)
-    injection_count = 1
     branches_start = get_branches_pointer(inputs)
-    branches_count = 1
 
     @debug "Updating Voltage guess"
     for bus in PSY.get_components(PSY.Bus, sys)
@@ -42,9 +38,6 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
     for d in get_injectors_data(inputs)
         dynamic_device = PSY.get_dynamic_injector(d)
         @debug PSY.get_name(d) typeof(d) typeof(dynamic_device)
-        bus = PSY.get_bus(d)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = get_lookup(inputs)[bus_n]
         n_states = PSY.get_n_states(dynamic_device)
         ix_range = range(injection_start, length = n_states)
         injection_start = injection_start + n_states
@@ -58,12 +51,7 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
     if !isempty(dyn_branches)
         for br in dyn_branches
             @debug PSY.get_name(br) typeof(br)
-            arc = PSY.get_arc(br)
             n_states = PSY.get_n_states(br)
-            from_bus_number = PSY.get_number(arc.from)
-            to_bus_number = PSY.get_number(arc.to)
-            bus_ix_from = get_lookup(inputs)[from_bus_number]
-            bus_ix_to = get_lookup(inputs)[to_bus_number]
             ix_range = range(branches_start, length = n_states)
             branches_start = branches_start + n_states
             x0_branch = initialize_device!(br)
@@ -79,7 +67,7 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
         invalid_initial_guess = String[]
         for (device, states) in get_global_index(sim)
             for state in states
-                if p.second ∈ i
+                if state.second ∈ i
                     push!(invalid_initial_guess, "$device - $(p.first)")
                 end
             end
@@ -144,7 +132,7 @@ end
 Returns a Dictionary with the resulting initial conditions of the simulation
 """
 function get_initial_conditions(sim::Simulation)
-    system = get_system(sim.simulation_inputs)
+    system = get_system(sim)
     bus_size = get_bus_count(sim.simulation_inputs)
     V_R = Dict{Int, Float64}()
     V_I = Dict{Int, Float64}()
@@ -164,7 +152,7 @@ function get_initial_conditions(sim::Simulation)
         name = PSY.get_name(device)
         global_index = get_global_index(sim.simulation_inputs)[name]
         x0_device = Dict{Symbol, Float64}()
-        for (i, s) in enumerate(states)
+        for s in states
             x0_device[s] = sim.x0_init[global_index[s]]
         end
         results[name] = x0_device
@@ -176,7 +164,7 @@ function get_initial_conditions(sim::Simulation)
             name = PSY.get_name(br)
             global_index = get_global_index(sim.simulation_inputs)[name]
             x0_br = Dict{Symbol, Float64}()
-            for (i, s) in enumerate(states)
+            for s in states
                 x0_br[s] = sim.x0_init[global_index[s]]
             end
             printed_name = "Line " * name

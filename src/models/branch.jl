@@ -15,14 +15,11 @@ function branch!(
     branch::PSY.DynamicBranch,
     inputs::SimulationInputs,
 ) where {T <: Real}
-    sys = get_system(inputs)
     #Obtain local device states
-    n_states = PSY.get_n_states(branch)
     device_states = @view x[ix_range]
 
     #Obtain references
-    Sbase = PSY.get_base_power(sys)
-    sys_f = PSY.get_frequency(sys)
+    sys_f = get_base_frequency(inputs)
 
     mdl_line_ode!(
         device_states,

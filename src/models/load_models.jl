@@ -1,11 +1,4 @@
-function mdl_Zload!(
-    voltage_r,
-    voltage_i,
-    current_r,
-    current_i,
-    device::PSY.PowerLoad,
-    sys::PSY.System,
-)
+function mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device::PSY.PowerLoad)
 
     #Load squared voltage magnitude at steady state
     bus = PSY.get_bus(device)

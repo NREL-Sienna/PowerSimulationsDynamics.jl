@@ -77,6 +77,58 @@ function index_dynamic_injection(
     return
 end
 
+function _attach_inner_vars!(
+    dynamic_device::PSY.DynamicGenerator,
+    ::Type{T} = Real,
+) where {T <: Real}
+    dynamic_device.ext[INNER_VARS] = zeros(T, 9)
+    return
+end
+
+function _attach_inner_vars!(
+    dynamic_device::PSY.DynamicInverter,
+    ::Type{T} = Real,
+) where {T <: Real}
+    dynamic_device.ext[INNER_VARS] = zeros(T, 14)
+    return
+end
+
+function _attach_control_refs!(device::PSY.StaticInjection)
+    dynamic_device = PSY.get_dynamic_injector(device)
+    dynamic_device.ext[CONTROL_REFS] = [
+        PSY.get_V_ref(dynamic_device),
+        PSY.get_ω_ref(dynamic_device),
+        PSY.get_P_ref(dynamic_device),
+        PSY.get_reactive_power(device),
+    ]
+    return
+end
+
+function _get_internal_mapping(
+    dynamic_device::PSY.DynamicInjection,
+    key::AbstractString,
+    ty::Type{T},
+) where {T <: PSY.DynamicComponent}
+    device_index = PSY.get_ext(dynamic_device)[key]
+    val = get(device_index, ty, nothing)
+    @assert !isnothing(val)
+    return val
+end
+
+function get_local_state_ix(
+    dynamic_device::PSY.DynamicInjection,
+    ty::Type{T},
+) where {T <: PSY.DynamicComponent}
+    return _get_internal_mapping(dynamic_device, LOCAL_STATE_MAPPING, ty)
+end
+
+function get_input_port_ix(
+    dynamic_device::PSY.DynamicInjection,
+    ty::Type{T},
+) where {T <: PSY.DynamicComponent}
+    return _get_internal_mapping(dynamic_device, INPUT_PORT_MAPPING, ty)
+end
+
 """
 Default implementation to index the devices states and maps to the ports
 """

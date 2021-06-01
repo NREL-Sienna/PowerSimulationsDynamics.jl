@@ -11,7 +11,7 @@ function compute_output_current(
 ) where {G <: PSY.DynamicInverter}
 
     #Obtain Data
-    sys = get_system(sim.simulation_inputs)
+    sys = get_system(sim)
 
     #Get machine
     filt = PSY.get_filter(dynamic_device)

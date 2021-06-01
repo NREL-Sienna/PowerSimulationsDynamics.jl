@@ -20,10 +20,8 @@ function _determine_stability(vals::Vector{Complex{Float64}})
 end
 
 function _calculate_forwardiff_jacobian(sim::Simulation, x_eval::Vector{Float64})
-    system = get_system(sim.simulation_inputs)
     var_count = get_variable_count(sim.simulation_inputs)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    bus_count = get_bus_count(sim.simulation_inputs)
     sysf! = (out, x) -> system!(
         out,            #output of the function
         dx0,            #derivatives equal to zero

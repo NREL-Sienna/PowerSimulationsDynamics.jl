@@ -1,6 +1,6 @@
 function get_init_values_for_comparison(sim::Simulation)
     bus_size = PSID.get_bus_count(sim.simulation_inputs)
-    system = PSID.get_system(sim.simulation_inputs)
+    system = PSID.get_system(sim)
     V_R = Vector{Float64}(undef, bus_size)
     V_I = Vector{Float64}(undef, bus_size)
     Vm = Vector{Float64}(undef, bus_size)

@@ -1,13 +1,5 @@
-function mdl_source!(
-    voltage_r,
-    voltage_i,
-    current_r,
-    current_i,
-    device::PSY.Source,
-    sys::PSY.System,
-)
+function mdl_source!(voltage_r, voltage_i, current_r, current_i, device::PSY.Source)
     #Load device parameters
-    bus = PSY.get_bus(device)
     V_R = PSY.get_internal_voltage(device) * cos(PSY.get_internal_angle(device))
     V_I = PSY.get_internal_voltage(device) * sin(PSY.get_internal_angle(device))
     R_th = PSY.get_R_th(device)
