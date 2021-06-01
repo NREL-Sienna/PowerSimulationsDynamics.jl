@@ -105,7 +105,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
     out[bus_range] = get_aux_arrays(inputs)[6]
 end
 
-function system_mass_matrix!(dx, x, inputs::SimulationInputs, t::Float64)
+function system_mass_matrix!(dx, x, inputs::SimulationInputs, t)
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
     injection_ode = get_aux_arrays(inputs)[3]
@@ -148,7 +148,7 @@ function system_mass_matrix!(dx, x, inputs::SimulationInputs, t::Float64)
             dynamic_device,
             inputs,
         )
-        x[ix_range] = injection_ode[ode_range]
+        dx[ix_range] = injection_ode[ode_range]
     end
 
     for d in get_static_injections_data(inputs)
@@ -195,10 +195,10 @@ function system_mass_matrix!(dx, x, inputs::SimulationInputs, t::Float64)
                 br,
                 inputs,
             )
-            x[ix_range] = branches_ode[ode_range]
+            dx[ix_range] = branches_ode[ode_range]
         end
     end
 
     kirchoff_laws!(inputs, V_r, V_i, I_injections_r, I_injections_i, dx)
-    x[bus_range] = get_aux_arrays(inputs)[6]
+    dx[bus_range] = get_aux_arrays(inputs)[6]
 end
