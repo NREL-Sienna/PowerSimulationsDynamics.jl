@@ -4,6 +4,7 @@ using Test
 using NLsolve
 using SciMLBase
 using Sundials
+using OrdinaryDiffEq
 using DelimitedFiles
 using InfrastructureSystems
 import LinearAlgebra
