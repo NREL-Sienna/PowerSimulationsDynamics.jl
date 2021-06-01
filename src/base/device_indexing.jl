@@ -59,8 +59,6 @@ function index_dynamic_lines!(
     b_from > 0.0 &&
         _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_from, n_buses)
     b_to > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_to, n_buses)
-    n_states = PSY.get_n_states(branch)
-    DAE_vector = push!(DAE_vector, collect(trues(n_states))...)
     return
 end
 
@@ -73,27 +71,25 @@ function index_dynamic_injection(
     dynamic_device::PSY.DynamicInjection,
     state_space_ix::Vector{Int},
 )
-    state_types = make_device_index!(dynamic_device)
-    add_states_to_global!(inputs.global_index, state_space_ix, dynamic_device)
     DAE_vector = get_DAE_vector(inputs)
-    push!(DAE_vector, state_types...)
+    make_device_index!(dynamic_device, DAE_vector)
+    add_states_to_global!(inputs.global_index, state_space_ix, dynamic_device)
     return
 end
 
 """
-Indexes the devices states and maps to the ports
+Default implementation to index the devices states and maps to the ports
 """
-function make_device_index!(dynamic_device::PSY.DynamicInjection)
+function make_device_index!(dynamic_device::PSY.DynamicInjection, ::Vector{Bool})
     device_states = PSY.get_states(dynamic_device)
     device_state_mapping = DEVICE_INTERNAL_MAPPING()
     input_port_mapping = DEVICE_INTERNAL_MAPPING()
     _attach_inner_vars!(dynamic_device)
-    dae_vector = collect(trues(PSY.get_n_states(dynamic_device)))
     for c in PSY.get_dynamic_components(dynamic_device)
         device_state_mapping[typeof(c)] = index_local_states(c, device_states)
         input_port_mapping[typeof(c)] = index_port_mapping!(c, device_states)
     end
     dynamic_device.ext[LOCAL_STATE_MAPPING] = device_state_mapping
     dynamic_device.ext[INPUT_PORT_MAPPING] = input_port_mapping
-    return dae_vector
+    return
 end

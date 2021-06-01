@@ -30,7 +30,7 @@ import InfrastructureSystems
 import SciMLBase
 import DiffEqBase
 import ForwardDiff
-import SparseArrays: SparseMatrixCSC
+import SparseArrays: SparseMatrixCSC, sparse
 import LinearAlgebra
 import Base.to_index
 import NLsolve
