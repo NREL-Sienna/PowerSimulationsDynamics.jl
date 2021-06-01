@@ -12,7 +12,6 @@ struct SmallSignalOutput
 end
 
 function _determine_stability(vals::Vector{Complex{Float64}})
-    stable = true
     for real_eig in real(vals)
         real_eig > 0.0 && return false
     end
