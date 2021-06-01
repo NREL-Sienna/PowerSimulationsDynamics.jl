@@ -250,9 +250,10 @@ function _build!(sim::Simulation{MassMatrixModel}; kwargs...)
     var_count = get_variable_count(simulation_inputs)
     dx0 = zeros(var_count)
     sim.problem = SciMLBase.ODEProblem(
-        SciMLBase.ODEFunction(system_mass_matrix!,
-            mass_matrix = get_mass_matrix(simulation_inputs)
-            ),
+        SciMLBase.ODEFunction(
+            system_mass_matrix!,
+            mass_matrix = get_mass_matrix(simulation_inputs),
+        ),
         dx0,
         sim.x0_init,
         get_tspan(sim.simulation_inputs),

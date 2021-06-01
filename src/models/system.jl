@@ -50,7 +50,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
             dynamic_device,
             inputs,
         )
-        out[ix_range] = injection_ode[ode_range] - M[ix_range, ix_range]*dx[ix_range]
+        out[ix_range] = injection_ode[ode_range] - M[ix_range, ix_range] * dx[ix_range]
     end
 
     for d in get_static_injections_data(inputs)
@@ -97,7 +97,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
                 br,
                 inputs,
             )
-            out[ix_range] = branches_ode[ode_range] - M[ix_range, ix_range]*dx[ix_range]
+            out[ix_range] = branches_ode[ode_range] - M[ix_range, ix_range] * dx[ix_range]
         end
     end
 
