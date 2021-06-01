@@ -87,6 +87,12 @@ const P_ref_index = 3
 const Q_ref_index = 4
 
 const MAPPING_DICT = Dict{String, Dict{Symbol, Int}}
+const DEVICE_INTERNAL_MAPPING = Dict{Type{<:PSY.DynamicComponent}, Vector{Int}}
+
+const GLOBAL_VARS_IX = () -> Dict{Symbol, Number}(
+    :ω_sys => 1.0,
+    :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
+)
 
 const LOCAL_STATE_MAPPING = "local_state_mapping"
 const INPUT_PORT_MAPPING = "input_port_mapping"

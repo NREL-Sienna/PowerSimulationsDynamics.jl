@@ -54,8 +54,6 @@ try
     t_pscad = M[:, 1] .- t_offset
     ω_pscad = M[:, 2]
 
-    print_device_states(sim)
-
     diff = [0.0]
     res = get_init_values_for_comparison(sim)
     for (k, v) in test08_x0_init

@@ -1,8 +1,3 @@
-abstract type SimulationModel end
-
-struct MassMatrixModel <: SimulationModel end
-struct ImplicitModel <: SimulationModel end
-
 mutable struct Simulation{T <: SimulationModel}
     status::BUILD_STATUS
     problem::Union{Nothing, SciMLBase.DEProblem}
@@ -172,14 +167,12 @@ function build!(sim; file_mode = "w", kwargs...)
     return
 end
 
-function _build!(sim::Simulation; kwargs...)
+function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     simulation_system = get_system(sim.simulation_inputs)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
-    initialized = false
-    build!(sim.simulation_inputs)
-    simulation_inputs = sim.simulation_inputs
+    simulation_inputs = build!(sim.simulation_inputs, T)
     @debug "Simulation Inputs Created"
     var_count = get_variable_count(simulation_inputs)
 
@@ -191,7 +184,7 @@ function _build!(sim::Simulation; kwargs...)
     initialize_simulation = get(kwargs, :initialize_simulation, true)
     if initialize_simulation
         @info("Initializing Simulation States")
-        _add_aux_arrays!(simulation_inputs, Float64)
+        add_aux_arrays!(simulation_inputs, Float64)
         sim.initialized = calculate_initial_conditions!(sim, simulation_inputs)
         if sim.status == BUILD_FAILED
             @error("Simulation Build Failed. Simulations status = $(sim.status)")
@@ -201,7 +194,7 @@ function _build!(sim::Simulation; kwargs...)
 
     dx0 = zeros(var_count)
     _build_perturbations!(sim)
-    _add_aux_arrays!(simulation_inputs, Float64)
+    add_aux_arrays!(simulation_inputs, Float64)
     sim.problem = SciMLBase.DAEProblem(
         system!,
         dx0,
@@ -215,18 +208,6 @@ function _build!(sim::Simulation; kwargs...)
     sim.status = BUILT
     @info "Completed Build Successfully. Simulations status = $(sim.status)"
     return nothing
-end
-
-function _add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
-    @debug "Auxiliary Arrays created with Type $(T)"
-    bus_count = get_bus_count(inputs)
-    get_aux_arrays(inputs)[1] = collect(zeros(T, bus_count))                       #I_injections_r
-    get_aux_arrays(inputs)[2] = collect(zeros(T, bus_count))                       #I_injections_i
-    get_aux_arrays(inputs)[3] = collect(zeros(T, get_n_injection_states(inputs)))  #injection_ode
-    get_aux_arrays(inputs)[4] = collect(zeros(T, get_n_branches_states(inputs)))   #branches_ode
-    get_aux_arrays(inputs)[5] = collect(zeros(Complex{T}, bus_count))              #I_bus
-    get_aux_arrays(inputs)[6] = collect(zeros(T, 2 * bus_count))                   #I_balance
-    return
 end
 
 function _build_perturbations!(sim::Simulation)
@@ -296,7 +277,7 @@ function _get_Ybus(sys::PSY.System)
     return Ybus, lookup
 end
 
-function _add_states_to_global!(
+function add_states_to_global!(
     global_state_index::MAPPING_DICT,
     state_space_ix::Vector{Int},
     device::PSY.Device,
@@ -374,6 +355,6 @@ function _change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: N
     for d in PSY.get_components(PSY.DynamicInjection, sys)
         _attach_inner_vars!(d, T)
     end
-    _add_aux_arrays!(inputs, Real)
+    add_aux_arrays!(inputs, Real)
     return
 end
