@@ -23,8 +23,18 @@ function set_frequency_reference!(inputs::SimulationInputs, sys::PSY.System)
     set_frequency_reference!(ReferenceBus, inputs, sys)
 end
 
-function set_frequency_reference!(::Type{ReferenceBus}, inputs::SimulationInputs, sys::PSY.System)
-    ref_devices = PSY.get_components(PSY.StaticInjection, sys, x -> PSY.get_bustype(PSY.get_bus(x)) == PSY.BusTypes.REF && !isa(x, PSY.ElectricLoad))
+function set_frequency_reference!(
+    ::Type{ReferenceBus},
+    inputs::SimulationInputs,
+    sys::PSY.System,
+)
+    ref_devices = PSY.get_components(
+        PSY.StaticInjection,
+        sys,
+        x ->
+            PSY.get_bustype(PSY.get_bus(x)) == PSY.BusTypes.REF &&
+                !isa(x, PSY.ElectricLoad),
+    )
     if length(ref_devices) > 1
         throw(
             IS.ConflictingInputsError(

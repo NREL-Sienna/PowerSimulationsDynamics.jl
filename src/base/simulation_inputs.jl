@@ -66,7 +66,6 @@ function SimulationInputs(;
     )
 end
 
-
 function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
     @debug "Auxiliary Arrays created with Type $(T)"
     bus_count = get_bus_count(inputs)
@@ -115,21 +114,14 @@ function _dynamic_lines_inputs!(
     return branches_n_states, static_bus_var_count
 end
 
-function _static_injection_inputs!(
-    inputs::SimulationInputs,
-    ::Vector{Int},
-    sys::PSY.System,
-)
+function _static_injection_inputs!(inputs::SimulationInputs, ::Vector{Int}, sys::PSY.System)
     for s in PSY.get_components(PSY.StaticInjection, sys)
         index_static_injection(inputs, s)
     end
     return
 end
 
-function _dynamic_injection_inputs!(
-    inputs::SimulationInputs,
-    state_space_ix::Vector{Int},
-)
+function _dynamic_injection_inputs!(inputs::SimulationInputs, state_space_ix::Vector{Int})
     dynamic_injection_states = 0
     for d in get_injectors_data(inputs)
         @debug PSY.get_name(d)
