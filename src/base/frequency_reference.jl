@@ -15,6 +15,10 @@ function attach_frequency_reference!(inputs::SimulationInputs, ::PSY.Source)
     return
 end
 
+function attach_frequency_reference!(input::SimulationInputs, d::PSY.StaticInjection)
+    return attach_frequency_reference!(input, PSY.get_dynamic_injector(d))
+end
+
 function set_frequency_reference!(inputs::SimulationInputs, sys::PSY.System)
     set_frequency_reference!(ReferenceBus, inputs, sys)
 end
