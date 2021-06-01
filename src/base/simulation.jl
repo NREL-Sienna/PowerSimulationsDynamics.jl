@@ -161,7 +161,7 @@ function configure_logging(sim::Simulation, file_mode)
     )
 end
 
-function _build_inputs!(sim::Simulation{T}; kwargs...) where T <: SimulationModel
+function _build_inputs!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     simulation_system = get_system(sim)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
@@ -170,7 +170,7 @@ function _build_inputs!(sim::Simulation{T}; kwargs...) where T <: SimulationMode
     return
 end
 
-function _initialize_simulation!(sim::Simulation{T}; kwargs...) where T <: SimulationModel
+function _initialize_simulation!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     simulation_system = get_system(sim)
     bus_count = length(PSY.get_components(PSY.Bus, simulation_system))
     simulation_inputs = get_simulation_inputs(sim)
