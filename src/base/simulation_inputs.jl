@@ -25,8 +25,6 @@ function SimulationInputs(;
     global_index::Dict{String, Dict{Symbol, Int}} = MAPPING_DICT(),
     total_shunts::Dict{Int, Float64} = Dict{Int, Float64}(),
     global_vars::Dict{Symbol, Number} = GLOBAL_VARS_IX(),
-    DAE_vector::Vector{Bool} = Vector{Bool}(),
-    mass_matrix::SparseMatrixCSC{Float64, Int} = SparseMatrixCSC{Float64, Int}(zeros(1, 1)),
     aux_arrays::Dict{Int, Vector} = Dict{Int, Vector}(),
     tspan::NTuple{2, Float64} = (0.0, 0.0),
 )
@@ -46,6 +44,11 @@ function SimulationInputs(;
     dynamic_branches =
         collect(PSY.get_components(PSY.DynamicBranch, sys, x -> PSY.get_available(x)))
 
+    var_count = sum(PSY.get_n_states.(PSY.get_dynamic_injector.(injector_data))) + 2 * n_buses + 2*length(dynamic_branches)
+
+    mass_matrix = sparse(LinearAlgebra.I,var_count,var_count)
+    mass_matrix[1:2*n_buses, 1:2*n_buses] .= 0.0
+
     return SimulationInputs(
         sys,
         collect(injector_data),
@@ -59,7 +62,7 @@ function SimulationInputs(;
         total_shunts,
         global_vars,
         lookup,
-        DAE_vector,
+        _init_DAE_vector!(var_count, n_buses),
         mass_matrix,
         aux_arrays,
         tspan,
@@ -78,8 +81,10 @@ function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Number
     return
 end
 
-function _init_DAE_vector!(inputs::SimulationInputs, n_buses::Int)
-    push!(inputs.DAE_vector, collect(falses(n_buses * 2))...)
+function _init_DAE_vector!(n_vars::Int, n_buses::Int)
+    DAE_vector = trues(n_vars)
+    DAE_vector[1:n_buses * 2] .= false
+    return DAE_vector
 end
 
 function _dynamic_lines_inputs!(
@@ -136,7 +141,6 @@ end
 function build!(inputs::SimulationInputs, ::Type{ImplicitModel})
     sys = get_system(inputs)
     n_buses = length(PSY.get_bus_numbers(sys))
-    _init_DAE_vector!(inputs, n_buses)
     state_space_ix = Int[n_buses * 2]
     branches_n_states, static_bus_var_count =
         _dynamic_lines_inputs!(inputs, state_space_ix, n_buses)
@@ -149,6 +153,8 @@ function build!(inputs::SimulationInputs, ::Type{ImplicitModel})
 
     IS.@assert_op injection_n_states == state_space_ix[1] - branches_n_states - n_buses * 2
     IS.@assert_op n_buses * 2 - static_bus_var_count >= 0
+
+    IS.@assert_op length(inputs.DAE_vector) == state_space_ix[1]
 
     inputs.counts = Base.ImmutableDict(
         :total_states => state_space_ix[1] - static_bus_var_count,
