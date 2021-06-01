@@ -110,7 +110,6 @@ function system_mass_matrix!(dx, x, inputs::SimulationInputs, t::Float64)
     I_injections_i = get_aux_arrays(inputs)[2]
     injection_ode = get_aux_arrays(inputs)[3]
     branches_ode = get_aux_arrays(inputs)[4]
-    M = get_mass_matrix(inputs)
 
     #Index Setup
     bus_size = get_bus_count(inputs)
