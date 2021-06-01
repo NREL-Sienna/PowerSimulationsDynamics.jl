@@ -218,7 +218,24 @@ function _dynamic_injection_inputs!(inputs::SimulationInputs, state_space_ix::Ve
     return dynamic_injection_states
 end
 
-function build!(inputs::SimulationInputs, ::Type{ImplicitModel}, sys::PSY.System)
+function _mass_matrix_inputs!(inputs::SimulationInputs)
+    mass_matrix = get_mass_matrix(inputs)
+    for d in get_injectors_data(inputs)
+        dynamic_injector = PSY.get_dynamic_injector(d)
+        for c in PSY.get_dynamic_components(dynamic_injector)
+
+        end
+    end
+
+    for br in get_dynamic_branches(inputs)
+
+    end
+
+end
+
+# Default implementation for both models. This implementation is to future proof if there is
+# a divergence between the required build methods
+function _build!(inputs::SimulationInputs, sys::PSY.System)
     n_buses = get_bus_count(inputs)
     state_space_ix = Int[n_buses * 2]
     branches_n_states, static_bus_var_count =
@@ -230,6 +247,8 @@ function build!(inputs::SimulationInputs, ::Type{ImplicitModel}, sys::PSY.System
     set_frequency_reference!(inputs, sys)
     IS.@assert_op get_ω_sys(inputs) != -1
 
+    _mass_matrix_inputs!(inputs)
+
     IS.@assert_op injection_n_states == state_space_ix[1] - branches_n_states - n_buses * 2
     IS.@assert_op n_buses * 2 - static_bus_var_count >= 0
     IS.@assert_op length(inputs.DAE_vector) == state_space_ix[1]
@@ -237,4 +256,18 @@ function build!(inputs::SimulationInputs, ::Type{ImplicitModel}, sys::PSY.System
     @debug inputs.counts
 
     return inputs
+end
+
+"""
+SimulationInputs build function for MassMatrixModels
+"""
+function build!(inputs::SimulationInputs, ::Type{MassMatrixModel}, sys::PSY.System)
+    return _build!(inputs, sys)
+end
+
+"""
+SimulationInputs build function for ImplicitModels
+"""
+function build!(inputs::SimulationInputs, ::Type{ImplicitModel}, sys::PSY.System)
+    return _build!(inputs, sys)
 end

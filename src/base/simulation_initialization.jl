@@ -1,4 +1,6 @@
-function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs)
+# Default implementation for both models. This implementation is to future proof if there is
+# a divergence between the required build methods
+function _calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs)
     @debug "Start state intialization routine"
     sys = get_system(sim)
     initial_guess = sim.x0_init
@@ -126,4 +128,12 @@ function calculate_initial_conditions!(sim::Simulation, inputs::SimulationInputs
     @debug "Write result to initial guess vector"
     initial_guess .= sys_solve.zero
     return NLsolve.converged(sys_solve)
+end
+
+function calculate_initial_conditions!(sim::Simulation{ImplicitModel}, inputs::SimulationInputs)
+    return _calculate_initial_conditions!(sim, inputs)
+end
+
+function calculate_initial_conditions!(sim::Simulation{MassMatrixModel}, inputs::SimulationInputs)
+    return _calculate_initial_conditions!(sim, inputs)
 end
