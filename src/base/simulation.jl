@@ -16,6 +16,7 @@ mutable struct Simulation{T <: SimulationModel}
 end
 
 get_system(sim::Simulation) = sim.sys
+get_simulation_inputs(sim::Simulation) = sim.simulation_inputs
 
 function Simulation(
     ::Type{T},
@@ -160,29 +161,22 @@ function configure_logging(sim::Simulation, file_mode)
     )
 end
 
-function build!(sim; file_mode = "w", kwargs...)
-    logger = configure_logging(sim, file_mode)
-    try
-        Logging.with_logger(logger) do
-            _build!(sim; kwargs...)
-        end
-    finally
-        close(logger)
-    end
-    return
-end
-
-function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
+function _build_inputs!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     simulation_system = get_system(sim)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
-    check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
-    simulation_inputs = build!(sim.simulation_inputs, T, simulation_system)
+    sim.simulation_inputs = build!(sim.simulation_inputs, T, simulation_system)
     @debug "Simulation Inputs Created"
-    var_count = get_variable_count(simulation_inputs)
+    return
+end
 
-    flat_start = zeros(var_count)
+function _initialize_simulation!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
+    simulation_system = get_system(sim)
     bus_count = length(PSY.get_components(PSY.Bus, simulation_system))
+    simulation_inputs = get_simulation_inputs(sim)
+    var_count = get_variable_count(simulation_inputs)
+    flat_start = zeros(var_count)
+
     flat_start[1:bus_count] .= 1.0
     sim.x0_init = get(kwargs, :initial_guess, flat_start)
 
@@ -196,23 +190,6 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
             return
         end
     end
-
-    dx0 = zeros(var_count)
-    _build_perturbations!(sim)
-    add_aux_arrays!(simulation_inputs, Float64)
-    sim.problem = SciMLBase.DAEProblem(
-        system!,
-        dx0,
-        sim.x0_init,
-        get_tspan(sim.simulation_inputs),
-        simulation_inputs,
-        differential_vars = get_DAE_vector(simulation_inputs);
-        kwargs...,
-    )
-    sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
-    sim.status = BUILT
-    @info "Completed Build Successfully. Simulations status = $(sim.status)"
-    return
 end
 
 function _build_perturbations!(sim::Simulation)
@@ -235,6 +212,43 @@ function _build_perturbations!(sim::Simulation)
     end
     sim.tstops = tstops
     sim.callbacks = DiffEqBase.CallbackSet((), tuple(callback_vector...))
+    return
+end
+
+function _build!(sim::Simulation{ImplicitModel}; kwargs...)
+    check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
+    _build_inputs!(sim)
+    _initialize_simulation!(sim::Simulation; kwargs...)
+    _build_perturbations!(sim)
+    simulation_inputs = get_simulation_inputs(sim)
+    add_aux_arrays!(simulation_inputs, Float64)
+    var_count = get_variable_count(simulation_inputs)
+    dx0 = zeros(var_count)
+
+    sim.problem = SciMLBase.DAEProblem(
+        system!,
+        dx0,
+        sim.x0_init,
+        get_tspan(sim.simulation_inputs),
+        simulation_inputs,
+        differential_vars = get_DAE_vector(simulation_inputs);
+        kwargs...,
+    )
+    sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
+    sim.status = BUILT
+    @info "Completed Build Successfully. Simulations status = $(sim.status)"
+    return
+end
+
+function build!(sim; file_mode = "w", kwargs...)
+    logger = configure_logging(sim, file_mode)
+    try
+        Logging.with_logger(logger) do
+            _build!(sim; kwargs...)
+        end
+    finally
+        close(logger)
+    end
     return
 end
 
