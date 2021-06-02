@@ -104,7 +104,7 @@ end
     @test all(dae_vector)
     total_shunts = PSID.get_total_shunts(sim_inputs)
     for v in LinearAlgebra.diag(total_shunts)
-        @test v > 0
+        @test imag(v) > 0
     end
 
     for entry in LinearAlgebra.diag(sim_inputs.mass_matrix)
