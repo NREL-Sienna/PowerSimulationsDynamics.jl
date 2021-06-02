@@ -9,7 +9,7 @@ mutable struct BranchTrip <: Perturbation
 end
 
 function ybus_update!(
-    ybus::SparseMatrixCSC{ComplexF64, Int},
+    ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
     b::PSY.ACBranch,
     num_bus::Dict{Int, Int},
     mult::Float64 = 1.0,
@@ -32,7 +32,7 @@ function ybus_update!(
 end
 
 function ybus_update!(
-    ybus::SparseMatrixCSC{ComplexF64, Int},
+    ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
     b::PSY.TapTransformer,
     num_bus::Dict{Int, Int},
     mult::Float64 = 1.0,
@@ -58,7 +58,7 @@ function ybus_update!(
 end
 
 function ybus_update!(
-    ybus::SparseMatrixCSC{ComplexF64, Int},
+    ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
     b::PSY.PhaseShiftingTransformer,
     num_bus::Dict{Int, Int},
     mult::Float64 = 1.0,
@@ -84,7 +84,7 @@ function ybus_update!(
 end
 
 function ybus_update!(
-    ybus::SparseMatrixCSC{ComplexF64, Int},
+    ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
     fa::PSY.FixedAdmittance,
     num_bus::Dict{Int, Int},
     mult::Float64 = 1.0,
@@ -141,7 +141,7 @@ Use to model a change in the network by switching the underlying Ybus in the sim
 """
 mutable struct NetworkSwitch <: Perturbation
     time::Float64
-    Ybus::SparseMatrixCSC{Complex{Float64}, Int}
+    Ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
 end
 
 function get_affect(::PSY.System, pert::NetworkSwitch)
