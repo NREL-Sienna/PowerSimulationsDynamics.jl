@@ -1,3 +1,17 @@
+function mass_matrix_filter_entries!(
+    mass_matrix,
+   dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+    @debug "Using default mass matrix entries $F $(PSY.get_name(dynamic_device))"
+end
+
 function mdl_filter_ode!(
     device_states,
     output_ode,
