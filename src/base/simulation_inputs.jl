@@ -70,7 +70,7 @@ function SimulationInputs(; sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0
         Vector{Int}(),
         collect(1:n_buses),
         MAPPING_DICT(),
-        SparseArrays.spzeros(n_buses, n_buses),
+        SparseArrays.spzeros(Complex{Float64}, n_buses, n_buses),
         GLOBAL_VARS_IX(),
         lookup,
         _init_DAE_vector!(var_count, n_buses),
