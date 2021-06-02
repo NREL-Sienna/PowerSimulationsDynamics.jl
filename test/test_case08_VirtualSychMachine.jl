@@ -45,7 +45,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
 
         #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
-        test_case08_VirtualInertia
+
         #Obtain frequency data
         series = get_state_series(sim, ("generator-102-1", :ω_oc))
         t = series[1]
