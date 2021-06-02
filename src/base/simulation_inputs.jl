@@ -216,6 +216,7 @@ function _mass_matrix_inputs!(inputs::SimulationInputs)
     mass_matrix_injectors = view(mass_matrix, injection_range, injection_range)
     for d in PSID.get_injectors_data(inputs)
         dynamic_injector = PSY.get_dynamic_injector(d)
+        device_mass_matrix_entries!(mass_matrix_injectors, dynamic_injector)
     end
 
     if has_dyn_lines(inputs)
@@ -223,9 +224,10 @@ function _mass_matrix_inputs!(inputs::SimulationInputs)
         shunts = get_total_shunts(inputs)
         n_buses = get_bus_count(inputs)
         for i in 1:n_buses
-            val = shunts[i,i]
+            val = shunts[i, i]
             if val > 0
-                mass_matrix[i, i] = mass_matrix[i + n_buses, i + n_buses] = val*(1/(2.0 * π * sys_f))
+                mass_matrix[i, i] =
+                    mass_matrix[i + n_buses, i + n_buses] = val * (1 / (2.0 * π * sys_f))
             end
         end
     end
