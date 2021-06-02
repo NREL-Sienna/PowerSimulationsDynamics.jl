@@ -1,6 +1,6 @@
 function mass_matrix_DCside_entries!(
     mass_matrix,
-   dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
