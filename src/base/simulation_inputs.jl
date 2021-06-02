@@ -14,7 +14,7 @@ struct SimulationInputs
     global_vars::Dict{Symbol, Number}
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
-    mass_matrix::SparseArrays.SparseMatrixCSC{Float64, Int}
+    mass_matrix::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
     aux_arrays::Dict{Int, Vector}
     tspan::NTuple{2, Float64}
 end
