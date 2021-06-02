@@ -21,6 +21,8 @@ const IS = InfrastructureSystems
 const PSY = PowerSystems
 const PSID = PowerSimulationsDynamics
 
+const DISABLED_TEST_FILES = ["test_case11_dynbranches.jl"]
+
 """
 Copied @includetests from https://github.com/ssfrr/TestSetExtensions.jl.
 Ideally, we could import and use TestSetExtensions.  Its functionality was broken by changes
@@ -56,6 +58,7 @@ macro includetests(testarg...)
         end
         println()
         for test in tests
+            test ∈ DISABLED_TEST_FILES && continue
             print(splitext(test)[1], ": ")
             include(test)
             println()
