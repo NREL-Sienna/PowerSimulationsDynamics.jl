@@ -72,8 +72,8 @@ end
         )
 
         #Obtain small signal results for initial conditions
-        small_sig = small_signal_analysis(sim)
-        @test small_sig.stable
+        # small_sig = small_signal_analysis(sim)
+        # @test small_sig.stable
 
         #Solve problem
         execute!(sim, Rodas5())
