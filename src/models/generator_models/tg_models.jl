@@ -179,7 +179,6 @@ function mdl_tg_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
     P_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
 
     #Obtain indices for component w/r to device

@@ -30,7 +30,7 @@ Ybus_change = NetworkSwitch(
     try
         sim = Simulation!(
             ImplicitModel,
-            4threebus_sys, #system,
+            threebus_sys, #system,
             path,
             tspan, #time span
             Ybus_change, #Type of Fault

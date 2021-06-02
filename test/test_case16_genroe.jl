@@ -58,7 +58,7 @@ function test_genroe_implicit(dyr_file, csv_file, init_cond)
         small_sig = small_signal_analysis(sim)
         @test small_sig.stable
 
-        #Solve problem in equilibrium
+        #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
@@ -122,8 +122,8 @@ function test_genroe_mass_matrix(dyr_file, csv_file, init_cond)
         # small_sig = small_signal_analysis(sim)
         # @test small_sig.stable
 
-        #Solve problem in equilibrium
-        execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
+        #Solve problem
+        execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :δ))

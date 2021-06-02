@@ -56,7 +56,7 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond)
         small_sig = small_signal_analysis(sim)
         @test small_sig.stable
 
-        #Solve problem in equilibrium
+        #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
@@ -113,7 +113,7 @@ function test_gensal_mass_matrix(dyr_file, csv_file, init_cond)
         small_sig = small_signal_analysis(sim)
         @test small_sig.stable
 
-        #Solve problem in equilibrium
+        #Solve problem
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles

@@ -1,22 +1,24 @@
 """
 Validation PSSE/TGOV1:
-This case study defines a three bus system with an infinite bus, GENROU+AC1A+GAST and a load.
-The fault drop the line connecting the infinite bus and GENROU
+This case study defines a three bus system with an infinite bus, GENROU+AC1A+TGOV1 and a load.
+The fault drop the line connecting the infinite bus and GENROU.
 """
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-raw_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/ThreeBusMulti.raw")
-dyr_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/ThreeBus_GAST.dyr")
-csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
+raw_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/ThreeBusMulti.raw")
+dyr_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/ThreeBus_TGOV1.dyr")
+csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/TEST_TGOV1.csv")
 
-@testset "Test 21 GAST ImplicitModel" begin
-    path = (joinpath(pwd(), "test-psse-gast"))
+#Construct system
+sys = System(raw_file, dyr_file);
+
+@testset "Test 21 SteamTurbineGov1 ImplicitModel" begin
+    path = (joinpath(pwd(), "test-psse-tgov1"))
     !isdir(path) && mkdir(path)
     try
-        sys = System(raw_file, dyr_file)
         sim = Simulation!(
             ImplicitModel,
             sys, #system
@@ -31,7 +33,6 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
         #Obtain small signal results for initial conditions
         #NOT WORKING DUE TO TYPES ON EXECUTE
         #small_sig = small_signal_analysis(sim)
-        #@test small_sig.stable
 
         series = get_state_series(sim, ("generator-102-1", :δ))
         t = series[1]
@@ -42,13 +43,15 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test_psse_gast_init
+        for (k, v) in test_psse_tgov1_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
+        #Test Small Signal
+        #@test small_sig.stable
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
@@ -59,11 +62,10 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
     end
 end
 
-@testset "Test 21 GAST MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-psse-gast"))
+@testset "Test 21 SteamTurbineGov1 MassMatrixModel" begin
+    path = (joinpath(pwd(), "test-psse-tgov1"))
     !isdir(path) && mkdir(path)
     try
-        sys = System(raw_file, dyr_file)
         sim = Simulation!(
             MassMatrixModel,
             sys, #system
@@ -78,7 +80,6 @@ end
         #Obtain small signal results for initial conditions
         #NOT WORKING DUE TO TYPES ON EXECUTE
         #small_sig = small_signal_analysis(sim)
-        #@test small_sig.stable
 
         series = get_state_series(sim, ("generator-102-1", :δ))
         t = series[1]
@@ -89,13 +90,15 @@ end
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test_psse_gast_init
+        for (k, v) in test_psse_tgov1_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
+        #Test Small Signal
+        #@test small_sig.stable
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2

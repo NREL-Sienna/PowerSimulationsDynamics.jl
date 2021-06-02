@@ -31,7 +31,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test17.jl"))
         small_sig = small_signal_analysis(sim)
         @test small_sig.stable
 
-        #Solve problem in equilibrium
+        #Solve problem
         execute!(sim, IDA(), dtmax = 0.01)
 
         #Obtain data for angles
@@ -70,7 +70,7 @@ end
         # small_sig = small_signal_analysis(sim)
         # @test small_sig.stable
 
-        #Solve problem in equilibrium
+        #Solve problem
         execute!(sim, Rodas5(), dtmax = 0.01)
 
         #Obtain data for angles
