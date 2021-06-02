@@ -10,11 +10,11 @@ struct SimulationInputs
     voltage_buses_ix::Vector{Int}
     current_buses_ix::Vector{Int}
     global_index::Dict{String, Dict{Symbol, Int}}
-    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int}
+    total_shunts::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
     global_vars::Dict{Symbol, Number}
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
-    mass_matrix::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
+    mass_matrix::SparseArrays.SparseMatrixCSC{Float64, Int}
     aux_arrays::Dict{Int, Vector}
     tspan::NTuple{2, Float64}
 end
