@@ -34,11 +34,6 @@ function _add_dynamic_bus_states!(
     return
 end
 
-function _add_to_total_shunts!(total_shunts::Dict{Int, Float64}, pairs...)
-    merge!(+, total_shunts, Dict(pairs...))
-    return
-end
-
 function index_dynamic_lines!(
     inputs::SimulationInputs,
     branch::PSY.DynamicBranch,
@@ -54,8 +49,8 @@ function index_dynamic_lines!(
     b_from = PSY.get_b(branch).from
     b_to = PSY.get_b(branch).to
     total_shunts = get_total_shunts(inputs)
-    b_from > 0.0 && _add_to_total_shunts!(total_shunts, bus_ix_from => b_from)
-    b_to > 0.0 && _add_to_total_shunts!(total_shunts, bus_ix_to => b_to)
+    total_shunts[bus_ix_from, bus_ix_from] += b_from
+    total_shunts[bus_ix_to, bus_ix_to] += b_to
     b_from > 0.0 &&
         _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_from, n_buses)
     b_to > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_to, n_buses)

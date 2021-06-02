@@ -5,16 +5,16 @@ struct SimulationInputs
     static_injection_data::Vector{<:PSY.StaticInjection}
     dynamic_branches::Vector{PSY.DynamicBranch}
     counts::Base.ImmutableDict{Symbol, Int}
-    Ybus::SparseMatrixCSC{Complex{Float64}, Int}
+    Ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
     dyn_lines::Bool
     voltage_buses_ix::Vector{Int}
     current_buses_ix::Vector{Int}
     global_index::Dict{String, Dict{Symbol, Int}}
-    total_shunts::Dict{Int, Float64}
+    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int}
     global_vars::Dict{Symbol, Number}
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
-    mass_matrix::SparseMatrixCSC{Float64, Int}
+    mass_matrix::SparseArrays.SparseMatrixCSC{Float64, Int}
     aux_arrays::Dict{Int, Vector}
     tspan::NTuple{2, Float64}
 end
@@ -40,7 +40,7 @@ function SimulationInputs(; sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0
     injector_state_count = sum(PSY.get_n_states.(PSY.get_dynamic_injector.(injector_data)))
     var_count = injector_state_count + 2 * n_buses + branch_state_counts
 
-    mass_matrix = sparse(LinearAlgebra.I, var_count, var_count)
+    mass_matrix = SparseArrays.sparse(LinearAlgebra.I, var_count, var_count)
     mass_matrix[1:(2 * n_buses), 1:(2 * n_buses)] .= 0.0
 
     static_injection_data = PSY.get_components(
@@ -70,7 +70,7 @@ function SimulationInputs(; sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0
         Vector{Int}(),
         collect(1:n_buses),
         MAPPING_DICT(),
-        Dict{Int, Float64}(),
+        SparseArrays.spzeros(n_buses, n_buses),
         GLOBAL_VARS_IX(),
         lookup,
         _init_DAE_vector!(var_count, n_buses),
@@ -92,12 +92,12 @@ get_global_index(inputs::SimulationInputs) = inputs.global_index
 get_Ybus(inputs::SimulationInputs) = inputs.Ybus
 get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
 get_global_vars(inputs::SimulationInputs) = inputs.global_vars
-get_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
 get_lookup(inputs::SimulationInputs) = inputs.lookup
 get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
 get_mass_matrix(inputs::SimulationInputs) = inputs.mass_matrix
 get_aux_arrays(inputs::SimulationInputs) = inputs.aux_arrays
 get_tspan(inputs::SimulationInputs) = inputs.tspan
+has_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
 
 get_injection_pointer(inputs::SimulationInputs) =
     get_counts(inputs)[:first_dyn_injection_pointer]
@@ -122,14 +122,6 @@ function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Number
     return
 end
 
-function _change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
-    for d in PSY.get_dynamic_injector.(get_injectors_data(inputs))
-        _attach_inner_vars!(d, T)
-    end
-    add_aux_arrays!(inputs, Real)
-    return
-end
-
 function _get_Ybus(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     dyn_lines = PSY.get_components(PSY.DynamicBranch, sys)
@@ -141,7 +133,7 @@ function _get_Ybus(sys::PSY.System)
             ybus_update!(Ybus, br, lookup, -1.0)
         end
     else
-        Ybus = SparseMatrixCSC{Complex{Float64}, Int}(zeros(n_buses, n_buses))
+        Ybus = SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}(zeros(n_buses, n_buses))
         lookup = Dict{Int.Int}()
     end
     return Ybus, lookup
@@ -220,17 +212,23 @@ end
 
 function _mass_matrix_inputs!(inputs::SimulationInputs)
     mass_matrix = get_mass_matrix(inputs)
-    for d in get_injectors_data(inputs)
+    injection_range = PSID.get_injection_pointer(inputs):PSID.get_variable_count(inputs)
+    mass_matrix_injectors = view(mass_matrix, injection_range, injection_range)
+    for d in PSID.get_injectors_data(inputs)
         dynamic_injector = PSY.get_dynamic_injector(d)
-        for c in PSY.get_dynamic_components(dynamic_injector)
+    end
 
+    if has_dyn_lines(inputs)
+        sys_f = get_base_frequency(inputs)
+        shunts = get_total_shunts(inputs)
+        n_buses = get_bus_count(inputs)
+        for i in 1:n_buses
+            val = shunts[i,i]
+            if val > 0
+                mass_matrix[i, i] = mass_matrix[i + n_buses, i + n_buses] = val*(1/(2.0 * π * sys_f))
+            end
         end
     end
-
-    for br in get_dynamic_branches(inputs)
-
-    end
-
 end
 
 # Default implementation for both models. This implementation is to future proof if there is

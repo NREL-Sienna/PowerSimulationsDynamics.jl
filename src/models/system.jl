@@ -66,7 +66,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
         )
     end
 
-    if get_dyn_lines(inputs)
+    if has_dyn_lines(inputs)
         for br in get_dynamic_branches(inputs)
             arc = PSY.get_arc(br)
             n_states = PSY.get_n_states(br)
@@ -101,8 +101,9 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
         end
     end
 
-    kirchoff_laws!(inputs, V_r, V_i, I_injections_r, I_injections_i, dx)
-    out[bus_range] = get_aux_arrays(inputs)[6]
+    out[bus_range] =
+        Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i) -
+        M[bus_range, bus_range] * dx[bus_range]
 end
 
 function system_mass_matrix!(dx, x, inputs::SimulationInputs, t)
@@ -164,7 +165,7 @@ function system_mass_matrix!(dx, x, inputs::SimulationInputs, t)
         )
     end
 
-    if get_dyn_lines(inputs)
+    if has_dyn_lines(inputs)
         for br in get_dynamic_branches(inputs)
             arc = PSY.get_arc(br)
             n_states = PSY.get_n_states(br)
@@ -199,6 +200,5 @@ function system_mass_matrix!(dx, x, inputs::SimulationInputs, t)
         end
     end
 
-    kirchoff_laws!(inputs, V_r, V_i, I_injections_r, I_injections_i, dx)
-    dx[bus_range] = get_aux_arrays(inputs)[6]
+    dx[bus_range] = Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i)
 end
