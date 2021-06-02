@@ -40,7 +40,7 @@ Ybus_change = NetworkSwitch(
         small_sig = small_signal_analysis(sim)
         @test small_sig.stable
 
-        #Solve problem in equilibrium
+        #Solve problem
         execute!(sim, IDA(), dtmax = 0.001)
 
         #Obtain data for angles
@@ -79,8 +79,8 @@ end
         # small_sig = small_signal_analysis(sim)
         # @test small_sig.stable
 
-        #Solve problem in equilibrium
-        execute!(sim, IDA(), dtmax = 0.001)
+        #Solve problem
+        execute!(sim, Rodas5(), dtmax = 0.001)
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-103-1", :δ))

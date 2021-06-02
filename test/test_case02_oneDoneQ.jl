@@ -36,7 +36,7 @@ Ybus_change = NetworkSwitch(
 
         small_sig = small_signal_analysis(sim)
 
-        #Solve problem in equilibrium
+        #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles

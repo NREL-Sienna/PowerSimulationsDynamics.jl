@@ -43,7 +43,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         small_sig = small_signal_analysis(sim)
         @test small_sig.stable
 
-        #Solve problem in equilibrium
+        #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain frequency data
@@ -93,7 +93,7 @@ end
         # small_sig = small_signal_analysis(sim)
         # @test small_sig.stable
 
-        #Solve problem in equilibrium
+        #Solve problem
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain frequency data

@@ -23,35 +23,72 @@ Ybus_change = NetworkSwitch(
     Ybus_fault,
 ) #New YBus
 
-path = (joinpath(pwd(), "test-11"))
-!isdir(path) && mkdir(path)
-try
-    #Define Simulation Problem
-    sim = Simulation!(
-        ImplicitModel,
-        threebus_sys, #system,
-        path,
-        tspan, #time span
-        Ybus_change, #Type of Fault
-    )
+@testset "Test 11 Dynamic Branches ImplicitModel" begin
+    path = (joinpath(pwd(), "test-11"))
+    !isdir(path) && mkdir(path)
+    try
+        #Define Simulation Problem
+        sim = Simulation!(
+            ImplicitModel,
+            threebus_sys, #system,
+            path,
+            tspan, #time span
+            Ybus_change, #Type of Fault
+        )
 
-    #Obtain small signal results for initial conditions
-    small_sig = small_signal_analysis(sim)
+        #Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        @test small_sig.stable
 
-    #Solve problem in equilibrium
-    execute!(sim, IDA())
+        #Solve problem in equilibrium
+        execute!(sim, IDA())
 
-    #Obtain data for voltages
-    series = get_voltagemag_series(sim, 102)
-    diff = [0.0]
-    res = get_init_values_for_comparison(sim)
-    for (k, v) in test10_x0_init
-        diff[1] += LinearAlgebra.norm(res[k] - v)
+        #Obtain data for voltages
+        series = get_voltagemag_series(sim, 102)
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test10_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+        @test sim.solution.retcode == :Success
+    finally
+        @info("removing test files")
+        rm(path, force = true, recursive = true)
     end
-    @test (diff[1] < 1e-3)
-    @test sim.solution.retcode == :Success
-    @test small_sig.stable
-finally
-    @info("removing test files")
-    rm(path, force = true, recursive = true)
+end
+
+@testset "Test 11 Dynamic Branches MassMatrixModel" begin
+    path = (joinpath(pwd(), "test-11"))
+    !isdir(path) && mkdir(path)
+    try
+        #Define Simulation Problem
+        sim = Simulation!(
+            MassMatrixModel,
+            threebus_sys, #system,
+            path,
+            tspan, #time span
+            Ybus_change, #Type of Fault
+        )
+
+        #Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        @test small_sig.stable
+
+        #Solve problem in equilibrium
+        execute!(sim, Rodas5())
+
+        #Obtain data for voltages
+        series = get_voltagemag_series(sim, 102)
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test10_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+        @test sim.solution.retcode == :Success
+    finally
+        @info("removing test files")
+        rm(path, force = true, recursive = true)
+    end
 end
