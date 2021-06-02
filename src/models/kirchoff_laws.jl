@@ -6,8 +6,8 @@ function Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i)
     LinearAlgebra.mul!(I_bus, Ybus, (V_r + V_i .* 1im))
     bus_count = length(I_bus)
     for n in eachindex(I_bus)
-        I_balance[n] = real(I_bus[n]) - I_injections_r[n]
-        I_balance[n + bus_count] = imag(I_bus[n]) - I_injections_i[n]
+        I_balance[n] = I_injections_r[n] - real(I_bus[n])
+        I_balance[n + bus_count] = I_injections_i[n] - imag(I_bus[n])
     end
 
     return I_balance
