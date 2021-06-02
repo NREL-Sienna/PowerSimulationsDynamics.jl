@@ -49,8 +49,8 @@ function index_dynamic_lines!(
     b_from = PSY.get_b(branch).from
     b_to = PSY.get_b(branch).to
     total_shunts = get_total_shunts(inputs)
-    total_shunts[bus_ix_from, bus_ix_from] += b_from
-    total_shunts[bus_ix_to, bus_ix_to] += b_to
+    total_shunts[bus_ix_from, bus_ix_from] += 1im * b_from
+    total_shunts[bus_ix_to, bus_ix_to] += 1im * b_to
     b_from > 0.0 &&
         _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_from, n_buses)
     b_to > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_to, n_buses)

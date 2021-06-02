@@ -224,7 +224,7 @@ function _mass_matrix_inputs!(inputs::SimulationInputs)
         shunts = get_total_shunts(inputs)
         n_buses = get_bus_count(inputs)
         for i in 1:n_buses
-            val = shunts[i, i]
+            val = imag(shunts[i, i])
             if val > 0
                 mass_matrix[i, i] =
                     mass_matrix[i + n_buses, i + n_buses] = val * (1 / (2.0 * π * sys_f))

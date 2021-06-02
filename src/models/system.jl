@@ -102,7 +102,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
     end
 
     out[bus_range] =
-        Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i) -
+        Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i) +
         M[bus_range, bus_range] * dx[bus_range]
 end
 
