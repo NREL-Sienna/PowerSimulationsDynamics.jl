@@ -27,50 +27,102 @@ t_offset = 9.0
 #Define Fault using Callbacks
 Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
 
-path = (joinpath(pwd(), "test-08"))
-!isdir(path) && mkdir(path)
-try
-    #Define Simulation Problem
-    sim = Simulation!(
-        ImplicitModel,
-        omib_sys, # system
-        path,
-        tspan,
-        Pref_change,
-    )
+@testset "Test 08 VSM Inverter Infinite Bus ImplicitModel" begin
+    path = (joinpath(pwd(), "test-08"))
+    !isdir(path) && mkdir(path)
+    try
+        #Define Simulation Problem
+        sim = Simulation!(
+            ImplicitModel,
+            omib_sys, # system
+            path,
+            tspan,
+            Pref_change,
+        )
 
-    small_sig = small_signal_analysis(sim)
+        small_sig = small_signal_analysis(sim)
+        @test small_sig.stable
 
-    #Solve problem in equilibrium
-    execute!(sim, Sundials.IDA(), dtmax = 0.005, saveat = 0.005)
+        #Solve problem in equilibrium
+        execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
-    #Obtain frequency data
-    series = get_state_series(sim, ("generator-102-1", :ω_oc))
-    t = series[1]
-    ω = series[2]
+        #Obtain frequency data
+        series = get_state_series(sim, ("generator-102-1", :ω_oc))
+        t = series[1]
+        ω = series[2]
 
-    #Obtain PSCAD benchmark data
-    M = get_csv_data(csv_file)
-    t_pscad = M[:, 1] .- t_offset
-    ω_pscad = M[:, 2]
+        #Obtain PSCAD benchmark data
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        ω_pscad = M[:, 2]
 
-    diff = [0.0]
-    res = get_init_values_for_comparison(sim)
-    for (k, v) in test08_x0_init
-        diff[1] += LinearAlgebra.norm(res[k] - v)
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test08_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+        @test sim.solution.retcode == :Success
+
+        power = PSID.get_activepower_series(sim, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4
+        @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
+
+    finally
+        @info("removing test files")
+        rm(path, force = true, recursive = true)
     end
-    @test (diff[1] < 1e-3)
-    @test sim.solution.retcode == :Success
-    @test small_sig.stable
+end
 
-    power = PSID.get_activepower_series(sim, "generator-102-1")
-    rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
-    @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
-    @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
-    @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4
-    @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
+@testset "Test 08 VSM Inverter Infinite Bus MassMatrixModel" begin
+    path = (joinpath(pwd(), "test-08"))
+    !isdir(path) && mkdir(path)
+    try
+        #Define Simulation Problem
+        sim = Simulation!(
+            MassMatrixModel,
+            omib_sys, # system
+            path,
+            tspan,
+            Pref_change,
+        )
 
-finally
-    @info("removing test files")
-    rm(path, force = true, recursive = true)
+        # small_sig = small_signal_analysis(sim)
+        # @test small_sig.stable
+
+        #Solve problem in equilibrium
+        execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
+
+        #Obtain frequency data
+        series = get_state_series(sim, ("generator-102-1", :ω_oc))
+        t = series[1]
+        ω = series[2]
+
+        #Obtain PSCAD benchmark data
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        ω_pscad = M[:, 2]
+
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test08_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+        @test sim.solution.retcode == :Success
+
+        power = PSID.get_activepower_series(sim, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4
+        @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
+
+    finally
+        @info("removing test files")
+        rm(path, force = true, recursive = true)
+    end
 end

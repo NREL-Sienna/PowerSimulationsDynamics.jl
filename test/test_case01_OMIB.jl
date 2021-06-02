@@ -30,10 +30,11 @@ Ybus_change = NetworkSwitch(
             path,
             (0.0, 20.0), #time span
             Ybus_change,
-        ) #Type of Fault
+        )
 
         #Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
+        @test small_sig.stable
 
         #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
@@ -61,8 +62,6 @@ Ybus_change = NetworkSwitch(
         @test (diff[1] < 1e-3)
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
-        #Test Small Signal
-        @test small_sig.stable
         #Test Transient Simulation Results
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
         # PSSE results are in Degrees
