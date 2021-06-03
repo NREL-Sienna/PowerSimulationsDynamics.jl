@@ -20,8 +20,6 @@ function mdl_inner_ode!(
     Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
 
     #Obtain inner variables for component
-    #Vd_filter = get_inner_vars(dynamic_device)[Vr_filter_var]
-    #Vq_filter = get_inner_vars(dynamic_device)[Vi_filter_var]
     ω_oc = get_inner_vars(dynamic_device)[ω_oc_var]
     θ_oc = get_inner_vars(dynamic_device)[θ_oc_var]
     v_refr = get_inner_vars(dynamic_device)[V_oc_var]
@@ -106,6 +104,80 @@ function mdl_inner_ode!(
     #Active Damping LPF (internal state)
     output_ode[local_ix[5]] = ωad * V_dq_filter[d] - ωad * ϕ_d
     output_ode[local_ix[6]] = ωad * V_dq_filter[q] - ωad * ϕ_q
+
+    #Update inner_vars
+    #Modulation Commands to Converter
+    get_inner_vars(dynamic_device)[md_var] = Vd_cnv_ref / Vdc
+    get_inner_vars(dynamic_device)[mq_var] = Vq_cnv_ref / Vdc
+end
+
+
+function mdl_inner_ode!(
+    device_states,
+    output_ode,
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(dynamic_device, PSY.CurrentModeControl)
+    # Ir_filter = device_states[external_ix[1]]
+    # Ii_filter = device_states[external_ix[2]]
+    Ir_cnv = device_states[external_ix[3]]
+    Ii_cnv = device_states[external_ix[4]]
+    Vr_filter = device_states[external_ix[5]] #TODO: Should be inner reference after initialization
+    Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
+
+    #Obtain inner variables for component
+    ω_oc = get_inner_vars(dynamic_device)[ω_oc_var]
+    θ_oc = get_inner_vars(dynamic_device)[θ_oc_var]
+    Vdc = get_inner_vars(dynamic_device)[Vdc_var]
+
+    #Get Current Controller parameters
+    inner_control = PSY.get_inner_control(dynamic_device)
+    filter = PSY.get_filter(dynamic_device)
+    kpc = PSY.get_kpc(inner_control)
+    kic = PSY.get_kic(inner_control)
+    kffv = PSY.get_kffv(inner_control)
+    lf = PSY.get_lf(filter)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, PSY.CurrentModeControl)
+
+    #Define internal states for frequency estimator
+    internal_states = @view device_states[local_ix]
+    γ_d = internal_states[1]
+    γ_q = internal_states[2]
+
+    #Transformations to dq frame
+    I_dq_cnv = ri_dq(θ_oc + pi / 2) * [Ir_cnv; Ii_cnv]
+    V_dq_filter = ri_dq(θ_oc + pi / 2) * [Vr_filter; Vi_filter]
+
+    #Input Control Signal - Links to SRF Current Controller
+    Id_cnv_ref = get_inner_vars(dynamic_device)[Id_oc_var]
+    Iq_cnv_ref = get_inner_vars(dynamic_device)[Iq_oc_var]
+
+    #Current Control ODEs
+    #PI Integrator (internal state)
+    output_ode[local_ix[1]] = Id_cnv_ref - I_dq_cnv[d]
+    output_ode[local_ix[2]] = Iq_cnv_ref - I_dq_cnv[q]
+
+    #References for Converter Output Voltage
+    Vd_cnv_ref = (
+        kpc * (Id_cnv_ref - I_dq_cnv[d]) + kic * γ_d - ω_oc * lf * I_dq_cnv[q] +
+        kffv * V_dq_filter[d]
+    )
+    Vq_cnv_ref = (
+        kpc * (Iq_cnv_ref - I_dq_cnv[q]) +
+        kic * γ_q +
+        ω_oc * lf * I_dq_cnv[d] +
+        kffv * V_dq_filter[q]
+    )
 
     #Update inner_vars
     #Modulation Commands to Converter
