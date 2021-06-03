@@ -41,14 +41,18 @@ Inverter Inner Vars:
 * `Vdc_var` :: DC voltage supplied by the DC source
 * `Vr_filter_var` :: Voltage seen in the capacitor of the filter in the R-component
 * `Vi_filter_var` :: Voltage seen in the capacitor of the filter in the I-component
+* `θ_freq_estimator_var` :: Angle estimated by the frequency estimator.
 * `ω_freq_estimator_var` :: Frequency estimated by the frequency estimator.
-* `V_oc_var` :: Control voltage supplied from the outer loop control to the inner loop
+* `V_oc_var` :: Control voltage reference in the d-axis supplied from the outer loop control to the inner loop (for Voltage Mode Control)
+* `Id_oc_var` :: Control current reference in the d-axis supplied from the outer loop control to the inner loop (for Current Mode Control)
+* `Iq_oc_var` :: Control current reference in the q-axis supplied from the outer loop control to the inner loop (for Current Mode Control)
 * `ω_oc_var` :: Control frequency supplied from the outer loop control the inner loop
 * `θ_oc_var` :: Variation of the angle (PLL or VSM) of the inverter
 * `VR_inv_var` :: Real terminal voltage on the inverter
 * `VI_inv_var` :: Imaginary terminal voltage on the inverter
 * `Vr_cnv_var` :: Voltage supplied from the converter in the R-component
 * `Vi_cnv_var` :: Voltage supplied from the converter in the I-component
+* `P_ES_var` :: Power supplied from the Energy Source side
 """
 @enum inverter_inner_vars begin
     md_var = 1
@@ -56,15 +60,18 @@ Inverter Inner Vars:
     Vdc_var = 3
     Vr_filter_var = 4
     Vi_filter_var = 5
-    ω_freq_estimator_var = 6
-    V_oc_var = 7
-    ω_oc_var = 8
-    θ_oc_var = 9
-    VR_inv_var = 10
-    VI_inv_var = 11
-    Vr_cnv_var = 12
-    Vi_cnv_var = 13
-    P_ES_var = 14 #Power from energy source
+    θ_freq_estimator_var = 6
+    ω_freq_estimator_var = 7
+    V_oc_var = 8
+    Id_oc_var = 9
+    Iq_oc_var = 10
+    ω_oc_var = 11
+    θ_oc_var = 12
+    VR_inv_var = 13
+    VI_inv_var = 14
+    Vr_cnv_var = 15
+    Vi_cnv_var = 16
+    P_ES_var = 17 
 end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
