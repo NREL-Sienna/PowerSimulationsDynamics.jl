@@ -91,7 +91,7 @@ function mdl_freq_estimator_ode!(
 }
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(dynamic_device, PSY.KauraPLL)
+    external_ix = get_input_port_ix(dynamic_device, PSY.ReducedOrderPLL)
     Vr_filter = device_states[external_ix[1]]
     Vi_filter = device_states[external_ix[2]]
 
@@ -106,7 +106,7 @@ function mdl_freq_estimator_ode!(
     ωb = 2.0 * pi * f0
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(dynamic_device, PSY.KauraPLL)
+    local_ix = get_local_state_ix(dynamic_device, PSY.ReducedOrderPLL)
 
     #Define internal states for frequency estimator
     internal_states = @view device_states[local_ix]
@@ -127,12 +127,12 @@ function mdl_freq_estimator_ode!(
     output_ode[local_ix[2]] = vpll_q
     #PLL Frequency Deviation (internal state)
     #𝜕θ_pll/𝜕t, D'Arco ESPR122 eqn. 15
-    output_ode[local_ix[4]] = ωb * (kp_pll * vpll_q + ki_pll * ϵ_pll)
+    output_ode[local_ix[3]] = ωb * (kp_pll * vpll_q + ki_pll * ϵ_pll)
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
     get_inner_vars(dynamic_device)[ω_freq_estimator_var] =
-        (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + ω_sys)
+        (kp_pll * vpll_q + ki_pll * ϵ_pll + ω_sys)
     get_inner_vars(dynamic_device)[θ_freq_estimator_var] = θ_pll
 end
 

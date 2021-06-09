@@ -176,7 +176,6 @@ function mdl_outer_ode!(
     get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
 end
 
-
 function mdl_outer_ode!(
     device_states,
     output_ode,
@@ -239,7 +238,7 @@ function mdl_outer_ode!(
     internal_states = @view device_states[local_ix]
     σp_oc = internal_states[1]
     p_oc = internal_states[2]
-    σq_oc =internal_states[3]
+    σq_oc = internal_states[3]
     q_oc = internal_states[4]
 
     #Obtain additional expressions
@@ -255,6 +254,6 @@ function mdl_outer_ode!(
     #Update inner vars
     get_inner_vars(dynamic_device)[θ_oc_var] = θ_pll
     get_inner_vars(dynamic_device)[ω_oc_var] = ω_pll
-    get_inner_vars(dynamic_device)[Id_oc_var] = Kp_p * (p_ref - p_oc) + Ki_p * σp_oc
-    get_inner_vars(dynamic_device)[Iq_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
+    get_inner_vars(dynamic_device)[Iq_oc_var] = Kp_p * (p_ref - p_oc) + Ki_p * σp_oc
+    get_inner_vars(dynamic_device)[Id_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
 end

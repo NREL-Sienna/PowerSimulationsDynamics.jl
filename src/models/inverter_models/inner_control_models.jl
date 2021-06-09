@@ -125,7 +125,6 @@ function mdl_inner_ode!(
     get_inner_vars(dynamic_device)[mq_var] = Vq_cnv_ref / Vdc
 end
 
-
 function mdl_inner_ode!(
     device_states,
     output_ode,
