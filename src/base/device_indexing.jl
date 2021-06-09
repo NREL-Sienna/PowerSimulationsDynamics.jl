@@ -86,14 +86,19 @@ function index_dynamic_injection(
     return
 end
 
-var_count(::PSY.DynamicGenerator) = 9
-var_count(::PSY.DynamicInverter) = 14
+function _attach_inner_vars!(
+    dynamic_device::PSY.DynamicGenerator,
+    ::Type{T} = Real,
+) where {T <: Real}
+    dynamic_device.ext[INNER_VARS] = zeros(T, GEN_INNER_VARS_SIZE)
+    return
+end
 
-function attach_inner_vars!(
-    dynamic_device::T,
-    ::Type{U} = Real,
-) where {T <: PSY.DynamicInjection, U <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(U, var_count(dynamic_device))
+function _attach_inner_vars!(
+    dynamic_device::PSY.DynamicInverter,
+    ::Type{T} = Real,
+) where {T <: Real}
+    dynamic_device.ext[INNER_VARS] = zeros(T, INV_INNER_VARS_SIZE)
     return
 end
 
