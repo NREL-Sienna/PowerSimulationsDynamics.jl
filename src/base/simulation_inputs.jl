@@ -152,20 +152,6 @@ function _get_Ybus(sys::PSY.System)
     return Ybus, lookup
 end
 
-function add_states_to_global!(
-    global_state_index::MAPPING_DICT,
-    state_space_ix::Vector{Int},
-    device::PSY.Device,
-)
-    global_state_index[PSY.get_name(device)] = Dict{Symbol, Int}()
-    for s in PSY.get_states(device)
-        state_space_ix[1] += 1
-        global_state_index[PSY.get_name(device)][s] = state_space_ix[1]
-    end
-
-    return
-end
-
 function _init_DAE_vector!(n_vars::Int, n_buses::Int)
     DAE_vector = trues(n_vars)
     DAE_vector[1:(n_buses * 2)] .= false

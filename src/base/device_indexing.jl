@@ -61,6 +61,20 @@ function index_static_injection(inputs::SimulationInputs, ::PSY.StaticInjection)
     return
 end
 
+function add_states_to_global!(
+    global_state_index::MAPPING_DICT,
+    state_space_ix::Vector{Int},
+    device::PSY.Device,
+)
+    global_state_index[PSY.get_name(device)] = Dict{Symbol, Int}()
+    for s in PSY.get_states(device)
+        state_space_ix[1] += 1
+        global_state_index[PSY.get_name(device)][s] = state_space_ix[1]
+    end
+
+    return
+end
+
 function index_dynamic_injection(
     inputs::SimulationInputs,
     dynamic_device::PSY.DynamicInjection,
