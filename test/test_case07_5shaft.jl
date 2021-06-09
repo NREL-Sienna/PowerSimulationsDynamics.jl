@@ -24,7 +24,7 @@ Ybus_change = NetworkSwitch(
     Ybus_fault,
 ) #New YBus
 
-@testset "Test 07 5-shaft model ImplicitModel" begin
+@testset "Test 07 5-Mass-shaft model ImplicitModel" begin
     path = (joinpath(pwd(), "test-07"))
     !isdir(path) && mkdir(path)
     try
@@ -63,7 +63,7 @@ Ybus_change = NetworkSwitch(
     end
 end
 
-@testset "Test 07 5-shaft model MassMatrixModel" begin
+@testset "Test 07 5-Mass-shaft model MassMatrixModel" begin
     path = (joinpath(pwd(), "test-07"))
     !isdir(path) && mkdir(path)
     try
