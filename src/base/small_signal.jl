@@ -36,6 +36,21 @@ function _calculate_forwardiff_jacobian(
     return jacobian
 end
 
+function _calculate_forwardiff_jacobian(
+    sim::Simulation{MassMatrixModel},
+    x_eval::Vector{Float64},
+)
+    sysf! = (dx, x) -> system_mass_matrix!(
+        dx,            #derivatives equal to zero
+        x,              #states
+        sim.simulation_inputs,     #Parameters
+        0.0,            #time equals to zero.
+    )
+    dx = zeros(var_count) #Define a vector of zeros for the output
+    jacobian = ForwardDiff.jacobian(sysf!, dx, x_eval)
+    return jacobian
+end
+
 function _make_reduce_jacobian_index(global_index, diff_states)
     jac_index = Dict{String, Dict{Symbol, Int}}()
     for (device_name, device_index) in global_index
