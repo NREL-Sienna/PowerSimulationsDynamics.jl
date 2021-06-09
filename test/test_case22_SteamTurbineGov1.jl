@@ -30,9 +30,8 @@ sys = System(raw_file, dyr_file);
         #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
-        #Obtain small signal results for initial conditions
-        #NOT WORKING DUE TO TYPES ON EXECUTE
-        #small_sig = small_signal_analysis(sim)
+        small_sig = small_signal_analysis(sim; reset_simulation = true)
+        @test small_sig.stable
 
         series = get_state_series(sim, ("generator-102-1", :δ))
         t = series[1]
@@ -50,8 +49,6 @@ sys = System(raw_file, dyr_file);
         @test (diff[1] < 1e-3)
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
-        #Test Small Signal
-        #@test small_sig.stable
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
@@ -75,11 +72,11 @@ end
         )
 
         #Solve problem
-        execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
+        execute!(sim, Rodas5(autodiff = false), dtmax = 0.005, saveat = 0.005)
 
         #Obtain small signal results for initial conditions
-        #NOT WORKING DUE TO TYPES ON EXECUTE
-        #small_sig = small_signal_analysis(sim)
+        # small_sig = small_signal_analysis(sim)
+        # @test small_sig.stable
 
         series = get_state_series(sim, ("generator-102-1", :δ))
         t = series[1]
@@ -97,8 +94,6 @@ end
         @test (diff[1] < 1e-3)
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
-        #Test Small Signal
-        #@test small_sig.stable
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2

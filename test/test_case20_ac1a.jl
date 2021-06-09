@@ -46,8 +46,8 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond)
         #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
-        #Obtain small signal results for initial conditions. Testing the simulation reset
-        #small_sig = small_signal_analysis(sim; reset_simulation = true)
+        small_sig = small_signal_analysis(sim; reset_simulation = true)
+        @test small_sig.stable
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :δ))
@@ -70,8 +70,6 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond)
         @test (diff[1] < 1e-3)
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
-        #Test Small Signal
-        #@test small_sig.stable
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
@@ -100,7 +98,7 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond)
         ) #Type of Fault
 
         #Solve problem
-        execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
+        execute!(sim, Rodas5(autodiff = false), dtmax = 0.005, saveat = 0.005)
 
         #Obtain small signal results for initial conditions. Testing the simulation reset
         #small_sig = small_signal_analysis(sim; reset_simulation = true)

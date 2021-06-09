@@ -21,8 +21,7 @@ const IS = InfrastructureSystems
 const PSY = PowerSystems
 const PSID = PowerSimulationsDynamics
 
-const DISABLED_TEST_FILES =
-    ["test_case20_ac1a.jl", "test_case21_gast.jl", "test_case22_SteamTurbineGov1.jl"]
+const DISABLED_TEST_FILES = []
 
 """
 Copied @includetests from https://github.com/ssfrr/TestSetExtensions.jl.

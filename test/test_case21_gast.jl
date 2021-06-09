@@ -25,13 +25,12 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
             BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault
         )
 
+        #Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        @test small_sig.stable
+
         #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
-
-        #Obtain small signal results for initial conditions
-        #NOT WORKING DUE TO TYPES ON EXECUTE
-        #small_sig = small_signal_analysis(sim)
-        #@test small_sig.stable
 
         series = get_state_series(sim, ("generator-102-1", :δ))
         t = series[1]
@@ -73,10 +72,8 @@ end
         )
 
         #Solve problem
-        execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
+        execute!(sim, Rodas5(autodiff = false), dtmax = 0.005, saveat = 0.005)
 
-        #Obtain small signal results for initial conditions
-        #NOT WORKING DUE TO TYPES ON EXECUTE
         #small_sig = small_signal_analysis(sim)
         #@test small_sig.stable
 
