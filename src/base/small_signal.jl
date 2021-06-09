@@ -147,7 +147,7 @@ function _get_participation_factors(
     return participation_factors
 end
 
-function small_signal_analysis(sim::Simulation{ImplicitModel}; kwargs...)
+function small_signal_analysis(sim::Simulation; kwargs...)
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
     sim.status = CONVERTED_FOR_SMALL_SIGNAL
     x_eval = get(kwargs, :operating_point, sim.x0_init)
