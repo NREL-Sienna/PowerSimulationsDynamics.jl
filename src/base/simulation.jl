@@ -28,7 +28,6 @@ function Simulation(
     console_level = Logging.Warn,
     file_level = Logging.Debug,
 ) where {T <: SimulationModel}
-
     simulation_inputs = SimulationInputs(sys, tspan)
 
     if isempty(initial_conditions)

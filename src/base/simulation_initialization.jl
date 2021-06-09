@@ -1,4 +1,8 @@
-function _power_flow_solution!(initial_guess::Vector{Float64}, sys::PSY.System, inputs::SimulationInputs)
+function _power_flow_solution!(
+    initial_guess::Vector{Float64},
+    sys::PSY.System,
+    inputs::SimulationInputs,
+)
     res = PSY.solve_powerflow!(sys)
     if !res
         @error("PowerFlow failed to solve")
@@ -101,11 +105,7 @@ function _check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationI
     return BUILD_INCOMPLETE
 end
 
-function _nlsolve_call(
-    initial_guess,
-    inputs::SimulationInputs,
-    tolerance::Float64,
-)
+function _nlsolve_call(initial_guess, inputs::SimulationInputs, tolerance::Float64)
     dx0 = zeros(length(initial_guess)) #Define a vector of zeros for the derivative
     inif! = (out, x) -> system_implicit!(
         out,    #output of the function
@@ -143,7 +143,10 @@ function _convergence_check(sys_solve::NLsolve.SolverResults, tol::Float64)
     return NLsolve.converged(sys_solve)
 end
 
-function _refine_initial_condition!(initial_guess::Vector{Float64}, inputs::SimulationInputs)
+function _refine_initial_condition!(
+    initial_guess::Vector{Float64},
+    inputs::SimulationInputs,
+)
     @debug "Start NLSolve System Run"
     @debug initial_guess
     converged = false
