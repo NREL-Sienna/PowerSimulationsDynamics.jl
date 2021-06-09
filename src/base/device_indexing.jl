@@ -81,7 +81,7 @@ function _attach_inner_vars!(
     dynamic_device::PSY.DynamicGenerator,
     ::Type{T} = Real,
 ) where {T <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(T, 9)
+    dynamic_device.ext[INNER_VARS] = zeros(T, GEN_INNER_VARS_SIZE)
     return
 end
 
@@ -89,7 +89,7 @@ function _attach_inner_vars!(
     dynamic_device::PSY.DynamicInverter,
     ::Type{T} = Real,
 ) where {T <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(T, 14)
+    dynamic_device.ext[INNER_VARS] = zeros(T, INV_INNER_VARS_SIZE)
     return
 end
 
