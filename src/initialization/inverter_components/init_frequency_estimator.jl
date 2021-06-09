@@ -14,7 +14,6 @@ function initialize_frequency_estimator!(
 
     #Get parameters
     pll_control = PSY.get_freq_estimator(dynamic_device)
-    ω_lp = PSY.get_ω_lp(pll_control)
     kp_pll = PSY.get_kp_pll(pll_control)
     ki_pll = PSY.get_ki_pll(pll_control)
 
@@ -77,7 +76,6 @@ function initialize_frequency_estimator!(
 
     #Get parameters
     pll_control = PSY.get_freq_estimator(dynamic_device)
-    ω_lp = PSY.get_ω_lp(pll_control)
     kp_pll = PSY.get_kp_pll(pll_control)
     ki_pll = PSY.get_ki_pll(pll_control)
 
@@ -94,7 +92,7 @@ function initialize_frequency_estimator!(
         V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
 
         out[1] = V_dq_pll[q] - vpll_q
-        out[2] = vpll_q 
+        out[2] = vpll_q
         out[3] = kp_pll * vpll_q + ki_pll * ϵ_pll
     end
 

@@ -134,7 +134,6 @@ function initialize_inner!(
     end
 end
 
-
 function initialize_inner!(
     device_states,
     static::PSY.StaticInjection,
@@ -160,6 +159,8 @@ function initialize_inner!(
     ω_oc = PSY.get_ω_ref(dynamic_device)
     θ0_oc = get_inner_vars(dynamic_device)[θ_freq_estimator_var]
     Vdc = get_inner_vars(dynamic_device)[Vdc_var]
+    Id_cnv_ref = get_inner_vars(dynamic_device)[Id_oc_var]
+    Iq_cnv_ref = get_inner_vars(dynamic_device)[Iq_oc_var]
 
     #Obtain output of converter
     Vr_cnv0 = get_inner_vars(dynamic_device)[Vr_cnv_var]
@@ -173,32 +174,19 @@ function initialize_inner!(
     kffv = PSY.get_kffv(inner_control)
     lf = PSY.get_lf(filter)
 
-    #Obtain Outer Control Parameters (only work with Grid Following outer controllers)
-    outer_control = PSY.get_outer_control(dynamic_device)
-    active_control = PSY.get_active_power(outer_control)
-    reactive_control = PSY.get_reactive_power(outer_control)
-    Ki_p = PSY.get_Ki_p(active_control)
-    Ki_q = PSY.get_Ki_q(reactive_control)
-
     function f!(out, x)
-        σp_oc = x[1]
-        σq_oc = x[2]
-        γ_d = x[3]
-        γ_q = x[4]
+        γ_d = x[1]
+        γ_q = x[2]
 
         #Reference Frame Transformations
         I_dq_cnv = ri_dq(θ0_oc + pi / 2) * [Ir_cnv; Ii_cnv]
         V_dq_filter = ri_dq(θ0_oc + pi / 2) * [Vr_filter; Vi_filter]
         V_dq_cnv0 = ri_dq(θ0_oc + pi / 2) * [Vr_cnv0; Vi_cnv0]
 
-        #Current controller references
-        Id_cnv_ref = Ki_p * σp_oc
-        Iq_cnv_ref = Ki_q * σq_oc
-
         #References for Converter Output Voltage
         Vd_cnv_ref = (
-        kpc * (Id_cnv_ref - I_dq_cnv[d]) + kic * γ_d - ω_oc * lf * I_dq_cnv[q] +
-        kffv * V_dq_filter[d]
+            kpc * (Id_cnv_ref - I_dq_cnv[d]) + kic * γ_d - ω_oc * lf * I_dq_cnv[q] +
+            kffv * V_dq_filter[d]
         )
         Vq_cnv_ref = (
             kpc * (Iq_cnv_ref - I_dq_cnv[q]) +
@@ -207,25 +195,15 @@ function initialize_inner!(
             kffv * V_dq_filter[q]
         )
 
-        out[1] = Id_cnv_ref - I_dq_cnv[d]
-        out[2] = Iq_cnv_ref - I_dq_cnv[q]
-        out[3] = Vd_cnv_ref - V_dq_cnv0[d]
-        out[4] = Vq_cnv_ref - V_dq_cnv0[q]
+        out[1] = Vd_cnv_ref - V_dq_cnv0[d]
+        out[2] = Vq_cnv_ref - V_dq_cnv0[q]
     end
-    x0 = [0.0, 0.0, 0.0, 0.0]
+    x0 = [0.0, 0.0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in Inner Control failed")
     else
         sol_x0 = sol.zero
-        #Update Outer Control Integrators:
-        outer_ix = get_local_state_ix(dynamic_device, PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI})
-        outer_states = @view device_states[outer_ix]
-        outer_states[1] = sol_x0[1]
-        outer_states[3] = sol_x0[2]
-        #Update Current References from Outer Control
-        get_inner_vars(dynamic_device)[Id_oc_var] =  Ki_p * sol_x0[1]
-        get_inner_vars(dynamic_device)[Iq_oc_var] =  Ki_q * sol_x0[2]
         #Update Converter modulation
         m0_dq = (ri_dq(θ0_oc + pi / 2) * [Vr_cnv0; Vi_cnv0]) ./ Vdc
         get_inner_vars(dynamic_device)[md_var] = m0_dq[d]
@@ -233,7 +211,7 @@ function initialize_inner!(
         #Update states
         inner_ix = get_local_state_ix(dynamic_device, PSY.CurrentModeControl)
         inner_states = @view device_states[inner_ix]
-        inner_states[1] = sol_x0[3] #γ_d
-        inner_states[2] = sol_x0[4] #γ_q
+        inner_states[1] = sol_x0[1] #γ_d
+        inner_states[2] = sol_x0[2] #γ_q
     end
 end
