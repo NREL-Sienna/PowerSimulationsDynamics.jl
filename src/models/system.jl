@@ -50,7 +50,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
             dynamic_device,
             inputs,
         )
-        out[ix_range] = injection_ode[ode_range] - M[ix_range, ix_range] * dx[ix_range]
+        out[ix_range] .= injection_ode[ode_range] .- M[ix_range, ix_range] * dx[ix_range]
     end
 
     for d in get_static_injections_data(inputs)
@@ -97,12 +97,12 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
                 br,
                 inputs,
             )
-            out[ix_range] = branches_ode[ode_range] - M[ix_range, ix_range] * dx[ix_range]
+            out[ix_range] .= branches_ode[ode_range] .- M[ix_range, ix_range] * dx[ix_range]
         end
     end
 
-    out[bus_range] =
-        Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i) -
+    out[bus_range] .=
+        Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i) .-
         M[bus_range, bus_range] * dx[bus_range]
 end
 
@@ -149,7 +149,7 @@ function system_mass_matrix!(dx, x, inputs::SimulationInputs, t)
             dynamic_device,
             inputs,
         )
-        dx[ix_range] = injection_ode[ode_range]
+        dx[ix_range] .= injection_ode[ode_range]
     end
 
     for d in get_static_injections_data(inputs)
@@ -196,9 +196,9 @@ function system_mass_matrix!(dx, x, inputs::SimulationInputs, t)
                 br,
                 inputs,
             )
-            dx[ix_range] = branches_ode[ode_range]
+            dx[ix_range] .= branches_ode[ode_range]
         end
     end
 
-    dx[bus_range] = Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i)
+    dx[bus_range] .= Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i)
 end
