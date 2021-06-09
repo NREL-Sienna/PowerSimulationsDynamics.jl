@@ -28,6 +28,7 @@ function Simulation(
     console_level = Logging.Warn,
     file_level = Logging.Debug,
 ) where {T <: SimulationModel}
+    PSY.set_units_base_system!(sys, "DEVICE_BASE")
     simulation_inputs = SimulationInputs(sys, tspan)
 
     if isempty(initial_conditions)
@@ -176,18 +177,8 @@ end
 function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
     sim.status = BUILD_INCOMPLETE
-    PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
     build!(sim.simulation_inputs, T, simulation_system)
     @debug "Simulation Inputs Created"
-    return
-end
-
-function _initialize_simulation!(sim::Simulation{T}) where {T <: SimulationModel}
-    @info("Initializing Simulation States")
-    sim.initialized = calculate_initial_conditions!(sim)
-    if sim.status == BUILD_FAILED
-        @error("Simulation Build Failed. Simulations status = $(sim.status)")
-    end
     return
 end
 
@@ -214,55 +205,85 @@ function _build_perturbations!(sim::Simulation)
     return
 end
 
+function _initialize_simulation!(sim::Simulation; kwargs...)
+    if get(kwargs, :initialize_simulation, true)
+        @info("Initializing Simulation States")
+        sim.initialized = calculate_initial_conditions!(sim)
+    else
+        sim.initialized = true
+        sim.status = SIMULATION_INITIALIZED
+    end
+    return
+end
+
 function _build!(sim::Simulation{ImplicitModel}; kwargs...)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
+    sim.status = BUILD_INCOMPLETE
     _build_inputs!(sim)
+    _initialize_simulation!(sim; kwargs...)
     _build_perturbations!(sim)
-    if get(kwargs, :initialize_simulation, true)
-        _initialize_simulation!(sim)
+    if sim.status != BUILD_FAILED
+        try
+            simulation_inputs = get_simulation_inputs(sim)
+            simulation_pre_step!(simulation_inputs, Float64)
+            var_count = get_variable_count(simulation_inputs)
+            dx0 = zeros(Float64, var_count)
+            sim.problem = SciMLBase.DAEProblem(
+                system_implicit!,
+                dx0,
+                sim.x0_init,
+                get_tspan(sim.simulation_inputs),
+                simulation_inputs,
+                differential_vars = get_DAE_vector(simulation_inputs);
+                kwargs...,
+            )
+            sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
+            sim.status = BUILT
+            @info "Simulations status = $(sim.status)"
+        catch e
+            bt = catch_backtrace()
+            @error "DiffEq DAEProblem failed to build" exception = e, bt
+            sim.status = BUILD_FAILED
+        end
+    else
+        @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
     end
-    simulation_inputs = get_simulation_inputs(sim)
-    simulation_pre_step!(simulation_inputs, Float64)
-    var_count = get_variable_count(simulation_inputs)
-    dx0 = zeros(Float64, var_count)
-
-    sim.problem = SciMLBase.DAEProblem(
-        system_implicit!,
-        dx0,
-        sim.x0_init,
-        get_tspan(sim.simulation_inputs),
-        simulation_inputs,
-        differential_vars = get_DAE_vector(simulation_inputs);
-        kwargs...,
-    )
-    sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
-    sim.status = BUILT
-    @info "Completed Build Successfully. Simulations status = $(sim.status)"
     return
 end
 
 function _build!(sim::Simulation{MassMatrixModel}; kwargs...)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
+    sim.status = BUILD_INCOMPLETE
     _build_inputs!(sim)
+    _initialize_simulation!(sim; kwargs...)
     _build_perturbations!(sim)
-    if get(kwargs, :initialize_simulation, true)
-        _initialize_simulation!(sim)
+
+    if sim.status != BUILD_FAILED
+        try
+            simulation_inputs = get_simulation_inputs(sim)
+            # TODO: Not use Real here. It has a bad performance hit.
+            simulation_pre_step!(simulation_inputs, Real)
+            sim.problem = SciMLBase.ODEProblem(
+                SciMLBase.ODEFunction(
+                    system_mass_matrix!,
+                    mass_matrix = get_mass_matrix(simulation_inputs),
+                ),
+                sim.x0_init,
+                get_tspan(sim.simulation_inputs),
+                simulation_inputs;
+                kwargs...,
+            )
+            sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
+            sim.status = BUILT
+            @info "Simulations status = $(sim.status)"
+        catch e
+            bt = catch_backtrace()
+            @error "DiffEq ODEProblem failed to build" exception = e, bt
+            sim.status = BUILD_FAILED
+        end
+    else
+        @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
     end
-    simulation_inputs = get_simulation_inputs(sim)
-    simulation_pre_step!(simulation_inputs, Real)
-    sim.problem = SciMLBase.ODEProblem(
-        SciMLBase.ODEFunction(
-            system_mass_matrix!,
-            mass_matrix = get_mass_matrix(simulation_inputs),
-        ),
-        sim.x0_init,
-        get_tspan(sim.simulation_inputs),
-        simulation_inputs;
-        kwargs...,
-    )
-    sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
-    sim.status = BUILT
-    @info "Completed Build Successfully. Simulations status = $(sim.status)"
     return
 end
 
@@ -284,7 +305,11 @@ function simulation_pre_step!(
     ::Type{T},
 ) where {T <: Real}
     reset_simulation = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_simulation
-    if sim.status != BUILT && !reset_simulation
+    if sim.status == BUILD_FAILED
+        error(
+            "The Simulation status is $(sim.status). Can not continue, correct your inputs and build the simulation again.",
+        )
+    elseif sim.status != BUILT && !reset_simulation
         error(
             "The Simulation status is $(sim.status). Use keyword argument reset_simulation = true",
         )

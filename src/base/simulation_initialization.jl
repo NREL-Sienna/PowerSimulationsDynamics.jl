@@ -105,6 +105,16 @@ function _check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationI
     return BUILD_INCOMPLETE
 end
 
+struct NLsolveWrapper
+    zero::Vector{Float64}
+    converged::Bool
+    failed::Bool
+end
+
+NLsolveWrapper() = NLsolveWrapper(Vector{Float64}(), false, true)
+converged(sol::NLsolveWrapper) = sol.converged
+failed(sol::NLsolveWrapper) = sol.failed
+
 function _nlsolve_call(initial_guess, inputs::SimulationInputs, tolerance::Float64)
     dx0 = zeros(length(initial_guess)) #Define a vector of zeros for the derivative
     inif! = (out, x) -> system_implicit!(
@@ -114,33 +124,32 @@ function _nlsolve_call(initial_guess, inputs::SimulationInputs, tolerance::Float
         inputs,    #Parameters
         -99.0,    #time val not relevant
     )
-    try
+    return try
         sys_solve = NLsolve.nlsolve(
             inif!,
             initial_guess,
             xtol = tolerance,
             ftol = tolerance,
             method = :trust_region,
-            # autodiff = :forward,
+            #autodiff = :forward,
         ) #Solve using initial guess x0
+        NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
     catch e
         bt = catch_backtrace()
         @error "NLsolve failed to solve" exception = e, bt
-        return sys_solve
+        NLsolveWrapper()
     end
 end
 
-function _convergence_check(sys_solve::NLsolve.SolverResults, tol::Float64)
-    if !NLsolve.converged(sys_solve)
-        @warn(
-            "Initialization failed, initial conditions do not meet conditions for an stable equilibrium.\nTrying to solve again reducing numeric tolerance"
-        )
-    elseif NLsolve.converged(sys_solve)
+function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64)
+    if converged(sys_solve)
         @info("Initialization succeeded with a tolerance of $(tol). Saving solution")
     else
-        @assert false
+        @warn(
+            "Initialization convergence failed, initial conditions do not meet conditions for an stable equilibrium.\nTrying to solve again reducing numeric tolerance"
+        )
     end
-    return NLsolve.converged(sys_solve)
+    return converged(sys_solve)
 end
 
 function _refine_initial_condition!(
@@ -152,16 +161,17 @@ function _refine_initial_condition!(
     converged = false
     for tol in [STRICT_NL_SOLVE_TOLERANCE, RELAXED_NL_SOLVE_TOLERANCE]
         sys_solve = _nlsolve_call(initial_guess, inputs, tol)
+        failed(sys_solve) && return BUILD_FAILED
         converged = _convergence_check(sys_solve, tol)
+        @debug "Write result to initial guess vector under condition converged = $(converged)"
         initial_guess .= sys_solve.zero
         if converged
             break
         end
         @warn(
-            "Initialization never converged to desired tolerances. Initial conditions do not meet conditions for an stable equilibrium\nSaving best result. Simulation migth diverge"
+            "Initialization never converged to desired tolerances. Initial conditions do not meet conditions for an stable equilibrium. Simulation migth diverge"
         )
     end
-    @debug "Write result to initial guess vector"
     return converged ? SIMULATION_INITIALIZED : _check_valid_values(initial_guess, inputs)
 end
 
