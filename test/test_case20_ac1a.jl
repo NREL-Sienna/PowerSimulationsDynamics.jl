@@ -124,8 +124,6 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond)
         @test (diff[1] < 1e-3)
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
-        #Test Small Signal
-        #@test small_sig.stable
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
