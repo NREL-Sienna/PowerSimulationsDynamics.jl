@@ -11,14 +11,6 @@ struct SmallSignalOutput
     participation_factors::Dict{String, Dict{Symbol, Array{Float64}}}
 end
 
-function _change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
-    for d in PSY.get_dynamic_injector.(get_injectors_data(inputs))
-        _attach_inner_vars!(d, T)
-    end
-    add_aux_arrays!(inputs, T)
-    return
-end
-
 function _determine_stability(vals::Vector{Complex{Float64}})
     for real_eig in real(vals)
         real_eig > 0.0 && return false
@@ -141,9 +133,7 @@ function _get_participation_factors(
 end
 
 function small_signal_analysis(sim::Simulation{ImplicitModel}; kwargs...)
-    reset_simulation = get(kwargs, :reset_simulation, false)
-    _simulation_pre_step(sim, reset_simulation)
-    _change_vector_type!(sim.simulation_inputs, Real)
+    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
     sim.status = CONVERTED_FOR_SMALL_SIGNAL
     x_eval = get(kwargs, :operating_point, sim.x0_init)
     jacobian = _calculate_forwardiff_jacobian(sim, x_eval)

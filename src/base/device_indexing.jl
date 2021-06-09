@@ -72,19 +72,14 @@ function index_dynamic_injection(
     return
 end
 
-function _attach_inner_vars!(
-    dynamic_device::PSY.DynamicGenerator,
-    ::Type{T} = Real,
-) where {T <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(T, 9)
-    return
-end
+var_count(::PSY.DynamicGenerator) = 9
+var_count(::PSY.DynamicInverter) = 14
 
-function _attach_inner_vars!(
-    dynamic_device::PSY.DynamicInverter,
-    ::Type{T} = Real,
-) where {T <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(T, 14)
+function attach_inner_vars!(
+    dynamic_device::T,
+    ::Type{U} = Real,
+) where {T <: PSY.DynamicInjection, U <: Real}
+    dynamic_device.ext[INNER_VARS] = zeros(U, var_count(dynamic_device))
     return
 end
 
@@ -131,7 +126,7 @@ function make_device_index!(dynamic_device::PSY.DynamicInjection, ::Vector{Bool}
     device_states = PSY.get_states(dynamic_device)
     device_state_mapping = DEVICE_INTERNAL_MAPPING()
     input_port_mapping = DEVICE_INTERNAL_MAPPING()
-    _attach_inner_vars!(dynamic_device)
+    attach_inner_vars!(dynamic_device)
     for c in PSY.get_dynamic_components(dynamic_device)
         device_state_mapping[typeof(c)] = index_local_states(c, device_states)
         input_port_mapping[typeof(c)] = index_port_mapping!(c, device_states)

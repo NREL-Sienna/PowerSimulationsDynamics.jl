@@ -11,7 +11,7 @@ struct SimulationInputs
     current_buses_ix::Vector{Int}
     global_index::Dict{String, Dict{Symbol, Int}}
     total_shunts::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
-    global_vars::Dict{Symbol, Number}
+    global_vars::Dict{Symbol, Real}
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
     mass_matrix::SparseArrays.SparseMatrixCSC{Float64, Int}
@@ -19,7 +19,7 @@ struct SimulationInputs
     tspan::NTuple{2, Float64}
 end
 
-function SimulationInputs(; sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0.0))
+function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0.0))
     injector_data = PSY.get_components(
         PSY.StaticInjection,
         sys,
@@ -75,7 +75,7 @@ function SimulationInputs(; sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0
         lookup,
         _init_DAE_vector!(var_count, n_buses),
         mass_matrix,
-        Dict{Int, Vector}(),
+        Dict{Int, Vector{Real}}(),
         tspan,
     )
 end
@@ -110,7 +110,20 @@ get_device_index(inputs::SimulationInputs, device::D) where {D <: PSY.DynamicInj
 get_bus_count(inputs::SimulationInputs) = get_counts(inputs)[:bus_count]
 get_ω_sys(inputs::SimulationInputs) = get_global_vars(inputs)[:ω_sys]
 
-function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Number}
+function change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
+    for d in get_injectors_data(inputs)
+        attach_inner_vars!(PSY.get_dynamic_injector(d), T)
+    end
+    return
+end
+
+function simulation_pre_step!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
+    add_aux_arrays!(inputs, T)
+    change_vector_type!(inputs, T)
+    return
+end
+
+function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
     @debug "Auxiliary Arrays created with Type $(T)"
     bus_count = get_bus_count(inputs)
     get_aux_arrays(inputs)[1] = collect(zeros(T, bus_count))                       #I_injections_r
@@ -254,8 +267,7 @@ function _build!(inputs::SimulationInputs, sys::PSY.System)
     IS.@assert_op length(inputs.DAE_vector) == state_space_ix[1]
 
     @debug inputs.counts
-
-    return inputs
+    return
 end
 
 """

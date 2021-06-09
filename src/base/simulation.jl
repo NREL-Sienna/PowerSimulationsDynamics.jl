@@ -21,18 +21,30 @@ get_simulation_inputs(sim::Simulation) = sim.simulation_inputs
 function Simulation(
     ::Type{T},
     sys::PSY.System;
-    simulation_inputs,
+    tspan,
+    initial_conditions,
     perturbations = Vector{Perturbation}(),
     simulation_folder::String = "",
     console_level = Logging.Warn,
     file_level = Logging.Debug,
 ) where {T <: SimulationModel}
+
+    simulation_inputs = SimulationInputs(sys, tspan)
+
+    if isempty(initial_conditions)
+        @debug "Initial Condition set to flat start"
+        bus_count = get_bus_count(simulation_inputs)
+        var_count = get_variable_count(simulation_inputs)
+        initial_conditions = zeros(var_count)
+        initial_conditions[1:bus_count] .= 1.0
+    end
+
     return Simulation{T}(
         BUILD_INCOMPLETE,
         nothing,
         sys,
         perturbations,
-        Vector{Float64}(),
+        initial_conditions,
         false,
         Vector{Float64}(),
         DiffEqBase.CallbackSet(),
@@ -89,7 +101,8 @@ function Simulation!(
     sim = Simulation(
         T,
         system;
-        simulation_inputs = SimulationInputs(sys = system, tspan = tspan),
+        tspan = tspan,
+        initial_conditions = get(kwargs, :initial_conditions, Vector{Float64}()),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
@@ -125,7 +138,8 @@ function Simulation(
     sim = Simulation(
         T,
         simulation_system;
-        simulation_inputs = SimulationInputs(sys = simulation_system, tspan = tspan),
+        tspan = tspan,
+        initial_conditions = get(kwargs, :initial_conditions, Vector{Float64}()),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
@@ -140,9 +154,8 @@ end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
-    sim.simulation_inputs =
-        SimulationInputs(sys = get_system(sim), tspan = sim.simulation_inputs.tspan)
-    build!(sim; file_mode = "a")
+    sim.simulation_inputs = SimulationInputs(get_system(sim), sim.simulation_inputs.tspan)
+    build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
 end
@@ -161,35 +174,22 @@ function configure_logging(sim::Simulation, file_mode)
     )
 end
 
-function _build_inputs!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
+function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
     sim.status = BUILD_INCOMPLETE
     PSY.set_units_base_system!(simulation_system, "DEVICE_BASE")
-    sim.simulation_inputs = build!(sim.simulation_inputs, T, simulation_system)
+    build!(sim.simulation_inputs, T, simulation_system)
     @debug "Simulation Inputs Created"
     return
 end
 
-function _initialize_simulation!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
-    simulation_system = get_system(sim)
-    bus_count = length(PSY.get_components(PSY.Bus, simulation_system))
-    simulation_inputs = get_simulation_inputs(sim)
-    var_count = get_variable_count(simulation_inputs)
-    flat_start = zeros(var_count)
-
-    flat_start[1:bus_count] .= 1.0
-    sim.x0_init = get(kwargs, :initial_guess, flat_start)
-
-    initialize_simulation = get(kwargs, :initialize_simulation, true)
-    if initialize_simulation
-        @info("Initializing Simulation States")
-        add_aux_arrays!(simulation_inputs, Float64)
-        sim.initialized = calculate_initial_conditions!(sim, simulation_inputs)
-        if sim.status == BUILD_FAILED
-            @error("Simulation Build Failed. Simulations status = $(sim.status)")
-            return
-        end
+function _initialize_simulation!(sim::Simulation{T}) where {T <: SimulationModel}
+    @info("Initializing Simulation States")
+    sim.initialized = calculate_initial_conditions!(sim)
+    if sim.status == BUILD_FAILED
+        @error("Simulation Build Failed. Simulations status = $(sim.status)")
     end
+    return
 end
 
 function _build_perturbations!(sim::Simulation)
@@ -218,12 +218,14 @@ end
 function _build!(sim::Simulation{ImplicitModel}; kwargs...)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     _build_inputs!(sim)
-    _initialize_simulation!(sim::Simulation; kwargs...)
     _build_perturbations!(sim)
+    if get(kwargs, :initialize_simulation, true)
+        _initialize_simulation!(sim)
+    end
     simulation_inputs = get_simulation_inputs(sim)
-    add_aux_arrays!(simulation_inputs, Float64)
+    simulation_pre_step!(simulation_inputs, Float64)
     var_count = get_variable_count(simulation_inputs)
-    dx0 = zeros(var_count)
+    dx0 = zeros(Float64, var_count)
 
     sim.problem = SciMLBase.DAEProblem(
         system_implicit!,
@@ -243,10 +245,12 @@ end
 function _build!(sim::Simulation{MassMatrixModel}; kwargs...)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     _build_inputs!(sim)
-    _initialize_simulation!(sim::Simulation; kwargs...)
     _build_perturbations!(sim)
+    if get(kwargs, :initialize_simulation, true)
+        _initialize_simulation!(sim)
+    end
     simulation_inputs = get_simulation_inputs(sim)
-    add_aux_arrays!(simulation_inputs, Real)
+    simulation_pre_step!(simulation_inputs, Real)
     sim.problem = SciMLBase.ODEProblem(
         SciMLBase.ODEFunction(
             system_mass_matrix!,
@@ -263,8 +267,8 @@ function _build!(sim::Simulation{MassMatrixModel}; kwargs...)
     return
 end
 
-function build!(sim; file_mode = "w", kwargs...)
-    logger = configure_logging(sim, file_mode)
+function build!(sim; kwargs...)
+    logger = configure_logging(sim, "w")
     try
         Logging.with_logger(logger) do
             _build!(sim; kwargs...)
@@ -275,24 +279,45 @@ function build!(sim; file_mode = "w", kwargs...)
     return
 end
 
-function _simulation_pre_step(sim::Simulation, reset_simulation::Bool)
+function simulation_pre_step!(
+    sim::Simulation,
+    reset_simulation::Bool,
+    ::Type{T},
+) where {T <: Real}
+    reset_simulation = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_simulation
     if sim.status != BUILT && !reset_simulation
         error(
             "The Simulation status is $(sim.status). Use keyword argument reset_simulation = true",
         )
     end
 
-    if reset_simulation
-        reset!(sim)
+    reset_simulation && reset!(sim)
+    simulation_pre_step!(sim.simulation_inputs, T)
+    return
+end
+
+function execute!(sim::Simulation{ImplicitModel}, solver; kwargs...)
+    @debug "status before execute" sim.status
+    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Float64)
+    sim.status = SIMULATION_STARTED
+    sim.solution = SciMLBase.solve(
+        sim.problem,
+        solver;
+        callback = sim.callbacks,
+        tstops = sim.tstops,
+        kwargs...,
+    )
+    if sim.solution.retcode == :Success
+        sim.status = SIMULATION_FINALIZED
+    else
+        sim.status = SIMULATION_FAILED
     end
     return
 end
 
-function execute!(sim::Simulation, solver; kwargs...)
+function execute!(sim::Simulation{MassMatrixModel}, solver; kwargs...)
     @debug "status before execute" sim.status
-    reset_simulation = get(kwargs, :reset_simulation, false)
-    reset_simulation = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_simulation
-    _simulation_pre_step(sim, reset_simulation)
+    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
     sim.status = SIMULATION_STARTED
     sim.solution = SciMLBase.solve(
         sim.problem,
