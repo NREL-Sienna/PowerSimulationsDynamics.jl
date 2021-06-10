@@ -34,6 +34,7 @@ Ybus_change = NetworkSwitch(
 
         #Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Solve problem
@@ -60,6 +61,9 @@ Ybus_change = NetworkSwitch(
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test01_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Transient Simulation Results
@@ -93,7 +97,8 @@ end
             Ybus_change,
         ) #Type of Fault
 
-        # small_sig = small_signal_analysis(sim)
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
 
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
@@ -117,10 +122,13 @@ end
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test01_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Small Signal
-        # @test small_sig.stable
+        @test small_sig.stable
         #Test Transient Simulation Results
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
         # PSSE results are in Degrees

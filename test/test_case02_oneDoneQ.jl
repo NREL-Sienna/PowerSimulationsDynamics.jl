@@ -35,6 +35,7 @@ Ybus_change = NetworkSwitch(
         ) #initial guess
 
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
 
         #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
@@ -54,6 +55,8 @@ Ybus_change = NetworkSwitch(
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test02_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test02_eigvals_psat, Inf) < 5.0
         @test sim.solution.retcode == :Success
         @test small_sig.stable
         @test LinearAlgebra.norm(t - t_psat) == 0.0
@@ -82,8 +85,9 @@ end
             Ybus_change, #Type of Fault
         )
 
-        #small_sig = small_signal_analysis(sim)
-        # @test small_sig.stable
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
         #Solve problem
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
@@ -103,6 +107,8 @@ end
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test02_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test02_eigvals_psat, Inf) < 5.0
         @test sim.solution.retcode == :Success
         @test LinearAlgebra.norm(t - t_psat) == 0.0
         @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3

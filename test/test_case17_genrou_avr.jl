@@ -29,6 +29,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test17.jl"))
 
         #Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Solve problem
@@ -44,6 +45,8 @@ include(joinpath(dirname(@__FILE__), "data_tests/test17.jl"))
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test17_eigvals) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
 
@@ -67,8 +70,9 @@ end
         ) #Type of Fault
 
         #Obtain small signal results for initial conditions
-        # small_sig = small_signal_analysis(sim)
-        # @test small_sig.stable
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
         #Solve problem
         execute!(sim, Rodas5(), dtmax = 0.01)
@@ -83,6 +87,8 @@ end
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test17_eigvals) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
 
