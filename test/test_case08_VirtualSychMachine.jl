@@ -41,6 +41,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         )
 
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Solve problem
@@ -62,6 +63,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
 
         power = PSID.get_activepower_series(sim, "generator-102-1")
@@ -90,8 +92,9 @@ end
             Pref_change,
         )
 
-        # small_sig = small_signal_analysis(sim)
-        # @test small_sig.stable
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
         #Solve problem
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
@@ -112,6 +115,7 @@ end
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
 
         power = PSID.get_activepower_series(sim, "generator-102-1")

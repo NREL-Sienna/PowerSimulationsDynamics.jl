@@ -27,6 +27,7 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
 
         #Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Solve problem
@@ -46,6 +47,8 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test21_eigvals) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Transient Simulation Results
@@ -74,8 +77,9 @@ end
         #Solve problem
         execute!(sim, Rodas5(autodiff = false), dtmax = 0.005, saveat = 0.005)
 
-        #small_sig = small_signal_analysis(sim)
-        #@test small_sig.stable
+        small_sig = small_signal_analysis(sim; reset_simulation = true)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
         series = get_state_series(sim, ("generator-102-1", :δ))
         t = series[1]
@@ -91,6 +95,8 @@ end
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test21_eigvals) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Transient Simulation Results

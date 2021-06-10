@@ -37,6 +37,7 @@ Ybus_change = NetworkSwitch(
         )
 
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Solve problem
@@ -51,6 +52,7 @@ Ybus_change = NetworkSwitch(
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
 
         power = PSID.get_activepower_series(sim, "generator-102-1")
@@ -76,8 +78,9 @@ end
             Ybus_change, #Type of Fault
         )
 
-        # small_sig = small_signal_analysis(sim)
-        # @test small_sig.stable
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
         #Solve problem
         execute!(sim, Rodas5(), dtmax = 0.02)
@@ -91,6 +94,7 @@ end
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
 
         power = PSID.get_activepower_series(sim, "generator-102-1")

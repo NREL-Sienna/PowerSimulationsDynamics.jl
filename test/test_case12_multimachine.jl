@@ -37,6 +37,7 @@ Ybus_change = NetworkSwitch(
         )
 
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Run simulation
@@ -54,6 +55,7 @@ Ybus_change = NetworkSwitch(
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test12_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
     finally
         @info("removing test files")
@@ -73,8 +75,9 @@ end
             Ybus_change, #Type of Fault
         )
 
-        # small_sig = small_signal_analysis(sim)
-        # @test small_sig.stable
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
         #Run simulation
         execute!(
@@ -91,6 +94,7 @@ end
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test12_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
     finally
         @info("removing test files")

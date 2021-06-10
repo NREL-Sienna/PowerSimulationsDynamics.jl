@@ -24,10 +24,12 @@ csv_files = (
 
 init_conditions = [test_psse_genroe_init, test_psse_genroe_high_sat_init]
 
+eigs_values = [test16_eigvals, test16_eigvals_high_sat]
+
 raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
-function test_genroe_implicit(dyr_file, csv_file, init_cond)
+function test_genroe_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-genrou"))
     !isdir(path) && mkdir(path)
     try
@@ -56,6 +58,7 @@ function test_genroe_implicit(dyr_file, csv_file, init_cond)
 
         #Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Solve problem
@@ -77,6 +80,8 @@ function test_genroe_implicit(dyr_file, csv_file, init_cond)
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
 
@@ -91,7 +96,7 @@ function test_genroe_implicit(dyr_file, csv_file, init_cond)
     end
 end
 
-function test_genroe_mass_matrix(dyr_file, csv_file, init_cond)
+function test_genroe_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-genrou"))
     !isdir(path) && mkdir(path)
     try
@@ -119,8 +124,9 @@ function test_genroe_mass_matrix(dyr_file, csv_file, init_cond)
         ) #Type of Fault
 
         #Obtain small signal results for initial conditions
-        # small_sig = small_signal_analysis(sim)
-        # @test small_sig.stable
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
         #Solve problem
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
@@ -141,6 +147,8 @@ function test_genroe_mass_matrix(dyr_file, csv_file, init_cond)
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Transient Simulation Results
@@ -160,7 +168,8 @@ end
             dyr_file = dyr_files[ix]
             csv_file = csv_files[ix]
             init_cond = init_conditions[ix]
-            test_genroe_implicit(dyr_file, csv_file, init_cond)
+            eigs_value = eigs_values[ix]
+            test_genroe_implicit(dyr_file, csv_file, init_cond, eigs_value)
         end
     end
 end
@@ -171,7 +180,8 @@ end
             dyr_file = dyr_files[ix]
             csv_file = csv_files[ix]
             init_cond = init_conditions[ix]
-            test_genroe_mass_matrix(dyr_file, csv_file, init_cond)
+            eigs_value = eigs_values[ix]
+            test_genroe_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         end
     end
 end

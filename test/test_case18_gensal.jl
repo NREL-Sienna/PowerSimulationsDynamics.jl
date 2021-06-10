@@ -34,10 +34,12 @@ init_conditions = [
     #test_psse_gensal_high_sat_init,
 ]
 
+eigs_values = [test18_eigvals]
+
 raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAL/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
-function test_gensal_implicit(dyr_file, csv_file, init_cond)
+function test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-gensal"))
     !isdir(path) && mkdir(path)
     try
@@ -54,6 +56,7 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond)
 
         #Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Solve problem
@@ -75,6 +78,8 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond)
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
 
@@ -94,7 +99,7 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond)
     end
 end
 
-function test_gensal_mass_matrix(dyr_file, csv_file, init_cond)
+function test_gensal_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-gensal"))
     !isdir(path) && mkdir(path)
     try
@@ -111,6 +116,7 @@ function test_gensal_mass_matrix(dyr_file, csv_file, init_cond)
 
         #Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Solve problem
@@ -132,6 +138,8 @@ function test_gensal_mass_matrix(dyr_file, csv_file, init_cond)
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
 
@@ -157,7 +165,20 @@ end
             dyr_file = dyr_files[ix]
             csv_file = csv_files[ix]
             init_cond = init_conditions[ix]
-            test_gensal_implicit(dyr_file, csv_file, init_cond)
+            eigs_value = eigs_values[ix]
+            test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
+        end
+    end
+end
+
+@testset "Test 18 GENSAL MassMatrixModel" begin
+    for (ix, name) in enumerate(names)
+        @testset "$(name)" begin
+            dyr_file = dyr_files[ix]
+            csv_file = csv_files[ix]
+            init_cond = init_conditions[ix]
+            eigs_value = eigs_values[ix]
+            test_gensal_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         end
     end
 end

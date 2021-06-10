@@ -93,6 +93,7 @@ function run_tests()
     include("utils/get_results.jl")
     include("./data_tests/dynamic_test_data.jl")
     include("./results/results_initial_conditions.jl")
+    include("./results/results_eigenvalues.jl")
 
     IS.open_file_logger(LOG_FILE, file_level) do file_logger
         multi_logger = IS.MultiLogger(

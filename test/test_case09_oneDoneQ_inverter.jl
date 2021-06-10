@@ -35,6 +35,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 1.2)
         )
 
         small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Solve problem
@@ -49,6 +50,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 1.2)
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test09_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
     finally
         @info("removing test files")
@@ -69,8 +71,9 @@ end
             Pref_change,
         )
 
-        # small_sig = small_signal_analysis(sim)
-        # @test small_sig.stable
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
         #Solve problem
         execute!(sim, Rodas5(), dtmax = 0.02)
@@ -84,6 +87,7 @@ end
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test09_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
 
     finally

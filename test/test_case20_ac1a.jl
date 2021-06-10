@@ -25,10 +25,12 @@ csv_files = [
 
 init_conditions = [test_psse_ac1a_init, test_psse_ac1a_sat_init]
 
+eigs_values = [test20_eigvals, test20_eigvals_sat]
+
 raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/AC1A/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
-function test_ac1a_implicit(dyr_file, csv_file, init_cond)
+function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-ac1a"))
     !isdir(path) && mkdir(path)
     try
@@ -47,6 +49,7 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond)
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         small_sig = small_signal_analysis(sim; reset_simulation = true)
+        eigs = small_sig.eigenvalues
         @test small_sig.stable
 
         #Obtain data for angles
@@ -68,6 +71,8 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond)
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Transient Simulation Results
@@ -82,7 +87,7 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond)
     end
 end
 
-function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond)
+function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-ac1a"))
     !isdir(path) && mkdir(path)
     try
@@ -101,7 +106,9 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond)
         execute!(sim, Rodas5(autodiff = false), dtmax = 0.005, saveat = 0.005)
 
         #Obtain small signal results for initial conditions. Testing the simulation reset
-        #small_sig = small_signal_analysis(sim; reset_simulation = true)
+        small_sig = small_signal_analysis(sim; reset_simulation = true)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :δ))
@@ -122,6 +129,8 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond)
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Transient Simulation Results
@@ -142,7 +151,8 @@ end
             dyr_file = dyr_files[ix]
             csv_file = csv_files[ix]
             init_cond = init_conditions[ix]
-            test_ac1a_implicit(dyr_file, csv_file, init_cond)
+            eigs_value = eigs_values[ix]
+            test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
         end
     end
 end
@@ -153,7 +163,8 @@ end
             dyr_file = dyr_files[ix]
             csv_file = csv_files[ix]
             init_cond = init_conditions[ix]
-            test_ac1a_mass_matrix(dyr_file, csv_file, init_cond)
+            eigs_value = eigs_values[ix]
+            test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         end
     end
 end
