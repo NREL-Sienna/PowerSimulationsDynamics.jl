@@ -15,7 +15,6 @@ end
 """
 Function to obtain the state time series of a specific state. It receives the simulation, and a tuple
 containing the name of the Dynamic Device and the symbol of the state.
-
 """
 function post_proc_state_series(sim::Simulation, ref::Tuple{String, Symbol})
     global_state_index = get_global_index(sim.simulation_inputs)
@@ -26,7 +25,6 @@ end
 """
 Function to obtain voltage and output currents for a dynamic device. It receives the simulation, and the name
 of the Dynamic Device.
-
 """
 function post_proc_voltage_current_series(
     sim::Simulation,

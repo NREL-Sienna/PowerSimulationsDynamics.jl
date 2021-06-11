@@ -55,7 +55,7 @@ remove_component!(Line, sys3, "BUS 2-BUS 3-i_3")
 #Create Ybus_Fault
 fault_branches2 = get_components(Line, sys3)
 for br in fault_branches2
-    if get_name(br) == "1"
+    if get_name(br) == "BUS 1-BUS 2-i_2"
         br.r = 3 * br.r
         br.x = 3 * br.x
         b_new = (from = br.b.from / 3, to = br.b.to / 3)

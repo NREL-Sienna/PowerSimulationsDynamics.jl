@@ -4,6 +4,7 @@ using Test
 using NLsolve
 using SciMLBase
 using Sundials
+using OrdinaryDiffEq
 using DelimitedFiles
 using InfrastructureSystems
 import LinearAlgebra
@@ -19,6 +20,8 @@ Aqua.test_deps_compat(PowerSimulationsDynamics)
 const IS = InfrastructureSystems
 const PSY = PowerSystems
 const PSID = PowerSimulationsDynamics
+
+const DISABLED_TEST_FILES = []
 
 """
 Copied @includetests from https://github.com/ssfrr/TestSetExtensions.jl.
@@ -55,6 +58,7 @@ macro includetests(testarg...)
         end
         println()
         for test in tests
+            test ∈ DISABLED_TEST_FILES && continue
             print(splitext(test)[1], ": ")
             include(test)
             println()
@@ -89,6 +93,7 @@ function run_tests()
     include("utils/get_results.jl")
     include("./data_tests/dynamic_test_data.jl")
     include("./results/results_initial_conditions.jl")
+    include("./results/results_eigenvalues.jl")
 
     IS.open_file_logger(LOG_FILE, file_level) do file_logger
         multi_logger = IS.MultiLogger(

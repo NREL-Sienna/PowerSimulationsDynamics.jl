@@ -4,7 +4,14 @@ and a tuple containing the string name of the Dynamic Injection device and the s
 
 """
 function get_state_series(sim::Simulation, ref::Tuple{String, Symbol})
-    return sim.solution.t, post_proc_state_series(sim, ref)
+    if allunique(sim.solution.t)
+        return sim.solution.t, post_proc_state_series(sim, ref)
+    else
+        @debug "found repeated time steps removing repetitions"
+        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
+        return sim.solution.t[ix], post_proc_state_series(sim, ref)[ix]
+    end
+    return
 end
 
 """
@@ -15,7 +22,13 @@ function get_voltagemag_series(sim::Simulation, bus_number::Int)
     n_buses = get_bus_count(sim.simulation_inputs)
     bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, 0)
     V_R, V_I = post_proc_voltage_series(sim.solution, bus_ix, n_buses)
-    return sim.solution.t, sqrt.(V_R .^ 2 + V_I .^ 2)
+    if allunique(sim.solution.t)
+        return sim.solution.t, sqrt.(V_R .^ 2 + V_I .^ 2)
+    else
+        @debug "found repeated time steps removing repetitions"
+        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
+        return sim.solution.t[ix], sqrt.(V_R[ix] .^ 2 + V_I[ix] .^ 2)
+    end
 end
 
 """
@@ -24,7 +37,13 @@ string name of the Dynamic Injection device.
 
 """
 function get_activepower_series(sim::Simulation, name::String)
-    return sim.solution.t, post_proc_activepower_series(sim, name)
+    if allunique(sim.solution.t)
+        return sim.solution.t, post_proc_activepower_series(sim, name)
+    else
+        @debug "found repeated time steps removing repetitions"
+        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
+        return sim.solution.t[ix], post_proc_activepower_series(sim, name)[ix]
+    end
 end
 
 """
@@ -33,7 +52,13 @@ string name of the Dynamic Injection device.
 
 """
 function get_reactivepower_series(sim::Simulation, name::String)
-    return sim.solution.t, post_proc_reactivepower_series(sim, name)
+    if allunique(sim.solution.t)
+        return sim.solution.t, post_proc_reactivepower_series(sim, name)
+    else
+        @debug "found repeated time steps removing repetitions"
+        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
+        return sim.solution.t[ix], post_proc_reactivepower_series(sim, name)[ix]
+    end
 end
 
 """

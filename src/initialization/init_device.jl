@@ -1,4 +1,4 @@
-function initialize_device!(
+function initialize_dynamic_device!(
     dynamic_device::PSY.DynamicGenerator,
     static::PSY.StaticInjection,
 )
@@ -19,7 +19,7 @@ function initialize_device!(
     return device_states
 end
 
-function initialize_device!(
+function initialize_dynamic_device!(
     dynamic_device::PSY.DynamicInverter,
     static::PSY.StaticInjection,
 )
@@ -41,12 +41,11 @@ function initialize_device!(
     return device_states
 end
 
-function initialize_device!(static::PSY.StaticInjection)
-    dynamic_device = PSY.get_dynamic_injector(static)
-    return initialize_device!(dynamic_device, static)
+function initialize_static_device!(::PSY.PowerLoad)
+    return
 end
 
-function initialize_device!(device::PSY.Source)
+function initialize_static_device!(device::PSY.Source)
     #PowerFlow Data
     P0 = PSY.get_active_power(device)
     Q0 = PSY.get_reactive_power(device)
@@ -86,7 +85,7 @@ function initialize_device!(device::PSY.Source)
     end
 end
 
-function initialize_device!(branch::PSY.DynamicBranch)
+function initialize_dynamic_device!(branch::PSY.DynamicBranch)
     device_states = zeros(PSY.get_n_states(branch))
     #PowerFlow Data
     arc = PSY.get_arc(branch)

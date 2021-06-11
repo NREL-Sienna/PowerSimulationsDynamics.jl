@@ -51,7 +51,7 @@ function test_sundials(solver)
         #Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
 
-        #Solve problem in equilibrium
+        #Solve problem
         @info "$(solver)" @time execute!(sim, IDA(linear_solver = solver);)
 
         #Obtain data for voltages

@@ -34,11 +34,6 @@ function _add_dynamic_bus_states!(
     return
 end
 
-function _add_to_total_shunts!(total_shunts::Dict{Int, Float64}, pairs...)
-    merge!(+, total_shunts, Dict(pairs...))
-    return
-end
-
 function index_dynamic_lines!(
     inputs::SimulationInputs,
     branch::PSY.DynamicBranch,
@@ -54,8 +49,8 @@ function index_dynamic_lines!(
     b_from = PSY.get_b(branch).from
     b_to = PSY.get_b(branch).to
     total_shunts = get_total_shunts(inputs)
-    b_from > 0.0 && _add_to_total_shunts!(total_shunts, bus_ix_from => b_from)
-    b_to > 0.0 && _add_to_total_shunts!(total_shunts, bus_ix_to => b_to)
+    total_shunts[bus_ix_from, bus_ix_from] += 1im * b_from
+    total_shunts[bus_ix_to, bus_ix_to] += 1im * b_to
     b_from > 0.0 &&
         _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_from, n_buses)
     b_to > 0.0 && _add_dynamic_bus_states!(DAE_vector, voltage_buses_ix, bus_ix_to, n_buses)
@@ -63,6 +58,20 @@ function index_dynamic_lines!(
 end
 
 function index_static_injection(inputs::SimulationInputs, ::PSY.StaticInjection)
+    return
+end
+
+function add_states_to_global!(
+    global_state_index::MAPPING_DICT,
+    state_space_ix::Vector{Int},
+    device::PSY.Device,
+)
+    global_state_index[PSY.get_name(device)] = Dict{Symbol, Int}()
+    for s in PSY.get_states(device)
+        state_space_ix[1] += 1
+        global_state_index[PSY.get_name(device)][s] = state_space_ix[1]
+    end
+
     return
 end
 
@@ -77,19 +86,14 @@ function index_dynamic_injection(
     return
 end
 
-function _attach_inner_vars!(
-    dynamic_device::PSY.DynamicGenerator,
-    ::Type{T} = Real,
-) where {T <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(T, 9)
-    return
-end
+var_count(::PSY.DynamicGenerator) = 9
+var_count(::PSY.DynamicInverter) = 14
 
-function _attach_inner_vars!(
-    dynamic_device::PSY.DynamicInverter,
-    ::Type{T} = Real,
-) where {T <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(T, 14)
+function attach_inner_vars!(
+    dynamic_device::T,
+    ::Type{U} = Real,
+) where {T <: PSY.DynamicInjection, U <: Real}
+    dynamic_device.ext[INNER_VARS] = zeros(U, var_count(dynamic_device))
     return
 end
 
@@ -136,7 +140,7 @@ function make_device_index!(dynamic_device::PSY.DynamicInjection, ::Vector{Bool}
     device_states = PSY.get_states(dynamic_device)
     device_state_mapping = DEVICE_INTERNAL_MAPPING()
     input_port_mapping = DEVICE_INTERNAL_MAPPING()
-    _attach_inner_vars!(dynamic_device)
+    attach_inner_vars!(dynamic_device)
     for c in PSY.get_dynamic_components(dynamic_device)
         device_state_mapping[typeof(c)] = index_local_states(c, device_states)
         input_port_mapping[typeof(c)] = index_port_mapping!(c, device_states)

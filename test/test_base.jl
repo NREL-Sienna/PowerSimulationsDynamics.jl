@@ -27,7 +27,7 @@ Ybus_change = NetworkSwitch(
             Ybus_change;
             system_to_file = true,
         )
-
+        @test sim.status == PSID.BUILT
         o_system = System(joinpath(path1, "input_system.json"))
         for b in get_components(Bus, o_system)
             b_sys = get_component(Bus, omib_sys, get_name(b))
@@ -53,7 +53,7 @@ Ybus_change = NetworkSwitch(
             Ybus_change;
             system_to_file = true,
         )
-
+        @test sim.status == PSID.BUILT
         m_system = System(joinpath(path2, "initialized_system.json"))
         for b in get_components(Bus, m_system)
             b_sys = get_component(Bus, omib_sys, get_name(b))
@@ -99,12 +99,17 @@ end
 
     # Tests for all Dynamic Lines
     sim = Simulation(ImplicitModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
+    @test sim.status == PSID.BUILT
     sim_inputs = sim.simulation_inputs
     dae_vector = PSID.get_DAE_vector(sim_inputs)
     @test all(dae_vector)
     total_shunts = PSID.get_total_shunts(sim_inputs)
-    for (k, v) in total_shunts
-        @test v > 0
+    for v in LinearAlgebra.diag(total_shunts)
+        @test imag(v) > 0
+    end
+
+    for entry in LinearAlgebra.diag(sim_inputs.mass_matrix)
+        @test entry > 0
     end
     voltage_buses_ix = PSID.get_voltage_buses_ix(sim_inputs)
     @test length(voltage_buses_ix) == 3
@@ -113,11 +118,22 @@ end
     set_b!(dyn_branch12, (from = 0.0, to = 0.0))
     set_b!(dyn_branch23, (from = 0.0, to = 0.0))
     sim = Simulation(ImplicitModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
+    @test sim.status == PSID.BUILT
     sim_inputs = sim.simulation_inputs
     dae_vector = PSID.get_DAE_vector(sim_inputs)
     @test sum(.!dae_vector) == 6
+    for (ix, entry) in enumerate(dae_vector)
+        if !entry
+            @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] == 0
+        elseif entry
+            @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] == 1
+        else
+            @test false
+        end
+    end
+
     total_shunts = PSID.get_total_shunts(sim_inputs)
-    @test isempty(total_shunts)
+    @test sum(LinearAlgebra.diag(total_shunts)) == 0.0
     voltage_buses_ix = PSID.get_voltage_buses_ix(sim_inputs)
     @test isempty(voltage_buses_ix)
 end

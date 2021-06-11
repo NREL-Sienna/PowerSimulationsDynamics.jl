@@ -1,3 +1,10 @@
+function mass_matrix_shaft_entries!(
+    mass_matrix,
+    dynamic_device::PSY.DynamicGenerator{M, S, T, TG, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, T <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    @debug "Using default mass matrix entries $S $(PSY.get_name(dynamic_device))"
+end
+
 function mdl_shaft_ode!(
     device_states,
     output_ode,
@@ -11,7 +18,6 @@ function mdl_shaft_ode!(
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
-    δ = internal_states[1]
     ω = internal_states[2]
 
     #Obtain inner variables for component

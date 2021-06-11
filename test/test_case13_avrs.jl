@@ -20,35 +20,77 @@ Ybus_change = NetworkSwitch(
     Ybus_fault,
 ) #New YBus
 
-path = (joinpath(pwd(), "test-13"))
-!isdir(path) && mkdir(path)
-try
-    #Define Simulation Problem
-    sim = Simulation!(
-        ImplicitModel,
-        threebus_sys, #system,
-        path,
-        (0.0, 20.0), #time span
-        Ybus_change, #Type of Fault
-    ) #initial guess
+@testset "Test 13 AVR ImplicitModel" begin
+    path = (joinpath(pwd(), "test-13"))
+    !isdir(path) && mkdir(path)
+    try
+        #Define Simulation Problem
+        sim = Simulation!(
+            ImplicitModel,
+            threebus_sys, #system,
+            path,
+            (0.0, 20.0), #time span
+            Ybus_change, #Type of Fault
+        ) #initial guess
 
-    small_sig = small_signal_analysis(sim)
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
-    #Solve problem in equilibrium
-    execute!(sim, IDA(), dtmax = 0.02)
+        #Solve problem
+        execute!(sim, IDA(), dtmax = 0.02)
 
-    #Obtain data for angles
-    series = get_state_series(sim, ("generator-102-1", :δ))
+        #Obtain data for angles
+        series = get_state_series(sim, ("generator-102-1", :δ))
 
-    diff = [0.0]
-    res = get_init_values_for_comparison(sim)
-    for (k, v) in test13_x0_init
-        diff[1] += LinearAlgebra.norm(res[k] - v)
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test13_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test13_eigvals) < 1e-3
+        @test sim.solution.retcode == :Success
+    finally
+        @info("removing test files")
+        rm(path, force = true, recursive = true)
     end
-    @test (diff[1] < 1e-3)
-    @test sim.solution.retcode == :Success
-    @test small_sig.stable
-finally
-    @info("removing test files")
-    rm(path, force = true, recursive = true)
+end
+
+@testset "Test 13 AVR MassMarixcModel" begin
+    path = (joinpath(pwd(), "test-13"))
+    !isdir(path) && mkdir(path)
+    try
+        #Define Simulation Problem
+        sim = Simulation!(
+            MassMatrixModel,
+            threebus_sys, #system,
+            path,
+            (0.0, 20.0), #time span
+            Ybus_change, #Type of Fault
+        ) #initial guess
+
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        #Solve problem
+        execute!(sim, Rodas5(), dtmax = 0.02)
+
+        #Obtain data for angles
+        series = get_state_series(sim, ("generator-102-1", :δ))
+
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test13_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+        @test LinearAlgebra.norm(eigs - test13_eigvals) < 1e-3
+        @test sim.solution.retcode == :Success
+
+    finally
+        @info("removing test files")
+        rm(path, force = true, recursive = true)
+    end
 end
