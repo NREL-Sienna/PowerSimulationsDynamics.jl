@@ -13,7 +13,7 @@ follows the following convention for transformation of per-unit RMS phasors:
 
 ```math
 \begin{align}
-v_d + jv_q &= (v_r + jv_i) e^{-(\delta- \pi/2)} \tag{1a} \\
+v_d + jv_q &= (v_r + jv_i) e^{-j(\delta- \pi/2)} \tag{1a} \\
 v_d &=  v_h \sin(\delta - \theta) \tag{1b} \\
 v_q &= v_h \cos(\delta - \theta) \tag{1c} \\
 \left[ \begin{array}{c} v_d \\ v_q \end{array} \right] &= \left[ \begin{array}{cc} \sin(\delta) & -\cos(\delta) \\ \cos(\delta) & \sin(\delta) \end{array} \right] \left[ \begin{array}{c} v_r \\ v_i \end{array} \right] \tag{1d}
@@ -33,7 +33,7 @@ inverter and phase-lock loop (PLL) models follow the next convention:
 
  ```math
 \begin{align}
-v_d + jv_q &= (v_r + jv_i) e^{-\delta} \tag{2a}  \\
+v_d + jv_q &= (v_r + jv_i) e^{-j \delta} \tag{2a}  \\
 v_d &=  v_h \cos(\delta - \theta) \tag{2b} \\
 v_q &= -v_h \sin(\delta - \theta) \tag{2c}
 \end{align}
