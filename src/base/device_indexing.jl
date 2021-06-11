@@ -86,7 +86,7 @@ function index_dynamic_injection(
     return
 end
 
-function _attach_inner_vars!(
+function attach_inner_vars!(
     dynamic_device::PSY.DynamicGenerator,
     ::Type{T} = Real,
 ) where {T <: Real}
@@ -94,7 +94,7 @@ function _attach_inner_vars!(
     return
 end
 
-function _attach_inner_vars!(
+function attach_inner_vars!(
     dynamic_device::PSY.DynamicInverter,
     ::Type{T} = Real,
 ) where {T <: Real}
