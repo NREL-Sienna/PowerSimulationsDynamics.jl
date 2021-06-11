@@ -15,7 +15,7 @@ end
 function mdl_inner_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.CurrentControl, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -25,7 +25,7 @@ function mdl_inner_ode!(
 }
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(dynamic_device, PSY.CurrentControl)
+    external_ix = get_input_port_ix(dynamic_device, PSY.VoltageModeControl)
     Ir_filter = device_states[external_ix[1]]
     Ii_filter = device_states[external_ix[2]]
     Ir_cnv = device_states[external_ix[3]]
@@ -58,7 +58,7 @@ function mdl_inner_ode!(
     kad = PSY.get_kad(inner_control)
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(dynamic_device, PSY.CurrentControl)
+    local_ix = get_local_state_ix(dynamic_device, PSY.VoltageModeControl)
 
     #Define internal states for frequency estimator
     internal_states = @view device_states[local_ix]

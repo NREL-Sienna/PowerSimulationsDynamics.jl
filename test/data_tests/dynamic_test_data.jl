@@ -310,7 +310,7 @@ function outer_control_gfoll()
 end
 
 ######## Inner Control ######
-inner_control() = CurrentControl(
+inner_control() = VoltageModeControl(
     kpv = 0.59,     #Voltage controller proportional gain
     kiv = 736.0,    #Voltage controller integral gain
     kffv = 0.0,     #Binary variable enabling the voltage feed-forward in output of current controllers
