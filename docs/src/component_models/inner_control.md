@@ -54,3 +54,36 @@ of the converter, the transformation is directly
 i_{d,\text{cv}} + ji_{q,\text{cv}} = (i_{r,\text{cv}} + ji_{i,\text{cv}})e^{-j\delta\theta_{olc}}
 \end{align*}
 ```
+
+
+## Current Mode Controller ```[CurrentModeControl]```
+
+The following model receives the current reference (in ``dq`` axis) from an outer loop controller
+that outputs current references such as the PI outer controller used for grid following inverters.
+A PI current controller is used to generate the voltage reference signal for the converters.
+
+```math
+\begin{align*}
+    \dot{\gamma}_d &= i_{d,\text{cv}}^{\text{ref}} - i_{d,\text{cv}} \tag{2a} \\
+    \dot{\gamma}_q &= i_{q,\text{cv}}^{\text{ref}} - i_{q,\text{cv}} \tag{2b} \\
+\end{align*}
+```
+
+with
+
+```math
+\begin{align}
+    v_d^{\text{ref-signal}} &= k_{pc} \left(i_{d,\text{cv}}^{\text{ref}} - i_{d,\text{cv}}\right) + k_{ic} \gamma_d - \omega_{\text{olc}} l_f i_{q,\text{cv}} + k_{\text{ffv}}v_d \tag{2b} \\
+    v_q^{\text{ref-signal}} &= k_{pc} \left(i_{q,\text{cv}}^{\text{ref}} - i_{q,\text{cv}}\right) + k_{ic} \gamma_q + \omega_{\text{olc}} l_f i_{d,\text{cv}} + k_{\text{ffv}}v_q \tag{2c}
+\end{align}
+```
+
+The transformation for the converter current is computed as:
+
+```math
+\begin{align*}
+i_{d,\text{cv}} + ji_{q,\text{cv}} = (i_{r,\text{cv}} + ji_{i,\text{cv}})e^{-j\theta_{olc}}
+\end{align*}
+```
+
+In here ``\theta_{olc}`` is the outer-loop angle. In the case of grid-following models, this angle is equal to the angle provided from the PLL.
