@@ -1,7 +1,7 @@
 function initialize_inner!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.CurrentControl, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -11,7 +11,7 @@ function initialize_inner!(
 }
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(dynamic_device, PSY.CurrentControl)
+    external_ix = get_input_port_ix(dynamic_device, PSY.VoltageModeControl)
     Ir_filter = device_states[external_ix[1]]
     Ii_filter = device_states[external_ix[2]]
     Ir_cnv = device_states[external_ix[3]]
@@ -123,7 +123,7 @@ function initialize_inner!(
         get_inner_vars(dynamic_device)[md_var] = m0_dq[d]
         get_inner_vars(dynamic_device)[mq_var] = m0_dq[q]
         #Update states
-        inner_ix = get_local_state_ix(dynamic_device, PSY.CurrentControl)
+        inner_ix = get_local_state_ix(dynamic_device, PSY.VoltageModeControl)
         inner_states = @view device_states[inner_ix]
         inner_states[1] = sol_x0[3] #ξ_d
         inner_states[2] = sol_x0[4] #ξ_q

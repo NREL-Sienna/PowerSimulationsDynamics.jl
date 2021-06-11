@@ -4,7 +4,7 @@ This component defines voltage and current controllers to generate the reference
 for the converter. Although in many controls the current and voltage control are separate blocks
 we propose a more general control approach that considers them as a joint control logic.
 
-## Integrated Virtual Impedance, Voltage and Current Controller ```[CurrentControl]```
+## Integrated Virtual Impedance, Voltage and Current Controller ```[VoltageModeControl]```
 
 The following model receives both the outer loop control frequency and reference voltage
 signal to generate the reference signal for the converters. The virtual impedance plays a
