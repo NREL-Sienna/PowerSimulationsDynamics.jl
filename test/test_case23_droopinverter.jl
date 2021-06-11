@@ -23,7 +23,7 @@ tspan = (0.0, 4.0);
 #Define Fault using Callbacks
 Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
 
-@testset "Test 21 Droop Inverter ImplicitModel" begin
+@testset "Test 23 Droop Inverter ImplicitModel" begin
     path = (joinpath(pwd(), "test-23"))
     !isdir(path) && mkdir(path)
     try
@@ -60,7 +60,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
     end
 end
 
-@testset "Test 21 Droop Inverter MassMatrixModel" begin
+@testset "Test 23 Droop Inverter MassMatrixModel" begin
     path = (joinpath(pwd(), "test-23"))
     !isdir(path) && mkdir(path)
     try
