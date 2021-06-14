@@ -86,8 +86,8 @@ function index_dynamic_injection(
     return
 end
 
-var_count(::PSY.DynamicGenerator) = 9
-var_count(::PSY.DynamicInverter) = 14
+var_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
+var_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 
 function attach_inner_vars!(
     dynamic_device::T,

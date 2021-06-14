@@ -45,8 +45,6 @@ function mdl_outer_ode!(
 
     #Obtain inner variables for component
     ω_pll = get_inner_vars(dynamic_device)[ω_freq_estimator_var]
-    V_tR = get_inner_vars(dynamic_device)[VR_inv_var]
-    V_tI = get_inner_vars(dynamic_device)[VI_inv_var]
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
@@ -176,4 +174,86 @@ function mdl_outer_ode!(
     get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
     get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc
     get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
+end
+
+function mdl_outer_ode!(
+    device_states,
+    output_ode,
+    f0,
+    ω_sys,
+    dynamic_device::PSY.DynamicInverter{
+        C,
+        PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
+        IC,
+        DC,
+        P,
+        F,
+    },
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
+    )
+    Vr_filter = device_states[external_ix[1]]
+    Vi_filter = device_states[external_ix[2]]
+    Ir_filter = device_states[external_ix[3]]
+    Ii_filter = device_states[external_ix[4]]
+
+    #Obtain inner variables for component
+    θ_pll = get_inner_vars(dynamic_device)[θ_freq_estimator_var]
+    ω_pll = get_inner_vars(dynamic_device)[ω_freq_estimator_var]
+
+    #Get Active Power Controller parameters
+    outer_control = PSY.get_outer_control(dynamic_device)
+    active_power_control = PSY.get_active_power(outer_control)
+    Kp_p = PSY.get_Kp_p(active_power_control) #Proportional Gain
+    Ki_p = PSY.get_Ki_p(active_power_control) #Integral Gain
+    ωz = PSY.get_ωz(active_power_control) #Frequency cutoff frequency
+
+    #Get Reactive Power Controller parameters
+    reactive_power_control = PSY.get_reactive_power(outer_control)
+    Kp_q = PSY.get_Kp_q(reactive_power_control) #Proportional Gain
+    Ki_q = PSY.get_Ki_q(reactive_power_control) #Integral Gain
+    ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
+
+    #Obtain external parameters
+    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
+    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
+    )
+
+    #Define internal states for frequency estimator
+    internal_states = @view device_states[local_ix]
+    σp_oc = internal_states[1]
+    p_oc = internal_states[2]
+    σq_oc = internal_states[3]
+    q_oc = internal_states[4]
+
+    #Obtain additional expressions
+    p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
+    q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
+
+    #Compute 4 states ODEs
+    output_ode[local_ix[1]] = p_ref - p_oc
+    output_ode[local_ix[2]] = ωz * (p_elec_out - p_oc)
+    output_ode[local_ix[3]] = q_ref - q_oc
+    output_ode[local_ix[4]] = ωf * (q_elec_out - q_oc)
+
+    #Update inner vars
+    get_inner_vars(dynamic_device)[θ_oc_var] = θ_pll
+    get_inner_vars(dynamic_device)[ω_oc_var] = ω_pll
+    get_inner_vars(dynamic_device)[Iq_oc_var] = Kp_p * (p_ref - p_oc) + Ki_p * σp_oc
+    get_inner_vars(dynamic_device)[Id_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
 end
