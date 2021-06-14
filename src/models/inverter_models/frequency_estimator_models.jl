@@ -120,13 +120,13 @@ function mdl_freq_estimator_ode!(
     #Inputs (control signals)
 
     #Output Voltage LPF (internal state)
-    #𝜕vpll_q/𝜕t, Low Pass Filter
+    #𝜕vpll_q/𝜕t, Low Pass Filter, Johnson COMPEL2017 eqn. 3.1
     output_ode[local_ix[1]] = ω_lp * (V_dq_pll[q] - vpll_q)
     #PI Integrator (internal state)
-    #𝜕dϵ_pll/𝜕t, D'Arco ESPR122 eqn. 13
+    #𝜕dϵ_pll/𝜕t, Johnson COMPEL2017 eqn. 3.2
     output_ode[local_ix[2]] = vpll_q
     #PLL Frequency Deviation (internal state)
-    #𝜕θ_pll/𝜕t, D'Arco ESPR122 eqn. 15
+    #𝜕θ_pll/𝜕t, DJohnson COMPEL2017 eqn. 3.3
     output_ode[local_ix[3]] = ωb * (kp_pll * vpll_q + ki_pll * ϵ_pll)
 
     #Update inner_vars
