@@ -216,7 +216,7 @@ function get_initial_conditions(sim::Simulation)
     θ = Dict{Int, Float64}()
     for bus in PSY.get_components(PSY.Bus, system)
         bus_n = PSY.get_number(bus)
-        bus_ix = get_lookup(sim.inputs)[bus_n]
+        bus_ix = get_lookup(sim.simulation_inputs)[bus_n]
         V_R[bus_n] = sim.x0_init[bus_ix]
         V_I[bus_n] = sim.x0_init[bus_ix + bus_size]
         Vm[bus_n] = sqrt(sim.x0_init[bus_ix]^2 + sim.x0_init[bus_ix + bus_size]^2)
@@ -226,7 +226,7 @@ function get_initial_conditions(sim::Simulation)
     for device in PSY.get_components(PSY.DynamicInjection, system)
         states = PSY.get_states(device)
         name = PSY.get_name(device)
-        global_index = get_global_index(sim.inputs)[name]
+        global_index = get_global_index(sim.simulation_inputs)[name]
         x0_device = Dict{Symbol, Float64}()
         for s in states
             x0_device[s] = sim.x0_init[global_index[s]]
@@ -238,7 +238,7 @@ function get_initial_conditions(sim::Simulation)
         for br in dyn_branches
             states = PSY.get_states(br)
             name = PSY.get_name(br)
-            global_index = get_global_index(sim.inputs)[name]
+            global_index = get_global_index(sim.simulation_inputs)[name]
             x0_br = Dict{Symbol, Float64}()
             for s in states
                 x0_br[s] = sim.x0_init[global_index[s]]
