@@ -18,7 +18,7 @@ end
 Function to obtain the voltage magnitude series out of the DAE Solution. It receives the solution, the dynamical system and the bus number.
 
 """
-function get_voltagemag_series(sim::Simulation, bus_number::Int)
+function get_voltage_magnitude_series(sim::Simulation, bus_number::Int)
     n_buses = get_bus_count(sim.simulation_inputs)
     bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, 0)
     V_R, V_I = post_proc_voltage_series(sim.solution, bus_ix, n_buses)
@@ -35,7 +35,7 @@ end
 Function to obtain the voltage angle series out of the DAE Solution. It receives the solution, the dynamical system and the bus number.
 
 """
-function get_voltageang_series(sim::Simulation, bus_number::Int)
+function get_voltage_angle_series(sim::Simulation, bus_number::Int)
     n_buses = get_bus_count(sim.simulation_inputs)
     bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, 0)
     V_R, V_I = post_proc_voltage_series(sim.solution, bus_ix, n_buses)
