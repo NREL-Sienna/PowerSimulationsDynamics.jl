@@ -19,6 +19,7 @@ export MassMatrixModel
 export small_signal_analysis
 export get_state_series
 export get_voltagemag_series
+export get_voltageang_series 
 export print_device_states
 export get_initial_conditions
 export get_activepower_series
