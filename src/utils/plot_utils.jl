@@ -44,7 +44,7 @@ function get_voltage_angle_series(sim::Simulation, bus_number::Int)
     else
         @debug "found repeated time steps removing repetitions"
         ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
-        return sim.solution.t[ix],  atan.(V_I[ix] ./ V_R[ix])
+        return sim.solution.t[ix], atan.(V_I[ix] ./ V_R[ix])
     end
 end
 
