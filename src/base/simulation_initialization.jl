@@ -209,7 +209,7 @@ Returns a Dictionary with the resulting initial conditions of the simulation
 """
 function get_initial_conditions(sim::Simulation)
     system = get_system(sim)
-    bus_size = get_bus_count(sim.inputs)
+    bus_size = get_bus_count(sim.simulations_inputs)
     V_R = Dict{Int, Float64}()
     V_I = Dict{Int, Float64}()
     Vm = Dict{Int, Float64}()
