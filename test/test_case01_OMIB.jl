@@ -47,6 +47,7 @@ Ybus_change = NetworkSwitch(
         #Clean Extra Point at t = 1.0 from Callback
 
         series2 = get_voltage_magnitude_series(sim, 102)
+        series3 = get_voltage_angle_series(sim, 102)
 
         #Obtain PSAT benchmark data
         psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test01/Test01_delta.csv")
