@@ -45,7 +45,7 @@ Ybus_change = NetworkSwitch(
         execute!(sim, IDA())
 
         #Obtain data for voltages
-        series = get_voltagemag_series(sim, 102)
+        series = get_voltage_magnitude_series(sim, 102)
 
         zoom = [
             (series[1][ix], series[2][ix]) for
@@ -88,7 +88,7 @@ end
         execute!(sim, Rodas5())
 
         #Obtain data for voltages
-        series = get_voltagemag_series(sim, 102)
+        series = get_voltage_magnitude_series(sim, 102)
 
         zoom = [
             (series[1][ix], series[2][ix]) for

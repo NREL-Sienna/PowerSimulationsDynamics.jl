@@ -45,7 +45,7 @@ Ybus_change = NetworkSwitch(
         execute!(sim, IDA())
 
         #Obtain data for voltages
-        series = get_voltagemag_series(sim, 102)
+        series = get_voltage_magnitude_series(sim, 102)
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test10_x0_init
@@ -82,7 +82,7 @@ end
         execute!(sim, Rodas5())
 
         #Obtain data for voltages
-        series = get_voltagemag_series(sim, 102)
+        series = get_voltage_magnitude_series(sim, 102)
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test10_x0_init

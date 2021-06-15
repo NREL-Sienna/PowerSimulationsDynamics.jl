@@ -60,7 +60,7 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
         t = series[1]
         δ = series[2]
 
-        series2 = get_voltagemag_series(sim, 102)
+        series2 = get_voltage_magnitude_series(sim, 102)
 
         t_psse, δ_psse = get_csv_delta(csv_file)
 
@@ -120,7 +120,7 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         t = series[1]
         δ = series[2]
 
-        series2 = get_voltagemag_series(sim, 102)
+        series2 = get_voltage_magnitude_series(sim, 102)
 
         t_psse, δ_psse = get_csv_delta(csv_file)
 

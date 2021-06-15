@@ -18,7 +18,7 @@ end
 Function to obtain the voltage magnitude series out of the DAE Solution. It receives the solution, the dynamical system and the bus number.
 
 """
-function get_voltagemag_series(sim::Simulation, bus_number::Int)
+function get_voltage_magnitude_series(sim::Simulation, bus_number::Int)
     n_buses = get_bus_count(sim.simulation_inputs)
     bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, 0)
     V_R, V_I = post_proc_voltage_series(sim.solution, bus_ix, n_buses)
@@ -28,6 +28,23 @@ function get_voltagemag_series(sim::Simulation, bus_number::Int)
         @debug "found repeated time steps removing repetitions"
         ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
         return sim.solution.t[ix], sqrt.(V_R[ix] .^ 2 + V_I[ix] .^ 2)
+    end
+end
+
+"""
+Function to obtain the voltage angle series out of the DAE Solution. It receives the solution, the dynamical system and the bus number.
+
+"""
+function get_voltage_angle_series(sim::Simulation, bus_number::Int)
+    n_buses = get_bus_count(sim.simulation_inputs)
+    bus_ix = get(get_lookup(sim.simulation_inputs), bus_number, 0)
+    V_R, V_I = post_proc_voltage_series(sim.solution, bus_ix, n_buses)
+    if allunique(sim.solution.t)
+        return sim.solution.t, atan.(V_I ./ V_R)
+    else
+        @debug "found repeated time steps removing repetitions"
+        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
+        return sim.solution.t[ix], atan.(V_I[ix] ./ V_R[ix])
     end
 end
 
