@@ -1,8 +1,9 @@
 function mass_matrix_machine_entries!(
     mass_matrix,
-    dynamic_device::PSY.DynamicGenerator{M, S, T, TG, P},
-) where {M <: PSY.Machine, S <: PSY.Shaft, T <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    @debug "Using default mass matrix entries $M $(PSY.get_name(dynamic_device))"
+    machine::M,
+    global_index::Dict{Symbol, Int64},
+) where {M <: PSY.Machine}
+    @debug "Using default mass matrix entries $M"
 end
 
 """

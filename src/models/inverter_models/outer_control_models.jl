@@ -1,15 +1,9 @@
 function mass_matrix_outer_entries!(
     mass_matrix,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, F},
-) where {
-    C <: PSY.Converter,
-    O <: PSY.OuterControl,
-    IC <: PSY.InnerControl,
-    DC <: PSY.DCSource,
-    P <: PSY.FrequencyEstimator,
-    F <: PSY.Filter,
-}
-    @debug "Using default mass matrix entries $O $(PSY.get_name(dynamic_device))"
+    outer_control::O,
+    global_index::Dict{Symbol, Int64},
+) where {O <: PSY.OuterControl}
+    @debug "Using default mass matrix entries $O"
 end
 
 function mdl_outer_ode!(
