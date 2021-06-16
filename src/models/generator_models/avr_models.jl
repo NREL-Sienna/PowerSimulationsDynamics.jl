@@ -1,8 +1,18 @@
 function mass_matrix_avr_entries!(
     mass_matrix,
-    dynamic_device::PSY.DynamicGenerator{M, S, T, TG, P},
-) where {M <: PSY.Machine, S <: PSY.Shaft, T <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    @debug "Using default mass matrix entries $T $(PSY.get_name(dynamic_device))"
+    avr::T,
+    global_index::Dict{Symbol, Int64},
+) where {T <: PSY.AVR}
+    @debug "Using default mass matrix entries $T)"
+end
+
+function mass_matrix_avr_entries!(
+    mass_matrix,
+    avr::PSY.SEXS,
+    global_index::Dict{Symbol, Int64},
+)
+    mass_matrix[global_index[:Vf], global_index[:Vf]] = PSY.get_Te(avr)
+    mass_matrix[global_index[:Vr], global_index[:Vr]] = PSY.get_Tb(avr)
 end
 
 function mdl_avr_ode!(
@@ -249,6 +259,57 @@ function mdl_avr_ode!(
     output_ode[local_ix[3]] = inv_Ta * (Ka * V_out - Vr2) #dVr2/dt
     output_ode[local_ix[4]] = (1.0 / Te) * (V_R - V_FE) #dVe/dt
     output_ode[local_ix[5]] = (1.0 / Tf) * (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
+
+    #Update inner_vars
+    get_inner_vars(dynamic_device)[Vf_var] = Vf
+
+    return
+end
+
+function mdl_avr_ode!(
+    device_states,
+    output_ode,
+    dynamic_device::PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+
+    #Obtain references
+    V0_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
+
+    #Define inner states for component
+    internal_states = @view device_states[local_ix]
+    Vf = internal_states[1]
+    Vr = internal_states[2]
+
+    #Define external states for device
+    V_th = sqrt(
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+    )
+    Vs = get_inner_vars(dynamic_device)[V_pss_var]
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    Ta_Tb = PSY.get_Ta_Tb(avr)
+    K = PSY.get_K(avr)
+    V_min, V_max = PSY.get_V_lim(avr)
+
+    #Compute auxiliary parameters
+    V_in = V0_ref + Vs - V_th
+    V_LL = Vr + Ta_Tb * V_in
+
+    #Set anti-windup for Vf. #TODO in callbacks
+    #if Vf > V_max
+    #    Vf = V_max
+    #elseif Vf < V_min
+    #    Vf = V_min
+    #end
+
+    #Compute 2 States AVR ODE:
+    output_ode[local_ix[1]] = K * V_LL - Vf
+    output_ode[local_ix[2]] = V_in * (1 - Ta_Tb) - Vr
 
     #Update inner_vars
     get_inner_vars(dynamic_device)[Vf_var] = Vf

@@ -253,3 +253,50 @@ function initialize_avr!(
         avr_states[5] = sol_x0[5] #Vr3
     end
 end
+
+function initialize_avr!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain Vf0 solved from Machine
+    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    #Obtain measured terminal voltage
+    Vm = sqrt(
+        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
+        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+    )
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    Ta_Tb = PSY.get_Ta_Tb(avr)
+    K = PSY.get_K(avr)
+
+    #States of AVRTypeI are Vf, Vr1, Vr2, Vm
+    #To solve V_ref, Vr
+    function f!(out, x)
+        V_ref = x[1]
+        Vr = x[2]
+
+        V_in = V_ref - Vm
+        V_LL = Vr + Ta_Tb * V_in
+
+        out[1] = K * V_LL - Vf0
+        out[2] = V_in * (1 - Ta_Tb) - Vr
+    end
+    x0 = [1.0, Vf0]
+    sol = NLsolve.nlsolve(f!, x0)
+    if !NLsolve.converged(sol)
+        @warn("Initialization in AVR failed")
+    else
+        sol_x0 = sol.zero
+        #Update V_ref
+        PSY.set_V_ref!(avr, sol_x0[1])
+        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[1]
+        #Update AVR states
+        avr_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
+        avr_states = @view device_states[avr_ix]
+        avr_states[1] = Vf0 #Vf
+        avr_states[2] = sol_x0[2] #Vr
+    end
+end
