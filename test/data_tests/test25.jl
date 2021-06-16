@@ -14,8 +14,8 @@ function dyn_gen_marconato(generator)
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_marconato(), #machine
-        shaft = shaft_damping(), #shaft
-        avr = avr_none(), #avr
+        shaft = shaft_no_damping(), #shaft
+        avr = AVRSimple(1.0), #avr
         prime_mover = tg_none(), #tg
         pss = pss_none(),
     )
@@ -26,8 +26,8 @@ function dyn_gen_marconato_tg(generator)
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_marconato(), #machine
-        shaft = shaft_damping(), #shaft
-        avr = avr_none(), #avr
+        shaft = shaft_no_damping(), #shaft
+        avr = AVRSimple(1.0), #avr
         prime_mover = tg_type2(), #tg
         pss = pss_none(),
     )
