@@ -20,6 +20,10 @@ include(joinpath(dirname(@__FILE__), "data_tests/test25.jl"))
 #time span
 tspan = (0.0, 40.0);
 
+#PSCAD benchmark data
+csv_file = joinpath(dirname(@__FILE__), "benchmarks/pscad/Test25/Test25_v102.csv")
+t_offset = 49.0
+
 #Define Fault using Callbacks
 gen2 = get_dynamic_injector(get_component(Generator, sys, "generator-102-1"));
 Pref_change = ControlReferenceChange(1.0, gen2, PSID.P_ref_index, 0.9);
@@ -35,10 +39,17 @@ Pref_change = ControlReferenceChange(1.0, gen2, PSID.P_ref_index, 0.9);
         @test small_sig.stable
 
         #Solve problem in equilibrium
-        execute!(sim, Sundials.IDA(), dtmax = 0.001)
+        execute!(sim, Sundials.IDA(), dtmax = 0.01, saveat = 0.01)
 
-        #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :ω))
+        #Obtain voltage magnitude data
+        series = get_voltage_magnitude_series(sim,102)
+        t = series[1]
+        v = series[2]
+
+        #Obtain benchmark data from PSCAD
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        v_pscad = M[:, 2]
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -47,6 +58,9 @@ Pref_change = ControlReferenceChange(1.0, gen2, PSID.P_ref_index, 0.9);
         end
         @test (diff[1] < 1e-3)
         @test sim.solution.retcode == :Success
+        #relaxed constraint to account for mismatch in damping
+        @test LinearAlgebra.norm(v - v_pscad) <= 0.05
+        @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -64,10 +78,17 @@ end
         @test small_sig.stable
 
         #Solve problem in equilibrium
-        execute!(sim, Rodas5(autodiff = false), dtmax = 0.001)
+        execute!(sim, Rodas5(autodiff = false), dtmax = 0.01, saveat = 0.01)
 
-        #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :ω))
+        #Obtain voltage magnitude data
+        series = get_voltage_magnitude_series(sim,102)
+        t = series[1]
+        v = series[2]
+
+        #Obtain benchmark data from PSCAD
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        v_pscad = M[:, 2]
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -76,6 +97,9 @@ end
         end
         @test (diff[1] < 1e-3)
         @test sim.solution.retcode == :Success
+        #relaxed constraint to account for mismatch in damping
+        @test LinearAlgebra.norm(v - v_pscad) <= 0.05
+        @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
