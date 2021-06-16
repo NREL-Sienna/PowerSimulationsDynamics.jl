@@ -237,12 +237,13 @@ function _dae_vector_update!(inputs::SimulationInputs)
     injection_start = get_injection_pointer(inputs)
     ode_range = injection_start:get_variable_count(inputs)
     mass_buses = @view mass_matrix[bus_range, bus_range]
+    DAE_ode = @view DAE_vector[ode_range]
     mass_ode = @view mass_matrix[ode_range, ode_range]
     for i in eachindex(DAE_vector[bus_range])
         IS.@assert_op DAE_vector[bus_range][i] == (mass_buses[i, i] > 0.0)
     end
-    for i in eachindex(DAE_vector[ode_range])
-        DAE_vector[ode_range][i] = (mass_ode[i, i] > 0.0)
+    for i in eachindex(DAE_ode)
+        DAE_ode[i] = (mass_ode[i, i] > 0.0)
     end
     if has_dyn_lines(inputs)
         branches_range =
