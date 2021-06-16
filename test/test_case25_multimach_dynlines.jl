@@ -42,7 +42,7 @@ Pref_change = ControlReferenceChange(1.0, gen2, PSID.P_ref_index, 0.9);
         execute!(sim, Sundials.IDA(), dtmax = 0.01, saveat = 0.01)
 
         #Obtain voltage magnitude data
-        series = get_voltage_magnitude_series(sim,102)
+        series = get_voltage_magnitude_series(sim, 102)
         t = series[1]
         v = series[2]
 
@@ -81,7 +81,7 @@ end
         execute!(sim, Rodas5(autodiff = false), dtmax = 0.01, saveat = 0.01)
 
         #Obtain voltage magnitude data
-        series = get_voltage_magnitude_series(sim,102)
+        series = get_voltage_magnitude_series(sim, 102)
         t = series[1]
         v = series[2]
 
