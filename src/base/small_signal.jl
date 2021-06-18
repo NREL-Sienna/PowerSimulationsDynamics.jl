@@ -61,7 +61,7 @@ function _make_reduce_jacobian_index(global_index, diff_states)
             if state_is_differential
                 jac_index[device_name][state] = sum(diff_states[1:ix])
             elseif !state_is_differential
-                #jac_index[device_name][state] = nothing
+                jac_index[device_name][state] = nothing
             else
                 @assert false
             end
@@ -71,15 +71,14 @@ function _make_reduce_jacobian_index(global_index, diff_states)
 end
 
 function _get_state_types(sim::Simulation)
-    #var_count = get_variable_count(sim.simulation_inputs)
-    #bus_count = get_bus_count(sim.simulation_inputs)
-    #diff_states = collect(trues(var_count))
-    #diff_states[1:(2 * bus_count)] .= false
-    #for b_ix in get_voltage_buses_ix(sim.simulation_inputs)
-    #    diff_states[b_ix] = true
-    #    diff_states[b_ix + bus_count] = true
-    #end
-    diff_states = copy(sim.simulation_inputs.DAE_vector)
+    var_count = get_variable_count(sim.simulation_inputs)
+    bus_count = get_bus_count(sim.simulation_inputs)
+    diff_states = collect(trues(var_count))
+    diff_states[1:(2 * bus_count)] .= false
+    for b_ix in get_voltage_buses_ix(sim.simulation_inputs)
+        diff_states[b_ix] = true
+        diff_states[b_ix + bus_count] = true
+    end
     alg_states = .!diff_states
     jac_index =
         _make_reduce_jacobian_index(get_global_index(sim.simulation_inputs), diff_states)
