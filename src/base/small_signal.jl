@@ -52,7 +52,10 @@ function _calculate_forwardiff_jacobian(
     return jacobian
 end
 
-function _make_reduce_jacobian_index(global_index, diff_states)
+"""
+Finds the location of the differential states in the reduced Jacobian
+"""
+function _make_reduced_jacobian_index(global_index, diff_states)
     jac_index = Dict{String, Dict{Symbol, Int}}()
     for (device_name, device_index) in global_index
         jac_index[device_name] = Dict{Symbol, Int}()
@@ -60,37 +63,18 @@ function _make_reduce_jacobian_index(global_index, diff_states)
             state_is_differential = diff_states[ix]
             if state_is_differential
                 jac_index[device_name][state] = sum(diff_states[1:ix])
-            elseif !state_is_differential
-                jac_index[device_name][state] = nothing
-            else
-                @assert false
             end
         end
     end
     return jac_index
 end
 
-function _get_state_types(sim::Simulation)
-    var_count = get_variable_count(sim.simulation_inputs)
-    bus_count = get_bus_count(sim.simulation_inputs)
-    diff_states = collect(trues(var_count))
-    diff_states[1:(2 * bus_count)] .= false
-    for b_ix in get_voltage_buses_ix(sim.simulation_inputs)
-        diff_states[b_ix] = true
-        diff_states[b_ix + bus_count] = true
-    end
-    alg_states = .!diff_states
-    jac_index =
-        _make_reduce_jacobian_index(get_global_index(sim.simulation_inputs), diff_states)
-    return jac_index, diff_states, alg_states
-end
-
 function _reduce_jacobian(
     jacobian::Matrix{Float64},
     diff_states::Vector{Bool},
-    alg_states::BitArray{1},
     mass_matrix::SparseArrays.SparseMatrixCSC{Float64, Int},
 )
+    alg_states = .!diff_states
     fx = @view jacobian[diff_states, diff_states]
     gy = jacobian[alg_states, alg_states]
     fy = @view jacobian[diff_states, alg_states]
@@ -154,11 +138,13 @@ end
 function small_signal_analysis(sim::Simulation; kwargs...)
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
     sim.status = CONVERTED_FOR_SMALL_SIGNAL
-    mass_matrix = get_mass_matrix(sim.simulation_inputs)
+    inputs = get_simulation_inputs(sim)
+    mass_matrix = get_mass_matrix(inputs)
     x_eval = get(kwargs, :operating_point, sim.x0_init)
     jacobian = _calculate_forwardiff_jacobian(sim, x_eval)
-    jac_index, diff_states, alg_states = _get_state_types(sim)
-    reduced_jacobian = _reduce_jacobian(jacobian, diff_states, alg_states, mass_matrix)
+    diff_states = get_DAE_vector(inputs)
+    jac_index = _make_reduced_jacobian_index(get_global_index(inputs), diff_states)
+    reduced_jacobian = _reduce_jacobian(jacobian, diff_states, mass_matrix)
     eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, sim.multimachine)
     damping = _get_damping(eigen_vals, jac_index)
     stable = _determine_stability(eigen_vals)

@@ -30,7 +30,7 @@ eigs_values = [test26_eigvals, test26_eigvals_noTE]
 raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/SEXS/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
-function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
+function test_sexs_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-sexs"))
     !isdir(path) && mkdir(path)
     try
@@ -45,12 +45,14 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
             BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
+        #Obtain small signal results for initial conditions. Testing the simulation reset
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
+
         #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
-
-        #small_sig = small_signal_analysis(sim; reset_simulation = true)
-        #eigs = small_sig.eigenvalues
-        #@test small_sig.stable
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :δ))
@@ -87,7 +89,7 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
     end
 end
 
-function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
+function test_sexs_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-sexs"))
     !isdir(path) && mkdir(path)
     try
@@ -102,13 +104,14 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
             BranchTrip(1.0, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
-        #Solve problem
-        execute!(sim, Rodas5(autodiff=true), dtmax = 0.005, saveat = 0.005)
-
         #Obtain small signal results for initial conditions. Testing the simulation reset
-        #small_sig = small_signal_analysis(sim; reset_simulation = true)
-        #eigs = small_sig.eigenvalues
-        #@test small_sig.stable
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
+
+        #Solve problem
+        execute!(sim, Rodas5(autodiff = true), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :δ))
@@ -129,8 +132,7 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         end
         #Test Initial Condition
         @test (diff[1] < 1e-3)
-        #Test Eigenvalues
-        #@test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
+
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Transient Simulation Results
@@ -152,7 +154,7 @@ end
             csv_file = csv_files[ix]
             init_cond = init_conditions
             eigs_value = eigs_values[ix]
-            test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
+            test_sexs_implicit(dyr_file, csv_file, init_cond, eigs_value)
         end
     end
 end
@@ -164,7 +166,7 @@ end
             csv_file = csv_files[ix]
             init_cond = init_conditions
             eigs_value = eigs_values[ix]
-            test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
+            test_sexs_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         end
     end
 end
