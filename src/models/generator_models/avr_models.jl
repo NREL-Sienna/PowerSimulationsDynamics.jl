@@ -1,8 +1,18 @@
 function mass_matrix_avr_entries!(
     mass_matrix,
-    dynamic_device::PSY.DynamicGenerator{M, S, T, TG, P},
-) where {M <: PSY.Machine, S <: PSY.Shaft, T <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    @debug "Using default mass matrix entries $T $(PSY.get_name(dynamic_device))"
+    avr::T,
+    global_index::Dict{Symbol, Int64},
+) where {T <: PSY.AVR}
+    @debug "Using default mass matrix entries $T)"
+end
+
+function mass_matrix_avr_entries!(
+    mass_matrix,
+    avr::PSY.SEXS,
+    global_index::Dict{Symbol, Int64},
+)
+    mass_matrix[global_index[:Vf], global_index[:Vf]] = PSY.get_Te(avr)
+    mass_matrix[global_index[:Vr], global_index[:Vr]] = PSY.get_Tb(avr)
 end
 
 function mdl_avr_ode!(

@@ -1,8 +1,9 @@
 function mass_matrix_shaft_entries!(
     mass_matrix,
-    dynamic_device::PSY.DynamicGenerator{M, S, T, TG, P},
-) where {M <: PSY.Machine, S <: PSY.Shaft, T <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    @debug "Using default mass matrix entries $S $(PSY.get_name(dynamic_device))"
+    shaft::S,
+    global_index::Dict{Symbol, Int64},
+) where {S <: PSY.Shaft}
+    @debug "Using default mass matrix entries $S"
 end
 
 function mdl_shaft_ode!(

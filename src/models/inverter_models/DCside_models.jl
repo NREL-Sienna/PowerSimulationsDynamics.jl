@@ -1,15 +1,9 @@
 function mass_matrix_DCside_entries!(
     mass_matrix,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, F},
-) where {
-    C <: PSY.Converter,
-    O <: PSY.OuterControl,
-    IC <: PSY.InnerControl,
-    DC <: PSY.DCSource,
-    P <: PSY.FrequencyEstimator,
-    F <: PSY.Filter,
-}
-    @debug "Using default mass matrix entries $DC $(PSY.get_name(dynamic_device))"
+    dc_side::DC,
+    global_index::Dict{Symbol, Int64},
+) where {DC <: PSY.DCSource}
+    @debug "Using default mass matrix entries $DC"
 end
 
 function mdl_DCside_ode!(

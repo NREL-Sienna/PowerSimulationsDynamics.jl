@@ -1,16 +1,21 @@
-function device_mass_matrix_entries!(mass_matrix, dynamic_device::T) where {T}
+function device_mass_matrix_entries!(
+    sim_inputs::SimulationInputs,
+    dynamic_device::T,
+) where {T}
     error("Mass Matrix not implemented for models $T")
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix,
-    dynamic_device::DynG,
-) where {DynG <: PSY.DynamicGenerator}
-    mass_matrix_tg_entries!(mass_matrix, dynamic_device)
-    mass_matrix_pss_entries!(mass_matrix, dynamic_device)
-    mass_matrix_avr_entries!(mass_matrix, dynamic_device)
-    mass_matrix_machine_entries!(mass_matrix, dynamic_device)
-    mass_matrix_shaft_entries!(mass_matrix, dynamic_device)
+    sim_inputs::SimulationInputs,
+    dynamic_device::PSY.DynamicGenerator,
+)
+    mass_matrix = get_mass_matrix(sim_inputs)
+    global_index = get_global_index(sim_inputs)[PSY.get_name(dynamic_device)]
+    mass_matrix_tg_entries!(mass_matrix, PSY.get_prime_mover(dynamic_device), global_index)
+    mass_matrix_pss_entries!(mass_matrix, PSY.get_pss(dynamic_device), global_index)
+    mass_matrix_avr_entries!(mass_matrix, PSY.get_avr(dynamic_device), global_index)
+    mass_matrix_machine_entries!(mass_matrix, PSY.get_machine(dynamic_device), global_index)
+    mass_matrix_shaft_entries!(mass_matrix, PSY.get_shaft(dynamic_device), global_index)
     return
 end
 
@@ -95,15 +100,37 @@ function device!(
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix,
-    dynamic_device::DynI,
-) where {DynI <: PSY.DynamicInverter}
-    mass_matrix_DCside_entries!(mass_matrix, dynamic_device)
-    mass_matrix_freq_estimator_entries!(mass_matrix, dynamic_device)
-    mass_matrix_outer_entries!(mass_matrix, dynamic_device)
-    mass_matrix_inner_entries!(mass_matrix, dynamic_device)
-    mass_matrix_converter_entries!(mass_matrix, dynamic_device)
-    mass_matrix_filter_entries!(mass_matrix, dynamic_device)
+    sim_inputs::SimulationInputs,
+    dynamic_device::PSY.DynamicInverter,
+)
+    mass_matrix = get_mass_matrix(sim_inputs)
+    global_index = get_global_index(sim_inputs)[PSY.get_name(dynamic_device)]
+    mass_matrix_DCside_entries!(
+        mass_matrix,
+        PSY.get_dc_source(dynamic_device),
+        global_index,
+    )
+    mass_matrix_freq_estimator_entries!(
+        mass_matrix,
+        PSY.get_freq_estimator(dynamic_device),
+        global_index,
+    )
+    mass_matrix_outer_entries!(
+        mass_matrix,
+        PSY.get_outer_control(dynamic_device),
+        global_index,
+    )
+    mass_matrix_inner_entries!(
+        mass_matrix,
+        PSY.get_inner_control(dynamic_device),
+        global_index,
+    )
+    mass_matrix_converter_entries!(
+        mass_matrix,
+        PSY.get_converter(dynamic_device),
+        global_index,
+    )
+    mass_matrix_filter_entries!(mass_matrix, PSY.get_filter(dynamic_device), global_index)
     return
 end
 

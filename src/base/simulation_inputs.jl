@@ -210,15 +210,12 @@ function _dynamic_injection_inputs!(inputs::SimulationInputs, state_space_ix::Ve
 end
 
 function _mass_matrix_inputs!(inputs::SimulationInputs)
-    mass_matrix = get_mass_matrix(inputs)
-    injection_range = PSID.get_injection_pointer(inputs):PSID.get_variable_count(inputs)
-    mass_matrix_injectors = view(mass_matrix, injection_range, injection_range)
     for d in PSID.get_injectors_data(inputs)
         dynamic_injector = PSY.get_dynamic_injector(d)
-        device_mass_matrix_entries!(mass_matrix_injectors, dynamic_injector)
+        device_mass_matrix_entries!(inputs, dynamic_injector)
     end
-
     if has_dyn_lines(inputs)
+        mass_matrix = get_mass_matrix(inputs)
         sys_f = get_base_frequency(inputs)
         shunts = get_total_shunts(inputs)
         n_buses = get_bus_count(inputs)
@@ -228,6 +225,32 @@ function _mass_matrix_inputs!(inputs::SimulationInputs)
                 mass_matrix[i, i] =
                     mass_matrix[i + n_buses, i + n_buses] = val * (1 / (2.0 * π * sys_f))
             end
+        end
+    end
+end
+
+function _dae_vector_update!(inputs::SimulationInputs)
+    mass_matrix = get_mass_matrix(inputs)
+    DAE_vector = get_DAE_vector(inputs)
+    bus_vars_count = 2 * get_bus_count(inputs)
+    bus_range = 1:bus_vars_count
+    injection_start = get_injection_pointer(inputs)
+    ode_range = injection_start:get_variable_count(inputs)
+    mass_buses = @view mass_matrix[bus_range, bus_range]
+    DAE_ode = @view DAE_vector[ode_range]
+    mass_ode = @view mass_matrix[ode_range, ode_range]
+    for i in eachindex(DAE_vector[bus_range])
+        IS.@assert_op DAE_vector[bus_range][i] == (mass_buses[i, i] > 0.0)
+    end
+    for i in eachindex(DAE_ode)
+        DAE_ode[i] = (mass_ode[i, i] > 0.0)
+    end
+    if has_dyn_lines(inputs)
+        branches_range =
+            range(get_branches_pointer(inputs), length = get_n_branches_states(inputs))
+        mass_branches = @view mass_matrix[branches_range, branches_range]
+        for i in eachindex(DAE_vector[branches_range])
+            IS.@assert_op DAE_vector[branches_range][i] == (mass_branches[i, i] > 0.0)
         end
     end
 end
@@ -247,6 +270,7 @@ function _build!(inputs::SimulationInputs, sys::PSY.System)
     IS.@assert_op get_ω_sys(inputs) != -1
 
     _mass_matrix_inputs!(inputs)
+    _dae_vector_update!(inputs)
 
     IS.@assert_op injection_n_states == state_space_ix[1] - branches_n_states - n_buses * 2
     IS.@assert_op n_buses * 2 - static_bus_var_count >= 0

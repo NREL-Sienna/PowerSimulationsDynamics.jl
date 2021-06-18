@@ -1,15 +1,9 @@
 function mass_matrix_converter_entries!(
     mass_matrix,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, F},
-) where {
-    C <: PSY.Converter,
-    O <: PSY.OuterControl,
-    IC <: PSY.InnerControl,
-    DC <: PSY.DCSource,
-    P <: PSY.FrequencyEstimator,
-    F <: PSY.Filter,
-}
-    @debug "Using default mass matrix entries $C $(PSY.get_name(dynamic_device))"
+    converter::C,
+    global_index::Dict{Symbol, Int64},
+) where {C <: PSY.Converter}
+    @debug "Using default mass matrix entries $C"
 end
 
 function mdl_converter_ode!(

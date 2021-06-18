@@ -1,8 +1,9 @@
 function mass_matrix_tg_entries!(
     mass_matrix,
-    dynamic_device::PSY.DynamicGenerator{M, S, T, TG, P},
-) where {M <: PSY.Machine, S <: PSY.Shaft, T <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    @debug "Using default mass matrix entries $TG $(PSY.get_name(dynamic_device))"
+    tg::TG,
+    global_index::Dict{Symbol, Int64},
+) where {TG <: PSY.TurbineGov}
+    @debug "Using default mass matrix entries $TG"
 end
 
 function mdl_tg_ode!(
