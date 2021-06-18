@@ -11,7 +11,7 @@ threebus_sys = System(threebus_file_dir, runchecks = false)
 add_source_to_ref(threebus_sys)
 #Reduce generator output
 for g in get_components(Generator, threebus_sys)
-    set_active_power!(g, 0.75)
+    g.active_power = 0.75
 end
 res = solve_powerflow!(threebus_sys)
 

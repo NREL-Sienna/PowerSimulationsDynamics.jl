@@ -108,7 +108,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
         M[bus_range, bus_range] * dx[bus_range]
 end
 
-function system_mass_matrix!(dx, x, inputs::SimulationInputs, t)
+function system_mass_matrix!(dx, x::AbstractArray{U}, inputs::SimulationInputs, t) where U
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
     injection_ode = get_aux_arrays(inputs)[3]
@@ -127,6 +127,10 @@ function system_mass_matrix!(dx, x, inputs::SimulationInputs, t)
     #Network quantities
     V_r = @view x[1:bus_size]
     V_i = @view x[(bus_size + 1):bus_vars_count]
+    # I_injections_i = zeros(U, length(I_injections_i))
+    #I_injections_r = zeros(U, length(I_injections_r))
+    # injection_ode = zeros(U, length(get_aux_arrays(inputs)[3]))
+    # branches_ode = zeros(U, length(get_aux_arrays(inputs)[4]))
     fill!(I_injections_r, 0.0)
     fill!(I_injections_i, 0.0)
 
