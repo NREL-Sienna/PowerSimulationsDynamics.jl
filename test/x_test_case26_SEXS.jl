@@ -48,9 +48,9 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
         #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
-        small_sig = small_signal_analysis(sim; reset_simulation = true)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
+        #small_sig = small_signal_analysis(sim; reset_simulation = true)
+        #eigs = small_sig.eigenvalues
+        #@test small_sig.stable
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :δ))
@@ -72,7 +72,7 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
         #Test Initial Condition
         @test (diff[1] < 1e-3)
         #Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
+        #@test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Transient Simulation Results
@@ -106,9 +106,9 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         execute!(sim, Rodas5(autodiff), dtmax = 0.005, saveat = 0.005)
 
         #Obtain small signal results for initial conditions. Testing the simulation reset
-        small_sig = small_signal_analysis(sim; reset_simulation = true)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
+        #small_sig = small_signal_analysis(sim; reset_simulation = true)
+        #eigs = small_sig.eigenvalues
+        #@test small_sig.stable
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :δ))
@@ -130,7 +130,7 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         #Test Initial Condition
         @test (diff[1] < 1e-3)
         #Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
+        #@test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
         @test sim.solution.retcode == :Success
         #Test Transient Simulation Results
