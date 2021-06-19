@@ -119,7 +119,6 @@ end
 
 function simulation_pre_step!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
     add_aux_arrays!(inputs, T)
-    change_vector_type!(inputs, T)
     return
 end
 
