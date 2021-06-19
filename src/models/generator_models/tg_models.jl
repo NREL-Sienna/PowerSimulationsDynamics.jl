@@ -71,8 +71,7 @@ function mdl_tg_ode!(
         (1.0 / T5) * ((1.0 - T4 / T5) * (x_g2 + (T3 / Tc) * x_g1) - x_g3)
 
     #Update mechanical torque
-    get_inner_vars(dynamic_device)[τm_var] = x_g3 + (T4 / T5) * (x_g2 + (T3 / Tc) * x_g1)
-
+    set_inner_vars!(dynamic_device, τm_var, x_g3 + (T4 / T5) * (x_g2 + (T3 / Tc) * x_g1))
     return
 end
 
@@ -104,8 +103,6 @@ function mdl_tg_ode!(
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
 
-    #Compute auxiliary parameters
-    τ_m = inv_R * (T1 / T2) * (ω_ref - ω[1]) + P_ref / 1.0 + xg
 
     #Set anti-windup for τ_m. NOT WORKING
     #if τ_m > τ_max
@@ -118,8 +115,7 @@ function mdl_tg_ode!(
     output_ode[local_ix[1]] = (1.0 / T2) * (inv_R * (1 - T2 / T1) * (ω_ref - ω[1]) - xg)
 
     #Update mechanical torque
-    get_inner_vars(dynamic_device)[τm_var] = τ_m
-
+    set_inner_vars!(dynamic_device, τm_var, inv_R * (T1 / T2) * (ω_ref - ω[1]) + P_ref / 1.0 + xg)
     return
 end
 
@@ -159,16 +155,13 @@ function mdl_tg_ode!(
     #Compute auxiliary parameters
     x_g1_sat = V_min < x_g1 < V_max ? x_g1 : max(V_min, min(V_max, x_g1))
     ref_in = inv_R * (P_ref - (ω[1] - 1.0))
-    Pm = x_g2 + (T2 / T3) * x_g1
-    τ_m = Pm - D_T * (ω[1] - 1.0)
 
     #Compute 2 State TG ODE:
     output_ode[local_ix[1]] = (1.0 / T1) * (ref_in - x_g1) #dx_g1/dt
     output_ode[local_ix[2]] = (1.0 / T3) * (x_g1_sat * (1 - T2 / T3) - x_g2) #dx_g2/dt
 
     #Update mechanical torque
-    get_inner_vars(device)[τm_var] = τ_m
-
+    set_inner_vars!(dynamic_device, τm_var, x_g2 + (T2 / T3) * x_g1 - D_T * (ω[1] - 1.0))
     return
 end
 
@@ -217,7 +210,7 @@ function mdl_tg_ode!(
     output_ode[local_ix[3]] = (1.0 / T3) * (x_g2 - x_g3)
 
     #Update mechanical torque
-    get_inner_vars(dynamic_device)[τm_var] = τ_m
+    set_inner_vars!(dynamic_device, τm_var, τ_m)
 
     return
 end
