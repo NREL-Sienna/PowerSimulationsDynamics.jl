@@ -140,7 +140,7 @@ function make_device_index!(dynamic_device::PSY.DynamicInjection, ::Vector{Bool}
     device_states = PSY.get_states(dynamic_device)
     device_state_mapping = DEVICE_INTERNAL_MAPPING()
     input_port_mapping = DEVICE_INTERNAL_MAPPING()
-    attach_inner_vars!(dynamic_device)
+    attach_inner_vars!(dynamic_device, Float64)
     for c in PSY.get_dynamic_components(dynamic_device)
         device_state_mapping[typeof(c)] = index_local_states(c, device_states)
         input_port_mapping[typeof(c)] = index_port_mapping!(c, device_states)
