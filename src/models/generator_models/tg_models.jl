@@ -15,8 +15,8 @@ function mdl_tg_ode!(
 
     #Update inner vars
     P_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
-    get_inner_vars(dynamic_device)[τm_var] =
-        P_ref * PSY.get_efficiency(PSY.get_prime_mover(dynamic_device))
+    set_inner_vars!(dynamic_device, τm_var, 
+        P_ref * PSY.get_efficiency(PSY.get_prime_mover(dynamic_device)))
 
     return
 end

@@ -48,19 +48,19 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        set_inner_vars!(dynamic_device, VR_gen_var, V_R)
+        set_inner_vars!(dynamic_device, VI_gen_var, V_I)
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, τe_var, sol_x0[2])
+        set_inner_vars!(dynamic_device, τm_var, sol_x0[2])
         #Not necessary to update Vf for AVR in Base Machine. Update eq_p:
         PSY.set_eq_p!(machine, sol_x0[3])
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, Vf_var, sol_x0[3])
     end
 end
 
@@ -123,18 +123,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        set_inner_vars!(dynamic_device, VR_gen_var, V_R)
+        set_inner_vars!(dynamic_device, VI_gen_var, V_I)
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, τe_var, sol_x0[2])
+        set_inner_vars!(dynamic_device, τm_var, sol_x0[2])
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, Vf_var, sol_x0[3])
         #Update eq_p and ed_p for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.OneDOneQMachine)
         machine_states = @view device_states[machine_ix]
@@ -217,18 +217,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        set_inner_vars!(dynamic_device, VR_gen_var, V_R)
+        set_inner_vars!(dynamic_device, VI_gen_var, V_I)
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, τe_var, sol_x0[2])
+        set_inner_vars!(dynamic_device, τm_var, sol_x0[2])
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, Vf_var, sol_x0[3])
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.MarconatoMachine)
         machine_states = @view device_states[machine_ix]
@@ -239,8 +239,8 @@ function initialize_mach_shaft!(
         machine_states[5] = sol_x0[8] #eq_pp
         machine_states[6] = sol_x0[9] #ed_pp
         #Update fluxes inner vars
-        get_inner_vars(dynamic_device)[ψq_var] = sol_x0[4]
-        get_inner_vars(dynamic_device)[ψd_var] = sol_x0[5]
+        set_inner_vars!(dynamic_device, ψq_var, sol_x0[4])
+        set_inner_vars!(dynamic_device, ψd_var, sol_x0[5])
     end
 end
 
@@ -317,18 +317,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        set_inner_vars!(dynamic_device, VR_gen_var, V_R)
+        set_inner_vars!(dynamic_device, VI_gen_var, V_I)
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, τe_var, sol_x0[2])
+        set_inner_vars!(dynamic_device, τm_var, sol_x0[2])
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, Vf_var, sol_x0[3])
         #Update eq_p and ed_p for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.SimpleMarconatoMachine)
         machine_states = @view device_states[machine_ix]
@@ -409,18 +409,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        set_inner_vars!(dynamic_device, VR_gen_var, V_R)
+        set_inner_vars!(dynamic_device, VI_gen_var, V_I)
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, τe_var, sol_x0[2])
+        set_inner_vars!(dynamic_device, τm_var, sol_x0[2])
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, Vf_var, sol_x0[3])
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.AndersonFouadMachine)
         machine_states = @view device_states[machine_ix]
@@ -431,8 +431,8 @@ function initialize_mach_shaft!(
         machine_states[5] = sol_x0[8] #eq_pp
         machine_states[6] = sol_x0[9] #ed_pp
         #Update fluxes inner vars
-        get_inner_vars(dynamic_device)[ψq_var] = sol_x0[4]
-        get_inner_vars(dynamic_device)[ψd_var] = sol_x0[5]
+        set_inner_vars!(dynamic_device, ψq_var, sol_x0[4])
+        set_inner_vars!(dynamic_device, ψd_var, sol_x0[5])
     end
 end
 
@@ -505,18 +505,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        set_inner_vars!(dynamic_device, VR_gen_var, V_R)
+        set_inner_vars!(dynamic_device, VI_gen_var, V_I)
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, τe_var, sol_x0[2])
+        set_inner_vars!(dynamic_device, τm_var, sol_x0[2])
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, Vf_var, sol_x0[3])
         #Update eq_p and ed_p for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.SimpleAFMachine)
         machine_states = @view device_states[machine_ix]
@@ -654,20 +654,20 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        set_inner_vars!(dynamic_device, VR_gen_var, V_R)
+        set_inner_vars!(dynamic_device, VI_gen_var, V_I)
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = 1.0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, τe_var, sol_x0[2])
+        set_inner_vars!(dynamic_device, τm_var, sol_x0[2])
         #Update Vf for AVR in GENROU Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, Vf_var, sol_x0[3])
         #Update Xad_Ifd for AVR in GENROU Machine
-        get_inner_vars(dynamic_device)[Xad_Ifd_var] = sol_x0[8]
+        set_inner_vars!(dynamic_device, Xad_Ifd_var, sol_x0[8])
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, typeof(machine))
         machine_states = @view device_states[machine_ix]
@@ -773,20 +773,20 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        set_inner_vars!(dynamic_device, VR_gen_var, V_R)
+        set_inner_vars!(dynamic_device, VI_gen_var, V_I)
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = 1.0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, τe_var, sol_x0[2])
+        set_inner_vars!(dynamic_device, τm_var, sol_x0[2])
         #Update Vf for AVR in GENSAL Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, Vf_var, sol_x0[3])
         #Update Xad_Ifd for AVR in GENSAL Machine
-        get_inner_vars(dynamic_device)[Xad_Ifd_var] = sol_x0[7]
+        set_inner_vars!(dynamic_device, Xad_Ifd_var, sol_x0[7])
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, typeof(machine))
         machine_states = @view device_states[machine_ix]
@@ -903,20 +903,20 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        set_inner_vars!(dynamic_device, VR_gen_var, V_R)
+        set_inner_vars!(dynamic_device, VI_gen_var, V_I)
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = 1.0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, τe_var, sol_x0[2])
+        set_inner_vars!(dynamic_device, τm_var, sol_x0[2])
         #Update Vf for AVR in GENSAL Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, Vf_var, sol_x0[3])
         #Update Xad_Ifd for AVR in GENSAL Machine
-        get_inner_vars(dynamic_device)[Xad_Ifd_var] = sol_x0[7]
+        set_inner_vars!(dynamic_device, Xad_Ifd_var, sol_x0[7])
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, typeof(machine))
         machine_states = @view device_states[machine_ix]
