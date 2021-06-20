@@ -63,3 +63,38 @@ with
 In this case, the measurement of power are being done in the capacitor of the LCL filter.
 However, depending on the model, this measurements could be different depending on where
 is the point of common coupling.
+
+
+## Active and Reactive Power PI Controllers (Grid Following) ```[OuterControl]```
+
+The following model represents a PI controller for both active and reactive power to generate
+the current references that will be used in the Current Controller of the inner control
+```CurrentModeControl```. The constructor is ```OuterControl{ActivePowerPI, ReactivePowerPI}```.
+The equations are:
+
+```math
+\begin{align}
+    \dot{\sigma}_{p} &= p_\text{ref} - p_m \tag{3a} \\
+    \dot{p}_m &= \omega_z (p_e - p_m) \tag{3b} \\
+    \dot{\sigma}_{q} &= q_\text{ref} - q_m \tag{3c} \\
+    \dot{q}_m &= \omega_f (q_e - p_m) \tag{3d} \\
+\end{align}
+```
+
+with
+
+```math
+\begin{align}
+    p_e &= v_ri_r + v_ii_i \tag{3e} \\
+    q_e &= v_ii_r - v_ri_i \tag{3f} \\
+    \omega_{\text{olc}} &= \omega_{\text{pll}} \tag{3g} \\
+    \theta_{\text{olc}} &= \theta_{\text{pll}} \tag{3h} \\
+    i_\text{d,cv}^\text{ref} &= k_p^q (q_\text{ref} - q_m) + k_i^q \sigma_q \tag{3i} \\
+    i_\text{q,cv}^\text{ref} &= k_p^p (p_\text{ref} - p_m) + k_i^p \sigma_p \tag{3j} \\
+\end{align}
+```
+
+This models requires a PLL to have a SRF for an internal ``dq`` reference frame. Contrary
+to the Grid-Forming model, it cannot work without a PLL. Since this Outer Control outputs
+a current reference, it can only be used with a current mode inner control (i.e. that receives 
+a current reference instead of a voltage reference).
