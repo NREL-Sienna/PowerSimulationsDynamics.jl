@@ -40,8 +40,8 @@ function device!(
     sys_ω = get_ω_sys(inputs)
 
     #Update Voltage data
-    get_inner_vars(dynamic_device)[VR_gen_var] = voltage_r[1]
-    get_inner_vars(dynamic_device)[VI_gen_var] = voltage_i[1]
+    set_inner_vars!(dynamic_device, VR_gen_var, voltage_r[1])
+    set_inner_vars!(dynamic_device, VI_gen_var, voltage_i[1])
 
     #Obtain ODEs and Mechanical Power for Turbine Governor
     mdl_tg_ode!(device_states, view(output_ode, ode_range), sys_ω, dynamic_device)
@@ -155,12 +155,12 @@ function device!(
     sys_ω = get_ω_sys(inputs)
 
     #Update Voltage data
-    get_inner_vars(dynamic_device)[VR_inv_var] = voltage_r[1]
-    get_inner_vars(dynamic_device)[VI_inv_var] = voltage_i[1]
+    set_inner_vars!(dynamic_device, VR_inv_var, voltage_r[1])
+    set_inner_vars!(dynamic_device, VI_inv_var, voltage_i[1])
 
     #Update V_ref
     V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
-    get_inner_vars(dynamic_device)[V_oc_var] = V_ref
+    set_inner_vars!(dynamic_device, V_oc_var, V_ref)
 
     #Obtain ODES for DC side
     mdl_DCside_ode!(
