@@ -131,7 +131,7 @@ function _nlsolve_call(initial_guess, inputs::SimulationInputs, tolerance::Float
             xtol = tolerance,
             ftol = tolerance,
             method = :trust_region,
-            #autodiff = :forward,
+            autodiff = :forward,
         ) #Solve using initial guess x0
         NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
     catch e
