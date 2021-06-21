@@ -82,9 +82,9 @@ function mdl_outer_ode!(
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc
-    get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
+    set_inner_vars!(dynamic_device, θ_oc_var, θ_oc)
+    set_inner_vars!(dynamic_device, ω_oc_var, ω_oc)
+    set_inner_vars!(dynamic_device, V_oc_var, V_ref + kq * (q_ref - qm))
 end
 
 function mdl_outer_ode!(
@@ -165,9 +165,9 @@ function mdl_outer_ode!(
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc
-    get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
+    set_inner_vars!(dynamic_device, θ_oc_var, θ_oc)
+    set_inner_vars!(dynamic_device, ω_oc_var, ω_oc)
+    set_inner_vars!(dynamic_device, V_oc_var, V_ref + kq * (q_ref - qm))
 end
 
 function mdl_outer_ode!(
@@ -246,8 +246,8 @@ function mdl_outer_ode!(
     output_ode[local_ix[4]] = ωf * (q_elec_out - q_oc)
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_pll
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_pll
-    get_inner_vars(dynamic_device)[Iq_oc_var] = Kp_p * (p_ref - p_oc) + Ki_p * σp_oc
-    get_inner_vars(dynamic_device)[Id_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
+    set_inner_vars!(dynamic_device, θ_oc_var, θ_pll)
+    set_inner_vars!(dynamic_device, ω_oc_var, ω_pll)
+    set_inner_vars!(dynamic_device, Iq_oc_var, Kp_p * (p_ref - p_oc) + Ki_p * σp_oc)
+    set_inner_vars!(dynamic_device, Id_oc_var, Kp_q * (q_ref - q_oc) + Ki_q * σq_oc)
 end

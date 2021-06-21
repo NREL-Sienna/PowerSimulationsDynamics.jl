@@ -28,6 +28,6 @@ function mdl_converter_ode!(
     m_ri = dq_ri(θ_oc + pi / 2) * [md; mq]
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vr_cnv_var] = m_ri[R] * Vdc
-    get_inner_vars(dynamic_device)[Vi_cnv_var] = m_ri[I] * Vdc
+    set_inner_vars!(dynamic_device, Vr_cnv_var, m_ri[R] * Vdc)
+    set_inner_vars!(dynamic_device, Vi_cnv_var, m_ri[I] * Vdc)
 end

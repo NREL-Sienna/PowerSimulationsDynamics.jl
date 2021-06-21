@@ -88,8 +88,8 @@ function mdl_filter_ode!(
     )
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vr_filter_var] = Vr_filter
-    get_inner_vars(dynamic_device)[Vi_filter_var] = Vi_filter
+    set_inner_vars!(dynamic_device, Vr_filter_var, Vr_filter)
+    set_inner_vars!(dynamic_device, Vi_filter_var, Vi_filter)
 
     #Compute current from the inverter to the grid
     I_RI = (basepower / sys_Sbase) * [Ir_filter; Ii_filter]

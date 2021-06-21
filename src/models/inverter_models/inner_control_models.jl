@@ -115,8 +115,8 @@ function mdl_inner_ode!(
 
     #Update inner_vars
     #Modulation Commands to Converter
-    get_inner_vars(dynamic_device)[md_var] = Vd_cnv_ref / Vdc
-    get_inner_vars(dynamic_device)[mq_var] = Vq_cnv_ref / Vdc
+    set_inner_vars!(dynamic_device, md_var, Vd_cnv_ref / Vdc)
+    set_inner_vars!(dynamic_device, mq_var, Vq_cnv_ref / Vdc)
 end
 
 function mdl_inner_ode!(
@@ -188,6 +188,6 @@ function mdl_inner_ode!(
 
     #Update inner_vars
     #Modulation Commands to Converter
-    get_inner_vars(dynamic_device)[md_var] = Vd_cnv_ref / Vdc
-    get_inner_vars(dynamic_device)[mq_var] = Vq_cnv_ref / Vdc
+    set_inner_vars!(dynamic_device, md_var, Vd_cnv_ref / Vdc)
+    set_inner_vars!(dynamic_device, mq_var, Vq_cnv_ref / Vdc)
 end

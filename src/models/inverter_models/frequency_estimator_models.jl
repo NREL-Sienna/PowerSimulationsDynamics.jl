@@ -65,9 +65,9 @@ function mdl_freq_estimator_ode!(
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    get_inner_vars(dynamic_device)[ω_freq_estimator_var] =
-        (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + ω_sys)
-    get_inner_vars(dynamic_device)[θ_freq_estimator_var] = θ_pll
+    set_inner_vars!(dynamic_device, ω_freq_estimator_var,
+        (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + ω_sys))
+    set_inner_vars!(dynamic_device, θ_freq_estimator_var, θ_pll)
 end
 
 function mdl_freq_estimator_ode!(
@@ -125,9 +125,9 @@ function mdl_freq_estimator_ode!(
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    get_inner_vars(dynamic_device)[ω_freq_estimator_var] =
-        (kp_pll * vpll_q + ki_pll * ϵ_pll + ω_sys)
-    get_inner_vars(dynamic_device)[θ_freq_estimator_var] = θ_pll
+    set_inner_vars!(dynamic_device, ω_freq_estimator_var, 
+        (kp_pll * vpll_q + ki_pll * ϵ_pll + ω_sys))
+    set_inner_vars!(dynamic_device, θ_freq_estimator_var, θ_pll)
 end
 
 function mdl_freq_estimator_ode!(
@@ -150,5 +150,5 @@ function mdl_freq_estimator_ode!(
 
     #Update inner_vars
     #PLL frequency
-    get_inner_vars(dynamic_device)[ω_freq_estimator_var] = frequency
+    set_inner_vars!(dynamic_device, ω_freq_estimator_var, frequency)
 end
