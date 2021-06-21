@@ -15,8 +15,11 @@ function mdl_tg_ode!(
 
     #Update inner vars
     P_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
-    set_inner_vars!(dynamic_device, τm_var, 
-        P_ref * PSY.get_efficiency(PSY.get_prime_mover(dynamic_device)))
+    set_inner_vars!(
+        dynamic_device,
+        τm_var,
+        P_ref * PSY.get_efficiency(PSY.get_prime_mover(dynamic_device)),
+    )
 
     return
 end
@@ -103,7 +106,6 @@ function mdl_tg_ode!(
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
 
-
     #Set anti-windup for τ_m. NOT WORKING
     #if τ_m > τ_max
     #    τ_m = τ_max
@@ -115,7 +117,11 @@ function mdl_tg_ode!(
     output_ode[local_ix[1]] = (1.0 / T2) * (inv_R * (1 - T2 / T1) * (ω_ref - ω[1]) - xg)
 
     #Update mechanical torque
-    set_inner_vars!(dynamic_device, τm_var, inv_R * (T1 / T2) * (ω_ref - ω[1]) + P_ref / 1.0 + xg)
+    set_inner_vars!(
+        dynamic_device,
+        τm_var,
+        inv_R * (T1 / T2) * (ω_ref - ω[1]) + P_ref / 1.0 + xg,
+    )
     return
 end
 

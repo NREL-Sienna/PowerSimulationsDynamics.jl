@@ -690,7 +690,7 @@ function mdl_machine_ode!(
         (1.0 / Tq0_pp) * (-ψq_pp + (Xq - Xq_pp) * I_q - Se * γ_qd * ψq_pp)        #2.35b ψq_pp
 
     #Update inner_vars
-    set_inner_vars!(dynamic_device, τe_var,  τ_e)
+    set_inner_vars!(dynamic_device, τe_var, τ_e)
     set_inner_vars!(dynamic_device, Xad_Ifd_var, Xad_Ifd)
 
     #Compute current from the generator to the grid
