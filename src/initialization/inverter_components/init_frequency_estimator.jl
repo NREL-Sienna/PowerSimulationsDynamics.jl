@@ -55,8 +55,8 @@ function initialize_frequency_estimator!(
         pll_states[4] = sol_x0[4]
 
         #Update guess of frequency estimator
-        get_inner_vars(dynamic_device)[ω_freq_estimator_var] = PSY.get_ω_ref(dynamic_device)
-        get_inner_vars(dynamic_device)[θ_freq_estimator_var] = sol_x0[4]
+        set_inner_vars!(dynamic_device, ω_freq_estimator_var, PSY.get_ω_ref(dynamic_device))
+        set_inner_vars!(dynamic_device, θ_freq_estimator_var, sol_x0[4])
     end
 end
 
@@ -113,8 +113,8 @@ function initialize_frequency_estimator!(
         pll_states[3] = sol_x0[3]
 
         #Update guess of frequency estimator
-        get_inner_vars(dynamic_device)[ω_freq_estimator_var] = PSY.get_ω_ref(dynamic_device)
-        get_inner_vars(dynamic_device)[θ_freq_estimator_var] = sol_x0[3]
+        set_inner_vars!(dynamic_device, ω_freq_estimator_var, PSY.get_ω_ref(dynamic_device))
+        set_inner_vars!(dynamic_device, θ_freq_estimator_var, sol_x0[3])
     end
 end
 
@@ -134,5 +134,5 @@ function initialize_frequency_estimator!(
     frequency = PSY.get_frequency(pll_control)
 
     #Update guess of frequency estimator
-    get_inner_vars(dynamic_device)[ω_freq_estimator_var] = frequency
+    set_inner_vars!(dynamic_device, ω_freq_estimator_var, frequency)
 end

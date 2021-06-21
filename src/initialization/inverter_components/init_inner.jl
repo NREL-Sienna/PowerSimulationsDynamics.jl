@@ -106,7 +106,7 @@ function initialize_inner!(
     else
         sol_x0 = sol.zero
         #Update angle:
-        get_inner_vars(dynamic_device)[θ_oc_var] = sol_x0[1]
+        set_inner_vars!(dynamic_device, θ_oc_var, sol_x0[1])
         outer_ix = get_local_state_ix(dynamic_device, O)
         outer_states = @view device_states[outer_ix]
         #Assumes that angle is in second position
@@ -117,11 +117,11 @@ function initialize_inner!(
             PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
             sol_x0[2],
         )
-        get_inner_vars(dynamic_device)[V_oc_var] = sol_x0[2]
+        set_inner_vars!(dynamic_device, V_oc_var, sol_x0[2])
         #Update Converter modulation
         m0_dq = (ri_dq(sol_x0[1] + pi / 2) * [Vr_cnv0; Vi_cnv0]) ./ Vdc
-        get_inner_vars(dynamic_device)[md_var] = m0_dq[d]
-        get_inner_vars(dynamic_device)[mq_var] = m0_dq[q]
+        set_inner_vars!(dynamic_device, md_var, m0_dq[d])
+        set_inner_vars!(dynamic_device, mq_var, m0_dq[q])
         #Update states
         inner_ix = get_local_state_ix(dynamic_device, PSY.VoltageModeControl)
         inner_states = @view device_states[inner_ix]
@@ -206,8 +206,8 @@ function initialize_inner!(
         sol_x0 = sol.zero
         #Update Converter modulation
         m0_dq = (ri_dq(θ0_oc + pi / 2) * [Vr_cnv0; Vi_cnv0]) ./ Vdc
-        get_inner_vars(dynamic_device)[md_var] = m0_dq[d]
-        get_inner_vars(dynamic_device)[mq_var] = m0_dq[q]
+        set_inner_vars!(dynamic_device, md_var, m0_dq[d])
+        set_inner_vars!(dynamic_device, mq_var, m0_dq[q])
         #Update states
         inner_ix = get_local_state_ix(dynamic_device, PSY.CurrentModeControl)
         inner_states = @view device_states[inner_ix]

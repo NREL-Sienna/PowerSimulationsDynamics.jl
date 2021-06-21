@@ -48,8 +48,8 @@ function initialize_outer!(
     outer_states[3] = q_elec_out #qm
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ0_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
+    set_inner_vars!(dynamic_device, θ_oc_var, θ0_oc)
+    set_inner_vars!(dynamic_device,ω_oc_var, PSY.get_ω_ref(dynamic_device))
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = p_elec_out
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
@@ -106,8 +106,8 @@ function initialize_outer!(
     outer_states[3] = q_elec_out #qm
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ0_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
+    set_inner_vars!(dynamic_device, θ_oc_var, θ0_oc)
+    set_inner_vars!(dynamic_device, ω_oc_var, PSY.get_ω_ref(dynamic_device))
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = p_elec_out
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
@@ -172,10 +172,10 @@ function initialize_outer!(
     outer_states[4] = q_elec_out #q_oc
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ0_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
-    get_inner_vars(dynamic_device)[Id_oc_var] = I_dq_cnv[d]
-    get_inner_vars(dynamic_device)[Iq_oc_var] = I_dq_cnv[q]
+    set_inner_vars!(dynamic_device, θ_oc_var, θ0_oc)
+    set_inner_vars!(dynamic_device, ω_oc_var, PSY.get_ω_ref(dynamic_device))
+    set_inner_vars!(dynamic_device, Id_oc_var, I_dq_cnv[d])
+    set_inner_vars!(dynamic_device, Iq_oc_var, I_dq_cnv[q])
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
     PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = p_elec_out
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
