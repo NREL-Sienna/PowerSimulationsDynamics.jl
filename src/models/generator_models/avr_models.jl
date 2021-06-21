@@ -23,7 +23,7 @@ function mdl_avr_ode!(
 
     #TODO Change EMF name for Vf in PowerSystems
     #Update Vf voltage on inner vars
-    get_inner_vars(dynamic_device)[Vf_var] = PSY.get_Vf(PSY.get_avr(dynamic_device))
+    set_inner_vars!(dynamic_device, Vf_var, PSY.get_Vf(PSY.get_avr(dynamic_device)))
 
     return
 end
@@ -57,7 +57,7 @@ function mdl_avr_ode!(
     output_ode[local_ix[1]] = Kv * (V_ref - V_th)
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vf_var] = Vf
+    set_inner_vars!(dynamic_device, Vf_var, Vf)
 
     return
 end
@@ -118,7 +118,7 @@ function mdl_avr_ode!(
     output_ode[local_ix[4]] = (1.0 / Tr) * (V_th - Vm) #16.11
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vf_var] = Vf
+    set_inner_vars!(dynamic_device, Vf_var, Vf)
 
     return
 end
@@ -182,7 +182,7 @@ function mdl_avr_ode!(
     output_ode[local_ix[4]] = (1.0 / Tr) * (V_th - Vm) #16.11
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vf_var] = Vf
+    set_inner_vars!(dynamic_device, Vf_var, Vf)
 
     return
 end
@@ -261,7 +261,7 @@ function mdl_avr_ode!(
     output_ode[local_ix[5]] = (1.0 / Tf) * (-(Kf / Tf) * V_FE - Vr3) #dVr3/dt
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vf_var] = Vf
+    set_inner_vars!(dynamic_device, Vf_var, Vf)
 
     return
 end
@@ -312,7 +312,7 @@ function mdl_avr_ode!(
     output_ode[local_ix[2]] = V_in * (1 - Ta_Tb) - Vr
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vf_var] = Vf
+    set_inner_vars!(dynamic_device, Vf_var, Vf)
 
     return
 end

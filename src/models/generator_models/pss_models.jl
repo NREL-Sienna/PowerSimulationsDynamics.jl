@@ -14,7 +14,7 @@ function mdl_pss_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
     #Update V_pss on inner vars
-    get_inner_vars(dynamic_device)[V_pss_var] = PSY.get_V_pss(PSY.get_pss(dynamic_device))
+    set_inner_vars!(dynamic_device, V_pss_var, PSY.get_V_pss(PSY.get_pss(dynamic_device)))
 
     return
 end
