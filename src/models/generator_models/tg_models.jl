@@ -123,16 +123,16 @@ function mdl_tg_ode!(
     device_states,
     output_ode,
     ω_sys,
-    device::PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P},
+    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain TG
-    tg = PSY.get_prime_mover(device)
+    tg = PSY.get_prime_mover(dynamic_device)
     #Obtain references
-    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
+    P_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(device, typeof(tg))
+    local_ix = get_local_state_ix(dynamic_device, typeof(tg))
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
@@ -140,11 +140,11 @@ function mdl_tg_ode!(
     x_g2 = internal_states[2]
 
     #Obtain external states inputs for component
-    external_ix = get_input_port_ix(device, typeof(tg))
+    external_ix = get_input_port_ix(dynamic_device, typeof(tg))
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    tg = PSY.get_prime_mover(device)
+    tg = PSY.get_prime_mover(dynamic_device)
     inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
