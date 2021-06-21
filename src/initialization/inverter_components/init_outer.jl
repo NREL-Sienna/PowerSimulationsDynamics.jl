@@ -36,7 +36,7 @@ function initialize_outer!(
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
+    set_inner_vars!(dynamic_device, P_ES_var, p_elec_out)
     #Update states
     outer_ix = get_local_state_ix(
         dynamic_device,
@@ -94,7 +94,7 @@ function initialize_outer!(
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
+    set_inner_vars!(dynamic_device, P_ES_var, p_elec_out)
     #Update states
     outer_ix = get_local_state_ix(
         dynamic_device,
@@ -159,7 +159,7 @@ function initialize_outer!(
     Ki_q = PSY.get_Ki_q(reactive_power_control) #Integral Gain
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
+    set_inner_vars!(dynamic_device, P_ES_var, p_elec_out)
     #Update states
     outer_ix = get_local_state_ix(
         dynamic_device,
