@@ -171,3 +171,21 @@ function get_affect(system::PSY.System, pert::ControlReferenceChange)
         return control_ref[pert.signal_index] = pert.ref_value
     end
 end
+
+"""
+Use to model a change in the voltage magnitude of the infinite bus
+"""
+
+mutable struct SourceBusVoltageChange <: Perturbation
+    time::Float64
+    device::PSY.Source
+    ref_value::Float64
+end
+
+function get_affect(system::PSY.System, pert::SourceBusVoltageChange)
+    device = PSY.get_component(typeof(pert.device), system, PSY.get_name(pert.device))
+    pert.device = device
+    return (integrator) -> begin
+        PSY.set_internal_voltage!(device, pert.ref_value)
+    end
+end
