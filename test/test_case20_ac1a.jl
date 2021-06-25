@@ -103,7 +103,7 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         ) #Type of Fault
 
         #Solve problem
-        execute!(sim, Rodas5(autodiff = false), dtmax = 0.005, saveat = 0.005)
+        execute!(sim, Rodas5(autodiff = true), dtmax = 0.005, saveat = 0.005)
 
         #Obtain small signal results for initial conditions. Testing the simulation reset
         small_sig = small_signal_analysis(sim; reset_simulation = true)
