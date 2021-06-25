@@ -5,15 +5,7 @@
 
 PowerSimulations dynamics supports two formulations for the simulation model and define different methods for each simulation model. You can pass `ImplicitModel` or `MassMatrixModel` to a call to Simulation to define the preferred formulation.
 
-- *ImplicitModel*: Define models that can be solved using [Implicit ODE solvers](https://diffeq.sciml.ai/stable/solvers/dae_solve/#OrdinaryDiffEq.jl-(Implicit-ODE)) and also the solver IDA from [Sundials](https://diffeq.sciml.ai/stable/solvers/dae_solve/#Sundials.jl). The model is formulated as follows:
-
-```math
-\begin{align}
-r(t) = \frac{dx(t)}{dt} - x(t)
-\end{align}
-```
-
-At this stage we have not conducted extensive tests with all the solvers in [DifferentialEquations](https://diffeq.sciml.ai/) if you are solving a larger system use `IDA()`.
+In this way, we provide a common set of development requirements for contributors of new models that maintains the same flexibility in choosing the solving algorithm.
 
 - *MassMatrixModel*: Defines models that can be solved using [Mass-Matrix Solvers](https://diffeq.sciml.ai/stable/solvers/dae_solve/#OrdinaryDiffEq.jl-(Mass-Matrix)). The model is formulated as follows:
 
@@ -25,17 +17,26 @@ M\frac{dx(t)}{dt} = x(t)
 
 At this stage we have not conducted extensive tests with all the solvers in [DifferentialEquations](https://diffeq.sciml.ai/) most of our tests use `Rodas5()`.
 
-### Model equivalency
 
-We are able to re-use the same implementation of the device models by formulating the implicit model as from the Mass-Matrix formulation as follows:
+- *ImplicitModel*: Define models that can be solved using [Implicit ODE solvers](https://diffeq.sciml.ai/stable/solvers/dae_solve/#OrdinaryDiffEq.jl-(Implicit-ODE)) and also the solver IDA from [Sundials](https://diffeq.sciml.ai/stable/solvers/dae_solve/#Sundials.jl). The model is formulated to solved the following problem:
+
+```math
+\begin{align}
+r(t) = \frac{dx(t)}{dt} - x(t)
+\end{align}
+```
+
+At this stage we have not conducted extensive tests with all the solvers in [DifferentialEquations](https://diffeq.sciml.ai/) if you are solving a larger system use `IDA()`.
+
+### The dynamic systen model in PowerSimulationsDynamics
+
+In order to support both formulations, the default implementation of the ImplicitModel solves the following problem:
 
 ```math
 \begin{align}
 r(t) = M\frac{dx(t)}{dt} - x(t)
 \end{align}
 ```
-
-In this way, we provide a common set of development requirements for contributors of new models that maintains the same flexibility in choosing the solving algorithm.
 
 ## Generator Models
 
