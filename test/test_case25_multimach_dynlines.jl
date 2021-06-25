@@ -78,7 +78,7 @@ end
         @test small_sig.stable
 
         #Solve problem in equilibrium
-        execute!(sim, Rodas5(autodiff = false), dtmax = 0.01, saveat = 0.01)
+        execute!(sim, Rodas5(autodiff = true), dtmax = 0.01, saveat = 0.01)
 
         #Obtain voltage magnitude data
         series = get_voltage_magnitude_series(sim, 102)
