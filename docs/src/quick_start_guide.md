@@ -25,7 +25,7 @@ section of the documentation in `PowerSystems.jl`.
 ```@repl quick_start_guide
 time_span = (0.0, 30.0)
 perturbation_trip = BranchTrip(1.0, "BUS 1-BUS 2-i_1")
-sim = Simulation!(pwd(), omib_sys, time_span, perturbation_trip)
+sim = Simulation!(ImplicitModel, omib_sys, pwd(), time_span, perturbation_trip)
 ```
 
 ## Explore initial conditions for the simulation
