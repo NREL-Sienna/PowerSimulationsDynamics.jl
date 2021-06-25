@@ -529,7 +529,6 @@ function mdl_machine_ode!(
     output_ode[local_ix[3]] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d)   #2.20c ψ_kd
     output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (-ψ_kq + ed_p + (Xq_p - Xl) * I_q)   #2.21c ψ_kq
 
-
     function get_value_xiaf(v::Float64)
         return v
     end

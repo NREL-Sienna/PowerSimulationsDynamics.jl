@@ -108,7 +108,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
         M[bus_range, bus_range] * dx[bus_range]
 end
 
-function system_mass_matrix!(dx, x::AbstractArray{U}, inputs::SimulationInputs, t) where U
+function system_mass_matrix!(dx, x::AbstractArray{U}, inputs::SimulationInputs, t) where {U}
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
     injection_ode = get_aux_arrays(inputs)[3]
