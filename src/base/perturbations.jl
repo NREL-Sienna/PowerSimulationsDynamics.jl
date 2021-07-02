@@ -179,13 +179,15 @@ Use to model a change in the voltage magnitude of the infinite bus
 mutable struct SourceBusVoltageChange <: Perturbation
     time::Float64
     device::PSY.Source
+    signal_index::Int
     ref_value::Float64
 end
 
 function get_affect(system::PSY.System, pert::SourceBusVoltageChange)
-    device = PSY.get_component(typeof(pert.device), system, PSY.get_name(pert.device))
+    device = PSY.get_component(PSY.Source, system, PSY.get_name(pert.device))
     pert.device = device
     return (integrator) -> begin
-        PSY.set_internal_voltage!(device, pert.ref_value)
+        control_ref = PSY.get_ext(device)[CONTROL_REFS]
+        return control_ref[pert.signal_index] = pert.ref_value
     end
 end

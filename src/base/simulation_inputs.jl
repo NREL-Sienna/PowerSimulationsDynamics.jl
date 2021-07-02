@@ -192,7 +192,10 @@ end
 
 function _static_injection_inputs!(inputs::SimulationInputs, ::Vector{Int}, sys::PSY.System)
     for s in PSY.get_components(PSY.StaticInjection, sys)
+        # Temporary condition needs to be removed for other static injections
+        PSY.get_dynamic_injector(s) !== nothing && continue
         index_static_injection(inputs, s)
+        _attach_control_refs!(s)
     end
     return
 end

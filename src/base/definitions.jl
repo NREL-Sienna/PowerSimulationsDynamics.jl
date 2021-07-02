@@ -93,6 +93,9 @@ const ω_ref_index = 2
 const P_ref_index = 3
 const Q_ref_index = 4
 
+const V_source_index = 1
+const θ_source_index = 2
+
 const MAPPING_DICT = Dict{String, Dict{Symbol, Int}}
 const DEVICE_INTERNAL_MAPPING = Dict{Type{<:PSY.DynamicComponent}, Vector{Int}}
 

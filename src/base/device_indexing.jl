@@ -108,6 +108,16 @@ function _attach_control_refs!(device::PSY.StaticInjection)
     return
 end
 
+function _attach_control_refs!(device::PSY.Source)
+    device.ext[CONTROL_REFS] =
+        [PSY.get_internal_voltage(device), PSY.get_internal_angle(device)]
+    return
+end
+
+function _attach_control_refs!(device::PSY.ElectricLoad)
+    return
+end
+
 function _get_internal_mapping(
     dynamic_device::PSY.DynamicInjection,
     key::AbstractString,
