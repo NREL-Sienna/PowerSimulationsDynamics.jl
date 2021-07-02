@@ -530,9 +530,17 @@ function mdl_machine_ode!(
     output_ode[local_ix[3]] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d)   #2.20c ψ_kd
     output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (-ψ_kq + ed_p + (Xq_p - Xl) * I_q)   #2.21c ψ_kq
 
+    function get_value_xiaf(v::Float64)
+        return v
+    end
+
+    function get_value_xiaf(v::ForwardDiff.Dual)
+        return v.value
+    end
+
     #Update inner_vars
     get_inner_vars(dynamic_device)[τe_var] = τ_e
-    get_inner_vars(dynamic_device)[Xad_Ifd_var] = Xad_Ifd
+    get_inner_vars(dynamic_device)[Xad_Ifd_var] = get_value_xiaf(Xad_Ifd)
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]

@@ -4,7 +4,7 @@
 """
 function saturation_function(
     machine::Union{PSY.RoundRotorQuadratic, PSY.SalientPoleQuadratic},
-    x::Number,
+    x::Real,
 )
     Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
     return Sat_B * (x - Sat_A)^2 / x
@@ -16,7 +16,7 @@ end
 """
 function saturation_function(
     machine::Union{PSY.RoundRotorExponential, PSY.SalientPoleExponential},
-    x::Number,
+    x::Real,
 )
     Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
     return Sat_B * x^Sat_A
@@ -36,12 +36,12 @@ function rectifier_function(I::Float64)
     end
 end
 
-function saturation_function(avr::PSY.ESAC1A, x::Number)
+function saturation_function(avr::PSY.ESAC1A, x::Real)
     Sat_A, Sat_B = PSY.get_saturation_coeffs(avr)
     return Sat_B * (x - Sat_A)^2 / x
 end
 
-function rectifier_function(I::T) where {T <: Number}
+function rectifier_function(I::T) where {T <: Real}
     if I <= 0.0
         return one(T)
     elseif I <= 0.433

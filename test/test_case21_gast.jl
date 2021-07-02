@@ -75,7 +75,7 @@ end
         )
 
         #Solve problem
-        execute!(sim, Rodas5(autodiff = false), dtmax = 0.005, saveat = 0.005)
+        execute!(sim, Rodas5(autodiff = true), dtmax = 0.005, saveat = 0.005)
 
         small_sig = small_signal_analysis(sim; reset_simulation = true)
         eigs = small_sig.eigenvalues
