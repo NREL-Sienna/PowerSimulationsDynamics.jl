@@ -46,6 +46,12 @@ Inverter Inner Vars:
 * `V_oc_var` :: Control voltage reference in the d-axis supplied from the outer loop control to the inner loop (for Voltage Mode Control)
 * `Id_oc_var` :: Control current reference in the d-axis supplied from the outer loop control to the inner loop (for Current Mode Control)
 * `Iq_oc_var` :: Control current reference in the q-axis supplied from the outer loop control to the inner loop (for Current Mode Control)
+* `Id_oc_flt_var` :: Control current reference in the d-axis supplied from the outer loop control to the inner loop (for Generic Models)
+* `Iq_oc_flt_var` :: Control current reference in the q-axis supplied from the outer loop control to the inner loop (for Generic Models)
+* `Id_ic_var` :: Control current reference in the d-axis supplied from the inner loop control to the converter (for Generic Models)
+* `Iq_ic_var` :: Control current reference in the q-axis supplied from the inner loop control to the converter (for Generic Models)
+* `Id_cnv_var` :: Control current reference in the d-axis supplied from the converter to the filter (for Generic Models)
+* `Iq_cnv_var` :: Control current reference in the q-axis supplied from the converter to the filter (for Generic Models)
 * `ω_oc_var` :: Control frequency supplied from the outer loop control the inner loop
 * `θ_oc_var` :: Variation of the angle (PLL or VSM) of the inverter
 * `VR_inv_var` :: Real terminal voltage on the inverter
@@ -65,13 +71,19 @@ Inverter Inner Vars:
     V_oc_var = 8
     Id_oc_var = 9
     Iq_oc_var = 10
-    ω_oc_var = 11
-    θ_oc_var = 12
-    VR_inv_var = 13
-    VI_inv_var = 14
-    Vr_cnv_var = 15
-    Vi_cnv_var = 16
-    P_ES_var = 17
+    Id_oc_flt_var = 11
+    Iq_oc_flt_var = 12
+    Id_ic_var = 13
+    Iq_ic_var = 14
+    Id_cnv_var = 15
+    Iq_cnv_var = 16
+    ω_oc_var = 17
+    θ_oc_var = 18
+    VR_inv_var = 19
+    VI_inv_var = 20
+    Vr_cnv_var = 21
+    Vi_cnv_var = 22
+    P_ES_var = 23
 end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
@@ -110,7 +122,7 @@ const PORTS = "ports"
 const INNER_VARS = "inner_vars"
 const CONTROL_REFS = "control_refs"
 const GEN_INNER_VARS_SIZE = 9
-const INV_INNER_VARS_SIZE = 17
+const INV_INNER_VARS_SIZE = 23
 
 const SIMULATION_ACCEPTED_KWARGS =
     [:initialize_simulation, :system_to_file, :file_level, :console_level]
