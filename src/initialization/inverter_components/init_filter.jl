@@ -83,3 +83,37 @@ function initialize_filter!(
         filter_states[6] = I_I #Ii_filter
     end
 end
+
+
+function initialize_filter!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.DirectInjection},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+}
+    #PowerFlow Data
+    P0 = PSY.get_active_power(static)
+    Q0 = PSY.get_reactive_power(static)
+    Vm = PSY.get_magnitude(PSY.get_bus(static))
+    θ = PSY.get_angle(PSY.get_bus(static))
+    S0 = P0 + Q0 * 1im
+    V_R = Vm * cos(θ)
+    V_I = Vm * sin(θ)
+    V = V_R + V_I * 1im
+    I = conj(S0 / V)
+    I_R = real(I)
+    I_I = imag(I)
+
+    #Update terminal voltages
+    get_inner_vars(dynamic_device)[VR_inv_var] = V_R
+    get_inner_vars(dynamic_device)[VI_inv_var] = V_I
+    #Update filter currents
+    get_inner_vars(dynamic_device)[Id_cnv_var] = I_R
+    get_inner_vars(dynamic_device)[Iq_cnv_var] = I_I    
+end
+

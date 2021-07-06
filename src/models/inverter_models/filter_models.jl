@@ -98,3 +98,31 @@ function mdl_filter_ode!(
     current_r[1] += I_RI[1]
     current_i[1] += I_RI[2]
 end
+
+
+function mdl_filter_ode!(
+    device_states,
+    output_ode,
+    current_r,
+    current_i,
+    sys_Sbase,
+    f0,
+    ω_sys,
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.DirectInjection},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+}
+    #Obtain inner variables for component
+    Ip_cnv = get_inner_vars(dynamic_device)[Id_cnv_var]
+    Iq_cnv = get_inner_vars(dynamic_device)[Iq_cnv_var]
+    basepower = PSY.get_base_power(dynamic_device)
+    ratio_power = basepower / sys_Sbase
+
+    #Update current
+    current_r[1] += ratio_power * Ip_cnv 
+    current_i[1] += ratio_power * Iq_cnv 
+end
