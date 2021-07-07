@@ -197,7 +197,7 @@ function device!(
     mdl_inner_ode!(device_states, view(output_ode, ode_range), dynamic_device)
 
     #Obtain converter relations
-    mdl_converter_ode!(dynamic_device)
+    mdl_converter_ode!(device_states, view(output_ode, ode_range), dynamic_device)
 
     #Obtain ODEs for output filter
     mdl_filter_ode!(

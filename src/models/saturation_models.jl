@@ -98,3 +98,23 @@ function current_limit_logic(inner_control::InnerREECB1, Vt_filt::T, Ip_cmd::T, 
     end
     return Ip_min, Ip_max, Iq_min, Iq_max
 end
+
+function get_LVPL_gain(Vmeas::T, Zerox::Float64, Brkpt::Float64, Lvpl1::Float64) where {T <: Real}
+    if Vmeas < Zerox
+        return zero(T)
+    elseif Vmeas > Brkpt
+        return one(T) * Lvpl1
+    else
+        return Lvpl1/(Brkpt - Zerox) * (Vmeas - Zerox)
+    end
+end
+
+function get_LV_current_gain(V_t::T, Lv_pnt0::Float64, Lv_pnt1::Float64) where {T <: Real}
+    if V_t < Lv_pnt0
+        return zero(T)
+    elseif V_t > Lv_pnt1
+        return one(T)
+    else
+        return 1.0/(Lv_pnt0 - Lv_pnt1) * (V_t - Lv_pnt0)
+    end
+end
