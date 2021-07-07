@@ -65,14 +65,19 @@ function deadband_function(x::T, db_low::Float64, db_high::Float64) where {T <: 
     end
 end
 
-function current_limit_logic(inner_control::InnerREECB1, Vt_filt::T, Ip_cmd::T, Iq_cmd::T) where {T <: Real}
+function current_limit_logic(
+    inner_control::InnerREECB1,
+    Vt_filt::T,
+    Ip_cmd::T,
+    Iq_cmd::T,
+) where {T <: Real}
     I_max = PSY.get_I_max(inner_control)
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
     Iq_max = I_max
     Ip_max = I_max
 
     if PQ_Flag == 0 # Q Priority
-        Iq_min = - Iq_max
+        Iq_min = -Iq_max
         local_I = I_max^2 - Iq_cmd^2
         if local_I < 0
             local_I = 0
@@ -94,18 +99,23 @@ function current_limit_logic(inner_control::InnerREECB1, Vt_filt::T, Ip_cmd::T, 
         if local_I < Iq_max
             Iq_max = local_I
         end
-        Iq_min = - Iq_max
+        Iq_min = -Iq_max
     end
     return Ip_min, Ip_max, Iq_min, Iq_max
 end
 
-function get_LVPL_gain(Vmeas::T, Zerox::Float64, Brkpt::Float64, Lvpl1::Float64) where {T <: Real}
+function get_LVPL_gain(
+    Vmeas::T,
+    Zerox::Float64,
+    Brkpt::Float64,
+    Lvpl1::Float64,
+) where {T <: Real}
     if Vmeas < Zerox
         return zero(T)
     elseif Vmeas > Brkpt
         return one(T) * Lvpl1
     else
-        return Lvpl1/(Brkpt - Zerox) * (Vmeas - Zerox)
+        return Lvpl1 / (Brkpt - Zerox) * (Vmeas - Zerox)
     end
 end
 
@@ -115,6 +125,6 @@ function get_LV_current_gain(V_t::T, Lv_pnt0::Float64, Lv_pnt1::Float64) where {
     elseif V_t > Lv_pnt1
         return one(T)
     else
-        return 1.0/(Lv_pnt0 - Lv_pnt1) * (V_t - Lv_pnt0)
+        return 1.0 / (Lv_pnt0 - Lv_pnt1) * (V_t - Lv_pnt0)
     end
 end

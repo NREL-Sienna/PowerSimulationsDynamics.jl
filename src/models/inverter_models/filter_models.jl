@@ -99,7 +99,6 @@ function mdl_filter_ode!(
     current_i[1] += I_RI[2]
 end
 
-
 function mdl_filter_ode!(
     device_states,
     output_ode,
@@ -123,6 +122,6 @@ function mdl_filter_ode!(
     ratio_power = basepower / sys_Sbase
 
     #Update current
-    current_r[1] += ratio_power * Ip_cnv 
-    current_i[1] += ratio_power * Iq_cnv 
+    current_r[1] += ratio_power * Ip_cnv
+    current_i[1] += ratio_power * Iq_cnv
 end

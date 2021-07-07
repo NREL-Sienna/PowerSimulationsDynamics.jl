@@ -10,10 +10,12 @@ function mass_matrix_inner_entries!(
     mass_matrix,
     inner_control::InnerREECB1,
     global_index::Dict{Symbol, Int64},
-) 
-    mass_matrix[global_index[:Vt_filt], global_index[:Vt_filt]] = PSY.get_T_rv(inner_control)
+)
+    mass_matrix[global_index[:Vt_filt], global_index[:Vt_filt]] =
+        PSY.get_T_rv(inner_control)
     if PSY.get_Q_Flag(inner_control) == 0
-        mass_matrix[global_index[:I_icv], global_index[:I_icv]] = PSY.get_T_iq(inner_control)
+        mass_matrix[global_index[:I_icv], global_index[:I_icv]] =
+            PSY.get_T_iq(inner_control)
     end
 end
 
@@ -203,8 +205,6 @@ function mdl_inner_ode!(
     get_inner_vars(dynamic_device)[mq_var] = Vq_cnv_ref / Vdc
 end
 
-
-
 function mdl_inner_ode!(
     device_states,
     output_ode,
@@ -221,7 +221,10 @@ function mdl_inner_ode!(
     #external_ix = get_input_port_ix(dynamic_device, PSY.InnerREECB1)
 
     #Obtain inner variables for component
-    V_t = sqrt(get_inner_vars(dynamic_device)[VR_inv_var]^2 + get_inner_vars(dynamic_device)[VI_inv_var]^2)
+    V_t = sqrt(
+        get_inner_vars(dynamic_device)[VR_inv_var]^2 +
+        get_inner_vars(dynamic_device)[VI_inv_var]^2,
+    )
     Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
     Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
     Iq_oc_flt = get_inner_vars(dynamic_device)[Iq_oc_flt_var]
@@ -249,7 +252,8 @@ function mdl_inner_ode!(
         V_err = deadband_function(V_ref0 - Vt_filt, dbd1, dbd2)
         Iq_inj = clamp(K_qv * V_err, I_ql1, I_qh1)
         Iq_cmd = I_icv + Iq_inj
-        Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(inner_control, Vt_filt, Ip_oc, Iq_cmd)
+        Ip_min, Ip_max, Iq_min, Iq_max =
+            current_limit_logic(inner_control, Vt_filt, Ip_oc, Iq_cmd)
         Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
         Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
 
@@ -260,7 +264,7 @@ function mdl_inner_ode!(
         #Update Inner Vars
         get_inner_vars(dynamic_device)[Id_ic_var] = Ip_cmd
         get_inner_vars(dynamic_device)[Iq_ic_var] = Iq_cmd
-    else 
+    else
         #Get Current Controller parameters
         K_vp = PSY.get_K_vp(inner_control)
         K_vi = PSY.get_K_vi(inner_control)
@@ -277,7 +281,8 @@ function mdl_inner_ode!(
         Iq_inj = clamp(K_qv * V_err, I_ql1, I_qh1)
         I_icv = K_vp * Iq_oc + K_vi * ξ_icv
         Iq_cmd = I_icv + Iq_inj
-        Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(inner_control, Vt_filt, Ip_oc, Iq_cmd)
+        Ip_min, Ip_max, Iq_min, Iq_max =
+            current_limit_logic(inner_control, Vt_filt, Ip_oc, Iq_cmd)
         Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
         Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
 
