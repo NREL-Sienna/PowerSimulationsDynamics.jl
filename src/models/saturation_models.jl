@@ -54,3 +54,47 @@ function rectifier_function(I::T) where {T <: Real}
         return zero(T)
     end
 end
+
+function deadband_function(x::T, db_low::Float64, db_high::Float64) where {T <: Real}
+    if x > db_high
+        return x - db_high
+    elseif x < db_low
+        return x - db_low
+    else
+        return zero(T)
+    end
+end
+
+function current_limit_logic(inner_control::InnerREECB1, Vt_filt::T, Ip_cmd::T, Iq_cmd::T) where {T <: Real}
+    I_max = PSY.get_I_max(inner_control)
+    PQ_Flag = PSY.get_PQ_Flag(inner_control)
+    Iq_max = I_max
+    Ip_max = I_max
+
+    if PQ_Flag == 0 # Q Priority
+        Iq_min = - Iq_max
+        local_I = I_max^2 - Iq_cmd^2
+        if local_I < 0
+            local_I = 0
+        else
+            local_I = sqrt(local_I)
+        end
+        if local_I < Ip_max
+            Ip_max = local_I
+        end
+        Ip_min = 0
+    else # P Priority
+        Ip_min = 0
+        local_I = I_max^2 - Ip_cmd^2
+        if local_I < 0
+            local_I = 0
+        else
+            local_I = sqrt(local_I)
+        end
+        if local_I < Iq_max
+            Iq_max = local_I
+        end
+        Iq_min = - Iq_max
+    end
+    return Ip_min, Ip_max, Iq_min, Iq_max
+end
