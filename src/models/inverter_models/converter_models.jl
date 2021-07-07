@@ -51,7 +51,10 @@ function mdl_converter_ode!(
     #external_ix = get_input_port_ix(dynamic_device, PSY.REGCA1)
 
     #Obtain inner variables for component
-    V_t = sqrt(get_inner_vars(dynamic_device)[VR_inv_var]^2 + get_inner_vars(dynamic_device)[VI_inv_var]^2)
+    V_t = sqrt(
+        get_inner_vars(dynamic_device)[VR_inv_var]^2 +
+        get_inner_vars(dynamic_device)[VI_inv_var]^2,
+    )
     Ip_cmd = get_inner_vars(dynamic_device)[Id_ic_var]
     Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
 
@@ -105,9 +108,9 @@ function mdl_converter_ode!(
     Iq_extra = max(K_hv * (V_t - Vo_lim), 0.0)
 
     #Update ODEs
-    output_ode[local_ix[1]] = (1.0/T_g) * Ip_in
-    output_ode[local_ix[2]] = (1.0/T_g) * Iq_in
-    output_ode[local_ix[3]] = (1.0/T_fltr) * Vmeas
+    output_ode[local_ix[1]] = (1.0 / T_g) * Ip_in
+    output_ode[local_ix[2]] = (1.0 / T_g) * Iq_in
+    output_ode[local_ix[3]] = (1.0 / T_fltr) * Vmeas
 
     #Update inner_vars
     get_inner_vars(dynamic_device)[Id_cnv_var] = G_lv * Ip_sat

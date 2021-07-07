@@ -84,7 +84,6 @@ function initialize_filter!(
     end
 end
 
-
 function initialize_filter!(
     device_states,
     static::PSY.StaticInjection,
@@ -114,6 +113,5 @@ function initialize_filter!(
     get_inner_vars(dynamic_device)[VI_inv_var] = V_I
     #Update filter currents
     get_inner_vars(dynamic_device)[Id_cnv_var] = I_R
-    get_inner_vars(dynamic_device)[Iq_cnv_var] = I_I    
+    get_inner_vars(dynamic_device)[Iq_cnv_var] = I_I
 end
-
