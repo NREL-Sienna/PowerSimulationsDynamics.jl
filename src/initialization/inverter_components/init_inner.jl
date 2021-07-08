@@ -215,3 +215,33 @@ function initialize_inner!(
         inner_states[2] = sol_x0[2] #γ_q
     end
 end
+
+function initialize_inner!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.InnerREECB1, DC, P, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external states inputs for component
+    #external_ix = get_input_port_ix(dynamic_device, PSY.CurrentModeControl)
+
+    #Obtain inner variables for component
+    V_R = get_inner_vars(dynamic_device)[VR_inv_var]
+    V_I = get_inner_vars(dynamic_device)[VI_inv_var]
+    V_t = sqrt(V_R^2 + V_I^2)
+
+    #Id_cnv_ref = get_inner_vars(dynamic_device)[Id_oc_var]
+    #Iq_cnv_ref = get_inner_vars(dynamic_device)[Iq_oc_var]
+
+    #Obtain output of converter
+    #Vr_cnv0 = get_inner_vars(dynamic_device)[Vr_cnv_var]
+    #Vi_cnv0 = get_inner_vars(dynamic_device)[Vi_cnv_var]
+
+    #TO DO
+end
