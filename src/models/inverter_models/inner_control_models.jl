@@ -227,7 +227,7 @@ function mdl_inner_ode!(
     )
     Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
     V_oc = get_inner_vars(dynamic_device)[V_oc_var]
-    Iq_oc_flt = get_inner_vars(dynamic_device)[Iq_oc_var]
+    Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
 
     #Get Current Controller parameters
     inner_control = PSY.get_inner_control(dynamic_device)
@@ -259,7 +259,7 @@ function mdl_inner_ode!(
 
         #ODE update
         output_ode[local_ix[1]] = V_t - Vt_filt
-        output_ode[local_ix[2]] = Iq_oc_flt - I_icv
+        output_ode[local_ix[2]] = Iq_oc - I_icv
 
         #Update Inner Vars
         get_inner_vars(dynamic_device)[Id_ic_var] = Ip_cmd
