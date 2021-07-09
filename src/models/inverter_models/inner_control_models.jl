@@ -226,8 +226,8 @@ function mdl_inner_ode!(
         get_inner_vars(dynamic_device)[VI_inv_var]^2,
     )
     Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
-    Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
-    Iq_oc_flt = get_inner_vars(dynamic_device)[Iq_oc_flt_var]
+    V_oc = get_inner_vars(dynamic_device)[V_oc_var]
+    Iq_oc_flt = get_inner_vars(dynamic_device)[Iq_oc_var]
 
     #Get Current Controller parameters
     inner_control = PSY.get_inner_control(dynamic_device)
@@ -279,7 +279,8 @@ function mdl_inner_ode!(
         #Compute additional states
         V_err = deadband_function(V_ref0 - Vt_filt, dbd1, dbd2)
         Iq_inj = clamp(K_qv * V_err, I_ql1, I_qh1)
-        I_icv = K_vp * Iq_oc + K_vi * ξ_icv
+        #To do: Limits on PI non-windup
+        I_icv = K_vp * V_oc + K_vi * ξ_icv
         Iq_cmd = I_icv + Iq_inj
         Ip_min, Ip_max, Iq_min, Iq_max =
             current_limit_logic(inner_control, Vt_filt, Ip_oc, Iq_cmd)
@@ -288,7 +289,7 @@ function mdl_inner_ode!(
 
         #ODE update
         output_ode[local_ix[1]] = V_t - Vt_filt
-        output_ode[local_ix[2]] = Iq_oc
+        output_ode[local_ix[2]] = V_oc
 
         #Update Inner Vars
         get_inner_vars(dynamic_device)[Id_ic_var] = Ip_cmd
