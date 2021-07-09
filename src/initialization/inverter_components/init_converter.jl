@@ -63,4 +63,8 @@ function initialize_converter!(
     converter_states[1] = Ip #Ip_cnv
     converter_states[2] = -Iq #Iq_cnv
     converter_states[3] = V_t #Vmeas
+
+    #Update entry to converter currents (inner currents)
+    get_inner_vars(dynamic_device)[Id_ic_var] = Ip
+    get_inner_vars(dynamic_device)[Iq_ic_var] = -Iq
 end

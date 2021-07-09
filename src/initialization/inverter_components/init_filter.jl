@@ -111,10 +111,8 @@ function initialize_filter!(
     #Update terminal voltages
     get_inner_vars(dynamic_device)[VR_inv_var] = V_R
     get_inner_vars(dynamic_device)[VI_inv_var] = V_I
-    #Update filter currents
+    #Update filter currents (output of converter)
     get_inner_vars(dynamic_device)[Id_cnv_var] = I_R
     get_inner_vars(dynamic_device)[Iq_cnv_var] = I_I
-    #Update converter currents
-    get_inner_vars(dynamic_device)[Id_ic_var] = I_R
-    get_inner_vars(dynamic_device)[Iq_ic_var] = I_I
+    
 end
