@@ -252,8 +252,6 @@ function mdl_outer_ode!(
     get_inner_vars(dynamic_device)[Id_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
 end
 
-
-
 function mdl_outer_ode!(
     device_states,
     output_ode,
@@ -312,7 +310,7 @@ function mdl_outer_ode!(
     local_ix = get_local_state_ix(
         dynamic_device,
         PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
-        )
+    )
     internal_states = @view device_states[local_ix]
 
     if Freq_Flag == 1
@@ -385,7 +383,7 @@ function mdl_outer_ode!(
         dbd2 = PSY.get_dbd2(reactive_power_control)
         Q_min, Q_max = PSY.get_Q_lim(reactive_power_control)
         T_p = PSY.get_T_p(reactive_power_control)
-        Q_min_inner, Q_max_inner =  PSY.get_Q_lim_inner(reactive_power_control)
+        Q_min_inner, Q_max_inner = PSY.get_Q_lim_inner(reactive_power_control)
         V_min, V_max = PSY.get_V_lim(reactive_power_control)
         K_qp = PSY.get_K_qp(reactive_power_control)
         K_qi = PSY.get_K_qp(reactive_power_control)
@@ -413,7 +411,8 @@ function mdl_outer_ode!(
         #Update ODEs
         output_ode[local_ix[state_ct]] = (1.0 / T_fltr) * (q_elec_out - q_flt)
         output_ode[local_ix[state_ct + 1]] = Q_binary_logic * q_err
-        output_ode[local_ix[state_ct + 2]] = (1.0 / T_fv) * (Q_pi_sat * (1.0 - T_ft / T_fv) - q_LL) 
+        output_ode[local_ix[state_ct + 2]] =
+            (1.0 / T_fv) * (Q_pi_sat * (1.0 - T_ft / T_fv) - q_LL)
         output_ode[local_ix[state_ct + 3]] = V_binary_logic * V_pi_in
         state_ct += 4
 
