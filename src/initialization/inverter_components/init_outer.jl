@@ -254,7 +254,7 @@ function initialize_outer!(
         internal_states[state_ct] = p_elec_out
         #Update Inner Vars
         get_inner_vars(dynamic_device)[Id_oc_var] = p_elec_out / max(V_t, 0.01)
-        state_ct +=1
+        state_ct += 1
     end
 
     reactive_power_control = PSY.get_reactive_power(outer_control)
