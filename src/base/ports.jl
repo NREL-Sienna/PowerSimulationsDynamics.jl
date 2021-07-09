@@ -81,7 +81,8 @@ end
 
 #### Outer Control Ports ####
 function Ports(::PSY.OuterControl)
-    state_input = [:vr_filter, :vi_filter, :ir_filter, :ii_filter, :ir_cnv, :ii_cnv, :Vt_filt]
+    state_input =
+        [:vr_filter, :vi_filter, :ir_filter, :ii_filter, :ir_cnv, :ii_cnv, :Vt_filt]
     inner_input = [Vr_filter_var, Vi_filter_var, ω_freq_estimator_var]
     return Ports(state_input, inner_input)
 end
