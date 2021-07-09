@@ -316,7 +316,7 @@ function mdl_outer_ode!(
     if Freq_Flag == 1
         #Obtain additional Active Power Controller parameters
         K_pg = PSY.get_K_pg(active_power_control)
-        K_pi = PSY.get_K_pi(active_power_control)
+        K_ig = PSY.get_K_ig(active_power_control)
         T_p = PSY.get_T_p(active_power_control)
         fdbd1 = PSY.get_fdbd1(active_power_control)
         fdbd2 = PSY.get_fdbd2(active_power_control)
@@ -339,7 +339,7 @@ function mdl_outer_ode!(
         p_droop = min(D_dn * f_err, 0.0) + max(D_up * f_err, 0.0)
         p_err = clamp(p_ref + p_droop - p_flt, fe_min, fe_max)
         # To do: Limiters for PI block
-        P_pi = K_pg * p_err + K_pi * ξ_P
+        P_pi = K_pg * p_err + K_ig * ξ_P
         P_pi_binary = P_min <= P_pi <= P_max ? 1.0 : 0.0
 
         #Ramp and limits for p_ord
@@ -386,7 +386,7 @@ function mdl_outer_ode!(
         Q_min_inner, Q_max_inner = PSY.get_Q_lim_inner(reactive_power_control)
         V_min, V_max = PSY.get_V_lim(reactive_power_control)
         K_qp = PSY.get_K_qp(reactive_power_control)
-        K_qi = PSY.get_K_qp(reactive_power_control)
+        K_qi = PSY.get_K_qi(reactive_power_control)
 
         #Define internal states for Reactive Control
         q_flt = internal_states[state_ct]
@@ -422,10 +422,4 @@ function mdl_outer_ode!(
     else
         error("Flags for Generic Renewable Model not supported yet")
     end
-
-    #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_pll
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_pll
-    get_inner_vars(dynamic_device)[Iq_oc_var] = Kp_p * (p_ref - p_oc) + Ki_p * σp_oc
-    get_inner_vars(dynamic_device)[Id_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
 end
