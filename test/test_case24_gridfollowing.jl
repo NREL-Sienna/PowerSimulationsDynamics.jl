@@ -68,7 +68,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
     end
 end
 
-@testset "Test 24 Grid Following Inverter ImplicitModel" begin
+@testset "Test 24 Grid Following Inverter MassMatrixModel" begin
     path = (joinpath(pwd(), "test-24"))
     !isdir(path) && mkdir(path)
     try
