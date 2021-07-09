@@ -185,3 +185,101 @@ function initialize_outer!(
         q_elec_out,
     )
 end
+
+function initialize_outer!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicInverter{
+        C,
+        PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
+        IC,
+        DC,
+        P,
+        F,
+    },
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external states inputs for component
+    #external_ix = get_input_port_ix(
+    #    dynamic_device,
+    #    PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
+    #)
+    V_R = get_inner_vars(dynamic_device)[VR_inv_var]
+    V_I = get_inner_vars(dynamic_device)[VI_inv_var]
+    I_R = get_inner_vars(dynamic_device)[Id_cnv_var]
+    I_I = get_inner_vars(dynamic_device)[Iq_cnv_var]
+    V_t = sqrt(V_R^2 + V_I^2)
+    p_elec_out = I_R * V_R + I_I * V_I
+    q_elec_out = -I_I * V_R + I_R * V_I
+
+    #Get Outer Controller parameters
+    outer_control = PSY.get_outer_control(dynamic_device)
+    active_power_control = PSY.get_active_power(outer_control)
+    Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag
+
+    #Set state counter for variable number of states due to flags
+    state_ct = 1
+
+    #Update inner_vars
+    get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
+    PSY.set_P_ref!(active_power_control = p_elec_out)
+    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = p_elec_out
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
+    )
+    internal_states = @view device_states[local_ix]
+
+    if Freq_Flag == 1
+        #Obtain Parameters
+        K_ig = PSY.get_K_ig(active_power_control)
+        #Update States
+        internal_states[state_ct] = p_elec_out
+        internal_states[state_ct + 1] = p_elec_out / K_ig
+        internal_states[state_ct + 2] = p_elec_out #p_ext
+        internal_states[state_ct + 3] = p_elec_out #p_ord
+        state_ct += 4
+        #Update Inner Vars
+        get_inner_vars(dynamic_device)[Id_oc_var] = p_elec_out / max(V_t, 0.01)
+    else
+        #Update States
+        internal_states[state_ct] = p_elec_out
+        #Update Inner Vars
+        get_inner_vars(dynamic_device)[Id_oc_var] = p_elec_out / max(V_t, 0.01)
+        state_ct +=1
+    end
+
+    reactive_power_control = PSY.get_reactive_power(outer_control)
+    #Note: Monitoring power from other branch not supported.
+    VC_Flag = PSY.get_VC_Flag(reactive_power_control)
+    Ref_Flag = PSY.get_Ref_Flag(reactive_power_control)
+    PF_Flag = PSY.get_PF_Flag(reactive_power_control)
+    V_Flag = PSY.get_V_Flag(reactive_power_control)
+    #Update references
+    PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = q_elec_out
+    PSY.set_Q_ref!(reactive_power_control, q_elec_out)
+    if VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
+        #Get Reactive Controller Parameters
+        K_i = PSY.get_K_i(reactive_power_control)
+        K_qi = PSY.get_K_qi(reactive_power_control)
+        #Update states
+        internal_states[state_ct] = q_elec_out
+        internal_states[state_ct + 1] = q_elec_out / K_i
+        internal_states[state_ct + 2] = q_elec_out
+        internal_states[state_ct + 3] = V_t / K_qi
+        state_ct += 4
+        #Update Inner Vars
+        get_inner_vars(dynamic_device)[V_oc_var] = 0.0
+        get_inner_vars(dynamic_device)[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
+    else
+        error("Flags for Generic Renewable Model not supported yet")
+    end
+end
