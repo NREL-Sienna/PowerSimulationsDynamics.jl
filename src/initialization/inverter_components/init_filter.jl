@@ -114,5 +114,4 @@ function initialize_filter!(
     #Update filter currents (output of converter)
     get_inner_vars(dynamic_device)[Id_cnv_var] = I_R
     get_inner_vars(dynamic_device)[Iq_cnv_var] = I_I
-    
 end
