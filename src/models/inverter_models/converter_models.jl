@@ -91,9 +91,11 @@ function mdl_converter_ode!(
     Ip >= 0.0 ? Rp_up = Rrpwr : Rp_dn = -Rrpwr
     #Saturate Ip if LVPL is active
     Ip_sat = Ip
+    Ip_binary = 1.0
     if Lvpl_sw == 1
         LVPL = get_LVPL_gain(Vmeas, Zerox, Brkpt, Lvpl1)
         Ip_sat = Ip <= LVPL ? Ip : LVPL
+        Ip_binary = Ip <= LVPL ? 1.0 : 0.0
     end
     Ip_in = clamp(Ip_cmd - Ip_sat, Rp_dn, Rp_up)
     #Get Low Voltage Active Current Management Gain
@@ -108,7 +110,7 @@ function mdl_converter_ode!(
     Iq_extra = max(K_hv * (V_t - Vo_lim), 0.0)
 
     #Update ODEs
-    output_ode[local_ix[1]] = (1.0 / T_g) * Ip_in
+    output_ode[local_ix[1]] = Ip_binary * (1.0 / T_g) * Ip_in
     output_ode[local_ix[2]] = (1.0 / T_g) * Iq_in
     output_ode[local_ix[3]] = (1.0 / T_fltr) * Vmeas
 
