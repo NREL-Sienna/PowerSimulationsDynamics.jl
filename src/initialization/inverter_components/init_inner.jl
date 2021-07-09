@@ -236,12 +236,38 @@ function initialize_inner!(
     V_I = get_inner_vars(dynamic_device)[VI_inv_var]
     V_t = sqrt(V_R^2 + V_I^2)
 
-    #Id_cnv_ref = get_inner_vars(dynamic_device)[Id_oc_var]
-    #Iq_cnv_ref = get_inner_vars(dynamic_device)[Iq_oc_var]
+    #Get inner vars
+    Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
+    Ip_cmd = get_inner_vars(dynamic_device)[Id_ic_var]
+    Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
+    Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
 
-    #Obtain output of converter
-    #Vr_cnv0 = get_inner_vars(dynamic_device)[Vr_cnv_var]
-    #Vi_cnv0 = get_inner_vars(dynamic_device)[Vi_cnv_var]
+    #Get Current Controller parameters
+    inner_control = PSY.get_inner_control(dynamic_device)
+    Q_Flag = PSY.get_Q_Flag(inner_control)
 
-    #TO DO
+    Ip_min, Ip_max, Iq_min, Iq_max =
+            current_limit_logic(inner_control, V_t, Ip_oc, Iq_cmd)
+    Ip_min < Ip_oc < Ip_max ? nothing : error("Inverter out of current limits. Check Power Flow or Parameters")
+    Iq_min < Iq_oc < Iq_max ? nothing : error("Inverter out of current limits. Check Power Flow or Parameters")
+
+    if Q_Flag == 0
+        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB1)
+        #Define internal states for Inner Control
+        internal_states = @view device_states[local_ix]
+        internal_states[1] = V_t
+        internal_states[2] = Iq_oc
+    else
+        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB1)
+        K_vi = PSY.get_K_vi(inner_control)
+        #Define internal states for Inner Control
+        internal_states = @view device_states[local_ix]
+        internal_states[1] = V_t
+        internal_states[2] = Iq_cmd / K_vi
+    end
+
+    #Update additional variables
+    if PSY.get_V_ref0(inner_control) == 0.0
+        set_V_ref0!(inner_control, V_t)
+    end
 end
