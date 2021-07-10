@@ -20,6 +20,10 @@ include(joinpath(dirname(@__FILE__), "data_tests/test23.jl"))
 #time span
 tspan = (0.0, 4.0);
 
+#PSCAD benchmark data
+csv_file = joinpath(dirname(@__FILE__), "benchmarks/pscad/Test23/Test23_theta.csv")
+t_offset = 9.0
+
 #Define Fault using Callbacks
 Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
 
@@ -41,10 +45,17 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         @test small_sig.stable
 
         #Solve problem
-        execute!(sim, IDA())
+        execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :θ_oc))
+        t = series[1]
+        θ = series[2]
+
+        #Obtain PSCAD benchmark data
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        θ_pscad = M[:, 2]
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -54,6 +65,9 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
+        @test LinearAlgebra.norm(θ - θ_pscad) <= 3e-2
+        @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
+
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -78,10 +92,17 @@ end
         @test small_sig.stable
 
         #Solve problem
-        execute!(sim, Rodas5())
+        execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
         series = get_state_series(sim, ("generator-102-1", :θ_oc))
+        t = series[1]
+        θ = series[2]
+
+        #Obtain PSCAD benchmark data
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        θ_pscad = M[:, 2]
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -91,6 +112,9 @@ end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
         @test sim.solution.retcode == :Success
+        @test LinearAlgebra.norm(θ - θ_pscad) <= 3e-2
+        @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
+
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

@@ -20,6 +20,10 @@ include(joinpath(dirname(@__FILE__), "data_tests/test24.jl"))
 #time span
 tspan = (0.0, 2.0);
 
+#PSCAD benchmark data
+csv_file = joinpath(dirname(@__FILE__), "benchmarks/pscad/Test24/Test24_p.csv")
+t_offset = 9.0
+
 #Define Fault using Callbacks
 Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
 
@@ -41,12 +45,17 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         @test small_sig.stable
 
         #Solve problem in equilibrium
-        execute!(sim, Sundials.IDA(), dtmax = 0.001)
+        execute!(sim, Sundials.IDA(), dtmax = 0.001, saveat = 0.005)
 
         #Obtain frequency data
         series = get_state_series(sim, ("generator-102-1", :p_oc))
         t = series[1]
         p = series[2]
+
+        #Obtain PSCAD benchmark data
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        p_pscad = M[:, 2]
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -61,6 +70,8 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test LinearAlgebra.norm(p - p_pscad) <= 5e-3
+        @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
     finally
         @info("removing test files")
@@ -68,7 +79,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
     end
 end
 
-@testset "Test 24 Grid Following Inverter ImplicitModel" begin
+@testset "Test 24 Grid Following Inverter MassMatrixModel" begin
     path = (joinpath(pwd(), "test-24"))
     !isdir(path) && mkdir(path)
     try
@@ -86,12 +97,17 @@ end
         @test small_sig.stable
 
         #Solve problem in equilibrium
-        execute!(sim, Rodas5(), dtmax = 0.001)
+        execute!(sim, Rodas5(), dtmax = 0.001, saveat = 0.005)
 
         #Obtain frequency data
         series = get_state_series(sim, ("generator-102-1", :p_oc))
         t = series[1]
         p = series[2]
+
+        #Obtain PSCAD benchmark data
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        p_pscad = M[:, 2]
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -106,6 +122,8 @@ end
         rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test LinearAlgebra.norm(p - p_pscad) <= 5e-3
+        @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
     finally
         @info("removing test files")

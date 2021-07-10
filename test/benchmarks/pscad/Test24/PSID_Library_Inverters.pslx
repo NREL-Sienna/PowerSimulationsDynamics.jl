@@ -1,0 +1,3269 @@
+<project name="PSID_Library_Inverters" version="4.6.3" schema="" Target="Library">
+  <paramlist name="Settings">
+    <param name="creator" value="Matt Bossart,1625611237" />
+    <param name="time_duration" value="0.5" />
+    <param name="time_step" value="50" />
+    <param name="sample_step" value="250" />
+    <param name="chatter_threshold" value=".001" />
+    <param name="branch_threshold" value=".0005" />
+    <param name="StartType" value="0" />
+    <param name="PlotType" value="0" />
+    <param name="output_filename" value="$(Namespace).out" />
+    <param name="SnapType" value="0" />
+    <param name="SnapTime" value="0.3" />
+    <param name="snapshot_filename" value="$(Namespace).snp" />
+    <param name="MrunType" value="0" />
+    <param name="Mruns" value="1" />
+    <param name="Scenario" value="" />
+    <param name="Advanced" value="2047" />
+    <param name="Options" value="16" />
+    <param name="Build" value="18" />
+    <param name="Warn" value="0" />
+    <param name="Check" value="0" />
+    <param name="description" value="" />
+    <param name="revisor" value="Matt Bossart, 1625872553" />
+  </paramlist>
+  <paramlist name="Libs" />
+  <Layers />
+  <List classid="Settings">
+    <Settings classid="GraphFrameSettings" id="508694355" link="1182775007">
+      <path>
+        <ref link="223495102" />
+        <ref link="461198950" />
+        <ref link="966491600" />
+      </path>
+      <paramlist>
+        <param name="xmin" value="0.0" />
+        <param name="xmax" value="1.0" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="152286492" link="1365623107">
+      <path>
+        <ref link="223495102" />
+        <ref link="461198950" />
+        <ref link="966491600" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="1309582998" link="224792404">
+      <path>
+        <ref link="223495102" />
+        <ref link="461198950" />
+        <ref link="966491600" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="1233931690" link="2006654228">
+      <path>
+        <ref link="223495102" />
+        <ref link="461198950" />
+        <ref link="966491600" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="586104875" link="897225277">
+      <path>
+        <ref link="223495102" />
+        <ref link="461198950" />
+        <ref link="966491600" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+    <Settings classid="GraphFrameSettings" id="1782227479" link="1543432329">
+      <path>
+        <ref link="223495102" />
+        <ref link="461198950" />
+        <ref link="966491600" />
+      </path>
+      <paramlist>
+        <param name="xmin" value="0.0" />
+        <param name="xmax" value="1.0" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="1652430569" link="339685619">
+      <path>
+        <ref link="223495102" />
+        <ref link="461198950" />
+        <ref link="966491600" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="1772252895" link="1680761772">
+      <path>
+        <ref link="223495102" />
+        <ref link="461198950" />
+        <ref link="966491600" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="1505394887" link="1108489604">
+      <path>
+        <ref link="223495102" />
+        <ref link="461198950" />
+        <ref link="966491600" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+    <Settings classid="GraphFrameSettings" id="1583782441" link="1535382452">
+      <path>
+        <ref link="223495102" />
+        <ref link="439422545" />
+        <ref link="2051780060" />
+      </path>
+      <paramlist>
+        <param name="xmin" value="0.0" />
+        <param name="xmax" value="1.0" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="1033435954" link="1443671520">
+      <path>
+        <ref link="223495102" />
+        <ref link="439422545" />
+        <ref link="2051780060" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="1452614706" link="7885379">
+      <path>
+        <ref link="223495102" />
+        <ref link="439422545" />
+        <ref link="2051780060" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+    <Settings classid="OverlayGraphSettings" id="94153728" link="129224248">
+      <path>
+        <ref link="223495102" />
+        <ref link="439422545" />
+        <ref link="2051780060" />
+      </path>
+      <paramlist>
+        <param name="ymin" value="-1" />
+        <param name="ymax" value="1" />
+      </paramlist>
+    </Settings>
+  </List>
+  <definitions>
+    <Definition classid="UserCmpDefn" name="GFL" group="" url="" version="" build="" crc="29491180" instances="0" key="" view="false" date="0" id="946268654">
+      <paramlist name="">
+        <param name="Description" value="" />
+      </paramlist>
+      <form name="" w="320" h="400" splitter="60">
+        <category name="Configuration" visible="true">
+          <cond />
+          <parameter desc="Name" name="Name" group="" type="Text" helpmode="Append" allowemptystr="True">
+            <value />
+            <cond />
+            <help />
+            <regex />
+            <error_msg />
+          </parameter>
+          <parameter desc="Base Frequency" name="f_base" group="" unit="Hz" min="0" max="100" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[60]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Base Power" name="S_base" group="" unit="MVA" min="0" max="1000000" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Base Voltage" name="V_base" group="" unit="kV" min="0" max="1000" content_type="Literal" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1]]></value>
+            <cond />
+            <help><![CDATA[L-L voltage of inverter]]></help>
+          </parameter>
+          <parameter desc="Power Flow Voltage Magnitude" name="V_pf" group="Power Flow (unused)" unit="" min="0" max="1.5" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Power Flow Voltage Angle" name="theta_pf" group="Power Flow (unused)" unit="rad" min="-50" max="50" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Voltage reference" name="V_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Frequency reference" name="omega_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Power Reference" name="P_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Reactive Power Reference" name="Q_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="LCLFilter" visible="true">
+          <cond />
+          <parameter desc="Filter Inductor" name="lf" group="" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.009]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Filter Resistor" name="rf" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.016]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Filter Capacitor" name="cf" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[2.5]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Grid Inductor" name="lg" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.002]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Grid Resistor" name="rg" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.003]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="AverageConverter" visible="true">
+          <cond />
+        </category>
+        <category name="FixedDCSource" visible="true">
+          <cond />
+          <parameter desc="DC Voltage" name="voltage" group="" unit="V" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[600]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="CurrentModeControl" visible="true">
+          <cond />
+          <parameter desc="Voltage feed-forward in output of current controllers" name="kffv" group="General" type="Choice" helpmode="Append">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+            <choice><![CDATA[0 = FALSE]]></choice>
+            <choice><![CDATA[1 = TRUE]]></choice>
+          </parameter>
+          <parameter desc="Current controller proportional gain" name="kpc" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.37]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Current controller integral gain" name="kic" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.7]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="ActivePI_ReactivePI" visible="true">
+          <cond />
+          <parameter desc="Reactive power proportional gain" name="Kp_q" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[2.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Reactive power integral gain" name="Ki_q" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[30.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Reactive Power measurement cut-off frequency" name="omega_f" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[41.4690]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Active power proportional gain" name="Kp_p" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[2.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Active power integral gain" name="Ki_p" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[30.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Active power measurement cut-off frequency" name="omega_z" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[41.4690]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="ReducedOrderPLL" visible="true">
+          <cond />
+          <parameter desc="Low-pass filter cut-off frequency" name="omega_lp" group="" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[omega_lp]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Proportional gain" name="kp_pll" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[kp_pll]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Integral gain" name="ki_pll" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[ki_pll]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="Initial Conditions" visible="true">
+          <cond />
+          <parameter desc="freqestimator_x0_1" name="freqestimator_x0_1" group="Frequency Estimator" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_1" name="innercontrol_x0_1" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="freqestimator_x0_2" name="freqestimator_x0_2" group="Frequency Estimator" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="freqestimator_x0_3" name="freqestimator_x0_3" group="Frequency Estimator" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_1" name="outercontrol_x0_1" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_2" name="outercontrol_x0_2" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_3" name="outercontrol_x0_3" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_2" name="innercontrol_x0_2" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_1" name="filter_x0_1" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_2" name="filter_x0_2" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_3" name="filter_x0_3" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_4" name="filter_x0_4" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_5" name="filter_x0_5" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_6" name="filter_x0_6" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_4" name="outercontrol_x0_4" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="Monitoring" visible="true">
+          <cond />
+          <parameter desc="Reactive Power Out" name="Q_out" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Output" dim="1">
+            <value><![CDATA[Q_out]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Real Power Out" name="P_out" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Output" dim="1">
+            <value><![CDATA[P_out]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Frequency" name="f_out" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Output" dim="1">
+            <value><![CDATA[Freq_out]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+      </form>
+      <svg viewBox="-200 -200 200 200" size="4">
+        <port model="Natural" name="POI" x="108" y="0" dim="3" mode="Electrical" type="NonRemovable" internal="false"><![CDATA[true]]></port>
+        <cond><![CDATA[true]]></cond>
+        <rect x="0" y="-35" width="91" height="72" stroke="Black" stroke-dasharray="none" stroke-width="0.2" port="" fill-style="Solid" fill-fg="Teal" fill-bg="Transparent" />
+        <text x="50" y="-21" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[GFL]]></text>
+        <rect x="10" y="12" width="74" height="22" stroke="Black" stroke-width="0.2" stroke-dasharray="none" fill-style="Solid" fill-fg="Lime" fill-bg="Lime" />
+        <rect x="10" y="-13" width="74" height="23" stroke="Black" stroke-width="0.2" stroke-dasharray="none" fill-style="Solid" fill-fg="Lime" fill-bg="Lime" />
+        <line x1="108" y1="0" x2="90" y2="0" stroke="Black" stroke-width="0.2" stroke-dasharray="none" port="" />
+        <text x="38" y="27" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[$V_base]]></text>
+        <text x="35" y="3" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[$S_base]]></text>
+        <text x="106" y="-7" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[POI]]></text>
+        <text x="70" y="27" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[kV]]></text>
+        <text x="70" y="4" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[MVA]]></text>
+      </svg>
+      <schematic classid="UserCanvas" zoomlevel="6" scrollx="0" scrolly="0">
+        <paramlist>
+          <param name="show_grid" value="1" />
+          <param name="size" value="4" />
+          <param name="orient" value="1" />
+          <param name="show_border" value="0" />
+          <param name="monitor_bus_voltage" value="0" />
+          <param name="show_signal" value="0" />
+          <param name="show_virtual" value="0" />
+          <param name="show_sequence" value="0" />
+          <param name="auto_sequence" value="1" />
+        </paramlist>
+        <User classid="UserCmp" name="master:export" id="1426916525" x="918" y="126" w="88" h="21" z="500" orient="4" defn="master:export" link="-1" q="4">
+          <paramlist link="-1" name="" crc="39049670">
+            <param name="Name" value="Q_out" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:export" id="972669303" x="918" y="108" w="88" h="21" z="510" orient="4" defn="master:export" link="-1" q="4">
+          <paramlist link="-1" name="" crc="39049670">
+            <param name="Name" value="P_out" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:export" id="932783507" x="918" y="144" w="88" h="21" z="490" orient="4" defn="master:export" link="-1" q="4">
+          <paramlist link="-1" name="" crc="39049670">
+            <param name="Name" value="f_out" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:LCLFilter" id="38528684" x="486" y="144" w="137" h="93" z="470" orient="0" defn="PSID_Library:LCLFilter" link="-1" q="4">
+          <paramlist link="-1" name="" crc="59850250">
+            <param name="Name" value="" />
+            <param name="lf" value="lf" />
+            <param name="rf" value="rf" />
+            <param name="cf" value="cf" />
+            <param name="lg" value="lg" />
+            <param name="rg" value="rg" />
+            <param name="Vg_abc" value="Vg_abc" />
+            <param name="If_abc" value="If_abc" />
+            <param name="Theta_c" value="Theta_c" />
+            <param name="Theta_g" value="Theta_g" />
+            <param name="Vint" value="Vint" />
+            <param name="lf_monitor" value="lf" />
+            <param name="cf_monitoring" value="cf" />
+            <param name="V_abc" value="Vg_abc" />
+            <param name="cf_monitor" value="cf" />
+            <param name="untitled" value="0" />
+            <param name="RELEASE" value="0" />
+            <param name="t_calc_init" value="0.01" />
+            <param name="x0" value="x0_filter" />
+            <param name="V_d_init" value="V_d_init" />
+            <param name="V_q_init" value="V_q_init" />
+            <param name="ic" value="0" />
+            <param name="x0_1" value="filter_x0_1" />
+            <param name="x0_2" value="filter_x0_2" />
+            <param name="x0_3" value="filter_x0_3" />
+            <param name="x0_4" value="filter_x0_4" />
+            <param name="x0_5" value="filter_x0_5" />
+            <param name="x0_6" value="filter_x0_6" />
+            <param name="f_base" value="f_base" />
+            <param name="theta_pf" value="theta_pf" />
+            <param name="V_base" value="V_base" />
+            <param name="S_base" value="S_base" />
+            <param name="V_pf" value="V_pf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="2122598657" x="882" y="72" w="122" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="OUTPUT MONITORING" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:AverageConverter" id="784303139" x="468" y="234" w="152" h="80" z="460" orient="0" defn="PSID_Library:AverageConverter" link="-1" q="4">
+          <paramlist link="-1" name="" crc="83256274">
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:xnode" id="1888351094" x="414" y="54" w="24" h="31" z="1" orient="2" defn="master:xnode" link="-1" q="4">
+          <paramlist link="-1" name="" crc="114262475">
+            <param name="Name" value="POI" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="27121714" x="90" y="72" w="111" h="22" z="10" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="theta_pf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="214878019" x="90" y="90" w="83" h="22" z="20" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="V_pf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="2029828003" x="90" y="198" w="97" h="22" z="40" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="V_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="377152323" x="90" y="180" w="97" h="22" z="30" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="f_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1044646964" x="90" y="216" w="97" h="22" z="50" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="S_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:FixedDCSource" id="1760640988" x="594" y="216" w="142" h="76" z="480" orient="0" defn="PSID_Library:FixedDCSource" link="-1" q="4">
+          <paramlist link="-1" name="" crc="19138515">
+            <param name="Name" value="" />
+            <param name="voltage" value="voltage" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1015019153" x="432" y="36" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1355115211" x="468" y="36" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="21817894" x="558" y="162" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="634577453" x="630" y="162" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1479788746" x="486" y="450" w="32" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="775902061" x="468" y="450" w="32" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="72610777" x="378" y="288" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="546138878" x="360" y="216" w="21" h="38" z="1" orient="1" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="w_olc" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="2092452889" x="846" y="144" w="38" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="w_olc" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1688793005" x="846" y="108" w="10" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="P" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="962946672" x="846" y="126" w="10" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="Q" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="544526567" x="414" y="450" w="66" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="omega_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1950269711" x="432" y="468" w="38" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="442982669" x="450" y="486" w="38" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="Q_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="2131246423" x="594" y="360" w="38" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="P_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="57335970" x="144" y="36" w="158" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="PF SOLUTION (not used)" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="561551676" x="90" y="306" w="90" h="22" z="60" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="V_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="634615060" x="90" y="324" w="118" h="22" z="70" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1047601625" x="90" y="342" w="90" h="22" z="80" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="P_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="263493675" x="90" y="360" w="90" h="22" z="90" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="Q_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="2065140261" x="90" y="450" w="132" h="22" z="100" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1639653390" x="90" y="468" w="132" h="22" z="120" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1103269799" x="90" y="486" w="132" h="22" z="140" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1167118551" x="90" y="504" w="132" h="22" z="160" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_4" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="606000204" x="90" y="522" w="132" h="22" z="180" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_5" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1045584978" x="90" y="540" w="132" h="22" z="200" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_6" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1018799537" x="162" y="144" w="80" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="BASE VALUES" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1979333009" x="162" y="270" w="74" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="REFERENCES" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1651505162" x="162" y="414" w="46" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="FILTER" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="167191869" name="" x="432" y="54" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1606833865" name="" x="468" y="54" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1874905544" name="" x="450" y="486" w="10" h="46" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-36" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="921608560" name="" x="486" y="144" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1025319132" name="" x="486" y="54" w="28" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="18" y="0" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1766869534" name="" x="522" y="378" w="82" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+          <vertex x="72" y="-18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="530380426" name="" x="594" y="360" w="10" h="136" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-126" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="872125184" name="" x="504" y="54" w="172" h="370" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="162" y="0" />
+          <vertex x="162" y="360" />
+        </Wire>
+        <User classid="UserCmp" name="master:datalabel" id="449676883" x="378" y="306" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="994291331" name="" x="414" y="144" w="46" h="136" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="-36" y="0" />
+          <vertex x="-36" y="126" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1236495071" name="" x="378" y="108" w="64" h="244" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="-18" y="0" />
+          <vertex x="-18" y="234" />
+          <vertex x="36" y="234" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1582934305" name="" x="378" y="90" w="46" h="298" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="-36" y="0" />
+          <vertex x="-36" y="288" />
+          <vertex x="0" y="288" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="857372254" name="" x="432" y="468" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+        </Wire>
+        <User classid="UserCmp" name="master:import" id="1373049420" x="216" y="450" w="69" h="22" z="110" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="lf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="710552950" x="216" y="468" w="69" h="22" z="130" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="rg" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="224425696" x="216" y="486" w="69" h="22" z="150" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="rf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="600910243" x="216" y="504" w="69" h="22" z="170" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="cf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="583983467" x="216" y="522" w="69" h="22" z="190" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="lg" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="473339899" x="216" y="630" w="104" h="22" z="210" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="voltage" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1434630710" x="162" y="558" w="66" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="CONVERTER" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="117835856" x="162" y="594" w="66" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="DC SOURCE" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="972664643" x="162" y="648" w="94" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="INNER CONTROL" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1616342130" x="162" y="774" w="94" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="OUTER CONTROL" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="726229462" x="162" y="954" w="136" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="FREQUENCY ESTIMATOR" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="1797805754" name="" x="846" y="144" w="46" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="863330842" name="" x="846" y="126" w="46" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1210038282" name="" x="846" y="108" w="46" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+        <User classid="UserCmp" name="master:import" id="1515876835" x="144" y="720" w="174" h="22" z="240" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1565042743" x="144" y="702" w="174" h="22" z="220" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1357880561" x="144" y="864" w="174" h="22" z="310" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="905233883" x="144" y="846" w="174" h="22" z="290" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="48534809" x="144" y="828" w="174" h="22" z="270" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:ActivePI_ReactivePI" id="815459201" x="486" y="378" w="245" h="112" z="440" orient="0" defn="PSID_Library:ActivePI_ReactivePI" link="-1" q="4">
+          <paramlist link="-1" name="" crc="66473809">
+            <param name="Name" value="" />
+            <param name="kq" value="kq" />
+            <param name="omega_f" value="omega_f" />
+            <param name="f_base" value="f_base" />
+            <param name="Rp" value="Rp" />
+            <param name="omega_z" value="omega_z" />
+            <param name="x0_1" value="outercontrol_x0_1" />
+            <param name="x0_2" value="outercontrol_x0_2" />
+            <param name="x0_3" value="outercontrol_x0_3" />
+            <param name="P_out" value="P" />
+            <param name="Q_out" value="Q" />
+            <param name="x0_4" value="outercontrol_x0_4" />
+            <param name="Kp_q" value="Kp_q" />
+            <param name="Ki_q" value="Ki_q" />
+            <param name="Kp_p" value="Kp_p" />
+            <param name="Ki_p" value="Ki_p" />
+          </paramlist>
+          <paramlist link="841821855" name="">
+            <param name="xmin" value="0.0" />
+            <param name="xmax" value="1.0" />
+          </paramlist>
+          <paramlist link="161422828" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1346217719" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1532264318" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1414257004" name="">
+            <param name="xmin" value="0.0" />
+            <param name="xmax" value="1.0" />
+          </paramlist>
+          <paramlist link="137983299" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1083983360" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="951533573" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1283399727" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:ReducedOrderPLL" id="1494865977" x="432" y="396" w="157" h="62" z="430" orient="0" defn="PSID_Library:ReducedOrderPLL" link="-1" q="4">
+          <paramlist link="-1" name="" crc="51578385">
+            <param name="Name" value="" />
+            <param name="omega_lp" value="omega_lp" />
+            <param name="kp_pll" value="kp_pll" />
+            <param name="ki_pll" value="ki_pll" />
+            <param name="f_base" value="f_base" />
+            <param name="x0_1" value="freqestimator_x0_1" />
+            <param name="x0_2" value="freqestimator_x0_2" />
+            <param name="x0_3" value="freqestimator_x0_3" />
+            <param name="x0_4" value="freqestimator_x0_4" />
+          </paramlist>
+          <paramlist link="397672310" name="">
+            <param name="xmin" value="0.0" />
+            <param name="xmax" value="1.0" />
+          </paramlist>
+          <paramlist link="218822182" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1193817610" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="255198286" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="94996797" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:CurrentModeControl" id="2051780060" x="450" y="270" w="131" h="112" z="450" orient="0" defn="PSID_Library:CurrentModeControl" link="-1" q="4">
+          <paramlist link="-1" name="" crc="36058786">
+            <param name="Name" value="" />
+            <param name="kpv" value="kpv" />
+            <param name="kiv" value="kiv" />
+            <param name="kffv" value="kffv" />
+            <param name="rv" value="rv" />
+            <param name="lv" value="lv" />
+            <param name="kpc" value="kpc" />
+            <param name="kic" value="kic" />
+            <param name="kffi" value="kffi" />
+            <param name="omega_ad" value="omega_ad" />
+            <param name="kad" value="kad" />
+            <param name="lf" value="lf" />
+            <param name="cf" value="cf" />
+            <param name="x0_1" value="innercontrol_x0_1" />
+            <param name="x0_2" value="innercontrol_x0_2" />
+            <param name="x0_3" value="innercontrol_x0_3" />
+            <param name="x0_4" value="innercontrol_x0_4" />
+            <param name="x0_5" value="innercontrol_x0_5" />
+            <param name="x0_6" value="innercontrol_x0_6" />
+          </paramlist>
+          <paramlist link="1535382452" name="">
+            <param name="xmin" value="0.0" />
+            <param name="xmax" value="1.0" />
+          </paramlist>
+          <paramlist link="129224248" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="7885379" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1443671520" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1075753450" x="252" y="738" w="76" h="22" z="260" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kic" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1247585176" x="252" y="702" w="83" h="22" z="230" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kffv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="2067296775" x="252" y="720" w="76" h="22" z="250" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kpc" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="437163513" x="252" y="900" w="83" h="22" z="350" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="Ki_q" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="626061890" x="252" y="882" w="83" h="22" z="340" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="Kp_q" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="2009718639" x="252" y="828" w="83" h="22" z="280" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="Kp_p" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="483356217" x="252" y="864" w="104" h="22" z="320" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_z" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1711117850" x="252" y="846" w="83" h="22" z="300" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="Ki_p" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1234380244" x="252" y="918" w="104" h="22" z="360" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_f" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1040470919" x="144" y="882" w="174" h="22" z="330" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_4" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="935117337" x="252" y="1026" w="97" h="22" z="420" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="ki_pll" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1439766665" x="252" y="1008" w="97" h="22" z="400" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kp_pll" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="934144931" x="252" y="990" w="111" h="22" z="380" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_lp" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1717267768" x="144" y="1026" w="181" h="22" z="410" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="freqestimator_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="21435612" x="144" y="1008" w="181" h="22" z="390" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="freqestimator_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1463628257" x="144" y="990" w="181" h="22" z="370" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="freqestimator_x0_1" />
+          </paramlist>
+        </User>
+      </schematic>
+      <references>
+        <using namespace="master" />
+        <using namespace="Kenyon_Library" />
+        <using namespace="PSID_Library" />
+      </references>
+    </Definition>
+    <Definition classid="UserCmpDefn" name="DROOP_GFM" group="" url="" version="" build="" crc="7246334" instances="0" key="" view="false" date="0" id="744715342">
+      <paramlist name="">
+        <param name="Description" value="" />
+      </paramlist>
+      <form name="" w="320" h="400" splitter="60">
+        <category name="Configuration" visible="true">
+          <cond />
+          <parameter desc="Name" name="Name" group="" type="Text" helpmode="Append" allowemptystr="True">
+            <value />
+            <cond />
+            <help />
+            <regex />
+            <error_msg />
+          </parameter>
+          <parameter desc="Base Frequency" name="f_base" group="" unit="Hz" min="0" max="100" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[60]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Base Power" name="S_base" group="" unit="MVA" min="0" max="1000000" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Base Voltage" name="V_base" group="" unit="kV" min="0" max="1000" content_type="Literal" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1]]></value>
+            <cond />
+            <help><![CDATA[L-L voltage of inverter]]></help>
+          </parameter>
+          <parameter desc="Power Flow Voltage Magnitude" name="V_pf" group="Power Flow (unused)" unit="" min="0" max="1.5" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Power Flow Voltage Angle" name="theta_pf" group="Power Flow (unused)" unit="rad" min="-50" max="50" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Voltage reference" name="V_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Frequency reference" name="omega_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Power Reference" name="P_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Reactive Power Reference" name="Q_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="LCLFilter" visible="true">
+          <cond />
+          <parameter desc="Filter Inductor" name="lf" group="" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.08]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Grid Resistor" name="rg" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.01]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Filter Resistor" name="rf" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.003]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Filter Capacitor" name="cf" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.074]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Grid Inductor" name="lg" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.2]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="AverageConverter" visible="true">
+          <cond />
+        </category>
+        <category name="FixedDCSource" visible="true">
+          <cond />
+          <parameter desc="DC Voltage" name="voltage" group="" unit="V" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1500]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="VoltageModeControl" visible="true">
+          <cond />
+          <parameter desc="Voltage controller proportional gain" name="kpv" group="" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.59]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Voltage controller integral gain" name="kiv" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[736.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Voltage feed-forward in output of current controllers" name="kffv" group="General" type="Choice" helpmode="Append">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+            <choice><![CDATA[0 = FALSE]]></choice>
+            <choice><![CDATA[1 = TRUE]]></choice>
+          </parameter>
+          <parameter desc="Virtual resistance" name="rv" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Virtual inductance" name="lv" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.2]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Current controller proportional gain" name="kpc" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.27]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Current controller integral gain" name="kic" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[14.3]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Current feed-forward in output of current controllers" name="kffi" group="General" type="Choice" helpmode="Append">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+            <choice><![CDATA[0 = FALSE]]></choice>
+            <choice><![CDATA[1 = TRUE]]></choice>
+          </parameter>
+          <parameter desc="Active damping low pass filter cut-off frequency" name="omega_ad" group="General" unit="rad/s" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[50.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Active damping gain" name="kad" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.2]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="ActiveDroop_ReactiveDroop" visible="true">
+          <cond />
+          <parameter desc="Reactive power droop gain" name="kq" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.2]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Reactive Power measurement cut-off frequency" name="omega_f" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1000.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Active power droop gain " name="Rp" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.05]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Active power measurement cut-off frequency" name="omega_z" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[31.4159]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="FixedFrequency" visible="true">
+          <cond />
+        </category>
+        <category name="Initial Conditions" visible="true">
+          <cond />
+          <parameter desc="innercontrol_x0_1" name="innercontrol_x0_1" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_1" name="outercontrol_x0_1" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_2" name="outercontrol_x0_2" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_3" name="outercontrol_x0_3" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_2" name="innercontrol_x0_2" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_3" name="innercontrol_x0_3" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_1" name="filter_x0_1" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_4" name="innercontrol_x0_4" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_5" name="innercontrol_x0_5" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_6" name="innercontrol_x0_6" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_2" name="filter_x0_2" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_3" name="filter_x0_3" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_4" name="filter_x0_4" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_5" name="filter_x0_5" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_6" name="filter_x0_6" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="Monitoring" visible="true">
+          <cond />
+          <parameter desc="Reactive Power Out" name="Q_out" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Output" dim="1">
+            <value><![CDATA[Q_out]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Real Power Out" name="P_out" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Output" dim="1">
+            <value><![CDATA[P_out]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Frequency" name="f_out" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Output" dim="1">
+            <value><![CDATA[Freq_out]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+      </form>
+      <svg viewBox="-200 -200 200 200" size="4">
+        <port model="Natural" name="POI" x="108" y="0" dim="3" mode="Electrical" type="NonRemovable" internal="false"><![CDATA[true]]></port>
+        <cond><![CDATA[true]]></cond>
+        <rect x="0" y="-35" width="91" height="72" stroke="Black" stroke-dasharray="none" stroke-width="0.2" port="" fill-style="Solid" fill-fg="Teal" fill-bg="Transparent" />
+        <text x="50" y="-21" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[DROOP GFM]]></text>
+        <rect x="10" y="12" width="74" height="22" stroke="Black" stroke-width="0.2" stroke-dasharray="none" fill-style="Solid" fill-fg="Lime" fill-bg="Lime" />
+        <rect x="10" y="-13" width="74" height="23" stroke="Black" stroke-width="0.2" stroke-dasharray="none" fill-style="Solid" fill-fg="Lime" fill-bg="Lime" />
+        <line x1="108" y1="0" x2="90" y2="0" stroke="Black" stroke-width="0.2" stroke-dasharray="none" port="" />
+        <text x="38" y="27" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[$V_base]]></text>
+        <text x="35" y="3" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[$S_base]]></text>
+        <text x="106" y="-7" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[POI]]></text>
+        <text x="70" y="27" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[kV]]></text>
+        <text x="70" y="4" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[MVA]]></text>
+      </svg>
+      <schematic classid="UserCanvas" zoomlevel="6" scrollx="0" scrolly="0">
+        <paramlist>
+          <param name="show_grid" value="1" />
+          <param name="size" value="4" />
+          <param name="orient" value="1" />
+          <param name="show_border" value="0" />
+          <param name="monitor_bus_voltage" value="0" />
+          <param name="show_signal" value="0" />
+          <param name="show_virtual" value="0" />
+          <param name="show_sequence" value="0" />
+          <param name="auto_sequence" value="1" />
+        </paramlist>
+        <User classid="UserCmp" name="master:export" id="1781739346" x="918" y="126" w="88" h="21" z="520" orient="4" defn="master:export" link="-1" q="4">
+          <paramlist link="-1" name="" crc="39049670">
+            <param name="Name" value="Q_out" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:export" id="47418413" x="918" y="108" w="88" h="21" z="530" orient="4" defn="master:export" link="-1" q="4">
+          <paramlist link="-1" name="" crc="39049670">
+            <param name="Name" value="P_out" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:export" id="818844609" x="918" y="144" w="88" h="21" z="510" orient="4" defn="master:export" link="-1" q="4">
+          <paramlist link="-1" name="" crc="39049670">
+            <param name="Name" value="f_out" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:LCLFilter" id="1958227927" x="486" y="144" w="137" h="93" z="490" orient="0" defn="PSID_Library:LCLFilter" link="-1" q="4">
+          <paramlist link="-1" name="" crc="59850250">
+            <param name="Name" value="" />
+            <param name="lf" value="lf" />
+            <param name="rf" value="rf" />
+            <param name="cf" value="cf" />
+            <param name="lg" value="lg" />
+            <param name="rg" value="rg" />
+            <param name="Vg_abc" value="Vg_abc" />
+            <param name="If_abc" value="If_abc" />
+            <param name="Theta_c" value="Theta_c" />
+            <param name="Theta_g" value="Theta_g" />
+            <param name="Vint" value="Vint" />
+            <param name="lf_monitor" value="lf" />
+            <param name="cf_monitoring" value="cf" />
+            <param name="V_abc" value="Vg_abc" />
+            <param name="cf_monitor" value="cf" />
+            <param name="untitled" value="0" />
+            <param name="RELEASE" value="0" />
+            <param name="t_calc_init" value="0.01" />
+            <param name="x0" value="x0_filter" />
+            <param name="V_d_init" value="V_d_init" />
+            <param name="V_q_init" value="V_q_init" />
+            <param name="ic" value="0" />
+            <param name="x0_1" value="filter_x0_1" />
+            <param name="x0_2" value="filter_x0_2" />
+            <param name="x0_3" value="filter_x0_3" />
+            <param name="x0_4" value="filter_x0_4" />
+            <param name="x0_5" value="filter_x0_5" />
+            <param name="x0_6" value="filter_x0_6" />
+            <param name="f_base" value="f_base" />
+            <param name="theta_pf" value="theta_pf" />
+            <param name="V_base" value="V_base" />
+            <param name="S_base" value="S_base" />
+            <param name="V_pf" value="V_pf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:VoltageModeControl" id="2079101627" x="450" y="270" w="131" h="112" z="470" orient="0" defn="PSID_Library:VoltageModeControl" link="-1" q="4">
+          <paramlist link="-1" name="" crc="109677323">
+            <param name="Name" value="" />
+            <param name="kpv" value="kpv" />
+            <param name="kiv" value="kiv" />
+            <param name="kffv" value="kffv" />
+            <param name="choice" value="0" />
+            <param name="rv" value="rv" />
+            <param name="lv" value="lv" />
+            <param name="kpc" value="kpc" />
+            <param name="kic" value="kic" />
+            <param name="kffi" value="kffi" />
+            <param name="omega_ad" value="omega_ad" />
+            <param name="kad" value="kad" />
+            <param name="lf" value="lf" />
+            <param name="cf" value="cf" />
+            <param name="x0" value="x0_ic" />
+            <param name="V_d_init" value="V_d_init" />
+            <param name="V_q_init" value="V_q_init" />
+            <param name="x0_1" value="innercontrol_x0_1" />
+            <param name="x0_2" value="innercontrol_x0_2" />
+            <param name="x0_3" value="innercontrol_x0_3" />
+            <param name="x0_4" value="innercontrol_x0_4" />
+            <param name="x0_5" value="innercontrol_x0_5" />
+            <param name="x0_6" value="innercontrol_x0_6" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="56620594" x="882" y="72" w="122" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="OUTPUT MONITORING" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:AverageConverter" id="2040622412" x="468" y="234" w="152" h="80" z="480" orient="0" defn="PSID_Library:AverageConverter" link="-1" q="4">
+          <paramlist link="-1" name="" crc="83256274">
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:xnode" id="252384375" x="414" y="54" w="24" h="31" z="1" orient="2" defn="master:xnode" link="-1" q="4">
+          <paramlist link="-1" name="" crc="114262475">
+            <param name="Name" value="POI" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="365915623" x="90" y="72" w="111" h="22" z="10" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="theta_pf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1314490468" x="90" y="90" w="83" h="22" z="20" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="V_pf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="313689790" x="90" y="198" w="97" h="22" z="40" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="V_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1203272106" x="90" y="180" w="97" h="22" z="30" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="f_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1907295839" x="90" y="216" w="97" h="22" z="50" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="S_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:FixedDCSource" id="219331248" x="594" y="216" w="142" h="76" z="500" orient="0" defn="PSID_Library:FixedDCSource" link="-1" q="4">
+          <paramlist link="-1" name="" crc="19138515">
+            <param name="Name" value="" />
+            <param name="voltage" value="voltage" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="221806402" x="432" y="36" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="605718125" x="468" y="36" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="845893168" x="558" y="162" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="732593849" x="630" y="162" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1633500543" x="486" y="450" w="32" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="641741758" x="468" y="450" w="32" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="597631022" x="378" y="288" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="427407713" x="360" y="216" w="21" h="38" z="1" orient="1" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="w_olc" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1101156933" x="846" y="144" w="38" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="w_olc" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1189031131" x="846" y="108" w="10" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="P" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="965864242" x="846" y="126" w="10" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="Q" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="331509858" x="414" y="450" w="66" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="omega_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="904966502" x="432" y="468" w="38" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1359201576" x="450" y="486" w="38" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="Q_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="2030396908" x="594" y="360" w="38" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="P_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="776778419" x="144" y="36" w="158" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="PF SOLUTION (not used)" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1497268823" x="90" y="306" w="90" h="22" z="60" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="V_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1172292424" x="90" y="324" w="118" h="22" z="70" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="877675559" x="90" y="342" w="90" h="22" z="80" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="P_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="707156072" x="90" y="360" w="90" h="22" z="90" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="Q_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="306202843" x="90" y="450" w="132" h="22" z="100" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="78030962" x="90" y="468" w="132" h="22" z="120" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1387064648" x="90" y="486" w="132" h="22" z="140" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1133900060" x="90" y="504" w="132" h="22" z="160" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_4" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="343256184" x="90" y="522" w="132" h="22" z="180" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_5" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1972206894" x="90" y="540" w="132" h="22" z="200" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_6" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="189531404" x="162" y="144" w="80" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="BASE VALUES" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="2118067340" x="162" y="270" w="74" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="REFERENCES" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1645547545" x="162" y="414" w="46" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="FILTER" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="1187659730" name="" x="432" y="54" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="97934732" name="" x="468" y="54" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="379990020" name="" x="450" y="486" w="10" h="46" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-36" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="228166467" name="" x="486" y="144" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1288149356" name="" x="486" y="54" w="28" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="18" y="0" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1030158109" name="" x="522" y="378" w="82" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+          <vertex x="72" y="-18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="480210090" name="" x="594" y="360" w="10" h="136" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-126" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1030034307" name="" x="504" y="54" w="172" h="370" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="162" y="0" />
+          <vertex x="162" y="360" />
+        </Wire>
+        <User classid="UserCmp" name="master:datalabel" id="278790169" x="378" y="306" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="653456959" name="" x="414" y="144" w="46" h="136" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="-36" y="0" />
+          <vertex x="-36" y="126" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1466015130" name="" x="378" y="108" w="64" h="244" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="-18" y="0" />
+          <vertex x="-18" y="234" />
+          <vertex x="36" y="234" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1812069851" name="" x="378" y="90" w="46" h="298" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="-36" y="0" />
+          <vertex x="-36" y="288" />
+          <vertex x="0" y="288" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="603695811" name="" x="432" y="468" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+        </Wire>
+        <User classid="UserCmp" name="master:import" id="499385491" x="216" y="450" w="69" h="22" z="110" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="lf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="536966439" x="216" y="468" w="69" h="22" z="130" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="rg" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1641552101" x="216" y="486" w="69" h="22" z="150" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="rf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1778690349" x="216" y="504" w="69" h="22" z="170" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="cf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="212468652" x="216" y="522" w="69" h="22" z="190" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="lg" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1451985370" x="252" y="774" w="69" h="22" z="310" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="lv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="2073350546" x="252" y="756" w="69" h="22" z="290" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="rv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1292114786" x="252" y="738" w="83" h="22" z="270" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kffv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1190352555" x="252" y="720" w="76" h="22" z="250" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kiv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="487696467" x="252" y="702" w="76" h="22" z="230" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kpv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="129644869" x="252" y="792" w="76" h="22" z="330" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kpc" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="888949404" x="252" y="810" w="76" h="22" z="340" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kic" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="724694383" x="252" y="846" w="111" h="22" z="360" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_ad" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="434957061" x="252" y="828" w="83" h="22" z="350" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kffi" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="849441963" x="252" y="864" w="76" h="22" z="370" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kad" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1640883641" x="216" y="630" w="104" h="22" z="210" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="voltage" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="124644429" x="252" y="936" w="104" h="22" z="390" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_f" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1002886130" x="252" y="954" w="69" h="22" z="410" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="267183435" x="162" y="558" w="66" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="CONVERTER" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="459244758" x="162" y="594" w="66" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="DC SOURCE" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="2006782586" x="162" y="648" w="94" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="INNER CONTROL" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1699315553" x="162" y="882" w="94" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="OUTER CONTROL" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="467341654" x="162" y="1044" w="136" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="FREQUENCY ESTIMATOR" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="1883417581" name="" x="846" y="144" w="46" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="900314160" name="" x="846" y="126" w="46" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="128543589" name="" x="846" y="108" w="46" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+        <User classid="UserCmp" name="PSID_Library:FixedFrequency" id="822903436" x="432" y="396" w="157" h="66" z="450" orient="0" defn="PSID_Library:FixedFrequency" link="-1" q="4">
+          <paramlist link="-1" name="" crc="83256274">
+            <param name="Name" value="" />
+            <param name="omega_lp" value="omega_lp" />
+            <param name="kp_pll" value="kp_pll" />
+            <param name="ki_pll" value="ki_pll" />
+            <param name="f_base" value="f_base" />
+            <param name="x0_1" value="pll_x0_1" />
+            <param name="x0_2" value="pll_x0_2" />
+            <param name="x0_3" value="pll_x0_3" />
+            <param name="x0_4" value="pll_x0_4" />
+          </paramlist>
+          <paramlist link="1573272965" name="">
+            <param name="xmin" value="0.0" />
+            <param name="xmax" value="1.0" />
+          </paramlist>
+          <paramlist link="1280434718" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1642133517" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="2138100331" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1505192599" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:ActiveDroop_ReactiveDroop" id="966491600" x="486" y="378" w="245" h="112" z="460" orient="0" defn="PSID_Library:ActiveDroop_ReactiveDroop" link="-1" q="4">
+          <paramlist link="-1" name="" crc="93960509">
+            <param name="Name" value="" />
+            <param name="Ta" value="Ta" />
+            <param name="kd" value="kd" />
+            <param name="k_omega" value="k_omega" />
+            <param name="kq" value="kq" />
+            <param name="omega_f" value="omega_f" />
+            <param name="f_base" value="f_base" />
+            <param name="x0_1" value="outercontrol_x0_1" />
+            <param name="x0_2" value="outercontrol_x0_2" />
+            <param name="x0_3" value="outercontrol_x0_3" />
+            <param name="P_out" value="P" />
+            <param name="Q_out" value="Q" />
+            <param name="Rp" value="Rp" />
+            <param name="omega_z" value="omega_z" />
+          </paramlist>
+          <paramlist link="1543432329" name="">
+            <param name="xmin" value="0.0" />
+            <param name="xmax" value="1.0" />
+          </paramlist>
+          <paramlist link="1108489604" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1680761772" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="339685619" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1182775007" name="">
+            <param name="xmin" value="0.0" />
+            <param name="xmax" value="1.0" />
+          </paramlist>
+          <paramlist link="897225277" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="2006654228" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="224792404" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+          <paramlist link="1365623107" name="">
+            <param name="ymin" value="-1" />
+            <param name="ymax" value="1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1350344341" x="252" y="972" w="69" h="22" z="430" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="Rp" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1064370673" x="252" y="990" w="104" h="22" z="440" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_z" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="28037140" x="144" y="792" w="174" h="22" z="320" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_6" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="750759246" x="144" y="774" w="174" h="22" z="300" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_5" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="814245458" x="144" y="756" w="174" h="22" z="280" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_4" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1652106804" x="144" y="738" w="174" h="22" z="260" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="7717257" x="144" y="720" w="174" h="22" z="240" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="2144736878" x="144" y="702" w="174" h="22" z="220" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="662748937" x="144" y="972" w="174" h="22" z="420" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="2073029439" x="144" y="954" w="174" h="22" z="400" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="504391699" x="144" y="936" w="174" h="22" z="380" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_1" />
+          </paramlist>
+        </User>
+      </schematic>
+      <references>
+        <using namespace="master" />
+        <using namespace="Kenyon_Library" />
+        <using namespace="PSID_Library" />
+      </references>
+    </Definition>
+    <Definition classid="UserCmpDefn" name="DARCO_VSM" group="" url="" version="" build="" crc="4367479" instances="0" key="" view="false" date="0" id="949599670">
+      <paramlist name="">
+        <param name="Description" value="" />
+      </paramlist>
+      <form name="" w="320" h="400" splitter="60">
+        <category name="Configuration" visible="true">
+          <cond />
+          <parameter desc="Name" name="Name" group="" type="Text" helpmode="Append" allowemptystr="True">
+            <value />
+            <cond />
+            <help />
+            <regex />
+            <error_msg />
+          </parameter>
+          <parameter desc="Base Frequency" name="f_base" group="" unit="Hz" min="0" max="100" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[60]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Base Power" name="S_base" group="" unit="MVA" min="0" max="1000000" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Base Voltage" name="V_base" group="" unit="kV" min="0" max="1000" content_type="Literal" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1]]></value>
+            <cond />
+            <help><![CDATA[L-L voltage of inverter]]></help>
+          </parameter>
+          <parameter desc="Power Flow Voltage Magnitude" name="V_pf" group="Power Flow (unused)" unit="" min="0" max="1.5" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Power Flow Voltage Angle" name="theta_pf" group="Power Flow (unused)" unit="rad" min="-50" max="50" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Voltage reference" name="V_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Frequency reference" name="omega_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Power Reference" name="P_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Reactive Power Reference" name="Q_ref" group="References" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="LCLFilter" visible="true">
+          <cond />
+          <parameter desc="Filter Inductor" name="lf" group="" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.08]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Grid Resistor" name="rg" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.01]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Filter Resistor" name="rf" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.003]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Filter Capacitor" name="cf" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.074]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Grid Inductor" name="lg" group="General" unit="p.u." min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.2]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="AverageConverter" visible="true">
+          <cond />
+        </category>
+        <category name="FixedDCSource" visible="true">
+          <cond />
+          <parameter desc="DC Voltage" name="voltage" group="" unit="V" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1500]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="VoltageModeControl" visible="true">
+          <cond />
+          <parameter desc="Voltage controller proportional gain" name="kpv" group="" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.59]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Voltage controller integral gain" name="kiv" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[736.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Voltage feed-forward in output of current controllers" name="kffv" group="General" type="Choice" helpmode="Append">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+            <choice><![CDATA[0 = FALSE]]></choice>
+            <choice><![CDATA[1 = TRUE]]></choice>
+          </parameter>
+          <parameter desc="Virtual resistance" name="rv" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Virtual inductance" name="lv" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.2]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Current controller proportional gain" name="kpc" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1.27]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Current controller integral gain" name="kic" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[14.3]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Current feed-forward in output of current controllers" name="kffi" group="General" type="Choice" helpmode="Append">
+            <value><![CDATA[0]]></value>
+            <cond>
+            </cond>
+            <help>
+            </help>
+            <choice><![CDATA[0 = FALSE]]></choice>
+            <choice><![CDATA[1 = TRUE]]></choice>
+          </parameter>
+          <parameter desc="Active damping low pass filter cut-off frequency" name="omega_ad" group="General" unit="rad/s" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[50.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Active damping gain" name="kad" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.2]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="VirtualInertia_ReactiveDroop" visible="true">
+          <cond />
+          <parameter desc="Virtual inertia mechanical time constant" name="Ta" group="" unit="s" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[2.0]]></value>
+            <cond />
+            <help><![CDATA[Corresponds to 2H in a traditional SM]]></help>
+          </parameter>
+          <parameter desc="Damping constant" name="kd" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[400.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Droop constant" name="k_omega" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[20.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Reactive power droop gain" name="kq" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.2]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Reactive Power measurement cut-off frequency" name="omega_f" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[1000.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="KauraPLL" visible="true">
+          <cond />
+          <parameter desc="Low-pass filter cut-off frequency" name="omega_lp" group="" unit="rad/s" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[500.0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Proportional gain" name="kp_pll" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0.084]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Integral gain" name="ki_pll" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[4.69]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="Initial Conditions" visible="true">
+          <cond />
+          <parameter desc="innercontrol_x0_1" name="innercontrol_x0_1" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="freqestimator_x0_1" name="freqestimator_x0_1" group="Frequency Estimator" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="freqestimator_x0_2" name="freqestimator_x0_2" group="Frequency Estimator" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="freqestimatorl_x0_3" name="freqestimator_x0_3" group="Frequency Estimator" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_1" name="outercontrol_x0_1" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_2" name="outercontrol_x0_2" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="outercontrol_x0_3" name="outercontrol_x0_3" group="Outer" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_2" name="innercontrol_x0_2" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_3" name="innercontrol_x0_3" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_1" name="filter_x0_1" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_4" name="innercontrol_x0_4" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_5" name="innercontrol_x0_5" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="innercontrol_x0_6" name="innercontrol_x0_6" group="Inner " unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_2" name="filter_x0_2" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_3" name="filter_x0_3" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_4" name="filter_x0_4" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_5" name="filter_x0_5" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="filter_x0_6" name="filter_x0_6" group="Filter" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="freqestimator_x0_4" name="freqestimator_x0_4" group="Frequency Estimator" unit="" min="-1e+308" max="+1e+308" content_type="Constant" type="Real" helpmode="Append" intent="Input" dim="1">
+            <value><![CDATA[0]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+        <category name="Monitoring" visible="true">
+          <cond />
+          <parameter desc="Reactive Power Out" name="Q_out" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Output" dim="1">
+            <value><![CDATA[Q_out]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Real Power Out" name="P_out" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Output" dim="1">
+            <value><![CDATA[P_out]]></value>
+            <cond />
+            <help />
+          </parameter>
+          <parameter desc="Frequency" name="f_out" group="General" unit="" min="-1e+308" max="+1e+308" content_type="Variable" type="Real" helpmode="Append" intent="Output" dim="1">
+            <value><![CDATA[Freq_out]]></value>
+            <cond />
+            <help />
+          </parameter>
+        </category>
+      </form>
+      <svg viewBox="-200 -200 200 200" size="4">
+        <port model="Natural" name="POI" x="108" y="0" dim="3" mode="Electrical" type="NonRemovable" internal="false"><![CDATA[true]]></port>
+        <cond><![CDATA[true]]></cond>
+        <rect x="0" y="-35" width="91" height="72" stroke="Black" stroke-dasharray="none" stroke-width="0.2" port="" fill-style="Solid" fill-fg="Teal" fill-bg="Transparent" />
+        <text x="49" y="-20" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[DARCO VSM]]></text>
+        <rect x="10" y="12" width="74" height="22" stroke="Black" stroke-width="0.2" stroke-dasharray="none" fill-style="Solid" fill-fg="Lime" fill-bg="Lime" />
+        <rect x="10" y="-13" width="74" height="23" stroke="Black" stroke-width="0.2" stroke-dasharray="none" fill-style="Solid" fill-fg="Lime" fill-bg="Lime" />
+        <line x1="108" y1="0" x2="90" y2="0" stroke="Black" stroke-width="0.2" stroke-dasharray="none" port="" />
+        <text x="38" y="27" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[$V_base]]></text>
+        <text x="35" y="3" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[$S_base]]></text>
+        <text x="106" y="-7" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[POI]]></text>
+        <text x="70" y="27" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[kV]]></text>
+        <text x="70" y="4" stroke="Black" font-size="Small" text-anchor="Middle"><![CDATA[MVA]]></text>
+      </svg>
+      <schematic classid="UserCanvas" zoomlevel="6" scrollx="0" scrolly="0">
+        <paramlist>
+          <param name="show_grid" value="1" />
+          <param name="size" value="4" />
+          <param name="orient" value="1" />
+          <param name="show_border" value="0" />
+          <param name="monitor_bus_voltage" value="0" />
+          <param name="show_signal" value="0" />
+          <param name="show_virtual" value="0" />
+          <param name="show_sequence" value="0" />
+          <param name="auto_sequence" value="1" />
+        </paramlist>
+        <User classid="UserCmp" name="master:export" id="292128397" x="918" y="126" w="88" h="21" z="600" orient="4" defn="master:export" link="-1" q="4">
+          <paramlist link="-1" name="" crc="39049670">
+            <param name="Name" value="Q_out" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:export" id="1640263552" x="918" y="108" w="88" h="21" z="610" orient="4" defn="master:export" link="-1" q="4">
+          <paramlist link="-1" name="" crc="39049670">
+            <param name="Name" value="P_out" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:export" id="1828783309" x="918" y="144" w="88" h="21" z="590" orient="4" defn="master:export" link="-1" q="4">
+          <paramlist link="-1" name="" crc="39049670">
+            <param name="Name" value="f_out" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:LCLFilter" id="895432214" x="486" y="144" w="137" h="93" z="570" orient="0" defn="PSID_Library:LCLFilter" link="-1" q="4">
+          <paramlist link="-1" name="" crc="59850250">
+            <param name="Name" value="" />
+            <param name="lf" value="lf" />
+            <param name="rf" value="rf" />
+            <param name="cf" value="cf" />
+            <param name="lg" value="lg" />
+            <param name="rg" value="rg" />
+            <param name="Vg_abc" value="Vg_abc" />
+            <param name="If_abc" value="If_abc" />
+            <param name="Theta_c" value="Theta_c" />
+            <param name="Theta_g" value="Theta_g" />
+            <param name="Vint" value="Vint" />
+            <param name="lf_monitor" value="lf" />
+            <param name="cf_monitoring" value="cf" />
+            <param name="V_abc" value="Vg_abc" />
+            <param name="cf_monitor" value="cf" />
+            <param name="untitled" value="0" />
+            <param name="RELEASE" value="0" />
+            <param name="t_calc_init" value="0.01" />
+            <param name="x0" value="x0_filter" />
+            <param name="V_d_init" value="V_d_init" />
+            <param name="V_q_init" value="V_q_init" />
+            <param name="ic" value="0" />
+            <param name="x0_1" value="filter_x0_1" />
+            <param name="x0_2" value="filter_x0_2" />
+            <param name="x0_3" value="filter_x0_3" />
+            <param name="x0_4" value="filter_x0_4" />
+            <param name="x0_5" value="filter_x0_5" />
+            <param name="x0_6" value="filter_x0_6" />
+            <param name="f_base" value="f_base" />
+            <param name="theta_pf" value="theta_pf" />
+            <param name="V_base" value="V_base" />
+            <param name="S_base" value="S_base" />
+            <param name="V_pf" value="V_pf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:VoltageModeControl" id="645732161" x="450" y="270" w="131" h="112" z="550" orient="0" defn="PSID_Library:VoltageModeControl" link="-1" q="4">
+          <paramlist link="-1" name="" crc="109677323">
+            <param name="Name" value="" />
+            <param name="kpv" value="kpv" />
+            <param name="kiv" value="kiv" />
+            <param name="kffv" value="kffv" />
+            <param name="choice" value="0" />
+            <param name="rv" value="rv" />
+            <param name="lv" value="lv" />
+            <param name="kpc" value="kpc" />
+            <param name="kic" value="kic" />
+            <param name="kffi" value="kffi" />
+            <param name="omega_ad" value="omega_ad" />
+            <param name="kad" value="kad" />
+            <param name="lf" value="lf" />
+            <param name="cf" value="cf" />
+            <param name="x0" value="x0_ic" />
+            <param name="V_d_init" value="V_d_init" />
+            <param name="V_q_init" value="V_q_init" />
+            <param name="x0_1" value="innercontrol_x0_1" />
+            <param name="x0_2" value="innercontrol_x0_2" />
+            <param name="x0_3" value="innercontrol_x0_3" />
+            <param name="x0_4" value="innercontrol_x0_4" />
+            <param name="x0_5" value="innercontrol_x0_5" />
+            <param name="x0_6" value="innercontrol_x0_6" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1818194006" x="882" y="72" w="122" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="OUTPUT MONITORING" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:KauraPLL" id="356470831" x="432" y="396" w="157" h="59" z="530" orient="0" defn="PSID_Library:KauraPLL" link="-1" q="4">
+          <paramlist link="-1" name="" crc="117940437">
+            <param name="Name" value="" />
+            <param name="w_lp" value="500.0" />
+            <param name="kp_pll" value="kp_pll" />
+            <param name="ki_pll" value="ki_pll" />
+            <param name="omega_lp" value="omega_lp" />
+            <param name="x0_1" value="freqestimator_x0_1" />
+            <param name="x0_2" value="freqestimator_x0_2" />
+            <param name="x0_3" value="freqestimator_x0_3" />
+            <param name="x0_4" value="freqestimator_x0_4" />
+            <param name="f_base" value="f_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:AverageConverter" id="764540826" x="468" y="234" w="152" h="80" z="560" orient="0" defn="PSID_Library:AverageConverter" link="-1" q="4">
+          <paramlist link="-1" name="" crc="83256274">
+            <param name="Name" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:xnode" id="1420798126" x="414" y="54" w="24" h="31" z="1" orient="2" defn="master:xnode" link="-1" q="4">
+          <paramlist link="-1" name="" crc="114262475">
+            <param name="Name" value="POI" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="426724080" x="90" y="72" w="111" h="22" z="10" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="theta_pf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="15439" x="90" y="90" w="83" h="22" z="20" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="V_pf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1008281843" x="90" y="198" w="97" h="22" z="40" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="V_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1410737909" x="90" y="180" w="97" h="22" z="30" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="f_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="332399591" x="90" y="216" w="97" h="22" z="50" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="S_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:FixedDCSource" id="1730679757" x="594" y="216" w="142" h="76" z="580" orient="0" defn="PSID_Library:FixedDCSource" link="-1" q="4">
+          <paramlist link="-1" name="" crc="19138515">
+            <param name="Name" value="" />
+            <param name="voltage" value="1500" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1575358006" x="432" y="36" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1408760980" x="468" y="36" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="398597951" x="558" y="162" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="757090919" x="630" y="162" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="920152130" x="486" y="450" w="32" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1579051153" x="468" y="450" w="32" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="2068725030" x="378" y="288" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_dq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="908657623" x="360" y="216" w="21" h="38" z="1" orient="1" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="w_olc" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1120114232" x="846" y="144" w="38" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="w_olc" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1904751554" x="846" y="108" w="10" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="P" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1911718324" x="846" y="126" w="10" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="Q" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1159845974" x="414" y="450" w="66" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="omega_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="1438040241" x="432" y="468" w="38" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="V_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="169293241" x="450" y="486" w="38" h="21" z="1" orient="0" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="Q_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:datalabel" id="902313177" x="594" y="360" w="38" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="P_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="282839038" x="144" y="36" w="158" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="PF SOLUTION (not used)" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="352446332" x="90" y="306" w="90" h="22" z="60" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="V_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="388163793" x="90" y="324" w="118" h="22" z="70" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1807762937" x="90" y="342" w="90" h="22" z="80" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="P_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1377660458" x="90" y="360" w="90" h="22" z="90" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="Q_ref" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="509167539" x="90" y="702" w="174" h="22" z="220" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1136146805" x="90" y="450" w="132" h="22" z="100" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1286775799" x="90" y="468" w="132" h="22" z="120" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="177681049" x="90" y="486" w="132" h="22" z="140" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="848629617" x="90" y="504" w="132" h="22" z="160" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_4" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1760611569" x="90" y="522" w="132" h="22" z="180" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_5" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1881224668" x="90" y="540" w="132" h="22" z="200" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="filter_x0_6" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1882684748" x="90" y="720" w="174" h="22" z="240" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="466487970" x="90" y="738" w="174" h="22" z="260" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="546645638" x="90" y="756" w="174" h="22" z="280" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_4" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="438917106" x="90" y="774" w="174" h="22" z="300" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_5" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="428876359" x="90" y="792" w="174" h="22" z="320" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="innercontrol_x0_6" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="181090699" x="144" y="936" w="174" h="22" z="380" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="723587798" x="144" y="954" w="174" h="22" z="400" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="552803443" x="144" y="972" w="174" h="22" z="420" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="outercontrol_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1276404978" x="90" y="1098" w="181" h="22" z="460" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="freqestimator_x0_1" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1212738355" x="90" y="1116" w="181" h="22" z="480" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="freqestimator_x0_2" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1334833432" x="90" y="1134" w="181" h="22" z="500" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="freqestimator_x0_3" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1299595399" x="90" y="1152" w="181" h="22" z="520" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="freqestimator_x0_4" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="459071170" x="162" y="144" w="80" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="BASE VALUES" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1952611357" x="162" y="270" w="74" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="REFERENCES" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="2090010762" x="162" y="414" w="46" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="FILTER" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="843758914" name="" x="432" y="54" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1237267630" name="" x="468" y="54" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="913251138" name="" x="450" y="486" w="10" h="46" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-36" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="746696357" name="" x="486" y="144" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1849693874" name="" x="486" y="54" w="28" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="18" y="0" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="2140377448" name="" x="522" y="378" w="82" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+          <vertex x="72" y="-18" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1174677224" name="" x="594" y="360" w="10" h="136" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-126" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="573872970" name="" x="504" y="54" w="172" h="370" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="162" y="0" />
+          <vertex x="162" y="360" />
+        </Wire>
+        <User classid="UserCmp" name="master:datalabel" id="495694713" x="378" y="306" w="32" h="21" z="1" orient="2" defn="master:datalabel" link="-1" q="4">
+          <paramlist link="-1" name="" crc="98359112">
+            <param name="Name" value="I_dq" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="779004418" name="" x="414" y="144" w="46" h="136" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="-36" y="0" />
+          <vertex x="-36" y="126" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="160381089" name="" x="378" y="108" w="64" h="244" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="-18" y="0" />
+          <vertex x="-18" y="234" />
+          <vertex x="36" y="234" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1792068515" name="" x="378" y="90" w="46" h="298" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="-36" y="0" />
+          <vertex x="-36" y="288" />
+          <vertex x="0" y="288" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="1827088667" name="" x="432" y="468" w="10" h="28" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="-18" />
+        </Wire>
+        <User classid="UserCmp" name="master:import" id="844583283" x="216" y="450" w="69" h="22" z="110" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="lf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1903479047" x="216" y="468" w="69" h="22" z="130" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="rg" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1189487192" x="216" y="486" w="69" h="22" z="150" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="rf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="480264609" x="216" y="504" w="69" h="22" z="170" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="cf" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1928515974" x="216" y="522" w="69" h="22" z="190" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="lg" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1110628197" x="216" y="774" w="69" h="22" z="310" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="lv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1515706016" x="216" y="756" w="69" h="22" z="290" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="rv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1738192584" x="216" y="738" w="83" h="22" z="270" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kffv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="468671631" x="216" y="720" w="76" h="22" z="250" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kiv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="115695956" x="216" y="702" w="76" h="22" z="230" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kpv" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="137773456" x="216" y="792" w="76" h="22" z="330" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kpc" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="548266118" x="216" y="810" w="76" h="22" z="340" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kic" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1732474835" x="216" y="846" w="111" h="22" z="360" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_ad" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1422266728" x="216" y="828" w="83" h="22" z="350" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kffi" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1844270215" x="216" y="864" w="76" h="22" z="370" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kad" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="26550947" x="216" y="630" w="104" h="22" z="210" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="voltage" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1927659220" x="216" y="1008" w="104" h="22" z="450" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_f" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1105538353" x="216" y="990" w="69" h="22" z="440" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kq" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="758649710" x="216" y="972" w="104" h="22" z="430" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="k_omega" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="410389367" x="216" y="936" w="69" h="22" z="390" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="Ta" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="49170257" x="216" y="954" w="69" h="22" z="410" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kd" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="784291064" x="216" y="1098" w="111" h="22" z="470" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="omega_lp" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="704749504" x="216" y="1116" w="97" h="22" z="490" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="kp_pll" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:import" id="1252681744" x="216" y="1134" w="97" h="22" z="510" orient="0" defn="master:import" link="-1" q="4">
+          <paramlist link="-1" name="" crc="35483323">
+            <param name="Name" value="ki_pll" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library:VirtualInertia_ReactiveDroop" id="157850209" x="486" y="378" w="245" h="112" z="540" orient="0" defn="PSID_Library:VirtualInertia_ReactiveDroop" link="-1" q="4">
+          <paramlist link="-1" name="" crc="23171227">
+            <param name="Name" value="" />
+            <param name="Ta" value="Ta" />
+            <param name="kd" value="kd" />
+            <param name="k_omega" value="k_omega" />
+            <param name="kq" value="kq" />
+            <param name="omega_f" value="omega_f" />
+            <param name="P_out" value="P" />
+            <param name="Q_out" value="Q" />
+            <param name="x0_1" value="outercontrol_x0_1" />
+            <param name="x0_2" value="outercontrol_x0_2" />
+            <param name="x0_3" value="outercontrol_x0_3" />
+            <param name="f_base" value="f_base" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="837236590" x="162" y="558" w="66" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="CONVERTER" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="2062685416" x="162" y="594" w="66" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="DC SOURCE" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="1465355634" x="162" y="648" w="94" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="INNER CONTROL" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="2145066372" x="162" y="882" w="94" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="OUTER CONTROL" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="master:annotation" id="202498405" x="162" y="1044" w="136" h="18" z="1" orient="0" defn="master:annotation" link="-1" q="4">
+          <paramlist link="-1" name="" crc="5338603">
+            <param name="AL1" value="FREQUENCY ESTIMATOR" />
+            <param name="AL2" value="" />
+          </paramlist>
+        </User>
+        <Wire classid="WireOrthogonal" id="828465743" name="" x="846" y="144" w="46" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="691161932" name="" x="846" y="126" w="46" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+        <Wire classid="WireOrthogonal" id="936658379" name="" x="846" y="108" w="46" h="10" orient="0">
+          <vertex x="0" y="0" />
+          <vertex x="36" y="0" />
+        </Wire>
+      </schematic>
+      <references>
+        <using namespace="master" />
+        <using namespace="Kenyon_Library" />
+        <using namespace="PSID_Library" />
+      </references>
+    </Definition>
+    <Definition classid="StationDefn" name="Station" id="674982314" group="" url="" version="" build="" crc="16186875" view="false" date="0">
+      <paramlist name="">
+        <param name="Description" value="" />
+      </paramlist>
+      <schematic classid="StationCanvas">
+        <paramlist>
+          <param name="show_grid" value="0" />
+          <param name="size" value="0" />
+          <param name="orient" value="1" />
+          <param name="show_border" value="0" />
+          <param name="monitor_bus_voltage" value="0" />
+          <param name="show_signal" value="0" />
+          <param name="show_virtual" value="0" />
+          <param name="show_sequence" value="0" />
+          <param name="auto_sequence" value="1" />
+        </paramlist>
+        <Wire classid="WireBranch" id="223495102" name="STUB" x="180" y="180" w="68" h="82" orient="0" defn="STUB" recv="-1" send="-1" back="-1">
+          <vertex x="0" y="0" />
+          <vertex x="0" y="18" />
+          <vertex x="54" y="54" />
+          <vertex x="54" y="72" />
+          <User classid="UserCmp" name="PSID_Library_Inverters:Main" id="223495102" x="0" y="0" w="0" h="0" z="-1" orient="0" defn="PSID_Library_Inverters:Main" link="223495102" q="4">
+            <paramlist link="-1" name="" crc="4361682" />
+          </User>
+        </Wire>
+      </schematic>
+    </Definition>
+    <Definition classid="UserCmpDefn" name="Main" id="1668162628" group="" url="" version="" build="" crc="124659865" view="false" date="0">
+      <paramlist name="">
+        <param name="Description" value="" />
+      </paramlist>
+      <form name="" w="320" h="400" splitter="60" />
+      <svg viewBox="-200 -200 200 200" size="2">
+        <rect x="-36" y="-36" width="72" height="72" stroke="Black" stroke-dasharray="none" stroke-width="0.2" fill-style="Hollow" fill-fg="" fill-bg="" />
+        <text x="0" y="0" stroke="Black" fill="Black" font-size="Small"><![CDATA[%:Name]]></text>
+      </svg>
+      <schematic classid="UserCanvas">
+        <paramlist>
+          <param name="show_grid" value="0" />
+          <param name="size" value="0" />
+          <param name="orient" value="1" />
+          <param name="show_border" value="0" />
+          <param name="monitor_bus_voltage" value="0" />
+          <param name="show_signal" value="0" />
+          <param name="show_virtual" value="0" />
+          <param name="show_sequence" value="0" />
+          <param name="auto_sequence" value="1" />
+        </paramlist>
+        <User classid="UserCmp" name="PSID_Library_Inverters:DARCO_VSM" id="238600983" x="180" y="108" w="120" h="76" z="-1" orient="0" defn="PSID_Library_Inverters:DARCO_VSM" link="-1" q="4">
+          <paramlist link="-1" name="" crc="15607904">
+            <param name="Name" value="" />
+            <param name="f_base" value="60 [Hz]" />
+            <param name="S_base" value="1 [MVA]" />
+            <param name="V_base" value="1 [kV]" />
+            <param name="V_pf" value="1.0" />
+            <param name="theta_pf" value="0.0 [rad]" />
+            <param name="V_ref" value="1.0" />
+            <param name="omega_ref" value="1.0" />
+            <param name="P_ref" value="0.0" />
+            <param name="Q_ref" value="0.0" />
+            <param name="lf" value="0.08 [p.u.]" />
+            <param name="rg" value="0.01 [p.u.]" />
+            <param name="inner_x0_1" value="0" />
+            <param name="pll_x0_1" value="0" />
+            <param name="pll_x0_2" value="0" />
+            <param name="pll_x0_3" value="0" />
+            <param name="outer_x0_1" value="0" />
+            <param name="outer_x0_2" value="0" />
+            <param name="outer_x0_3" value="0" />
+            <param name="inner_x0_2" value="0" />
+            <param name="inner_x0_3" value="0" />
+            <param name="filter_x0_1" value="0" />
+            <param name="inner_x0_4" value="0" />
+            <param name="inner_x0_5" value="0" />
+            <param name="inner_x0_6" value="0" />
+            <param name="filter_x0_2" value="0" />
+            <param name="filter_x0_3" value="0" />
+            <param name="filter_x0_4" value="0" />
+            <param name="filter_x0_5" value="0" />
+            <param name="filter_x0_6" value="0" />
+            <param name="pll_x0_4" value="0" />
+            <param name="Q_out" value="Q_out" />
+            <param name="P_out" value="P_out" />
+            <param name="f_out" value="Freq_out" />
+            <param name="rf" value="0.003 [p.u.]" />
+            <param name="cf" value="0.074 [p.u.]" />
+            <param name="lg" value="0.002 [p.u.]" />
+            <param name="voltage" value="1500 [V]" />
+            <param name="kpv" value="0.59" />
+            <param name="kiv" value="736.0" />
+            <param name="kffv" value="0" />
+            <param name="rv" value="0.0" />
+            <param name="lv" value="0.2" />
+            <param name="kpc" value="1.27" />
+            <param name="kic" value="14.3" />
+            <param name="kffi" value="0" />
+            <param name="omega_ad" value="50.0 [rad/s]" />
+            <param name="kad" value="0.2" />
+            <param name="lf_1" value="lf" />
+            <param name="cf_1" value="cf" />
+            <param name="Ta" value="2.0 [s]" />
+            <param name="kd" value="400.0" />
+            <param name="k_omega" value="20.0" />
+            <param name="kq" value="0.2" />
+            <param name="omega_f" value="1000.0" />
+            <param name="omega_lp" value="500.0 [rad/s]" />
+            <param name="kp_pll" value="0.084" />
+            <param name="ki_pll" value="4.69" />
+            <param name="innercontrol_x0_1" value="0" />
+            <param name="freqestimator_x0_1" value="0" />
+            <param name="freqestimator_x0_2" value="0" />
+            <param name="freqestimator_x0_3" value="0" />
+            <param name="outercontrol_x0_3" value="0" />
+            <param name="innercontrol_x0_2" value="0" />
+            <param name="innercontrol_x0_3" value="0" />
+            <param name="innercontrol_x0_4" value="0" />
+            <param name="innercontrol_x0_5" value="0" />
+            <param name="innercontrol_x0_6" value="0" />
+            <param name="freqestimator_x0_4" value="0" />
+            <param name="outercontrol_x0_1" value="0" />
+            <param name="outercontrol_x0_2" value="0" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library_Inverters:DROOP_GFM" id="461198950" x="180" y="216" w="120" h="76" z="-1" orient="0" defn="PSID_Library_Inverters:DROOP_GFM" link="-1" q="4">
+          <paramlist link="-1" name="" crc="54572426">
+            <param name="Name" value="" />
+            <param name="f_base" value="60" />
+            <param name="S_base" value="1" />
+            <param name="V_base" value="1" />
+            <param name="V_pf" value="1.0" />
+            <param name="theta_pf" value="0.0" />
+            <param name="V_ref" value="1.0" />
+            <param name="omega_ref" value="1.0" />
+            <param name="P_ref" value="0.0" />
+            <param name="Q_ref" value="0.0" />
+            <param name="lf" value="0.08" />
+            <param name="rg" value="0.01" />
+            <param name="rf" value="0.003" />
+            <param name="cf" value="0.074" />
+            <param name="lg" value="0.002" />
+            <param name="voltage" value="1500" />
+            <param name="kpv" value="0.59" />
+            <param name="kiv" value="736.0" />
+            <param name="kffv" value="0" />
+            <param name="rv" value="0.0" />
+            <param name="lv" value="0.2" />
+            <param name="kpc" value="1.27" />
+            <param name="kic" value="14.3" />
+            <param name="kffi" value="0" />
+            <param name="omega_ad" value="50.0" />
+            <param name="kad" value="0.2" />
+            <param name="Ta" value="2.0" />
+            <param name="kd" value="400.0" />
+            <param name="k_omega" value="20.0" />
+            <param name="kq" value="0.2" />
+            <param name="omega_f" value="1000.0" />
+            <param name="omega_lp" value="500.0" />
+            <param name="kp_pll" value="0.084" />
+            <param name="ki_pll" value="4.69" />
+            <param name="inner_x0_1" value="0" />
+            <param name="pll_x0_1" value="0" />
+            <param name="pll_x0_2" value="0" />
+            <param name="pll_x0_3" value="0" />
+            <param name="outer_x0_1" value="0" />
+            <param name="outer_x0_2" value="0" />
+            <param name="outer_x0_3" value="0" />
+            <param name="inner_x0_2" value="0" />
+            <param name="inner_x0_3" value="0" />
+            <param name="filter_x0_1" value="0" />
+            <param name="inner_x0_4" value="0" />
+            <param name="inner_x0_5" value="0" />
+            <param name="inner_x0_6" value="0" />
+            <param name="filter_x0_2" value="0" />
+            <param name="filter_x0_3" value="0" />
+            <param name="filter_x0_4" value="0" />
+            <param name="filter_x0_5" value="0" />
+            <param name="filter_x0_6" value="0" />
+            <param name="pll_x0_4" value="0" />
+            <param name="Q_out" value="Q_out" />
+            <param name="P_out" value="P_out" />
+            <param name="f_out" value="Freq_out" />
+            <param name="Rp" value="Rp" />
+            <param name="omega_z" value="omega_z" />
+            <param name="innercontrol_x0_1" value="0" />
+            <param name="outercontrol_x0_1" value="0" />
+            <param name="outercontrol_x0_2" value="0" />
+            <param name="outercontrol_x0_3" value="0" />
+            <param name="innercontrol_x0_2" value="0" />
+            <param name="innercontrol_x0_3" value="0" />
+            <param name="innercontrol_x0_4" value="0" />
+            <param name="innercontrol_x0_5" value="0" />
+            <param name="innercontrol_x0_6" value="0" />
+          </paramlist>
+        </User>
+        <User classid="UserCmp" name="PSID_Library_Inverters:GFL" id="439422545" x="180" y="324" w="120" h="76" z="-1" orient="0" defn="PSID_Library_Inverters:GFL" link="-1" q="4">
+          <paramlist link="-1" name="" crc="103707801">
+            <param name="Name" value="" />
+            <param name="f_base" value="60" />
+            <param name="S_base" value="1" />
+            <param name="V_base" value="1" />
+            <param name="V_pf" value="1.0" />
+            <param name="theta_pf" value="0.0" />
+            <param name="V_ref" value="1.0" />
+            <param name="omega_ref" value="1.0" />
+            <param name="P_ref" value="0.0" />
+            <param name="Q_ref" value="0.0" />
+            <param name="lf" value="0.08" />
+            <param name="rg" value="0.01" />
+            <param name="rf" value="0.003" />
+            <param name="cf" value="0.074" />
+            <param name="lg" value="0.2" />
+            <param name="voltage" value="1500" />
+            <param name="kpv" value="0.59" />
+            <param name="kiv" value="736.0" />
+            <param name="kffv" value="0" />
+            <param name="rv" value="0.0" />
+            <param name="lv" value="0.2" />
+            <param name="kpc" value="1.27" />
+            <param name="kic" value="14.3" />
+            <param name="kffi" value="0" />
+            <param name="omega_ad" value="50.0" />
+            <param name="kad" value="0.2" />
+            <param name="kq" value="0.2" />
+            <param name="omega_f" value="1000.0" />
+            <param name="Rp" value="0.05" />
+            <param name="omega_z" value="31.4159" />
+            <param name="innercontrol_x0_1" value="0" />
+            <param name="outercontrol_x0_1" value="0" />
+            <param name="outercontrol_x0_2" value="0" />
+            <param name="outercontrol_x0_3" value="0" />
+            <param name="innercontrol_x0_2" value="0" />
+            <param name="innercontrol_x0_3" value="0" />
+            <param name="filter_x0_1" value="0" />
+            <param name="innercontrol_x0_4" value="0" />
+            <param name="innercontrol_x0_5" value="0" />
+            <param name="innercontrol_x0_6" value="0" />
+            <param name="filter_x0_2" value="0" />
+            <param name="filter_x0_3" value="0" />
+            <param name="filter_x0_4" value="0" />
+            <param name="filter_x0_5" value="0" />
+            <param name="filter_x0_6" value="0" />
+            <param name="Q_out" value="Q_out" />
+            <param name="P_out" value="P_out" />
+            <param name="f_out" value="Freq_out" />
+            <param name="Kp_q" value="Kp_q" />
+            <param name="Ki_q" value="Ki_q" />
+            <param name="Kp_p" value="Kp_p" />
+            <param name="Ki_p" value="Ki_p" />
+            <param name="omega_lp" value="omega_lp" />
+            <param name="kp_pll" value="kp_pll" />
+            <param name="ki_pll" value="ki_pll" />
+            <param name="freqestimator_x0_1" value="0" />
+            <param name="freqestimator_x0_2" value="0" />
+            <param name="freqestimator_x0_3" value="0" />
+            <param name="outercontrol_x0_4" value="0" />
+          </paramlist>
+        </User>
+      </schematic>
+      <references>
+        <using namespace="PSID_Library_Inverters" />
+      </references>
+    </Definition>
+  </definitions>
+  <hierarchy>
+    <call link="1470090017" name="PSID_Library_Inverters:Station" z="-1" view="false" instance="0">
+      <call link="223495102" name="PSID_Library_Inverters:Main" z="-1" view="false" instance="0">
+        <call link="439422545" name="PSID_Library_Inverters:GFL" z="-1" view="false" instance="0">
+          <call link="2051780060" name="PSID_Library:CurrentModeControl" z="450" view="true" instance="0" />
+          <call link="1494865977" name="PSID_Library:ReducedOrderPLL" z="430" view="false" instance="0">
+            <call link="2057070710" name="PSID_Library:ri_dq" z="220" view="false" instance="0" />
+          </call>
+          <call link="815459201" name="PSID_Library:ActivePI_ReactivePI" z="440" view="false" instance="0" />
+          <call link="784303139" name="PSID_Library:AverageConverter" z="460" view="false" instance="0" />
+          <call link="38528684" name="PSID_Library:LCLFilter" z="470" view="false" instance="0">
+            <call link="777028743" name="PSID_Library:dq_ri" z="520" view="false" instance="0" />
+            <call link="514904379" name="PSID_Library:dq_ri" z="810" view="false" instance="1" />
+            <call link="2092800291" name="PSID_Library:dq_ri" z="820" view="false" instance="2" />
+            <call link="1602094281" name="PSID_Library:dq_ri" z="830" view="false" instance="3" />
+            <call link="909248648" name="PSID_Library:ri_abc" z="1060" view="false" instance="0" />
+          </call>
+          <call link="1760640988" name="PSID_Library:FixedDCSource" z="480" view="false" instance="0" />
+        </call>
+        <call link="238600983" name="PSID_Library_Inverters:DARCO_VSM" z="-1" view="false" instance="0">
+          <call link="356470831" name="PSID_Library:KauraPLL" z="530" view="false" instance="0">
+            <call link="894185864" name="PSID_Library:ri_dq" z="250" view="false" instance="1" />
+          </call>
+          <call link="157850209" name="PSID_Library:VirtualInertia_ReactiveDroop" z="540" view="false" instance="0" />
+          <call link="645732161" name="PSID_Library:VoltageModeControl" z="550" view="false" instance="0" />
+          <call link="764540826" name="PSID_Library:AverageConverter" z="560" view="false" instance="1" />
+          <call link="895432214" name="PSID_Library:LCLFilter" z="570" view="false" instance="1">
+            <call link="777028743" name="PSID_Library:dq_ri" z="520" view="false" instance="4" />
+            <call link="514904379" name="PSID_Library:dq_ri" z="810" view="false" instance="5" />
+            <call link="2092800291" name="PSID_Library:dq_ri" z="820" view="false" instance="6" />
+            <call link="1602094281" name="PSID_Library:dq_ri" z="830" view="false" instance="7" />
+            <call link="909248648" name="PSID_Library:ri_abc" z="1060" view="false" instance="1" />
+          </call>
+          <call link="1730679757" name="PSID_Library:FixedDCSource" z="580" view="false" instance="1" />
+        </call>
+        <call link="461198950" name="PSID_Library_Inverters:DROOP_GFM" z="-1" view="false" instance="0">
+          <call link="822903436" name="PSID_Library:FixedFrequency" z="450" view="false" instance="0" />
+          <call link="966491600" name="PSID_Library:ActiveDroop_ReactiveDroop" z="460" view="false" instance="0" />
+          <call link="2079101627" name="PSID_Library:VoltageModeControl" z="470" view="false" instance="1" />
+          <call link="2040622412" name="PSID_Library:AverageConverter" z="480" view="false" instance="2" />
+          <call link="1958227927" name="PSID_Library:LCLFilter" z="490" view="false" instance="2">
+            <call link="777028743" name="PSID_Library:dq_ri" z="520" view="false" instance="8" />
+            <call link="514904379" name="PSID_Library:dq_ri" z="810" view="false" instance="9" />
+            <call link="2092800291" name="PSID_Library:dq_ri" z="820" view="false" instance="10" />
+            <call link="1602094281" name="PSID_Library:dq_ri" z="830" view="false" instance="11" />
+            <call link="909248648" name="PSID_Library:ri_abc" z="1060" view="false" instance="2" />
+          </call>
+          <call link="219331248" name="PSID_Library:FixedDCSource" z="500" view="false" instance="2" />
+        </call>
+      </call>
+    </call>
+  </hierarchy>
+</project>
