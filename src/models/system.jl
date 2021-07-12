@@ -1,17 +1,20 @@
-function update_global_vars!(inputs::SimulationInputs, x::AbstractArray)
-    index = get_global_vars(inputs)[:ω_sys_index]
+function update_global_vars!(cache::Cache, x::AbstractArray{U}) where U <: Real
+    index = get_global_vars(cache)[]
     index == 0 && return
     #TO DO: Make it general for cases when ω is not a state (droop)!
-    get_global_vars(inputs)[:ω_sys] = x[index]
+    get_global_vars(cache)[:ω_sys] = x[index]
     return
 end
 
-function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float64)
+function system_implicit!(out::Vector{T}, dx::Vector{T}, x::Vector{T}, p, t::Float64, inputs::SimulationInputs, cache::Cache) where T <: Real
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
     injection_ode = get_aux_arrays(inputs)[3]
     branches_ode = get_aux_arrays(inputs)[4]
     M = get_mass_matrix(inputs)
+    update_global_vars!(inputs, x)
+    fill!(I_injections_r, 0.0)
+    fill!(I_injections_i, 0.0)
 
     #Index Setup
     bus_size = get_bus_count(inputs)
@@ -21,13 +24,10 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
     injection_count = 1
     branches_start = get_branches_pointer(inputs)
     branches_count = 1
-    update_global_vars!(inputs, x)
 
     #Network quantities
     V_r = @view x[1:bus_size]
     V_i = @view x[(bus_size + 1):bus_vars_count]
-    fill!(I_injections_r, 0.0)
-    fill!(I_injections_i, 0.0)
 
     for d in get_injectors_data(inputs)
         dynamic_device = PSY.get_dynamic_injector(d)
@@ -110,7 +110,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
         M[bus_range, bus_range] * dx[bus_range]
 end
 
-function system_mass_matrix!(dx, x::AbstractArray{U}, inputs::SimulationInputs, t) where {U}
+function system_mass_matrix!(dx::AbstractArray{U}, x::AbstractArray{U}, p, t, inputs::SimulationInputs, cache::Cache) where {U <: Real}
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
     injection_ode = get_aux_arrays(inputs)[3]
@@ -129,10 +129,6 @@ function system_mass_matrix!(dx, x::AbstractArray{U}, inputs::SimulationInputs, 
     #Network quantities
     V_r = @view x[1:bus_size]
     V_i = @view x[(bus_size + 1):bus_vars_count]
-    # I_injections_i = zeros(U, length(I_injections_i))
-    #I_injections_r = zeros(U, length(I_injections_r))
-    # injection_ode = zeros(U, length(get_aux_arrays(inputs)[3]))
-    # branches_ode = zeros(U, length(get_aux_arrays(inputs)[4]))
     fill!(I_injections_r, 0.0)
     fill!(I_injections_i, 0.0)
 
