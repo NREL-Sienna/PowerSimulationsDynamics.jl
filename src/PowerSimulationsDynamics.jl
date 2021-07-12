@@ -52,8 +52,11 @@ using DocStringExtensions
 #Structs for General Devices and System
 include("base/definitions.jl")
 include("base/ports.jl")
+include("base/device_wrapper.jl")
+include("base/branch_wrapper.jl")
 include("base/perturbations.jl")
 include("base/file_system.jl")
+include("base/caches.jl")
 include("base/simulation_model.jl")
 include("base/simulation_inputs.jl")
 include("base/device_indexing.jl")
