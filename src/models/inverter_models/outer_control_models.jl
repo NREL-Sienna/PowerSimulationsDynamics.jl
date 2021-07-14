@@ -364,6 +364,9 @@ function mdl_outer_ode!(
         p_ord = internal_states[state_ct]
         output_ode[local_ix[state_ct]] = (1.0 / T_pord) * (p_ext - p_ord)
         state_ct += 1
+
+        #Update Inner Vars: Ioc_pcmd
+        get_inner_vars(dynamic_device)[Id_oc_var] = p_ord / max(Vt_filt, 0.01)
     end
     reactive_power_control = PSY.get_reactive_power(outer_control)
     #Note: Monitoring power from other branch not supported.
