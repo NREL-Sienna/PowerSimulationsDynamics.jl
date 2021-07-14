@@ -228,7 +228,7 @@ function initialize_outer!(
 
     #Update inner_vars
     get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
-    PSY.set_P_ref!(active_power_control = p_elec_out)
+    PSY.set_P_ref!(active_power_control, p_elec_out)
     PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = p_elec_out
 
     #Obtain indices for component w/r to device
@@ -278,6 +278,16 @@ function initialize_outer!(
         state_ct += 4
         #Update Inner Vars
         get_inner_vars(dynamic_device)[V_oc_var] = 0.0
+        get_inner_vars(dynamic_device)[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
+    elseif VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
+        K_i = PSY.get_K_i(reactive_power_control)
+        #Update states
+        internal_states[state_ct] = q_elec_out
+        internal_states[state_ct + 1] = q_elec_out / K_i
+        internal_states[state_ct + 2] = q_elec_out
+        state_ct += 3
+        #Update Inner Vars
+        get_inner_vars(dynamic_device)[V_oc_var] = q_elec_out - V_t
         get_inner_vars(dynamic_device)[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
     else
         error("Flags for Generic Renewable Model not supported yet")
