@@ -304,6 +304,7 @@ function mdl_outer_ode!(
     active_power_control = PSY.get_active_power(outer_control)
     #Note: Monitoring power from other branch not supported.
     Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag
+    T_pord = PSY.get_T_pord(active_power_control)
     p_ext = p_ref
 
     #Obtain indices for component w/r to device
@@ -360,6 +361,7 @@ function mdl_outer_ode!(
         get_inner_vars(dynamic_device)[Id_oc_var] = p_ord_sat / max(Vt_filt, 0.01)
     else
         #p_ext is fixed so no limits are applied
+        p_ord = internal_states[state_ct]
         output_ode[local_ix[state_ct]] = (1.0 / T_pord) * (p_ext - p_ord)
         state_ct += 1
     end
@@ -418,6 +420,51 @@ function mdl_outer_ode!(
 
         #Update Inner Vars
         get_inner_vars(dynamic_device)[V_oc_var] = V_pi_sat - Vt_filt
+        get_inner_vars(dynamic_device)[Iq_oc_var] = Q_ext / max(Vt_filt, 0.01)
+    elseif VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
+        # Get Reactive Controller parameters
+        T_fltr = PSY.get_T_fltr(reactive_power_control)
+        K_p = PSY.get_K_p(reactive_power_control)
+        K_i = PSY.get_K_i(reactive_power_control)
+        T_ft = PSY.get_T_ft(reactive_power_control)
+        T_fv = PSY.get_T_fv(reactive_power_control)
+        # V_frz not implemented yet
+        V_frz = PSY.get_V_frz(reactive_power_control)
+        e_min, e_max = PSY.get_e_lim(reactive_power_control)
+        dbd1 = PSY.get_dbd1(reactive_power_control)
+        dbd2 = PSY.get_dbd2(reactive_power_control)
+        Q_min, Q_max = PSY.get_Q_lim(reactive_power_control)
+        T_p = PSY.get_T_p(reactive_power_control)
+        Q_min_inner, Q_max_inner = PSY.get_Q_lim_inner(reactive_power_control)
+        V_min, V_max = PSY.get_V_lim(reactive_power_control)
+        K_qp = PSY.get_K_qp(reactive_power_control)
+        K_qi = PSY.get_K_qi(reactive_power_control)
+
+        #Define internal states for Reactive Control
+        #@show state_ct
+        q_flt = internal_states[state_ct]
+        ξq_oc = internal_states[state_ct + 1]
+        q_LL = internal_states[state_ct + 2]
+
+        #Compute additional variables
+        q_err = clamp(deadband_function(q_ref - q_flt, dbd1, dbd2), e_min, e_max)
+        q_err = deadband_function(q_ref - q_flt, dbd1, dbd2)
+        #Q error - PI controller
+        Q_pi = K_p * q_err + K_i * ξq_oc
+        Q_pi_sat = clamp(Q_pi, Q_min, Q_max)
+        Q_binary_logic = Q_min <= Q_pi <= Q_max ? 1.0 : 0.0
+        #Lead-Lag block
+        Q_ext = q_LL + (T_ft / T_fv) * Q_pi_sat
+
+        #Update ODEs
+        output_ode[local_ix[state_ct]] = (1.0 / T_fltr) * (q_elec_out - q_flt)
+        output_ode[local_ix[state_ct + 1]] = Q_binary_logic * q_err
+        output_ode[local_ix[state_ct + 2]] =
+            (1.0 / T_fv) * (Q_pi_sat * (1.0 - T_ft / T_fv) - q_LL)
+        state_ct += 3
+
+        #Update Inner Vars
+        get_inner_vars(dynamic_device)[V_oc_var] = Q_ext - Vt_filt
         get_inner_vars(dynamic_device)[Iq_oc_var] = Q_ext / max(Vt_filt, 0.01)
     else
         error("Flags for Generic Renewable Model not supported yet")

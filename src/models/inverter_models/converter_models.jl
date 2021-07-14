@@ -110,11 +110,11 @@ function mdl_converter_ode!(
     Iq_extra = max(K_hv * (V_t - Vo_lim), 0.0)
 
     #Update ODEs
-    output_ode[local_ix[1]] = Ip_binary * (1.0 / T_g) * Ip_in
-    output_ode[local_ix[2]] = (1.0 / T_g) * Iq_in
-    output_ode[local_ix[3]] = (1.0 / T_fltr) * Vmeas
+    output_ode[local_ix[1]] = Ip_binary * (1.0 / T_g) * Ip_in #(Ip_cmd - Ip)
+    output_ode[local_ix[2]] = (1.0 / T_g) * Iq_in # (Iq_cmd - Iq)
+    output_ode[local_ix[3]] = (1.0 / T_fltr) * (V_t - Vmeas)
 
     #Update inner_vars
     get_inner_vars(dynamic_device)[Id_cnv_var] = G_lv * Ip_sat
-    get_inner_vars(dynamic_device)[Iq_cnv_var] = max(-Iq - Iq_extra, Io_lim)
+    get_inner_vars(dynamic_device)[Iq_cnv_var] = max(-Iq - Iq_extra, Io_lim) #-Iq
 end
