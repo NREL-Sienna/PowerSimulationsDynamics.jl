@@ -8,7 +8,7 @@ end
 
 function mass_matrix_inner_entries!(
     mass_matrix,
-    inner_control::InnerREECB1,
+    inner_control::PSY.InnerREECB,
     global_index::Dict{Symbol, Int64},
 )
     mass_matrix[global_index[:Vt_filt], global_index[:Vt_filt]] =
@@ -208,7 +208,7 @@ end
 function mdl_inner_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.InnerREECB1, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.InnerREECB, DC, P, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -218,7 +218,7 @@ function mdl_inner_ode!(
 }
 
     #Obtain external states inputs for component
-    #external_ix = get_input_port_ix(dynamic_device, PSY.InnerREECB1)
+    #external_ix = get_input_port_ix(dynamic_device, PSY.InnerREECB)
 
     #Obtain inner variables for component
     V_t = sqrt(
@@ -242,7 +242,7 @@ function mdl_inner_ode!(
     # TO DO: Voltage Dip Freeze logic
     if Q_Flag == 0
         #Obtain indices for component w/r to device
-        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB1)
+        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB)
         #Define internal states for Inner Control
         internal_states = @view device_states[local_ix]
         Vt_filt = internal_states[1]
@@ -256,6 +256,7 @@ function mdl_inner_ode!(
             current_limit_logic(inner_control, Vt_filt, Ip_oc, Iq_cmd)
         Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
         Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
+        Ip_cmd = Ip_oc
 
         #ODE update
         output_ode[local_ix[1]] = V_t - Vt_filt
@@ -270,7 +271,7 @@ function mdl_inner_ode!(
         K_vi = PSY.get_K_vi(inner_control)
 
         #Obtain indices for component w/r to device
-        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB1)
+        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB)
         #Define internal states for Inner Control
         internal_states = @view device_states[local_ix]
         Vt_filt = internal_states[1]
