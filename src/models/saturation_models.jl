@@ -66,11 +66,11 @@ function deadband_function(x::T, db_low::Float64, db_high::Float64) where {T <: 
 end
 
 function current_limit_logic(
-    inner_control::InnerREECB1,
-    Vt_filt::T,
-    Ip_cmd::T,
-    Iq_cmd::T,
-) where {T <: Real}
+    inner_control::PSY.InnerREECB,
+    Vt_filt::X,
+    Ip_cmd::Y,
+    Iq_cmd::Z,
+) where {X,Y,Z <: Real}
     I_max = PSY.get_I_max(inner_control)
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
     Iq_max = I_max
