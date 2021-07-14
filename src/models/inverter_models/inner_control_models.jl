@@ -256,7 +256,6 @@ function mdl_inner_ode!(
             current_limit_logic(inner_control, Vt_filt, Ip_oc, Iq_cmd)
         Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
         Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
-        Ip_cmd = Ip_oc
 
         #ODE update
         output_ode[local_ix[1]] = V_t - Vt_filt
