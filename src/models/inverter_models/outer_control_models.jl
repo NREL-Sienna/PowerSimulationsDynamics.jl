@@ -280,11 +280,21 @@ function mdl_outer_ode!(
     )
     Vt_filt = device_states[external_ix[1]]
 
+    function get_value_I(v::Float64)
+        return v
+    end
+
+    function get_value_I(v::ForwardDiff.Dual)
+        return v.value
+    end
+
     #Monitoring power from other branch not supported.
     V_R = get_inner_vars(dynamic_device)[VR_inv_var]
     V_I = get_inner_vars(dynamic_device)[VI_inv_var]
-    I_R = get_inner_vars(dynamic_device)[Id_cnv_var]
-    I_I = get_inner_vars(dynamic_device)[Iq_cnv_var]
+    _I_R = get_inner_vars(dynamic_device)[Id_cnv_var]
+    _I_I = get_inner_vars(dynamic_device)[Iq_cnv_var]
+    I_R = get_value_I(_I_R)
+    I_I = get_value_I(_I_I)
     p_elec_out = I_R * V_R + I_I * V_I
     q_elec_out = -I_I * V_R + I_R * V_I
 

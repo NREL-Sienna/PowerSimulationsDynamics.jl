@@ -87,9 +87,9 @@ function current_limit_logic(
         if local_I < Ip_max
             Ip_max = local_I
         end
-        Ip_min = 0
+        Ip_min = 0.0
     else # P Priority
-        Ip_min = 0
+        Ip_min = 0.0
         local_I = I_max^2 - Ip_cmd^2
         if local_I < 0
             local_I = 0
