@@ -23,7 +23,7 @@ of the respective angle ``\theta`` with respect to the grid SRF (instead of the 
 \dot{v}_{d,\text{pll}} &= \omega_{\text{lp}} \left [v_{d,\text{out}} - v_{d,\text{pll}} \right] \tag{1a} \\
 \dot{v}_{q,\text{pll}} &= \omega_{\text{lp}} \left [v_{q,\text{out}} - v_{q,\text{pll}} \right] \tag{1b} \\
 \dot{\varepsilon}_{\text{pll}} &= \tan^{-1}\left(\frac{v_{q,\text{pll}}}{v_{d,\text{pll}}} \right) \tag{1c} \\
-\dot{\delta\theta}_{\text{pll}} &= \Omega_b \delta \omega_{\text{pll}} \tag{1d}
+\dot{\theta}_{\text{pll}} &= \Omega_b \delta \omega_{\text{pll}} \tag{1d}
 \end{align}
 ```
 

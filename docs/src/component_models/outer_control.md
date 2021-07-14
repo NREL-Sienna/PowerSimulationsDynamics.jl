@@ -14,7 +14,7 @@ uses a simple voltage droop for dispatching reactive power:
 ```math
 \begin{align}
     \dot{\delta\omega}_{\text{olc}} &= \frac{p_{\text{ref}}}{T_a} - \frac{p_e}{T_a} - \frac{k_d(\omega_{\text{olc}} - \omega_{\text{pll}})}{T_a} - \frac{k_\omega(\omega_{\text{olc}} - \omega_{\text{ref}})}{T_a} \tag{1a} \\
-    \dot{\delta\theta}_{\text{olc}} &= \Omega_b \delta\omega_{\text{olc}} \tag{1b} \\
+    \dot{\theta}_{\text{olc}} &= \Omega_b \delta\omega_{\text{olc}} \tag{1b} \\
     \dot{q}_m &= \omega_f (q_e - q_m) \tag{1c}
 \end{align}
 ```
