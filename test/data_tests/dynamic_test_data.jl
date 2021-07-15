@@ -354,7 +354,7 @@ function outer_control_TypeAB()
             dP_lim = (-99.0, 99.0),
             P_lim_inner = (0.0, 1.2),
             T_pord = 0.02,
-            )
+        )
     end
     function reactive_ab()
         return ReactiveRenewableTypeAB(
@@ -388,41 +388,40 @@ function outer_control_TypeAB()
     end
     return OuterControl(active_ab(), reactive_ab())
 end
-    
-inner_ctrl_typeB() = InnerREECB(
-        Q_Flag = 0,     
-        PQ_Flag = 0,
-        Vdip_lim = (-99.0, 99.0),
-        T_rv = 0.02,
-        dbd1 = -1.0,
-        dbd2 = 1.0,
-        K_qv = 0.0,
-        Iqinj_lim = (-1.1, 1.1),
-        V_ref0 = 0.0,
-        K_vp = 10.0,
-        K_vi = 60.0,
-        T_iq = 0.02,
-        I_max = 1.11,   
-)
-    
-converter_regca() = REGCA1(
-        T_g = 0.02,
-        Rrpwr = 10.0,
-        Brkpt = 0.9,
-        Zerox = 0.4,
-        Lvpl1 = 1.22,
-        Vo_lim = 1.2,
-        Lv_pnts = (0.5, 0.9),
-        Io_lim = -1.3,
-        T_fltr = 0.2,
-        K_hv = 0.0,
-        Iqr_lims = (-100.0, 100.0),
-        Accel = 0.7,
-        Lvpl_sw = 0,
-    )
-    
-filt_current() = DirectInjection()
 
+inner_ctrl_typeB() = InnerREECB(
+    Q_Flag = 0,
+    PQ_Flag = 0,
+    Vdip_lim = (-99.0, 99.0),
+    T_rv = 0.02,
+    dbd1 = -1.0,
+    dbd2 = 1.0,
+    K_qv = 0.0,
+    Iqinj_lim = (-1.1, 1.1),
+    V_ref0 = 0.0,
+    K_vp = 10.0,
+    K_vi = 60.0,
+    T_iq = 0.02,
+    I_max = 1.11,
+)
+
+converter_regca() = REGCA1(
+    T_g = 0.02,
+    Rrpwr = 10.0,
+    Brkpt = 0.9,
+    Zerox = 0.4,
+    Lvpl1 = 1.22,
+    Vo_lim = 1.2,
+    Lv_pnts = (0.5, 0.9),
+    Io_lim = -1.3,
+    T_fltr = 0.2,
+    K_hv = 0.0,
+    Iqr_lims = (-100.0, 100.0),
+    Accel = 0.7,
+    Lvpl_sw = 0,
+)
+
+filt_current() = DirectInjection()
 
 ####### Devices #######
 
