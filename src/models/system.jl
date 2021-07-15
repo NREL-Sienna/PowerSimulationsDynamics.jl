@@ -6,7 +6,7 @@ function update_global_vars!(cache::Cache, x::AbstractArray{U}) where U <: Real
     return
 end
 
-function system_implicit!(out::Vector{T}, dx::Vector{T}, x::Vector{T}, p, t::Float64, inputs::SimulationInputs, cache::Cache) where T <: Real
+function system_implicit!(out::Vector{T}, dx::Vector{T}, x::Vector{T}, inputs::SimulationInputs, t::Float64, cache::Cache) where T <: Real
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
     injection_ode = get_aux_arrays(inputs)[3]
@@ -20,24 +20,14 @@ function system_implicit!(out::Vector{T}, dx::Vector{T}, x::Vector{T}, p, t::Flo
     bus_size = get_bus_count(inputs)
     bus_vars_count = 2 * bus_size
     bus_range = 1:bus_vars_count
-    injection_start = get_injection_pointer(inputs)
-    injection_count = 1
     branches_start = get_branches_pointer(inputs)
-    branches_count = 1
+
 
     #Network quantities
     V_r = @view x[1:bus_size]
     V_i = @view x[(bus_size + 1):bus_vars_count]
 
     for d in get_injectors_data(inputs)
-        dynamic_device = PSY.get_dynamic_injector(d)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = get_lookup(inputs)[bus_n]
-        n_states = PSY.get_n_states(dynamic_device)
-        ix_range = range(injection_start, length = n_states)
-        ode_range = range(injection_count, length = n_states)
-        injection_count = injection_count + n_states
-        injection_start = injection_start + n_states
         device!(
             x,
             injection_ode,
