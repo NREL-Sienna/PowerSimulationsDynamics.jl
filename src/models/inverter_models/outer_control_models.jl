@@ -284,6 +284,10 @@ function mdl_outer_ode!(
         return v
     end
 
+    function get_value_I(v::Int)
+        return v
+    end
+
     function get_value_I(v::ForwardDiff.Dual)
         return v.value
     end
