@@ -1,7 +1,7 @@
 function mass_matrix_converter_entries!(
     mass_matrix,
     converter::C,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {C <: PSY.Converter}
     @debug "Using default mass matrix entries $C"
 end

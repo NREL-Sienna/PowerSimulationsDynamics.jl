@@ -1,7 +1,7 @@
 function mass_matrix_tg_entries!(
     mass_matrix,
     tg::TG,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {TG <: PSY.TurbineGov}
     @debug "Using default mass matrix entries $TG"
 end

@@ -1,7 +1,7 @@
 function mass_matrix_outer_entries!(
     mass_matrix,
     outer_control::O,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {O <: PSY.OuterControl}
     @debug "Using default mass matrix entries $O"
 end

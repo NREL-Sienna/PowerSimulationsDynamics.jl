@@ -1,7 +1,7 @@
 function mass_matrix_inner_entries!(
     mass_matrix,
     inner_control::IC,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {IC <: PSY.InnerControl}
     @debug "Using default mass matrix entries $IC"
 end

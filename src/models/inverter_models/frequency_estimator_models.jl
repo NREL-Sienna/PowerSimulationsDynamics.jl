@@ -1,7 +1,7 @@
 function mass_matrix_freq_estimator_entries!(
     mass_matrix,
     freq_estimator::P,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {P <: PSY.FrequencyEstimator}
     @debug "Using default mass matrix entries $P"
 end

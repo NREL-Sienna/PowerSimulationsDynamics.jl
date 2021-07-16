@@ -1,7 +1,7 @@
 function mass_matrix_machine_entries!(
     mass_matrix,
     machine::M,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {M <: PSY.Machine}
     @debug "Using default mass matrix entries $M"
 end
