@@ -1,4 +1,4 @@
-get_inner_vars_count(::PSY.wrapper::DeviceWrapper{T}) where T <: PSY.DynamicGenerator = GEN_INNER_VARS_SIZE
+get_inner_vars_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 
 index(::PSY.TurbineGov) = 1
@@ -38,14 +38,15 @@ struct DeviceWrapper{T <: PSY.DynamicInjection}
         ix_range,
         ode_range,
         inner_var_range,
-    ) where T <: PSY.Device
+    ) where {T <: PSY.Device}
         dynamic_device = PSY.get_dynamic_injector(device)
         device_states = PSY.get_states(dynamic_device)
         component_state_mapping = Dict{Int, Vector{Int}}()
         input_port_mapping = Dict{Int, Vector{Int}}()
 
         for c in PSY.get_dynamic_components(dynamic_device)
-            component_state_mapping[PSID.index(c)] = PSID._index_local_states(c, device_states)
+            component_state_mapping[PSID.index(c)] =
+                PSID._index_local_states(c, device_states)
             input_port_mapping[PSID.index(c)] = PSID._index_port_mapping!(c, device_states)
         end
 
@@ -62,7 +63,7 @@ struct DeviceWrapper{T <: PSY.DynamicInjection}
             bus_ix,
             Base.ImmutableDict(Dict(device_states .=> ix_range)...),
             Base.ImmutableDict(component_state_mapping...),
-            Base.ImmutableDict(input_port_mapping...)
+            Base.ImmutableDict(input_port_mapping...),
         )
     end
 end
@@ -76,7 +77,10 @@ function _index_local_states(component::PSY.DynamicComponent, device_states::Vec
     return component_state_index
 end
 
-function _index_port_mapping!(component::PSY.DynamicComponent, device_states::Vector{Symbol})
+function _index_port_mapping!(
+    component::PSY.DynamicComponent,
+    device_states::Vector{Symbol},
+)
     ports = Ports(component)
     index_component_inputs = Vector{Int}()
     for i in ports[:states]
@@ -87,11 +91,13 @@ function _index_port_mapping!(component::PSY.DynamicComponent, device_states::Ve
     return index_component_inputs
 end
 
-get_name(wrapper::DeviceWrapper) = wrapper.device.name
-get_ext(wrapper::DeviceWrapper) = wrapper.device.ext
-get_states(wrapper::DeviceWrapper) = wrapper.device.states
-get_n_states(wrapper::DeviceWrapper) = wrapper.device.n_states
-get_base_power(wrapper::DeviceWrapper) = wrapper.device.base_power
+get_inner_vars_index(wrapper::DeviceWrapper) = wrapper.inner_vars_index
+get_ix_range(wrapper::DeviceWrapper) = wrapper.ix_range
+get_ode_range(wrapper::DeviceWrapper) = wrapper.ode_range
+get_bus_ix(wrapper::DeviceWrapper) = wrapper.bus_ix
+get_global_index(wrapper::DeviceWrapper) = wrapper.global_index
+get_component_state_mapping(wrapper::DeviceWrapper) = wrapper.component_state_mapping
+get_input_port_mapping(wrapper::DeviceWrapper) = wrapper.input_port_mapping
 
 get_P_ref(wrapper::DeviceWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::DeviceWrapper) = wrapper.P_ref[]
@@ -103,18 +109,36 @@ set_Q_ref(wrapper::DeviceWrapper, val) = wrapper.P_ref[] = val
 set_V_ref(wrapper::DeviceWrapper, val) = wrapper.V_ref[] = val
 set_ω_ref(wrapper::DeviceWrapper, val) = wrapper.ω_ref[] = val
 
-get_machine(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicGenerator = wrapper.device.machine
-get_shaft(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicGenerator = wrapper.device.shaft
-get_avr(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicGenerator = wrapper.device.avr
-get_prime_mover(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicGenerator = wrapper.device.prime_mover
-get_pss(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicGenerator = wrapper.device.pss
+# PSY overloads for the wrapper
+PSY.get_name(wrapper::DeviceWrapper) = wrapper.device.name
+PSY.get_ext(wrapper::DeviceWrapper) = wrapper.device.ext
+PSY.get_states(wrapper::DeviceWrapper) = wrapper.device.states
+PSY.get_n_states(wrapper::DeviceWrapper) = wrapper.device.n_states
+PSY.get_base_power(wrapper::DeviceWrapper) = wrapper.device.base_power
 
-get_converter(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicInverter= wrapper.device.converter
-get_outer_control(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicInverter= wrapper.device.outer_control
-get_inner_control(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicInverter= wrapper.device.inner_control
-get_dc_source(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicInverter= wrapper.device.dc_source
-get_freq_estimator(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicInverter= wrapper.device.freq_estimator
-get_filter(wrapper::DeviceWrapper{T}) where T <: PSY.DynamicInverter= wrapper.device.filter
+PSY.get_machine(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+    wrapper.device.machine
+PSY.get_shaft(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+    wrapper.device.shaft
+PSY.get_avr(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+    wrapper.device.avr
+PSY.get_prime_mover(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+    wrapper.device.prime_mover
+PSY.get_pss(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+    wrapper.device.pss
+
+PSY.get_converter(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+    wrapper.device.converter
+PSY.get_outer_control(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+    wrapper.device.outer_control
+PSY.get_inner_control(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+    wrapper.device.inner_control
+PSY.get_dc_source(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+    wrapper.device.dc_source
+PSY.get_freq_estimator(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+    wrapper.device.freq_estimator
+PSY.get_filter(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+    wrapper.device.filter
 
 function get_local_state_ix(
     wrapper::DeviceWrapper,
