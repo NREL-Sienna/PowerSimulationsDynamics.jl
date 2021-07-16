@@ -18,7 +18,7 @@ index(::PSY.Filter) = 6
 Wraps DynamicInjection devices from PowerSystems to handle changes in controls and connection
 status, and allocate the required indexes of the state space.
 """
-struct DeviceWrapper{T <: PSY.DynamicInjection}
+struct DynamicWrapper{T <: PSY.DynamicInjection}
     device::T
     connection_status::Base.RefValue{Float64}
     v_ref::Base.RefValue{Float64}
@@ -32,7 +32,7 @@ struct DeviceWrapper{T <: PSY.DynamicInjection}
     global_index::Base.ImmutableDict{Symbol, Int}
     component_state_mapping::Base.ImmutableDict{Int, Vector{Int}}
     input_port_mapping::Base.ImmutableDict{Int, Vector{Int}}
-    function DeviceWrapper(
+    function DynamicWrapper(
         device::T,
         bus_ix::Int,
         ix_range,
@@ -40,6 +40,7 @@ struct DeviceWrapper{T <: PSY.DynamicInjection}
         inner_var_range,
     ) where {T <: PSY.Device}
         dynamic_device = PSY.get_dynamic_injector(device)
+        @assert dynamic_device !== nothing
         device_states = PSY.get_states(dynamic_device)
         component_state_mapping = Dict{Int, Vector{Int}}()
         input_port_mapping = Dict{Int, Vector{Int}}()
@@ -91,65 +92,134 @@ function _index_port_mapping!(
     return index_component_inputs
 end
 
-get_inner_vars_index(wrapper::DeviceWrapper) = wrapper.inner_vars_index
-get_ix_range(wrapper::DeviceWrapper) = wrapper.ix_range
-get_ode_range(wrapper::DeviceWrapper) = wrapper.ode_range
-get_bus_ix(wrapper::DeviceWrapper) = wrapper.bus_ix
-get_global_index(wrapper::DeviceWrapper) = wrapper.global_index
-get_component_state_mapping(wrapper::DeviceWrapper) = wrapper.component_state_mapping
-get_input_port_mapping(wrapper::DeviceWrapper) = wrapper.input_port_mapping
+get_inner_vars_index(wrapper::DynamicWrapper) = wrapper.inner_vars_index
+get_ix_range(wrapper::DynamicWrapper) = wrapper.ix_range
+get_ode_range(wrapper::DynamicWrapper) = wrapper.ode_range
+get_bus_ix(wrapper::DynamicWrapper) = wrapper.bus_ix
+get_global_index(wrapper::DynamicWrapper) = wrapper.global_index
+get_component_state_mapping(wrapper::DynamicWrapper) = wrapper.component_state_mapping
+get_input_port_mapping(wrapper::DynamicWrapper) = wrapper.input_port_mapping
 
-get_P_ref(wrapper::DeviceWrapper) = wrapper.P_ref[]
-get_Q_ref(wrapper::DeviceWrapper) = wrapper.P_ref[]
-get_V_ref(wrapper::DeviceWrapper) = wrapper.V_ref[]
-get_ω_ref(wrapper::DeviceWrapper) = wrapper.ω_ref[]
+get_P_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
+get_Q_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
+get_V_ref(wrapper::DynamicWrapper) = wrapper.V_ref[]
+get_ω_ref(wrapper::DynamicWrapper) = wrapper.ω_ref[]
 
-set_P_ref(wrapper::DeviceWrapper, val) = wrapper.P_ref[] = val
-set_Q_ref(wrapper::DeviceWrapper, val) = wrapper.P_ref[] = val
-set_V_ref(wrapper::DeviceWrapper, val) = wrapper.V_ref[] = val
-set_ω_ref(wrapper::DeviceWrapper, val) = wrapper.ω_ref[] = val
+set_P_ref(wrapper::DynamicWrapper, val) = wrapper.P_ref[] = val
+set_Q_ref(wrapper::DynamicWrapper, val) = wrapper.P_ref[] = val
+set_V_ref(wrapper::DynamicWrapper, val) = wrapper.V_ref[] = val
+set_ω_ref(wrapper::DynamicWrapper, val) = wrapper.ω_ref[] = val
 
 # PSY overloads for the wrapper
-PSY.get_name(wrapper::DeviceWrapper) = wrapper.device.name
-PSY.get_ext(wrapper::DeviceWrapper) = wrapper.device.ext
-PSY.get_states(wrapper::DeviceWrapper) = wrapper.device.states
-PSY.get_n_states(wrapper::DeviceWrapper) = wrapper.device.n_states
-PSY.get_base_power(wrapper::DeviceWrapper) = wrapper.device.base_power
+PSY.get_name(wrapper::DynamicWrapper) = wrapper.device.name
+PSY.get_ext(wrapper::DynamicWrapper) = wrapper.device.ext
+PSY.get_states(wrapper::DynamicWrapper) = wrapper.device.states
+PSY.get_n_states(wrapper::DynamicWrapper) = wrapper.device.n_states
+PSY.get_base_power(wrapper::DynamicWrapper) = wrapper.device.base_power
 
-PSY.get_machine(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+PSY.get_machine(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator} =
     wrapper.device.machine
-PSY.get_shaft(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+PSY.get_shaft(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator} =
     wrapper.device.shaft
-PSY.get_avr(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+PSY.get_avr(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator} =
     wrapper.device.avr
-PSY.get_prime_mover(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+PSY.get_prime_mover(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator} =
     wrapper.device.prime_mover
-PSY.get_pss(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicGenerator} =
+PSY.get_pss(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator} =
     wrapper.device.pss
 
-PSY.get_converter(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+PSY.get_converter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.converter
-PSY.get_outer_control(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+PSY.get_outer_control(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.outer_control
-PSY.get_inner_control(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+PSY.get_inner_control(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.inner_control
-PSY.get_dc_source(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+PSY.get_dc_source(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.dc_source
-PSY.get_freq_estimator(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+PSY.get_freq_estimator(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.freq_estimator
-PSY.get_filter(wrapper::DeviceWrapper{T}) where {T <: PSY.DynamicInverter} =
+PSY.get_filter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.filter
 
-function get_local_state_ix(
-    wrapper::DeviceWrapper,
-    component::T,
-) where {T <: PSY.DynamicComponent}
+function get_local_state_ix(wrapper::DynamicWrapper, component::PSY.DynamicComponent)
     return wrapper.device_state_mapping[index(component)]
 end
 
-function get_input_port_ix(
-    wrapper::DeviceWrapper,
-    component::T,
-) where {T <: PSY.DynamicComponent}
+function get_input_port_ix(wrapper::DynamicWrapper, component::PSY.DynamicComponent)
     return wrapper.input_port_mapping[index(component)]
 end
+
+struct PVBus end
+struct PQBus end
+struct SLACKBus end
+
+const BUS_MAP = Dict(
+    PSY.BusTypes.REF => SlackBus,
+    PSY.BusTypes.PV => PVBus,
+    PSY.BusTypes.SLACK => SlackBus,
+    PSY.BusTypes.PQ => PQBus,
+)
+
+struct StaticWrapper{T <: PSY.StaticInjection, V}
+    device::T
+    connection_status::Base.RefValue{Float64}
+    V_ref::Base.RefValue{Float64}
+    θ_ref::Base.RefValue{Float64}
+    P_ref::Base.RefValue{Float64}
+    Q_ref::Base.RefValue{Float64}
+    bus_ix::Int
+    function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
+        bus = PSY.get_bus(device)
+        new{T, BUS_MAP[PSY.get_bus_type(bus)]}(
+            device,
+            Base.Ref(1.0)Base.Ref(PSY.get_magnitude(bus)),
+            Base.Ref(PSY.get_angle(bus)),
+            Base.Ref(PSY.get_active_power(bus)),
+            Base.Ref(PSY.get_reactive_power(bus)),
+            bus_ix,
+        )
+    end
+end
+
+function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.Source}
+    bus = PSY.get_bus(device)
+    return StaticWrapper{T, BUS_MAP[PSY.get_bus_type(bus)]}(
+        device,
+        Base.Ref(1.0)Base.Ref(PSY.get_internal_voltage(device)),
+        Base.Ref(PSY.get_internal_angle(device)),
+        Base.Ref(PSY.get_active_power(bus)),
+        Base.Ref(PSY.get_reactive_power(bus)),
+        bus_ix,
+    )
+end
+
+struct ConstantCurrent end
+struct ConstantImpedance end
+struct ConstantPower end
+
+const LOAD_MAP = Dict(
+    PSY.LoadModels.ConstantCurrent => ConstantCurrent,
+    PSY.LoadModels.ConstantImpedance => ConstantImpedance,
+    PSY.LoadModels.ConstantPower => ConstantPower,
+)
+
+function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.ElectricLoad}
+    return StaticWrapper{T, LOAD_MAP[PSY.get_model(device)]}(
+        device,
+        Base.Ref(1.0)Base.Ref(PSY.get_internal_voltage(device)),
+        Base.Ref(PSY.get_internal_angle(device)),
+        Base.Ref(PSY.get_active_power(bus)),
+        Base.Ref(PSY.get_reactive_power(bus)),
+        bus_ix,
+    )
+end
+
+get_P_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
+get_Q_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
+get_V_ref(wrapper::StaticWrapper) = wrapper.V_ref[]
+get_ω_ref(wrapper::StaticWrapper) = wrapper.ω_ref[]
+
+set_P_ref(wrapper::StaticWrapper, val) = wrapper.P_ref[] = val
+set_Q_ref(wrapper::StaticWrapper, val) = wrapper.P_ref[] = val
+set_V_ref(wrapper::StaticWrapper, val) = wrapper.V_ref[] = val
+set_ω_ref(wrapper::StaticWrapper, val) = wrapper.ω_ref[] = val
