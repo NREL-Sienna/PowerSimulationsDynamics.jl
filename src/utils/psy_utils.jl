@@ -8,3 +8,15 @@ function get_injectors_with_dynamics(sys::PSY.System)
         x -> PSY.get_dynamic_injector(x) !== nothing && PSY.get_available(x),
     )
 end
+
+function get_dynamic_branches(sys::PSY.System)
+    return PSY.get_components(PSY.DynamicBranch, sys, x -> PSY.get_available(x))
+end
+
+function _transform_all_lines!(sys::PSY.System)
+    for br in PSY.get_components(PSY.DynamicBranch, sys)
+            dyn_br = DynamicBranch(br)
+            @debug "Converted $(PSY.get_name(dyn_br)) to DynamicBranch"
+            add_component!(sys, dyn_br)
+    end
+end
