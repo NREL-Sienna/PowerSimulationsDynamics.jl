@@ -179,7 +179,6 @@ end
 # a divergence between the required build methods
 function _calculate_initial_conditions!(sim::Simulation)
     inputs = get_simulation_inputs(sim)
-    simulation_pre_step!(inputs, Real)
     @debug "Start state intialization routine"
     while sim.status == BUILD_INCOMPLETE
         sim.status = _power_flow_solution!(sim.x0_init, get_system(sim), inputs)

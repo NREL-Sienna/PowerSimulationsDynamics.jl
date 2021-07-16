@@ -1,4 +1,4 @@
-function update_global_vars!(cache::Cache, x::AbstractArray{U}) where U <: Real
+function update_global_vars!(cache::Cache, x::AbstractArray{U}) where {U <: Real}
     index = get_global_vars(cache)[]
     index == 0 && return
     #TO DO: Make it general for cases when ω is not a state (droop)!
@@ -6,7 +6,14 @@ function update_global_vars!(cache::Cache, x::AbstractArray{U}) where U <: Real
     return
 end
 
-function system_implicit!(out::Vector{T}, dx::Vector{T}, x::Vector{T}, inputs::SimulationInputs, t::Float64, cache::Cache) where T <: Real
+function system_implicit!(
+    out::Vector{T},
+    dx::Vector{T},
+    x::Vector{T},
+    inputs::SimulationInputs,
+    t::Float64,
+    cache::Cache,
+) where {T <: Real}
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
     injection_ode = get_aux_arrays(inputs)[3]
@@ -21,7 +28,6 @@ function system_implicit!(out::Vector{T}, dx::Vector{T}, x::Vector{T}, inputs::S
     bus_vars_count = 2 * bus_size
     bus_range = 1:bus_vars_count
     branches_start = get_branches_pointer(inputs)
-
 
     #Network quantities
     V_r = @view x[1:bus_size]
@@ -98,7 +104,14 @@ function system_implicit!(out::Vector{T}, dx::Vector{T}, x::Vector{T}, inputs::S
         M[bus_range, bus_range] * dx[bus_range]
 end
 
-function system_mass_matrix!(dx::AbstractArray{U}, x::AbstractArray{U}, p, t, inputs::SimulationInputs, cache::Cache) where {U <: Real}
+function system_mass_matrix!(
+    dx::AbstractArray{U},
+    x::AbstractArray{U},
+    p,
+    t,
+    inputs::SimulationInputs,
+    cache::Cache,
+) where {U <: Real}
     I_injections_r = get_aux_arrays(inputs)[1]
     I_injections_i = get_aux_arrays(inputs)[2]
     injection_ode = get_aux_arrays(inputs)[3]
