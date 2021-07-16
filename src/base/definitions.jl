@@ -88,22 +88,12 @@ end
 Base.to_index(ix::dq_ref) = Int(ix)
 Base.to_index(ix::RI_ref) = Int(ix)
 
-const V_ref_index = 1
-const ω_ref_index = 2
-const P_ref_index = 3
-const Q_ref_index = 4
-
 const V_source_index = 1
 const θ_source_index = 2
 
 const MAPPING_DICT = Dict{String, Dict{Symbol, Int}}
 const DEVICE_INTERNAL_MAPPING = Base.ImmutableDict{Int, Vector{Int}}
 
-const LOCAL_STATE_MAPPING = "local_state_mapping"
-const INPUT_PORT_MAPPING = "input_port_mapping"
-const PORTS = "ports"
-const INNER_VARS = "inner_vars"
-const CONTROL_REFS = "control_refs"
 const GEN_INNER_VARS_SIZE = 9
 const INV_INNER_VARS_SIZE = 17
 

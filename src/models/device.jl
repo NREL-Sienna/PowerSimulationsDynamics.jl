@@ -1,16 +1,12 @@
-function device_mass_matrix_entries!(
-    sim_inputs::SimulationInputs,
-    dynamic_device::T,
-) where {T}
+function device_mass_matrix_entries!(::AbstractArray, ::DeviceWrapper{T}) where {T}
     error("Mass Matrix not implemented for models $T")
 end
 
 function device_mass_matrix_entries!(
-    sim_inputs::SimulationInputs,
-    dynamic_device::PSY.DynamicGenerator,
-)
-    mass_matrix = get_mass_matrix(sim_inputs)
-    global_index = get_global_index(sim_inputs)[PSY.get_name(dynamic_device)]
+    mass_matrix::AbstractArray,
+    dynamic_device::DeviceWrapper{DynG},
+) where {DynG <: PSY.DynamicGenerator}
+    global_index = get_global_index(dynamic_device)
     mass_matrix_tg_entries!(mass_matrix, PSY.get_prime_mover(dynamic_device), global_index)
     mass_matrix_pss_entries!(mass_matrix, PSY.get_pss(dynamic_device), global_index)
     mass_matrix_avr_entries!(mass_matrix, PSY.get_avr(dynamic_device), global_index)
@@ -100,11 +96,10 @@ function device!(
 end
 
 function device_mass_matrix_entries!(
-    sim_inputs::SimulationInputs,
-    dynamic_device::PSY.DynamicInverter,
-)
-    mass_matrix = get_mass_matrix(sim_inputs)
-    global_index = get_global_index(sim_inputs)[PSY.get_name(dynamic_device)]
+    mass_matrix::AbstractArray,
+    dynamic_device::DeviceWrapper{DynI},
+) where {DynI <: PSY.DynamicInverter}
+    global_index = get_global_index(dynamic_device)
     mass_matrix_DCside_entries!(
         mass_matrix,
         PSY.get_dc_source(dynamic_device),
@@ -145,7 +140,7 @@ function device!(
     ode_range::UnitRange{Int},
     dynamic_device::DeviceWrapper{DynI},
     inputs::SimulationInputs,
-    cache::Cache
+    cache::Cache,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
     #Obtain local device states
     device_states = @view x[ix_range]
