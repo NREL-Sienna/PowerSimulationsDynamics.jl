@@ -238,7 +238,6 @@ function initialize_inner!(
 
     #Get inner vars
     Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
-    Ip_cmd = get_inner_vars(dynamic_device)[Id_ic_var]
     Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
     Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
 

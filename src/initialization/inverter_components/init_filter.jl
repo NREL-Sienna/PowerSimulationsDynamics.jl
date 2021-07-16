@@ -104,9 +104,24 @@ function initialize_filter!(
     V_R = Vm * cos(θ)
     V_I = Vm * sin(θ)
     V = V_R + V_I * 1im
+    # Doesn't match PSS/e initialization because PTI doesn't use the conjugate.
     I = conj(S0 / V)
+    # PSS/e names I_R as Ip. But is calculated as P/Vt
     I_R = real(I)
+    # PSS/e names I_I as Iq. But is calculated as Q/Vt
     I_I = imag(I)
+
+    # PSS/e uses an incorrect Iq calculation that requires setting the Q_ref control to a
+    # value different than the desired Q_injection into the grid.
+    PSY.set_Q_ref!(PSY.get_converter(dynamic_device), I_I * Vm)
+    PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = I_I * Vm
+    PSY.set_Q_ref!(
+        PSY.get_reactive_control(PSY.get_outer_control(dynamic_device)),
+        I_R * Vm,
+    )
+
+    PSY.set_P_ref!(PSY.get_active_control(PSY.get_outer_control(dynamic_device)), I_R * Vm)
+    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = I_R * Vm
 
     #Update terminal voltages
     get_inner_vars(dynamic_device)[VR_inv_var] = V_R

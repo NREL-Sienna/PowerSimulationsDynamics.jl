@@ -35,8 +35,6 @@ function initialize_converter!(
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
 }
-    #Obtain Reference Reactive Power
-    Q_ref = PSY.get_reactive_power(static)
     #Get inner vars
     V_t = sqrt(
         get_inner_vars(dynamic_device)[VR_inv_var]^2 +
@@ -48,14 +46,13 @@ function initialize_converter!(
     converter = PSY.get_converter(dynamic_device)
     Io_lim = PSY.get_Io_lim(converter)
     Vo_lim = PSY.get_Vo_lim(converter)
-    Lv_pnt0, Lv_pnt1 = PSY.get_Lv_pnts(converter)
+
+    # Lv_pnt0 is unused in the initialization
+    _, Lv_pnt1 = PSY.get_Lv_pnts(converter)
 
     if (Iq < Io_lim) || (V_t > Vo_lim) || (V_t < Lv_pnt1)
         error("Power flow solution outside of inverter limits. Update parameters.")
     end
-
-    #Update converter parameters
-    PSY.set_Q_ref!(converter, Q_ref)
 
     #Update converter states
     converter_ix = get_local_state_ix(dynamic_device, PSY.REGCA1)
@@ -66,5 +63,6 @@ function initialize_converter!(
 
     #Update entry to converter currents (inner currents)
     get_inner_vars(dynamic_device)[Id_ic_var] = Ip
+    # Multiplied by -1 because PSS/e doesn't do a conjugate.
     get_inner_vars(dynamic_device)[Iq_ic_var] = -Iq
 end
