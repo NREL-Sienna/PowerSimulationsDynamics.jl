@@ -15,8 +15,8 @@ end
 
 function _transform_all_lines!(sys::PSY.System)
     for br in PSY.get_components(PSY.DynamicBranch, sys)
-            dyn_br = DynamicBranch(br)
-            @debug "Converted $(PSY.get_name(dyn_br)) to DynamicBranch"
-            add_component!(sys, dyn_br)
+        dyn_br = DynamicBranch(br)
+        @debug "Converted $(PSY.get_name(dyn_br)) to DynamicBranch"
+        add_component!(sys, dyn_br)
     end
 end

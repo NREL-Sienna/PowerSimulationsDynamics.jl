@@ -1,8 +1,9 @@
 struct SimulationInputs
     base_power::Float64
     base_frequency::Float64
-    injectors_data::Vector{DeviceWrapper{<:PSY.DynamicInjection}}
-    static_injection_data::Vector{<:PSY.StaticInjection}
+    injectors_data::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
+    static_generation_data::Vector{StaticWrapper{<:PSY.StaticInjection, <:DataType}}
+    static_load_data::Vector{StaticWrapper{<:PSY.ElectricLoad, <:DataType}}
     dynamic_branches::Vector{BranchWrapper}
     injection_n_states::Int
     branches_n_states::Int
@@ -16,7 +17,7 @@ struct SimulationInputs
     DAE_vector::Vector{Bool}
     mass_matrix::LinearAlgebra.Diagonal{Float64}
     tspan::NTuple{2, Float64}
-    global_vars_update_pointers::Dict{Int, Vector{Int}}
+    global_vars_update_pointers::Dict{Int, Int}
 
     function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0.0))
         n_buses = get_n_buses(sys)
@@ -38,6 +39,12 @@ struct SimulationInputs
             PSY.StaticInjection,
             sys,
             x -> PSY.get_dynamic_injector(x) === nothing && PSY.get_available(x),
+        )
+
+        _make_global_variable_index(
+            wrapped_injectors,
+            static_injection_data,
+            frequency_reference,
         )
 
         new(
@@ -85,7 +92,7 @@ get_variable_count(inputs::SimulationInputs) = inputs.variable_count
 get_ode_range(inputs::SimulationInputs) = inputs.ode_range
 get_bus_count(inputs::SimulationInputs) = inputs.bus_count
 get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
-# get_ω_sys(inputs::SimulationInputs) = get_global_vars(inputs)[:ω_sys]
+#get_ω_sys(inputs::SimulationInputs) = get_global_vars(inputs)[:ω_sys]
 
 function _wrap_injector_data(sys::PSY.System, lookup, injection_start::Int)
     injector_data = get_injectors_with_dynamics(sys)
@@ -105,7 +112,7 @@ function _wrap_injector_data(sys::PSY.System, lookup, injection_start::Int)
         bus_ix = lookup[bus_n]
         inner_vars_range = inner_vars_count:get_inner_vars_count(dynamic_device)
         wrapped_injector[ix] =
-            DeviceWrapper(device, bus_ix, ix_range, ode_range, inner_vars_range)
+            DynamicWrapper(device, bus_ix, ix_range, ode_range, inner_vars_range)
         injection_count += n_states
         injection_start += n_states
         inner_vars_count = inner_vars_range[end]
@@ -114,7 +121,7 @@ function _wrap_injector_data(sys::PSY.System, lookup, injection_start::Int)
 end
 
 function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
-    branches_start = 2*get_n_buses(sys) + 1
+    branches_start = 2 * get_n_buses(sys) + 1
     dynamic_branches = get_dynamic_branches(sys)
     wrapped_branches = Vector{BranchWrapper}(undef, length(dynamic_branches))
     if !isempty(wrapped_branches)
@@ -235,22 +242,15 @@ function _adjust_states!(
     return
 end
 
-# Default implementation for both models. This implementation is to future proof if there is
-# a divergence between the required build methods
-function _build!(inputs::SimulationInputs, sys::PSY.System)
-    return
-end
-
-"""
-SimulationInputs build function for MassMatrixModels
-"""
-function build!(inputs::SimulationInputs, ::Type{MassMatrixModel}, sys::PSY.System)
-    return _build!(inputs, sys)
-end
-
-"""
-SimulationInputs build function for ImplicitModels
-"""
-function build!(inputs::SimulationInputs, ::Type{ImplicitModel}, sys::PSY.System)
-    return _build!(inputs, sys)
+function _make_global_variable_index(
+    wrapped_injectors,
+    frequency_reference,
+    static_injection_data,
+)
+    global_vars_dict = GLOBAL_VARS_IX
+    global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference(
+        frequency_reference,
+        wrapped_injectors,
+        static_injection_data,
+    )
 end
