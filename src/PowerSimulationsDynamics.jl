@@ -123,6 +123,7 @@ include("post_processing/post_proc_generator.jl")
 include("post_processing/post_proc_inverter.jl")
 
 #Utils
+include("utils/psy_utils.jl")
 include("utils/plot_utils.jl")
 include("utils/immutable_dicts.jl")
 include("utils/print.jl")
