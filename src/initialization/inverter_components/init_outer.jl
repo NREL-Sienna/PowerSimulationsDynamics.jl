@@ -228,8 +228,6 @@ function initialize_outer!(
 
     #Update inner_vars
     get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
-    PSY.set_P_ref!(active_power_control, p_elec_out)
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = p_elec_out
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -264,8 +262,6 @@ function initialize_outer!(
     PF_Flag = PSY.get_PF_Flag(reactive_power_control)
     V_Flag = PSY.get_V_Flag(reactive_power_control)
     #Update references
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = q_elec_out
-    PSY.set_Q_ref!(reactive_power_control, q_elec_out)
     if VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
         #Get Reactive Controller Parameters
         K_i = PSY.get_K_i(reactive_power_control)
