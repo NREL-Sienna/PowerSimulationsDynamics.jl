@@ -1,7 +1,7 @@
 function mass_matrix_filter_entries!(
     mass_matrix,
     filt::F,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {F <: PSY.Filter}
     @debug "Using default mass matrix entries $F"
 end

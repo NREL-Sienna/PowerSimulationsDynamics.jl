@@ -1,7 +1,7 @@
 function mass_matrix_DCside_entries!(
     mass_matrix,
     dc_side::DC,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {DC <: PSY.DCSource}
     @debug "Using default mass matrix entries $DC"
 end

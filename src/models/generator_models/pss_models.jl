@@ -1,7 +1,7 @@
 function mass_matrix_pss_entries!(
     mass_matrix,
     pss::P,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {P <: PSY.PSS}
     @debug "Using default mass matrix entries $P"
 end
