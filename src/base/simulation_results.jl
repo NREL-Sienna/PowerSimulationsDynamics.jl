@@ -2,6 +2,7 @@ struct SimulationResults
     global_index::MAPPING_DICT
     voltage_buses::Vector{Int}
     current_buses::Vector{Int}
+    solution::SciMLBase.AbstractODESolution
 end
 
 function make_global_state(wrapped_devices)

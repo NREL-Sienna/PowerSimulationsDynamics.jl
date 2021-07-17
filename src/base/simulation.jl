@@ -7,7 +7,6 @@ mutable struct Simulation{T <: SimulationModel}
     initialized::Bool
     tstops::Vector{Float64}
     callbacks::DiffEqBase.CallbackSet
-    solution::Union{Nothing, SciMLBase.AbstractODESolution}
     simulation_folder::String
     simulation_inputs::SimulationInputs
     console_level::Base.CoreLogging.LogLevel
