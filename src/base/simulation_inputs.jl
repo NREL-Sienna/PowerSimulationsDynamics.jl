@@ -1,8 +1,8 @@
 struct SimulationInputs
     base_power::Float64
     base_frequency::Float64
-    injectors_data::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
-    static_generation_data::Vector{StaticWrapper{<:PSY.StaticInjection, <:DataType}}
+    dynamic_injectors_data::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
+    static_injectors_data::Vector{StaticWrapper{<:PSY.StaticInjection, <:DataType}}
     static_load_data::Vector{StaticWrapper{<:PSY.ElectricLoad, <:DataType}}
     dynamic_branches::Vector{BranchWrapper}
     injection_n_states::Int
@@ -19,31 +19,26 @@ struct SimulationInputs
     tspan::NTuple{2, Float64}
     global_vars_update_pointers::Dict{Int, Int}
 
-    function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0.0))
+    function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0.0), frequency_reference = ReferenceBus)
         n_buses = get_n_buses(sys)
         Ybus, lookup = _get_Ybus(sys)
         wrapped_branches = _wrap_dynamic_branches(sys, lookup)
         has_dyn_lines = !isempty(wrapped_branches)
         branch_state_counts = 2 * length(wrapped_branches)
         injection_start = 2 * n_buses + branch_state_counts + 1
-        wrapped_injectors = _wrap_injector_data(sys, lookup, injection_start)
+        wrapped_injectors = _wrap_dynamic_injector_data(sys, lookup, injection_start)
         var_count = wrapped_injectors[end].ix_range[end]
-
         mass_matrix = _make_mass_matrix(wrapped_injectors, var_count, n_buses)
         DAE_vector = _make_DAE_vector(mass_matrix, var_count, n_buses)
         total_shunts = _make_total_shunts(wrapped_branches, n_buses)
+        wrapped_loads = _wrap_loads(sys, lookup)
+        wrapped_static_injectors = _wrap_static_injectors(sys, lookup)
         sys_f = PSY.get_frequency(sys)
         _adjust_states!(DAE_vector, mass_matrix, total_shunts, n_buses, sys_f)
 
-        static_injection_data = PSY.get_components(
-            PSY.StaticInjection,
-            sys,
-            x -> PSY.get_dynamic_injector(x) === nothing && PSY.get_available(x),
-        )
-
         _make_global_variable_index(
             wrapped_injectors,
-            static_injection_data,
+            wrapped_static_injectors,
             frequency_reference,
         )
 
@@ -51,7 +46,8 @@ struct SimulationInputs
             PSY.get_base_power(sys),
             sys_f,
             wrapped_injectors,
-            collect(static_injection_data),
+            wrapped_static_injectors,
+            wrapped_loads,
             wrapped_branches,
             var_count - 2 * n_buses - branch_state_counts,
             branch_state_counts,
@@ -94,7 +90,7 @@ get_bus_count(inputs::SimulationInputs) = inputs.bus_count
 get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
 #get_ω_sys(inputs::SimulationInputs) = get_global_vars(inputs)[:ω_sys]
 
-function _wrap_injector_data(sys::PSY.System, lookup, injection_start::Int)
+function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::Int)
     injector_data = get_injectors_with_dynamics(sys)
     isempty(injector_data) && error("System doesn't contain any DynamicInjection devices")
     # TODO: Needs a better container that isn't parametrized on an abstract type
@@ -145,6 +141,31 @@ function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
         @debug("System doesn't contain Dynamic Branches")
     end
     return wrapped_branches
+end
+
+function _wrap_static_injectors(sys::PSY.System, lookup::Dict{Int, Int})
+    static_injection_data = get_injection_without_dynamics(sys)
+    container = Vector{StaticWrapper}(undef, length(static_injection_data))
+    isempty(static_injection_data) && return container
+    for (ix, ld) in enumerate(static_injetion_data)
+        bus_n = PSY.get_number(PSY.get_bus(ld))
+        bus_ix = lookup[bus_n]
+        containter[ix] = StaticWrapper(ld, bus_ix)
+    end
+    return container
+end
+
+function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
+    # This needs to change if we implement dynamic load models
+    static_load_data = PSY.get_components(PSY.ElectricLoad, sys)
+    container = Vector(undef, length(static_load_data))
+    isempty(static_load_data) && return container
+    for (ix, ld) in enumerate(static_load_data)
+        bus_n = PSY.get_number(PSY.get_bus(ld))
+        bus_ix = lookup[bus_n]
+        container[ix] = StaticWrapper(ld, bus_ix)
+    end
+    return container
 end
 
 function _get_Ybus(sys::PSY.System)
@@ -243,14 +264,15 @@ function _adjust_states!(
 end
 
 function _make_global_variable_index(
-    wrapped_injectors,
-    frequency_reference,
-    static_injection_data,
-)
+    wrapped_injectors::Vector,
+    static_injection_data::Vector,
+    frequency_reference::Type{T},
+) where T <: Union{FixedFrequency, ReferenceBus}
     global_vars_dict = GLOBAL_VARS_IX
     global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference(
         frequency_reference,
         wrapped_injectors,
         static_injection_data,
     )
+    return global_vars_dict
 end
