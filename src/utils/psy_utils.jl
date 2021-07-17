@@ -9,6 +9,17 @@ function get_injectors_with_dynamics(sys::PSY.System)
     )
 end
 
+function get_injection_without_dynamics(sys::PSY.System)
+    return PSY.get_components(
+        PSY.StaticInjection,
+        sys,
+        x ->
+            PSY.get_dynamic_injector(x) === nothing &&
+                PSY.get_available(x) &&
+                !isa(x, PSY.ElectricLoad),
+    )
+end
+
 function get_dynamic_branches(sys::PSY.System)
     return PSY.get_components(PSY.DynamicBranch, sys, x -> PSY.get_available(x))
 end
