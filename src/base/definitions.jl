@@ -100,9 +100,7 @@ const PVS_INNER_VARS_SIZE = 0
 
 # Location of the global vars in the Caches
 const GLOBAL_VAR_SYS_FREQ_INDEX = 1
-const GLOBAL_VARS_IX = () -> Dict{Symbol, Number}(
-    GLOBAL_VAR_SYS_FREQ_INDEX => -1, #To define 0 if infinite source, bus_number otherwise,
-)
+const GLOBAL_VARS_IX = () -> Dict{Symbol, Number}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
 
 const SIMULATION_ACCEPTED_KWARGS =
     [:initialize_simulation, :system_to_file, :file_level, :console_level]
