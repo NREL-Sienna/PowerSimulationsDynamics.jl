@@ -101,8 +101,8 @@ end
     sim = Simulation(ImplicitModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
     @test sim.status == PSID.BUILT
     sim_inputs = sim.simulation_inputs
-    dae_vector = PSID.get_DAE_vector(sim_inputs)
-    @test all(dae_vector)
+    DAE_vector = PSID.get_DAE_vector(sim_inputs)
+    @test all(DAE_vector)
     total_shunts = PSID.get_total_shunts(sim_inputs)
     for v in LinearAlgebra.diag(total_shunts)
         @test imag(v) > 0
@@ -120,9 +120,9 @@ end
     sim = Simulation(ImplicitModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
     @test sim.status == PSID.BUILT
     sim_inputs = sim.simulation_inputs
-    dae_vector = PSID.get_DAE_vector(sim_inputs)
-    @test sum(.!dae_vector) == 6
-    for (ix, entry) in enumerate(dae_vector)
+    DAE_vector = PSID.get_DAE_vector(sim_inputs)
+    @test sum(.!DAE_vector) == 6
+    for (ix, entry) in enumerate(DAE_vector)
         if !entry
             @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] == 0
         elseif entry
