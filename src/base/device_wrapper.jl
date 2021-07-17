@@ -20,6 +20,7 @@ status, and allocate the required indexes of the state space.
 """
 struct DynamicWrapper{T <: PSY.DynamicInjection}
     device::T
+    bus_category::Type{<:BusCategory}
     connection_status::Base.RefValue{Float64}
     v_ref::Base.RefValue{Float64}
     ω_ref::Base.RefValue{Float64}
@@ -46,13 +47,14 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
         input_port_mapping = Dict{Int, Vector{Int}}()
 
         for c in PSY.get_dynamic_components(dynamic_device)
-            component_state_mapping[PSID.index(c)] =
-                PSID._index_local_states(c, device_states)
-            input_port_mapping[PSID.index(c)] = PSID._index_port_mapping!(c, device_states)
+            component_state_mapping[index(c)] =
+                _index_local_states(c, device_states)
+            input_port_mapping[index(c)] = _index_port_mapping!(c, device_states)
         end
 
         new{typeof(dynamic_device)}(
             dynamic_device,
+            BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
             Base.Ref(1.0),
             Base.Ref(PSY.get_V_ref(dynamic_device)),
             Base.Ref(PSY.get_ω_ref(dynamic_device)),
@@ -105,10 +107,10 @@ get_Q_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
 get_V_ref(wrapper::DynamicWrapper) = wrapper.V_ref[]
 get_ω_ref(wrapper::DynamicWrapper) = wrapper.ω_ref[]
 
-set_P_ref(wrapper::DynamicWrapper, val) = wrapper.P_ref[] = val
-set_Q_ref(wrapper::DynamicWrapper, val) = wrapper.P_ref[] = val
-set_V_ref(wrapper::DynamicWrapper, val) = wrapper.V_ref[] = val
-set_ω_ref(wrapper::DynamicWrapper, val) = wrapper.ω_ref[] = val
+set_P_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.P_ref[] = val
+set_Q_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.P_ref[] = val
+set_V_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.V_ref[] = val
+set_ω_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.ω_ref[] = val
 
 # PSY overloads for the wrapper
 PSY.get_name(wrapper::DynamicWrapper) = wrapper.device.name
@@ -149,17 +151,6 @@ function get_input_port_ix(wrapper::DynamicWrapper, component::PSY.DynamicCompon
     return wrapper.input_port_mapping[index(component)]
 end
 
-struct PVBus end
-struct PQBus end
-struct SLACKBus end
-
-const BUS_MAP = Dict(
-    PSY.BusTypes.REF => SlackBus,
-    PSY.BusTypes.PV => PVBus,
-    PSY.BusTypes.SLACK => SlackBus,
-    PSY.BusTypes.PQ => PQBus,
-)
-
 struct StaticWrapper{T <: PSY.StaticInjection, V}
     device::T
     connection_status::Base.RefValue{Float64}
@@ -168,58 +159,60 @@ struct StaticWrapper{T <: PSY.StaticInjection, V}
     P_ref::Base.RefValue{Float64}
     Q_ref::Base.RefValue{Float64}
     bus_ix::Int
-    function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
-        bus = PSY.get_bus(device)
-        new{T, BUS_MAP[PSY.get_bus_type(bus)]}(
-            device,
-            Base.Ref(1.0)Base.Ref(PSY.get_magnitude(bus)),
-            Base.Ref(PSY.get_angle(bus)),
-            Base.Ref(PSY.get_active_power(bus)),
-            Base.Ref(PSY.get_reactive_power(bus)),
-            bus_ix,
-        )
-    end
+end
+
+function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
+    bus = PSY.get_bus(device)
+    StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
+        device,
+        Base.Ref(1.0),
+        Base.Ref(PSY.get_magnitude(bus)),
+        Base.Ref(PSY.get_angle(bus)),
+        Base.Ref(PSY.get_active_power(device)),
+        Base.Ref(PSY.get_reactive_power(device)),
+        bus_ix,
+    )
 end
 
 function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.Source}
     bus = PSY.get_bus(device)
-    return StaticWrapper{T, BUS_MAP[PSY.get_bus_type(bus)]}(
+    return StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
-        Base.Ref(1.0)Base.Ref(PSY.get_internal_voltage(device)),
+        Base.Ref(1.0),
+        Base.Ref(PSY.get_internal_voltage(device)),
         Base.Ref(PSY.get_internal_angle(device)),
-        Base.Ref(PSY.get_active_power(bus)),
-        Base.Ref(PSY.get_reactive_power(bus)),
+        Base.Ref(PSY.get_active_power(device)),
+        Base.Ref(PSY.get_reactive_power(device)),
         bus_ix,
     )
 end
 
-struct ConstantCurrent end
-struct ConstantImpedance end
-struct ConstantPower end
-
-const LOAD_MAP = Dict(
-    PSY.LoadModels.ConstantCurrent => ConstantCurrent,
-    PSY.LoadModels.ConstantImpedance => ConstantImpedance,
-    PSY.LoadModels.ConstantPower => ConstantPower,
-)
+# get_bustype is already exported in PSY. So this is named this way to avoid name collisions
+get_bus_category(::StaticWrapper{<: PSY.StaticInjection, U}) where {U} = U
 
 function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.ElectricLoad}
+    bus = PSY.get_bus(device)
     return StaticWrapper{T, LOAD_MAP[PSY.get_model(device)]}(
         device,
-        Base.Ref(1.0)Base.Ref(PSY.get_internal_voltage(device)),
-        Base.Ref(PSY.get_internal_angle(device)),
-        Base.Ref(PSY.get_active_power(bus)),
-        Base.Ref(PSY.get_reactive_power(bus)),
+        Base.Ref(1.0),
+        Base.Ref(PSY.get_magnitude(bus)),
+        Base.Ref(PSY.get_angle(bus)),
+        Base.Ref(PSY.get_active_power(device)),
+        Base.Ref(PSY.get_reactive_power(device)),
         bus_ix,
     )
 end
+
+# get_bustype is already exported in PSY. So this is named this way to avoid name collisions
+get_bus_category(::StaticWrapper{<: PSY.ElectricLoad, U}) where {U} = PQBus
+get_load_category(::StaticWrapper{<: PSY.ElectricLoad, U}) where {U} = U
 
 get_P_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
 get_V_ref(wrapper::StaticWrapper) = wrapper.V_ref[]
-get_ω_ref(wrapper::StaticWrapper) = wrapper.ω_ref[]
+get_θ_ref(wrapper::StaticWrapper) = wrapper.θ_ref[]
 
-set_P_ref(wrapper::StaticWrapper, val) = wrapper.P_ref[] = val
-set_Q_ref(wrapper::StaticWrapper, val) = wrapper.P_ref[] = val
-set_V_ref(wrapper::StaticWrapper, val) = wrapper.V_ref[] = val
-set_ω_ref(wrapper::StaticWrapper, val) = wrapper.ω_ref[] = val
+set_P_ref(wrapper::StaticWrapper, val::Float64) = wrapper.P_ref[] = val
+set_Q_ref(wrapper::StaticWrapper, val::Float64) = wrapper.P_ref[] = val
+set_V_ref(wrapper::StaticWrapper, val::Float64) = wrapper.V_ref[] = val
+set_θ_ref(wrapper::StaticWrapper, val::Float64) = wrapper.θ_ref[] = val
