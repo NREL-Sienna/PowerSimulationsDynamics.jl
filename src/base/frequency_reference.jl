@@ -33,7 +33,8 @@ function set_frequency_reference!(
         sys,
         x ->
             PSY.get_bustype(PSY.get_bus(x)) == PSY.BusTypes.REF &&
-                !isa(x, PSY.ElectricLoad),
+                !isa(x, PSY.ElectricLoad) &&
+                PSY.get_available(x),
     )
     if length(ref_devices) > 1
         throw(
