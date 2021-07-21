@@ -107,7 +107,7 @@ function mdl_filter_ode!(
     sys_Sbase,
     f0,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.DirectInjection},
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,

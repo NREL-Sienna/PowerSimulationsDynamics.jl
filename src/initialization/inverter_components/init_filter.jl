@@ -87,7 +87,7 @@ end
 function initialize_filter!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.DirectInjection},
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -116,11 +116,11 @@ function initialize_filter!(
     PSY.set_Q_ref!(PSY.get_converter(dynamic_device), I_I * Vm)
     PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = I_I * Vm
     PSY.set_Q_ref!(
-        PSY.get_reactive_control(PSY.get_outer_control(dynamic_device)),
+        PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
         I_R * Vm,
     )
 
-    PSY.set_P_ref!(PSY.get_active_control(PSY.get_outer_control(dynamic_device)), I_R * Vm)
+    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), I_R * Vm)
     PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = I_R * Vm
 
     #Update terminal voltages

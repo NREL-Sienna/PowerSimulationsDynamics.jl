@@ -259,7 +259,7 @@ function mdl_outer_ode!(
     ω_sys,
     dynamic_device::PSY.DynamicInverter{
         C,
-        PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
+        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
         IC,
         DC,
         P,
@@ -276,7 +276,7 @@ function mdl_outer_ode!(
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(
         dynamic_device,
-        PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
+        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
     )
     Vt_filt = device_states[external_ix[1]]
 
@@ -324,7 +324,7 @@ function mdl_outer_ode!(
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
         dynamic_device,
-        PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
+        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
     )
     internal_states = @view device_states[local_ix]
 
@@ -465,16 +465,18 @@ function mdl_outer_ode!(
 
         #Compute additional variables
         q_err = clamp(deadband_function(q_ref - q_flt, dbd1, dbd2), e_min, e_max)
-        q_err = deadband_function(q_ref - q_flt, dbd1, dbd2)
+        q_err = q_ref - q_flt
         #Q error - PI controller
         Q_pi = K_p * q_err + K_i * ξq_oc
         Q_pi_sat = clamp(Q_pi, Q_min, Q_max)
+        Q_pi_sat = Q_pi
         Q_binary_logic = Q_min <= Q_pi <= Q_max ? 1.0 : 0.0
+        Q_binary_logic = 1.0
         #Lead-Lag block
         Q_ext = q_LL + (T_ft / T_fv) * Q_pi_sat
 
         #Update ODEs
-        output_ode[local_ix[state_ct]] = (1.0 / T_fltr) * (q_elec_out - q_flt)
+        output_ode[local_ix[state_ct]] = (1.0 / T_fltr) * (q_ref - q_flt)
         output_ode[local_ix[state_ct + 1]] = Q_binary_logic * q_err
         output_ode[local_ix[state_ct + 2]] =
             (1.0 / T_fv) * (Q_pi_sat * (1.0 - T_ft / T_fv) - q_LL)

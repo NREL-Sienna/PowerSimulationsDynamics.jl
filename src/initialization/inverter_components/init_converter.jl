@@ -27,7 +27,7 @@ end
 function initialize_converter!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{PSY.REGCA1, O, IC, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, F},
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -55,7 +55,7 @@ function initialize_converter!(
     end
 
     #Update converter states
-    converter_ix = get_local_state_ix(dynamic_device, PSY.REGCA1)
+    converter_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
     converter_states = @view device_states[converter_ix]
     converter_states[1] = Ip #Ip_cnv
     converter_states[2] = -Iq #Iq_cnv

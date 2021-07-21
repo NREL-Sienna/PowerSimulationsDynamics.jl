@@ -219,7 +219,7 @@ end
 function initialize_inner!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.InnerREECB, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -252,13 +252,13 @@ function initialize_inner!(
     error("Inverter out of current limits. Check Power Flow or Parameters")
 
     if Q_Flag == 0
-        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB)
+        local_ix = get_local_state_ix(dynamic_device, PSY.RECurrentControlB)
         #Define internal states for Inner Control
         internal_states = @view device_states[local_ix]
         internal_states[1] = V_t
         internal_states[2] = Iq_oc
     else
-        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB)
+        local_ix = get_local_state_ix(dynamic_device, PSY.RECurrentControlB)
         K_vi = PSY.get_K_vi(inner_control)
         #Define internal states for Inner Control
         internal_states = @view device_states[local_ix]

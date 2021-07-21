@@ -335,7 +335,7 @@ current_mode_inner() = CurrentModeControl(
 
 function outer_control_TypeAB()
     function active_ab()
-        return ActiveRenewableTypeAB(
+        return ActiveRenewableControllerAB(
             bus_control = 0,
             from_branch_control = 0,
             to_branch_control = 0,
@@ -357,7 +357,7 @@ function outer_control_TypeAB()
         )
     end
     function reactive_ab()
-        return ReactiveRenewableTypeAB(
+        return ReactiveRenewableControllerAB(
             bus_control = 0,
             from_branch_control = 0,
             to_branch_control = 0,
@@ -389,7 +389,7 @@ function outer_control_TypeAB()
     return OuterControl(active_ab(), reactive_ab())
 end
 
-inner_ctrl_typeB() = InnerREECB(
+inner_ctrl_typeB() = RECurrentControlB(
     Q_Flag = 0,
     PQ_Flag = 0,
     Vdip_lim = (-99.0, 99.0),
@@ -405,7 +405,7 @@ inner_ctrl_typeB() = InnerREECB(
     I_max = 1.11,
 )
 
-converter_regca() = REGCA1(
+converter_regca() = RenewableEnergyConverterTypeA(
     T_g = 0.02,
     Rrpwr = 10.0,
     Brkpt = 0.9,
@@ -421,7 +421,7 @@ converter_regca() = REGCA1(
     Lvpl_sw = 0,
 )
 
-filt_current() = DirectInjection()
+filt_current() = RLFilter(rf = 0.0, lf = 0.1)
 
 ####### Devices #######
 
