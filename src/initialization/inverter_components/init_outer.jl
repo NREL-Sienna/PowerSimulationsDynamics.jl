@@ -191,7 +191,7 @@ function initialize_outer!(
     static::PSY.StaticInjection,
     dynamic_device::PSY.DynamicInverter{
         C,
-        PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
+        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
         IC,
         DC,
         P,
@@ -208,7 +208,7 @@ function initialize_outer!(
     #Obtain external states inputs for component
     #external_ix = get_input_port_ix(
     #    dynamic_device,
-    #    PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
+    #    PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
     #)
     V_R = get_inner_vars(dynamic_device)[VR_inv_var]
     V_I = get_inner_vars(dynamic_device)[VI_inv_var]
@@ -217,6 +217,7 @@ function initialize_outer!(
     V_t = sqrt(V_R^2 + V_I^2)
     p_elec_out = I_R * V_R + I_I * V_I
     q_elec_out = -I_I * V_R + I_R * V_I
+    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
 
     #Get Outer Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
@@ -232,7 +233,7 @@ function initialize_outer!(
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
         dynamic_device,
-        PSY.OuterControl{PSY.ActiveRenewableTypeAB, PSY.ReactiveRenewableTypeAB},
+        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
     )
     internal_states = @view device_states[local_ix]
 
@@ -278,13 +279,13 @@ function initialize_outer!(
     elseif VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
         K_i = PSY.get_K_i(reactive_power_control)
         #Update states
-        internal_states[state_ct] = q_elec_out
-        internal_states[state_ct + 1] = q_elec_out / K_i
-        internal_states[state_ct + 2] = q_elec_out
+        internal_states[state_ct] = q_ref
+        internal_states[state_ct + 1] = q_ref / K_i
+        internal_states[state_ct + 2] = q_ref
         state_ct += 3
         #Update Inner Vars
-        get_inner_vars(dynamic_device)[V_oc_var] = q_elec_out - V_t
-        get_inner_vars(dynamic_device)[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
+        get_inner_vars(dynamic_device)[V_oc_var] = q_ref - V_t
+        get_inner_vars(dynamic_device)[Iq_oc_var] = q_ref / max(V_t, 0.01)
     else
         error("Flags for Generic Renewable Model not supported yet")
     end

@@ -66,7 +66,7 @@ function deadband_function(x::T, db_low::Float64, db_high::Float64) where {T <: 
 end
 
 function current_limit_logic(
-    inner_control::PSY.InnerREECB,
+    inner_control::PSY.RECurrentControlB,
     Vt_filt::X,
     Ip_cmd::Y,
     Iq_cmd::Z,

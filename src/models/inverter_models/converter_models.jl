@@ -38,7 +38,7 @@ end
 function mdl_converter_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{PSY.REGCA1, O, IC, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, F},
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -48,7 +48,7 @@ function mdl_converter_ode!(
 }
 
     #Obtain external states inputs for component
-    #external_ix = get_input_port_ix(dynamic_device, PSY.REGCA1)
+    #external_ix = get_input_port_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
 
     #Obtain inner variables for component
     V_t = sqrt(
@@ -76,7 +76,7 @@ function mdl_converter_ode!(
     Q_ref = PSY.get_Q_ref(converter)
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(dynamic_device, PSY.REGCA1)
+    local_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
     #Define internal states for Converter
     internal_states = @view device_states[local_ix]
     Ip = internal_states[1]

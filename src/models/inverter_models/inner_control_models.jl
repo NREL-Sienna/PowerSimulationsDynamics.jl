@@ -8,7 +8,7 @@ end
 
 function mass_matrix_inner_entries!(
     mass_matrix,
-    inner_control::PSY.InnerREECB,
+    inner_control::PSY.RECurrentControlB,
     global_index::Dict{Symbol, Int64},
 )
     mass_matrix[global_index[:Vt_filt], global_index[:Vt_filt]] =
@@ -208,7 +208,7 @@ end
 function mdl_inner_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.InnerREECB, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -218,7 +218,7 @@ function mdl_inner_ode!(
 }
 
     #Obtain external states inputs for component
-    #external_ix = get_input_port_ix(dynamic_device, PSY.InnerREECB)
+    #external_ix = get_input_port_ix(dynamic_device, PSY.RECurrentControlB)
 
     #Obtain inner variables for component
     V_t = sqrt(
@@ -242,7 +242,7 @@ function mdl_inner_ode!(
     # TO DO: Voltage Dip Freeze logic
     if Q_Flag == 0
         #Obtain indices for component w/r to device
-        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB)
+        local_ix = get_local_state_ix(dynamic_device, PSY.RECurrentControlB)
         #Define internal states for Inner Control
         internal_states = @view device_states[local_ix]
         Vt_filt = internal_states[1]
@@ -270,7 +270,7 @@ function mdl_inner_ode!(
         K_vi = PSY.get_K_vi(inner_control)
 
         #Obtain indices for component w/r to device
-        local_ix = get_local_state_ix(dynamic_device, PSY.InnerREECB)
+        local_ix = get_local_state_ix(dynamic_device, PSY.RECurrentControlB)
         #Define internal states for Inner Control
         internal_states = @view device_states[local_ix]
         Vt_filt = internal_states[1]
