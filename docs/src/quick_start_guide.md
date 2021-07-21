@@ -51,10 +51,9 @@ x0_init = get_initial_conditions(sim)
 ```@repl quick_start_guide
 angle = get_state_series(sim, ("generator-102-1", :δ));
 plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "gen-102-1");
-savefig("f-plot.svg"); nothing # hide
 ```
 
-![plot](f-plot.svg)
+![plot](assets/f-plot.svg)
 
 If you miss PSS/e's plotting aesthetics and want something that resembles that, you can use [`UnicodePlots`](https://github.com/Evizero/UnicodePlots.jl).
 
