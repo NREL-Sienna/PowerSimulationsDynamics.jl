@@ -45,6 +45,10 @@ function initialize_static_device!(::PSY.PowerLoad)
     return
 end
 
+function initialize_static_device!(::PSY.FixedAdmittance)
+    return
+end
+
 function initialize_static_device!(device::PSY.Source)
     #PowerFlow Data
     P0 = PSY.get_active_power(device)
