@@ -93,7 +93,20 @@ function attach_inner_vars!(
     dynamic_device::T,
     ::Type{U} = Real,
 ) where {T <: PSY.DynamicInjection, U <: Real}
-    dynamic_device.ext[INNER_VARS] = zeros(U, var_count(dynamic_device))
+    
+    function get_in_value(v::Float64)
+        return v
+    end
+
+    function get_in_value(v::ForwardDiff.Dual)
+        return v.value
+    end
+
+    if haskey(dynamic_device.ext, INNER_VARS)
+        map!(x -> get_in_value(x), dynamic_device.ext[INNER_VARS], dynamic_device.ext[INNER_VARS])
+    else
+        dynamic_device.ext[INNER_VARS] = Vector{U}(zeros(Float64, var_count(dynamic_device)))
+    end
     return
 end
 

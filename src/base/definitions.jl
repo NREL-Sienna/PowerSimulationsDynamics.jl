@@ -77,13 +77,17 @@ Inverter Inner Vars:
     Iq_ic_var = 14
     Id_cnv_var = 15
     Iq_cnv_var = 16
-    ω_oc_var = 17
-    θ_oc_var = 18
-    VR_inv_var = 19
-    VI_inv_var = 20
-    Vr_cnv_var = 21
-    Vi_cnv_var = 22
-    P_ES_var = 23
+    Id_aux_var = 17
+    Iq_aux_var = 18
+    Ir_inv_var = 19
+    Ii_inv_var = 20
+    ω_oc_var = 21
+    θ_oc_var = 22
+    VR_inv_var = 23
+    VI_inv_var = 24
+    Vr_cnv_var = 25
+    Vi_cnv_var = 26
+    P_ES_var = 27
 end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
@@ -122,7 +126,7 @@ const PORTS = "ports"
 const INNER_VARS = "inner_vars"
 const CONTROL_REFS = "control_refs"
 const GEN_INNER_VARS_SIZE = 9
-const INV_INNER_VARS_SIZE = 23
+const INV_INNER_VARS_SIZE = 27
 
 const SIMULATION_ACCEPTED_KWARGS =
     [:initialize_simulation, :system_to_file, :file_level, :console_level]
