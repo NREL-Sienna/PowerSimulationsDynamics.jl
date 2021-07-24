@@ -119,8 +119,8 @@ function mdl_outer_ode!(
     Ii_filter = device_states[external_ix[4]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(dynamic_device)[VR_inv_var]
-    V_tI = get_inner_vars(dynamic_device)[VI_inv_var]
+    V_tR = get_inner_vars(dynamic_device)[Vr_inv_var]
+    V_tI = get_inner_vars(dynamic_device)[Vi_inv_var]
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
@@ -293,10 +293,10 @@ function mdl_outer_ode!(
     end
 
     #Monitoring power from other branch not supported.
-    V_R = get_inner_vars(dynamic_device)[VR_inv_var]
-    V_I = get_inner_vars(dynamic_device)[VI_inv_var]
-    _I_R = get_inner_vars(dynamic_device)[Id_cnv_var]
-    _I_I = get_inner_vars(dynamic_device)[Iq_cnv_var]
+    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
+    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    _I_R = get_inner_vars(dynamic_device)[Ir_inv_var]
+    _I_I = get_inner_vars(dynamic_device)[Ii_inv_var]
     I_R = get_value_I(_I_R)
     I_I = get_value_I(_I_I)
     p_elec_out = I_R * V_R + I_I * V_I
@@ -305,7 +305,6 @@ function mdl_outer_ode!(
     #Obtain external parameters
     p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
     ω_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.ω_ref_index]
-    V_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.V_ref_index]
     q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
     # To do: Obtain proper frequency for a plant. For now using the system frequency.
     ω_plant = ω_sys
@@ -319,7 +318,7 @@ function mdl_outer_ode!(
     #Note: Monitoring power from other branch not supported.
     Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag
     T_pord = PSY.get_T_pord(active_power_control)
-    p_ext = p_ref
+    p_ext = p_elec_out
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -333,8 +332,7 @@ function mdl_outer_ode!(
         K_pg = PSY.get_K_pg(active_power_control)
         K_ig = PSY.get_K_ig(active_power_control)
         T_p = PSY.get_T_p(active_power_control)
-        fdbd1 = PSY.get_fdbd1(active_power_control)
-        fdbd2 = PSY.get_fdbd2(active_power_control)
+        fdbd1, fdbd2 = PSY.get_fdbd_pnts(active_power_control)
         fe_min, fe_max = PSY.get_fe_lim(active_power_control)
         P_min, P_max = PSY.get_P_lim(active_power_control)
         T_g = PSY.get_T_g(active_power_control)
@@ -398,8 +396,7 @@ function mdl_outer_ode!(
         # V_frz not implemented yet
         V_frz = PSY.get_V_frz(reactive_power_control)
         e_min, e_max = PSY.get_e_lim(reactive_power_control)
-        dbd1 = PSY.get_dbd1(reactive_power_control)
-        dbd2 = PSY.get_dbd2(reactive_power_control)
+        dbd1, dbd2 = PSY.get_dbd_pnts(reactive_power_control)
         Q_min, Q_max = PSY.get_Q_lim(reactive_power_control)
         T_p = PSY.get_T_p(reactive_power_control)
         Q_min_inner, Q_max_inner = PSY.get_Q_lim_inner(reactive_power_control)
@@ -448,8 +445,7 @@ function mdl_outer_ode!(
         # V_frz not implemented yet
         V_frz = PSY.get_V_frz(reactive_power_control)
         e_min, e_max = PSY.get_e_lim(reactive_power_control)
-        dbd1 = PSY.get_dbd1(reactive_power_control)
-        dbd2 = PSY.get_dbd2(reactive_power_control)
+        dbd1, dbd2 = PSY.get_dbd_pnts(reactive_power_control)
         Q_min, Q_max = PSY.get_Q_lim(reactive_power_control)
         T_p = PSY.get_T_p(reactive_power_control)
         Q_min_inner, Q_max_inner = PSY.get_Q_lim_inner(reactive_power_control)
@@ -465,7 +461,7 @@ function mdl_outer_ode!(
 
         #Compute additional variables
         q_err = clamp(deadband_function(q_ref - q_flt, dbd1, dbd2), e_min, e_max)
-        q_err = q_ref - q_flt
+        #q_err = q_ref - q_flt
         #Q error - PI controller
         Q_pi = K_p * q_err + K_i * ξq_oc
         Q_pi_sat = clamp(Q_pi, Q_min, Q_max)
