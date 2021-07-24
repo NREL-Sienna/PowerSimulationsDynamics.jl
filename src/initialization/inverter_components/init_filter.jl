@@ -64,8 +64,8 @@ function initialize_filter!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_inv_var] = V_R
-        get_inner_vars(dynamic_device)[VI_inv_var] = V_I
+        get_inner_vars(dynamic_device)[Vr_inv_var] = V_R
+        get_inner_vars(dynamic_device)[Vi_inv_var] = V_I
         #Update Converter voltages
         get_inner_vars(dynamic_device)[Vr_cnv_var] = sol_x0[1]
         get_inner_vars(dynamic_device)[Vi_cnv_var] = sol_x0[2]
@@ -111,22 +111,37 @@ function initialize_filter!(
     # PSS/e names I_I as Iq. But is calculated as Q/Vt
     I_I = imag(I)
 
-    # PSS/e uses an incorrect Iq calculation that requires setting the Q_ref control to a
-    # value different than the desired Q_injection into the grid.
-    PSY.set_Q_ref!(PSY.get_converter(dynamic_device), I_I * Vm)
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = I_I * Vm
+    # Update Control References
+    PSY.set_Q_ref!(PSY.get_converter(dynamic_device), Q0)
+    PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = Q0
     PSY.set_Q_ref!(
         PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
-        I_R * Vm,
+        Q0,
     )
+    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), P0)
+    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = P0
 
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), I_R * Vm)
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = I_R * Vm
+    #Get Parameters
+    filt = PSY.get_filter(dynamic_device)
+    rf = PSY.get_rf(filt)
+    lf = PSY.get_lf(filt)
+    converter = PSY.get_converter(dynamic_device)
+    R_source = PSY.get_R_source(converter)
+    X_source = PSY.get_X_source(converter)
 
     #Update terminal voltages
-    get_inner_vars(dynamic_device)[VR_inv_var] = V_R
-    get_inner_vars(dynamic_device)[VI_inv_var] = V_I
+    @show get_inner_vars(dynamic_device)[Vr_inv_var] = V_R
+    @show get_inner_vars(dynamic_device)[Vi_inv_var] = V_I
     #Update filter currents (output of converter)
-    get_inner_vars(dynamic_device)[Id_cnv_var] = I_R
-    get_inner_vars(dynamic_device)[Iq_cnv_var] = I_I
+    get_inner_vars(dynamic_device)[Ir_inv_var] = I_R
+    get_inner_vars(dynamic_device)[Ii_inv_var] = I_I
+    #Update converter currents
+    V_cnv = V + (rf + lf * 1im) * I
+    I_aux = V_cnv / (R_source + X_source * 1im)
+    I_cnv = I + I_aux
+
+    get_inner_vars(dynamic_device)[Vr_cnv_var] = real(V_cnv)
+    get_inner_vars(dynamic_device)[Vi_cnv_var] = imag(V_cnv)
+    get_inner_vars(dynamic_device)[Ir_cnv_var] = real(I_cnv)
+    get_inner_vars(dynamic_device)[Ii_cnv_var] = imag(I_cnv)    
 end
