@@ -148,7 +148,7 @@ function mdl_converter_ode!(
     function V_cnv_calc(Ir_cnv, Ii_cnv, Vr_inv, Vi_inv)
         I_cnv = Ir_cnv + 1im * Ii_cnv
         V_inv = Vr_inv + 1im * Vi_inv
-        if rf != 0.0 || lf != 0.0
+        if lf != 0.0 || rf != 0.0
             V_cnv = (I_cnv + V_inv / Zf) / (1.0 / Z_source + 1.0 / Zf)
         else
             V_cnv = V_inv
