@@ -38,7 +38,14 @@ end
 function mdl_converter_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
+    dynamic_device::PSY.DynamicInverter{
+        PSY.RenewableEnergyConverterTypeA,
+        O,
+        IC,
+        DC,
+        P,
+        PSY.RLFilter,
+    },
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -133,7 +140,7 @@ function mdl_converter_ode!(
     filt = PSY.get_filter(dynamic_device)
     rf = PSY.get_rf(filt)
     lf = PSY.get_lf(filt)
- 
+
     #Compute output currents 
     Zf = rf + lf * 1im
     Z_source = R_source + X_source * 1im
@@ -146,10 +153,10 @@ function mdl_converter_ode!(
         else
             V_cnv = V_inv
         end
-        return real(V_cnv), imag(V_cnv) 
-    end  
+        return real(V_cnv), imag(V_cnv)
+    end
 
-    Vr_cnv, Vi_cnv = V_cnv_calc(Ir_cnv, Ii_cnv, V_R, V_I) 
+    Vr_cnv, Vi_cnv = V_cnv_calc(Ir_cnv, Ii_cnv, V_R, V_I)
 
     #Update ODEs
     output_ode[local_ix[1]] = Ip_binary * (1.0 / T_g) * Ip_in #(Ip_cmd - Ip)

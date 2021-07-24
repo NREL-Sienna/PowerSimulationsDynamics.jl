@@ -259,7 +259,10 @@ function mdl_outer_ode!(
     ω_sys,
     dynamic_device::PSY.DynamicInverter{
         C,
-        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
+        PSY.OuterControl{
+            PSY.ActiveRenewableControllerAB,
+            PSY.ReactiveRenewableControllerAB,
+        },
         IC,
         DC,
         P,
@@ -276,7 +279,10 @@ function mdl_outer_ode!(
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(
         dynamic_device,
-        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
+        PSY.OuterControl{
+            PSY.ActiveRenewableControllerAB,
+            PSY.ReactiveRenewableControllerAB,
+        },
     )
     Vt_filt = device_states[external_ix[1]]
 
@@ -319,7 +325,10 @@ function mdl_outer_ode!(
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
         dynamic_device,
-        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
+        PSY.OuterControl{
+            PSY.ActiveRenewableControllerAB,
+            PSY.ReactiveRenewableControllerAB,
+        },
     )
     internal_states = @view device_states[local_ix]
 

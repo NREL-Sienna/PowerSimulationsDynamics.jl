@@ -191,7 +191,10 @@ function initialize_outer!(
     static::PSY.StaticInjection,
     dynamic_device::PSY.DynamicInverter{
         C,
-        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
+        PSY.OuterControl{
+            PSY.ActiveRenewableControllerAB,
+            PSY.ReactiveRenewableControllerAB,
+        },
         IC,
         DC,
         P,
@@ -204,7 +207,6 @@ function initialize_outer!(
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
 }
-
     function get_value_I(v::Float64)
         return v
     end
@@ -214,7 +216,7 @@ function initialize_outer!(
     function get_value_I(v::ForwardDiff.Dual)
         return v.value
     end
-    
+
     #Obtain external states inputs for component
     #external_ix = get_input_port_ix(
     #    dynamic_device,
@@ -243,7 +245,10 @@ function initialize_outer!(
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
         dynamic_device,
-        PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
+        PSY.OuterControl{
+            PSY.ActiveRenewableControllerAB,
+            PSY.ReactiveRenewableControllerAB,
+        },
     )
     internal_states = @view device_states[local_ix]
 

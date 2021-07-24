@@ -114,10 +114,7 @@ function initialize_filter!(
     # Update Control References
     PSY.set_Q_ref!(PSY.get_converter(dynamic_device), Q0)
     PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = Q0
-    PSY.set_Q_ref!(
-        PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
-        Q0,
-    )
+    PSY.set_Q_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Q0)
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), P0)
     PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = P0
 
@@ -143,5 +140,5 @@ function initialize_filter!(
     get_inner_vars(dynamic_device)[Vr_cnv_var] = real(V_cnv)
     get_inner_vars(dynamic_device)[Vi_cnv_var] = imag(V_cnv)
     get_inner_vars(dynamic_device)[Ir_cnv_var] = real(I_cnv)
-    get_inner_vars(dynamic_device)[Ii_cnv_var] = imag(I_cnv)    
+    get_inner_vars(dynamic_device)[Ii_cnv_var] = imag(I_cnv)
 end
