@@ -38,25 +38,37 @@ end
 function mdl_converter_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, F},
+    dynamic_device::PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    F <: PSY.Filter,
 }
-
+    #Define auxiliary functions
+    function get_value_I(v::Float64)
+        return v
+    end
+    function get_value_I(v::Int)
+        return v
+    end
+    function get_value_I(v::ForwardDiff.Dual)
+        return v.value
+    end
     #Obtain external states inputs for component
     #external_ix = get_input_port_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
 
     #Obtain inner variables for component
-    V_t = sqrt(
-        get_inner_vars(dynamic_device)[VR_inv_var]^2 +
-        get_inner_vars(dynamic_device)[VI_inv_var]^2,
-    )
+    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
+    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    V_t = sqrt(V_R^2 + V_I^2)
+    θ = atan(V_I / V_R)
     Ip_cmd = get_inner_vars(dynamic_device)[Id_ic_var]
     Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
+    Ir_filt = get_inner_vars(dynamic_device)[Ir_inv_var]
+    Ii_filt = get_inner_vars(dynamic_device)[Ii_inv_var]
+    #Ir_filt_internal = Ir_filt * cos(θ) + Ii_filt * sin(θ)
+    #Ii_filt_internal = - Ir_filt * sin(θ) + Ii_filt * cos(θ)
 
     #Get Converter parameters
     converter = PSY.get_converter(dynamic_device)
@@ -74,6 +86,8 @@ function mdl_converter_ode!(
     #Accel = PSY.get_Accel(converter)
     Lvpl_sw = PSY.get_Lvpl_sw(converter)
     Q_ref = PSY.get_Q_ref(converter)
+    R_source = PSY.get_R_source(converter)
+    X_source = PSY.get_X_source(converter)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
@@ -108,6 +122,34 @@ function mdl_converter_ode!(
     Q_ref >= 0 ? Rq_up = Iqr_max : Rq_dn = Iqr_min
     Iq_in = clamp(Iq_cmd - Iq, Rq_dn, Rq_up)
     Iq_extra = max(K_hv * (V_t - Vo_lim), 0.0)
+    Id_cnv = G_lv * Ip_sat
+    Iq_cnv = -Iq - Iq_extra
+    #Reference Transformation
+    Ir_cnv = Id_cnv * cos(θ) - Iq_cnv * sin(θ)
+    Ii_cnv = Id_cnv * sin(θ) + Iq_cnv * cos(θ)
+
+    ###
+    #Obtain parameters
+    filt = PSY.get_filter(dynamic_device)
+    rf = PSY.get_rf(filt)
+    lf = PSY.get_lf(filt)
+ 
+    #Compute output currents 
+    Zf = rf + lf * 1im
+    Z_source = R_source + X_source * 1im
+
+    function V_cnv_calc(Ir_cnv, Ii_cnv, Vr_inv, Vi_inv)
+        I_cnv = Ir_cnv + 1im * Ii_cnv
+        V_inv = Vr_inv + 1im * Vi_inv
+        if rf != 0.0 || lf != 0.0
+            V_cnv = (I_cnv + V_inv / Zf) / (1.0 / Z_source + 1.0 / Zf)
+        else
+            V_cnv = V_inv
+        end
+        return real(V_cnv), imag(V_cnv) 
+    end  
+
+    Vr_cnv, Vi_cnv = V_cnv_calc(Ir_cnv, Ii_cnv, V_R, V_I) 
 
     #Update ODEs
     output_ode[local_ix[1]] = Ip_binary * (1.0 / T_g) * Ip_in #(Ip_cmd - Ip)
@@ -115,6 +157,8 @@ function mdl_converter_ode!(
     output_ode[local_ix[3]] = (1.0 / T_fltr) * (V_t - Vmeas)
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Id_cnv_var] = G_lv * Ip_sat
-    get_inner_vars(dynamic_device)[Iq_cnv_var] = max(-Iq - Iq_extra, Io_lim) #-Iq
+    get_inner_vars(dynamic_device)[Ir_cnv_var] = Ir_cnv
+    get_inner_vars(dynamic_device)[Ii_cnv_var] = Ii_cnv
+    get_inner_vars(dynamic_device)[Vr_cnv_var] = Vr_cnv
+    get_inner_vars(dynamic_device)[Vi_cnv_var] = Vi_cnv
 end

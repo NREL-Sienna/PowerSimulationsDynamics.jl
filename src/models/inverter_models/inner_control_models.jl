@@ -222,8 +222,8 @@ function mdl_inner_ode!(
 
     #Obtain inner variables for component
     V_t = sqrt(
-        get_inner_vars(dynamic_device)[VR_inv_var]^2 +
-        get_inner_vars(dynamic_device)[VI_inv_var]^2,
+        get_inner_vars(dynamic_device)[Vr_inv_var]^2 +
+        get_inner_vars(dynamic_device)[Vi_inv_var]^2,
     )
     Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
     V_oc = get_inner_vars(dynamic_device)[V_oc_var]
@@ -233,8 +233,7 @@ function mdl_inner_ode!(
     inner_control = PSY.get_inner_control(dynamic_device)
     Q_Flag = PSY.get_Q_Flag(inner_control)
     #Get Current Controller parameters
-    dbd1 = PSY.get_dbd1(inner_control)
-    dbd2 = PSY.get_dbd2(inner_control)
+    dbd1, dbd2 = PSY.get_dbd_pnts(inner_control)
     K_qv = PSY.get_K_qv(inner_control)
     I_ql1, I_qh1 = PSY.get_Iqinj_lim(inner_control)
     V_ref0 = PSY.get_V_ref0(inner_control)

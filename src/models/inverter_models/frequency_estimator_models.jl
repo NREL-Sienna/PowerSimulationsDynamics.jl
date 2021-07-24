@@ -25,8 +25,8 @@ function mdl_freq_estimator_ode!(
     Vr_filter = device_states[external_ix[1]]
     Vi_filter = device_states[external_ix[2]]
 
-    #V_tR = get_inner_vars(dynamic_device)[VR_inv_var]
-    #V_tI = get_inner_vars(dynamic_device)[VI_inv_var]
+    #V_tR = get_inner_vars(dynamic_device)[Vr_inv_var]
+    #V_tI = get_inner_vars(dynamic_device)[Vi_inv_var]
 
     #Get parameters
     pll_control = PSY.get_freq_estimator(dynamic_device)
@@ -89,8 +89,8 @@ function mdl_freq_estimator_ode!(
     Vr_filter = device_states[external_ix[1]]
     Vi_filter = device_states[external_ix[2]]
 
-    #V_tR = get_inner_vars(dynamic_device)[VR_inv_var]
-    #V_tI = get_inner_vars(dynamic_device)[VI_inv_var]
+    #V_tR = get_inner_vars(dynamic_device)[Vr_inv_var]
+    #V_tI = get_inner_vars(dynamic_device)[Vi_inv_var]
 
     #Get parameters
     pll_control = PSY.get_freq_estimator(dynamic_device)
