@@ -33,16 +33,18 @@ function initialize_converter!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    F <: PSY.Filter,
+    F <: PSY.Filter
 }
     #Get inner vars
-    V_t = sqrt(
-        get_inner_vars(dynamic_device)[VR_inv_var]^2 +
-        get_inner_vars(dynamic_device)[VI_inv_var]^2,
-    )
-    Iq = get_inner_vars(dynamic_device)[Iq_cnv_var]
-    Ip = get_inner_vars(dynamic_device)[Id_cnv_var]
-
+    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
+    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    θ = atan(V_I / V_R)
+    V_t = sqrt(V_R^2 + V_I^2)
+    Iq_external = get_inner_vars(dynamic_device)[Ii_cnv_var]
+    Ip_external = get_inner_vars(dynamic_device)[Ir_cnv_var]
+    #Reference Transformation
+    Ip = Ip_external * cos(-θ) - Iq_external * sin(-θ)
+    Iq = Ip_external * sin(-θ) + Iq_external * cos(-θ)    
     converter = PSY.get_converter(dynamic_device)
     Io_lim = PSY.get_Io_lim(converter)
     Vo_lim = PSY.get_Vo_lim(converter)

@@ -205,15 +205,26 @@ function initialize_outer!(
     F <: PSY.Filter,
 }
 
+    function get_value_I(v::Float64)
+        return v
+    end
+
+    function get_value_I(v::Int)
+        return v
+    end
+
+    function get_value_I(v::ForwardDiff.Dual)
+        return v.value
+    end
     #Obtain external states inputs for component
     #external_ix = get_input_port_ix(
     #    dynamic_device,
     #    PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
     #)
-    V_R = get_inner_vars(dynamic_device)[VR_inv_var]
-    V_I = get_inner_vars(dynamic_device)[VI_inv_var]
-    I_R = get_inner_vars(dynamic_device)[Id_cnv_var]
-    I_I = get_inner_vars(dynamic_device)[Iq_cnv_var]
+    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
+    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    I_R = get_value_I(get_inner_vars(dynamic_device)[Ir_inv_var])
+    I_I = get_value_I(get_inner_vars(dynamic_device)[Ii_inv_var])
     V_t = sqrt(V_R^2 + V_I^2)
     p_elec_out = I_R * V_R + I_I * V_I
     q_elec_out = -I_I * V_R + I_R * V_I

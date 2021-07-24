@@ -232,20 +232,20 @@ function initialize_inner!(
     #external_ix = get_input_port_ix(dynamic_device, PSY.CurrentModeControl)
 
     #Obtain inner variables for component
-    V_R = get_inner_vars(dynamic_device)[VR_inv_var]
-    V_I = get_inner_vars(dynamic_device)[VI_inv_var]
+    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
+    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
     V_t = sqrt(V_R^2 + V_I^2)
 
     #Get inner vars
-    Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
-    Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
-    Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
+    @show Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
+    @show Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
+    @show Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
 
     #Get Current Controller parameters
     inner_control = PSY.get_inner_control(dynamic_device)
     Q_Flag = PSY.get_Q_Flag(inner_control)
 
-    Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(inner_control, V_t, Ip_oc, Iq_cmd)
+    @show Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(inner_control, V_t, Ip_oc, Iq_cmd)
     Ip_min < Ip_oc < Ip_max ? nothing :
     error("Inverter out of current limits. Check Power Flow or Parameters")
     Iq_min < Iq_oc < Iq_max ? nothing :
