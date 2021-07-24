@@ -130,8 +130,8 @@ function initialize_filter!(
     X_source = PSY.get_X_source(converter)
 
     #Update terminal voltages
-    @show get_inner_vars(dynamic_device)[Vr_inv_var] = V_R
-    @show get_inner_vars(dynamic_device)[Vi_inv_var] = V_I
+    get_inner_vars(dynamic_device)[Vr_inv_var] = V_R
+    get_inner_vars(dynamic_device)[Vi_inv_var] = V_I
     #Update filter currents (output of converter)
     get_inner_vars(dynamic_device)[Ir_inv_var] = I_R
     get_inner_vars(dynamic_device)[Ii_inv_var] = I_I

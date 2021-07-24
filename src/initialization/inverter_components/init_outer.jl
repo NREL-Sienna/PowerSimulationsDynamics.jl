@@ -208,14 +208,13 @@ function initialize_outer!(
     function get_value_I(v::Float64)
         return v
     end
-
     function get_value_I(v::Int)
         return v
     end
-
     function get_value_I(v::ForwardDiff.Dual)
         return v.value
     end
+    
     #Obtain external states inputs for component
     #external_ix = get_input_port_ix(
     #    dynamic_device,

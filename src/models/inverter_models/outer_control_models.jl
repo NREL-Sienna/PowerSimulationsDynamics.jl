@@ -283,11 +283,9 @@ function mdl_outer_ode!(
     function get_value_I(v::Float64)
         return v
     end
-
     function get_value_I(v::Int)
         return v
     end
-
     function get_value_I(v::ForwardDiff.Dual)
         return v.value
     end
@@ -295,10 +293,8 @@ function mdl_outer_ode!(
     #Monitoring power from other branch not supported.
     V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
     V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
-    _I_R = get_inner_vars(dynamic_device)[Ir_inv_var]
-    _I_I = get_inner_vars(dynamic_device)[Ii_inv_var]
-    I_R = get_value_I(_I_R)
-    I_I = get_value_I(_I_I)
+    I_R = get_value_I(get_inner_vars(dynamic_device)[Ir_inv_var])
+    I_I = get_value_I(get_inner_vars(dynamic_device)[Ii_inv_var])
     p_elec_out = I_R * V_R + I_I * V_I
     q_elec_out = -I_I * V_R + I_R * V_I
 
@@ -351,7 +347,6 @@ function mdl_outer_ode!(
         f_err = deadband_function(ω_ref - ω_plant, fdbd1, fdbd2)
         p_droop = min(D_dn * f_err, 0.0) + max(D_up * f_err, 0.0)
         p_err = clamp(p_ref + p_droop - p_flt, fe_min, fe_max)
-        # To do: Limiters for PI block
         P_pi = K_pg * p_err + K_ig * ξ_P
         P_pi_binary = P_min <= P_pi <= P_max ? 1.0 : 0.0
 
@@ -454,20 +449,16 @@ function mdl_outer_ode!(
         K_qi = PSY.get_K_qi(reactive_power_control)
 
         #Define internal states for Reactive Control
-        #@show state_ct
         q_flt = internal_states[state_ct]
         ξq_oc = internal_states[state_ct + 1]
         q_LL = internal_states[state_ct + 2]
 
         #Compute additional variables
         q_err = clamp(deadband_function(q_ref - q_flt, dbd1, dbd2), e_min, e_max)
-        #q_err = q_ref - q_flt
         #Q error - PI controller
         Q_pi = K_p * q_err + K_i * ξq_oc
         Q_pi_sat = clamp(Q_pi, Q_min, Q_max)
-        Q_pi_sat = Q_pi
         Q_binary_logic = Q_min <= Q_pi <= Q_max ? 1.0 : 0.0
-        Q_binary_logic = 1.0
         #Lead-Lag block
         Q_ext = q_LL + (T_ft / T_fv) * Q_pi_sat
 
