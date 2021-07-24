@@ -159,8 +159,8 @@ function device!(
     sys_ω = get_ω_sys(inputs)
 
     #Update Voltage data
-    get_inner_vars(dynamic_device)[VR_inv_var] = voltage_r[1]
-    get_inner_vars(dynamic_device)[VI_inv_var] = voltage_i[1]
+    get_inner_vars(dynamic_device)[Vr_inv_var] = voltage_r[1]
+    get_inner_vars(dynamic_device)[Vi_inv_var] = voltage_i[1]
 
     #Update V_ref
     V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
