@@ -125,7 +125,7 @@ function mdl_filter_ode!(
     lf = PSY.get_lf(filt)
 
     #Compute output currents
-    if rf != 0.0 || lf != 0.0
+    if lf != 0.0 || rf != 0.0
         Vr_cnv = get_inner_vars(dynamic_device)[Vr_cnv_var]
         Vi_cnv = get_inner_vars(dynamic_device)[Vi_cnv_var]
         Vr_inv = get_inner_vars(dynamic_device)[Vr_inv_var]
