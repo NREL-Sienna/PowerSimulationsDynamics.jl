@@ -59,8 +59,8 @@ function Ports(::PSY.Filter)
     #TODO: If converter has dynamics, need to connect state_input
     state_input = [:θ_oc] #[:Vd_c, :Vq_c] #, :Id_c, :Iq_c]
     inner_input = [
-        VR_inv_var,
-        VI_inv_var,
+        Vr_inv_var,
+        Vi_inv_var,
         Vr_cnv_var,
         Vi_cnv_var,
         θ_oc_var,
