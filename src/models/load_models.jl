@@ -22,3 +22,17 @@ function mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device::PSY.Powe
 
     return
 end
+
+function mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device::PSY.FixedAdmittance)
+    #TODO - implement the new load
+    bus = PSY.get_bus(device)
+
+    #Load device parameters
+    Y = PSY.get_Y(device)
+    G = real(Y)
+    B = imag(Y)
+
+    current_r[1] += -(voltage_r[1] * G + voltage_i[1] * B)  #in system pu flowing out
+    current_i[1] += -(voltage_r[1] * B + voltage_i[1] * G)  #in system pu flowing out
+    return
+end

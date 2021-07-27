@@ -99,6 +99,18 @@ function device!(
     return
 end
 
+function device!(
+    voltage_r,
+    voltage_i,
+    current_r,
+    current_i,
+    device::PSY.FixedAdmittance,
+    ::SimulationInputs,
+)
+    mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device)
+    return
+end
+
 function device_mass_matrix_entries!(
     sim_inputs::SimulationInputs,
     dynamic_device::PSY.DynamicInverter,
