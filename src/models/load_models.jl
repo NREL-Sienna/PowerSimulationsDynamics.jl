@@ -32,7 +32,7 @@ function mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device::PSY.Fixe
     G = real(Y)
     B = imag(Y)
 
-    current_r[1] += -(voltage_r[1] * G + voltage_i[1] * B)  #in system pu flowing out
+    current_r[1] += -(voltage_r[1] * G - voltage_i[1] * B)  #in system pu flowing out
     current_i[1] += -(voltage_r[1] * B + voltage_i[1] * G)  #in system pu flowing out
     return
 end
