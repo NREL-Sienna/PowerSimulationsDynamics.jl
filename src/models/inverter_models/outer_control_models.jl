@@ -378,7 +378,7 @@ function mdl_outer_ode!(
     else
         #p_ext is fixed so no limits are applied
         p_ord = internal_states[state_ct]
-        output_ode[local_ix[state_ct]] = (1.0 / T_pord) * (p_ext - p_ord)
+        output_ode[local_ix[state_ct]] = (1.0 / T_pord) * (p_ref - p_ord)
         state_ct += 1
 
         #Update Inner Vars: Ioc_pcmd
@@ -472,7 +472,7 @@ function mdl_outer_ode!(
         Q_ext = q_LL + (T_ft / T_fv) * Q_pi_sat
 
         #Update ODEs
-        output_ode[local_ix[state_ct]] = (1.0 / T_fltr) * (q_ref - q_flt)
+        output_ode[local_ix[state_ct]] = (1.0 / T_fltr) * (q_elec_out - q_flt)
         output_ode[local_ix[state_ct + 1]] = Q_binary_logic * q_err
         output_ode[local_ix[state_ct + 2]] =
             (1.0 / T_fv) * (Q_pi_sat * (1.0 - T_ft / T_fv) - q_LL)
