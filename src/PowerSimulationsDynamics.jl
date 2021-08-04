@@ -23,6 +23,8 @@ export get_voltage_magnitude_series
 export get_voltage_angle_series
 export print_device_states
 export get_initial_conditions
+export get_real_current_series
+export get_imaginary_current_series
 export get_activepower_series
 export get_reactivepower_series
 
