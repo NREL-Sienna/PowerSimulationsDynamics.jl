@@ -49,8 +49,10 @@ function initialize_static_device!(::PSY.FixedAdmittance)
     return
 end
 
-function initialize_dynamic_device!(dynamic_device::PSY.PeriodicVariableSource, source::PSY.Source)
-
+function initialize_dynamic_device!(
+    dynamic_device::PSY.PeriodicVariableSource,
+    source::PSY.Source,
+)
     @assert PSY.get_Xth(dynamic_device) == PSY.get_Xth(source)
     @assert PSY.get_Rth(dynamic_device) == PSY.get_Rth(source)
 

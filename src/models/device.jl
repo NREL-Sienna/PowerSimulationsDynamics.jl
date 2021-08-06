@@ -30,7 +30,7 @@ function device!(
     ode_range::UnitRange{Int},
     dynamic_device::DynG,
     inputs::SimulationInputs,
-    t
+    t,
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
     #Obtain local device states
     device_states = @view x[ix_range]

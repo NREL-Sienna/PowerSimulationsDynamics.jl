@@ -17,7 +17,6 @@ function mdl_source!(voltage_r, voltage_i, current_r, current_i, device::PSY.Sou
     return
 end
 
-
 function device!(
     x,
     output_ode::Vector{T},
@@ -39,18 +38,18 @@ function device!(
     output_ode[ode_range][ix_range[1]] = dV = 0
     for (ix, A) in PSY.get_internal_voltage_coefficients(dynamic_device)
         t <= 0 && continue
-        dV += ω_V[ix]*(A[1]*cos(ω_V[ix]* t) - A[2]*sin(ω_V[ix]* t))
+        dV += ω_V[ix] * (A[1] * cos(ω_V[ix] * t) - A[2] * sin(ω_V[ix] * t))
     end
 
     output_ode[ode_range][ix_range[2]] = dθ = 0
     for (ix, A) in PSY.get_internal_angle_coefficients(dynamic_device)
         t <= 0 && continue
-        dθ += ω_θ[ix]*(A[1]*cos(ω_θV[ix]* t) - A[2]*sin(ω_θ[ix]* t))
+        dθ += ω_θ[ix] * (A[1] * cos(ω_θV[ix] * t) - A[2] * sin(ω_θ[ix] * t))
     end
 
     # Internal Voltage states
-    V_R = internal_states[1]*cos(internal_states[2])
-    V_I = internal_states[1]*sin(internal_states[2])
+    V_R = internal_states[1] * cos(internal_states[2])
+    V_I = internal_states[1] * sin(internal_states[2])
 
     R_th = PSY.get_R_th(device)
     X_th = PSY.get_X_th(device)
