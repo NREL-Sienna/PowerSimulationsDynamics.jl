@@ -30,6 +30,7 @@ function device!(
     ode_range::UnitRange{Int},
     dynamic_device::DynG,
     inputs::SimulationInputs,
+    t
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
     #Obtain local device states
     device_states = @view x[ix_range]
@@ -82,6 +83,7 @@ function device!(
     current_i,
     device::PSY.Source,
     ::SimulationInputs,
+    t,
 )
     mdl_source!(voltage_r, voltage_i, current_r, current_i, device)
     return
