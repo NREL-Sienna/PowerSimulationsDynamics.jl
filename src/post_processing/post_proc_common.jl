@@ -56,7 +56,7 @@ function post_proc_voltage_series(solution, bus_ix::Int, n_buses::Int)
 end
 
 """
-Function to compute the active power output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
+Function to compute the real current output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
 string name of the Dynamic Injection device.
 
 """
@@ -65,7 +65,7 @@ function post_proc_real_current_series(sim::Simulation, name::String)
     return I_R
 end
 """
-Function to compute the active power output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
+Function to compute the imaginary current output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
 string name of the Dynamic Injection device.
 
 """
