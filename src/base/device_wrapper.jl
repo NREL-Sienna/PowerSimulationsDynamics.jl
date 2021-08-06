@@ -94,6 +94,7 @@ function _index_port_mapping!(
     return index_component_inputs
 end
 
+get_bus_category(wrapper::DynamicWrapper) = wrapper.bus_category
 get_inner_vars_index(wrapper::DynamicWrapper) = wrapper.inner_vars_index
 get_ix_range(wrapper::DynamicWrapper) = wrapper.ix_range
 get_ode_range(wrapper::DynamicWrapper) = wrapper.ode_range
@@ -101,6 +102,7 @@ get_bus_ix(wrapper::DynamicWrapper) = wrapper.bus_ix
 get_global_index(wrapper::DynamicWrapper) = wrapper.global_index
 get_component_state_mapping(wrapper::DynamicWrapper) = wrapper.component_state_mapping
 get_input_port_mapping(wrapper::DynamicWrapper) = wrapper.input_port_mapping
+
 
 get_P_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
