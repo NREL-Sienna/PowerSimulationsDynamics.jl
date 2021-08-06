@@ -49,7 +49,13 @@ function initialize_static_device!(::PSY.FixedAdmittance)
     return
 end
 
-function initialize_static_device!(device::PSY.Source)
+function initialize_dynamic_device!(dynamic_device::PSY.PeriodicVariableSource, source::PSY.Source)
+
+    @assert PSY.get_Xth(dynamic_device) == PSY.get_Xth(source)
+    @assert PSY.get_Rth(dynamic_device) == PSY.get_Rth(source)
+
+    device_states = zeros(PSY.get_n_states(dynamic_device))
+
     #PowerFlow Data
     P0 = PSY.get_active_power(device)
     Q0 = PSY.get_reactive_power(device)
@@ -82,13 +88,12 @@ function initialize_static_device!(device::PSY.Source)
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
-        θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
-        PSY.set_internal_voltage!(device, V_internal)
-        PSY.set_internal_angle!(device, θ_internal)
-        device.ext[CONTROL_REFS] .=
-            [PSY.get_internal_voltage(device), PSY.get_internal_angle(device)]
+        device_states[1] = V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
+        device_states[2] = θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
+        PSY.set_internal_voltage_bias!(dynamic_device, V_internal)
+        PSY.set_internal_angle!(dynamic_device, θ_internal)
     end
+    return device_states
 end
 
 function initialize_dynamic_device!(branch::PSY.DynamicBranch)
