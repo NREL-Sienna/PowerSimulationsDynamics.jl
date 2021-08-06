@@ -1,3 +1,4 @@
+abstract type LoadCategory end
 struct ConstantCurrent end
 struct ConstantImpedance end
 struct ConstantPower end

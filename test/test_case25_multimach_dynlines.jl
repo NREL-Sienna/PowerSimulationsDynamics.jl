@@ -26,7 +26,7 @@ t_offset = 49.0
 
 #Define Fault using Callbacks
 gen2 = get_dynamic_injector(get_component(Generator, sys, "generator-102-1"));
-Pref_change = ControlReferenceChange(1.0, gen2, PSID.P_ref_index, 0.9);
+Pref_change = ControlReferenceChange(1.0, gen2, 1, 0.9);
 
 @testset "Test 25 Marconato with Dynamic Lines ImplicitModel" begin
     path = (joinpath(pwd(), "test-25"))

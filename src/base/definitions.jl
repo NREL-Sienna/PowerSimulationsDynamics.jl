@@ -99,7 +99,7 @@ const INV_INNER_VARS_SIZE = 17
 
 # Location of the global vars in the Caches
 const GLOBAL_VAR_SYS_FREQ_INDEX = 1
-const GLOBAL_VARS_IX = () -> Dict{Symbol, Number}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
+const GLOBAL_VARS_IX = () -> Dict{Int, Int}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
 
 const SIMULATION_ACCEPTED_KWARGS =
     [:initialize_simulation, :system_to_file, :file_level, :console_level]

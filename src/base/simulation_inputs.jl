@@ -2,8 +2,8 @@ struct SimulationInputs
     base_power::Float64
     base_frequency::Float64
     dynamic_injectors_data::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
-    static_injectors_data::Vector{StaticWrapper{<:PSY.StaticInjection, <:DataType}}
-    static_load_data::Vector{StaticWrapper{<:PSY.ElectricLoad, <:DataType}}
+    static_injectors_data::Vector
+    static_load_data::Vector
     dynamic_branches::Vector{BranchWrapper}
     injection_n_states::Int
     branches_n_states::Int
@@ -268,7 +268,7 @@ function _make_global_variable_index(
     static_injection_data::Vector,
     frequency_reference::Type{T},
 ) where T <: Union{FixedFrequency, ReferenceBus}
-    global_vars_dict = GLOBAL_VARS_IX
+    global_vars_dict = GLOBAL_VARS_IX()
     global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference(
         frequency_reference,
         wrapped_injectors,
