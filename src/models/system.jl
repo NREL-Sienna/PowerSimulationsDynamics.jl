@@ -49,6 +49,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
             ode_range,
             dynamic_device,
             inputs,
+            t,
         )
         M_ = @view M[ix_range, ix_range]
         out[ix_range] .= injection_ode[ode_range] .- M_ * dx[ix_range]
