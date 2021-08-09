@@ -68,8 +68,12 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
 
         power = PSID.get_activepower_series(sim, "generator-102-1")
         rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        ir = PSID.get_real_current_series(sim, "generator-102-1")
+        ii = PSID.get_imaginary_current_series(sim, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(ii, Tuple{Vector{Float64}, Vector{Float64}})
         @test LinearAlgebra.norm(p - p_pscad) <= 5e-3
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
@@ -120,8 +124,12 @@ end
 
         power = PSID.get_activepower_series(sim, "generator-102-1")
         rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        ir = PSID.get_real_current_series(sim, "generator-102-1")
+        ii = PSID.get_imaginary_current_series(sim, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(ii, Tuple{Vector{Float64}, Vector{Float64}})
         @test LinearAlgebra.norm(p - p_pscad) <= 5e-3
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 

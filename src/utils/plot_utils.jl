@@ -49,6 +49,35 @@ function get_voltage_angle_series(sim::Simulation, bus_number::Int)
 end
 
 """
+Function to obtain the real current time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
+string name of the Dynamic Injection device.
+
+"""
+function get_real_current_series(sim::Simulation, name::String)
+    if allunique(sim.solution.t)
+        return sim.solution.t, post_proc_real_current_series(sim, name)
+    else
+        @debug "found repeated time steps removing repetitions"
+        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
+        return sim.solution.t[ix], post_proc_real_current_series(sim, name)[ix]
+    end
+end
+"""
+Function to obtain the imaginary current time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
+string name of the Dynamic Injection device.
+
+"""
+function get_imaginary_current_series(sim::Simulation, name::String)
+    if allunique(sim.solution.t)
+        return sim.solution.t, post_proc_imaginary_current_series(sim, name)
+    else
+        @debug "found repeated time steps removing repetitions"
+        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
+        return sim.solution.t[ix], post_proc_imaginary_current_series(sim, name)[ix]
+    end
+end
+
+"""
 Function to obtain the active power output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
 string name of the Dynamic Injection device.
 
