@@ -111,7 +111,7 @@ const INNER_VARS = "inner_vars"
 const CONTROL_REFS = "control_refs"
 const GEN_INNER_VARS_SIZE = 9
 const INV_INNER_VARS_SIZE = 17
-const PVS_INNER_VARS_SIZE = 0 
+const PVS_INNER_VARS_SIZE = 0
 
 const SIMULATION_ACCEPTED_KWARGS =
     [:initialize_simulation, :system_to_file, :file_level, :console_level]

@@ -32,7 +32,6 @@ tsteps = tspan[1]:step:tspan[2]
             tspan,
         )
 
-
         #Solve problem
         execute!(sim, IDA(), saveat = tsteps)
         pvs = collect(get_components(PeriodicVariableSource, sys))[1]
