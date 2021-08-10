@@ -96,6 +96,7 @@ function device!(
     current_i,
     device::PSY.PowerLoad,
     ::SimulationInputs,
+    t,
 )
     mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device)
     return
@@ -147,6 +148,7 @@ function device!(
     ode_range::UnitRange{Int},
     dynamic_device::DynI,
     inputs::SimulationInputs,
+    t,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
     #Obtain local device states
     device_states = @view x[ix_range]

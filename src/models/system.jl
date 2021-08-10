@@ -65,6 +65,7 @@ function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, 
             view(I_injections_i, bus_ix),
             d,
             inputs,
+            t,
         )
     end
 
@@ -155,6 +156,7 @@ function system_mass_matrix!(dx, x::AbstractArray{U}, inputs::SimulationInputs, 
             ode_range,
             dynamic_device,
             inputs,
+            t,
         )
         dx[ix_range] .= injection_ode[ode_range]
     end
@@ -169,6 +171,7 @@ function system_mass_matrix!(dx, x::AbstractArray{U}, inputs::SimulationInputs, 
             view(I_injections_i, bus_ix),
             d,
             inputs,
+            t,
         )
     end
 
