@@ -91,6 +91,73 @@ function initialize_static_device!(device::PSY.Source)
     end
 end
 
+function initialize_dynamic_device!(
+    dynamic_device::PSY.PeriodicVariableSource,
+    source::PSY.Source,
+)
+    @assert PSY.get_X_th(dynamic_device) == PSY.get_X_th(source)
+    @assert PSY.get_R_th(dynamic_device) == PSY.get_R_th(source)
+
+    device_states = zeros(PSY.get_n_states(dynamic_device))
+
+    #PowerFlow Data
+    P0 = PSY.get_active_power(source)
+    Q0 = PSY.get_reactive_power(source)
+    Vm = PSY.get_magnitude(PSY.get_bus(source))
+    θ = PSY.get_angle(PSY.get_bus(source))
+    S0 = P0 + Q0 * 1im
+    V_R = Vm * cos(θ)
+    V_I = Vm * sin(θ)
+    V = V_R + V_I * 1im
+    I = conj(S0 / V)
+    I_R = real(I)
+    I_I = imag(I)
+    R_th = PSY.get_R_th(source)
+    X_th = PSY.get_X_th(source)
+    Zmag = R_th^2 + X_th^2
+    function f!(out, x)
+        V_R_internal = x[1]
+        V_I_internal = x[2]
+
+        out[1] =
+            R_th * (V_R_internal - V_R) / Zmag + X_th * (V_I_internal - V_I) / Zmag - I_R
+        out[2] =
+            R_th * (V_I_internal - V_I) / Zmag - X_th * (V_R_internal - V_R) / Zmag - I_I
+    end
+    x0 = [V_R, V_I]
+    sol = NLsolve.nlsolve(f!, x0)
+    if !NLsolve.converged(sol)
+        @warn("Initialization in Periodic Variable Source failed")
+    else
+        sol_x0 = sol.zero
+        #Update terminal voltages
+        V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
+        θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
+
+        V_internal_freqs = 0.0
+        V_freqs = PSY.get_internal_voltage_frequencies(dynamic_device)
+        V_coeff = PSY.get_internal_voltage_coefficients(dynamic_device)
+        for (ix, ω) in enumerate(V_freqs)
+            V_internal_freqs += V_coeff[ix][2]     #sin(0) = 0; cos(0)=1
+        end
+
+        θ_internal_freqs = 0.0
+        θ_freqs = PSY.get_internal_angle_frequencies(dynamic_device)
+        θ_coeff = PSY.get_internal_angle_coefficients(dynamic_device)
+        for (ix, ω) in enumerate(θ_freqs)
+            θ_internal_freqs += θ_coeff[ix][2]     #sin(0) = 0; cos(0)=1
+        end
+        V_internal_bias = V_internal - V_internal_freqs
+        θ_internal_bias = θ_internal - θ_internal_freqs
+
+        device_states[1] = V_internal
+        device_states[2] = θ_internal
+        PSY.set_internal_voltage_bias!(dynamic_device, V_internal_bias)
+        PSY.set_internal_angle_bias!(dynamic_device, θ_internal_bias)
+    end
+    return device_states
+end
+
 function initialize_dynamic_device!(branch::PSY.DynamicBranch)
     device_states = zeros(PSY.get_n_states(branch))
     #PowerFlow Data

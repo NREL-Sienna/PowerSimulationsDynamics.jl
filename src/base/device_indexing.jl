@@ -88,6 +88,7 @@ end
 
 var_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
 var_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
+var_count(::PSY.PeriodicVariableSource) = PVS_INNER_VARS_SIZE
 
 function attach_inner_vars!(
     dynamic_device::T,
