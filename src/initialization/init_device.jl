@@ -131,10 +131,29 @@ function initialize_dynamic_device!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        device_states[1] = V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
-        device_states[2] = θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
-        PSY.set_internal_voltage_bias!(dynamic_device, V_internal)
-        PSY.set_internal_angle_bias!(dynamic_device, θ_internal)
+        V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
+        θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
+
+        V_internal_freqs = 0.0
+        V_freqs = PSY.get_internal_voltage_frequencies(dynamic_device)
+        V_coeff = PSY.get_internal_voltage_coefficients(dynamic_device)
+        for (ix, ω) in enumerate(V_freqs)
+            V_internal_freqs += V_coeff[ix][2]     #sin(0) = 0; cos(0)=1
+        end
+
+        θ_internal_freqs = 0.0
+        θ_freqs = PSY.get_internal_angle_frequencies(dynamic_device)
+        θ_coeff = PSY.get_internal_angle_coefficients(dynamic_device)
+        for (ix, ω) in enumerate(θ_freqs)
+            θ_internal_freqs += θ_coeff[ix][2]     #sin(0) = 0; cos(0)=1
+        end
+        V_internal_bias = V_internal - V_internal_freqs
+        θ_internal_bias = θ_internal - θ_internal_freqs
+
+        device_states[1] = V_internal
+        device_states[2] = θ_internal
+        PSY.set_internal_voltage_bias!(dynamic_device, V_internal_bias)
+        PSY.set_internal_angle_bias!(dynamic_device, θ_internal_bias)
     end
     return device_states
 end
