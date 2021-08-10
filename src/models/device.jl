@@ -228,7 +228,7 @@ function mass_matrix_pvs_entries!(
     mass_matrix,
     pvs::PSY.PeriodicVariableSource,
     global_index::Dict{Symbol, Int64},
-)# where {pvs <: PSY.PeriodicVariableSource}
+)
     @debug "Using default mass matrix entries $pvs"
 end
 
