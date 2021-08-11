@@ -31,7 +31,7 @@ sim = Simulation!(ImplicitModel, omib_sys, pwd(), time_span, perturbation_trip)
 ## Explore initial conditions for the simulation
 
 ```@repl quick_start_guide
-x0_init = get_initial_conditions(sim)
+x0_init = read_initial_conditions(sim)
 ```
 
 ## Obtain small signal results for initial conditions
