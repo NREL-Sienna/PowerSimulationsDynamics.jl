@@ -97,12 +97,7 @@ const V_source_index = 1
 const θ_source_index = 2
 
 const MAPPING_DICT = Dict{String, Dict{Symbol, Int}}
-const DEVICE_INTERNAL_MAPPING = Dict{DataType, Vector{Int}}
-
-const GLOBAL_VARS_IX = () -> Dict{Symbol, Number}(
-    :ω_sys => 1.0,
-    :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
-)
+const DEVICE_INTERNAL_MAPPING = Base.ImmutableDict{Int, Vector{Int}}
 
 const LOCAL_STATE_MAPPING = "local_state_mapping"
 const INPUT_PORT_MAPPING = "input_port_mapping"
@@ -112,6 +107,12 @@ const CONTROL_REFS = "control_refs"
 const GEN_INNER_VARS_SIZE = 9
 const INV_INNER_VARS_SIZE = 17
 const PVS_INNER_VARS_SIZE = 0
+
+# Location of the global vars in the Caches
+const GLOBAL_VAR_SYS_FREQ_INDEX = 1
+const GLOBAL_VARS_IX = () -> Dict{Symbol, Number}(
+    GLOBAL_VAR_SYS_FREQ_INDEX => -1, #To define 0 if infinite source, bus_number otherwise,
+)
 
 const SIMULATION_ACCEPTED_KWARGS =
     [:initialize_simulation, :system_to_file, :file_level, :console_level]

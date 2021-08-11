@@ -28,7 +28,7 @@ function device!(
     current_i,
     ix_range::UnitRange{Int},
     ode_range::UnitRange{Int},
-    dynamic_device::DynG,
+    dynamic_device::DeviceWrapper{DynG},
     inputs::SimulationInputs,
     t,
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
@@ -146,8 +146,9 @@ function device!(
     current_i,
     ix_range::UnitRange{Int},
     ode_range::UnitRange{Int},
-    dynamic_device::DynI,
+    dynamic_device::DeviceWrapper{DynI},
     inputs::SimulationInputs,
+    cache::Cache,
     t,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
     #Obtain local device states
