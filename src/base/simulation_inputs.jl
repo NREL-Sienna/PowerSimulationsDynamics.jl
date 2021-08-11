@@ -16,10 +16,9 @@ struct SimulationInputs
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
     mass_matrix::LinearAlgebra.Diagonal{Float64}
-    tspan::NTuple{2, Float64}
     global_vars_update_pointers::Dict{Int, Int}
 
-    function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0.0), frequency_reference = ReferenceBus)
+    function SimulationInputs(sys::PSY.System, frequency_reference)
         n_buses = get_n_buses(sys)
         Ybus, lookup = _get_Ybus(sys)
         wrapped_branches = _wrap_dynamic_branches(sys, lookup)
@@ -36,7 +35,7 @@ struct SimulationInputs
         sys_f = PSY.get_frequency(sys)
         _adjust_states!(DAE_vector, mass_matrix, total_shunts, n_buses, sys_f)
 
-        _make_global_variable_index(
+        global_vars = _make_global_variable_index(
             wrapped_injectors,
             wrapped_static_injectors,
             frequency_reference,
@@ -60,7 +59,7 @@ struct SimulationInputs
             lookup,
             DAE_vector,
             mass_matrix,
-            tspan,
+            global_vars,
         )
     end
 end
@@ -77,7 +76,6 @@ get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
 get_lookup(inputs::SimulationInputs) = inputs.lookup
 get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
 get_mass_matrix(inputs::SimulationInputs) = inputs.mass_matrix
-get_tspan(inputs::SimulationInputs) = inputs.tspan
 has_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
 get_global_vars_update_pointers(inputs::SimulationInputs) =
     inputs.global_vars_update_pointers
@@ -85,10 +83,26 @@ get_global_vars_update_pointers(inputs::SimulationInputs) =
 get_injection_n_states(inputs::SimulationInputs) = inputs.injection_n_states
 get_branches_n_states(inputs::SimulationInputs) = inputs.branches_n_states
 get_variable_count(inputs::SimulationInputs) = inputs.variable_count
+# TODO: put this in the struct
+get_inner_vars_count(inputs::SimulationInputs) = inputs.dynamic_injectors_data[end].inner_vars_index[end]
 get_ode_range(inputs::SimulationInputs) = inputs.ode_range
 get_bus_count(inputs::SimulationInputs) = inputs.bus_count
 get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
 #get_ω_sys(inputs::SimulationInputs) = get_global_vars(inputs)[:ω_sys]
+
+"""
+SimulationInputs build function for MassMatrixModels
+"""
+function SimulationInputs(::MassMatrixModel, sys::PSY.System, frequency_reference = ReferenceBus)
+    return SimulationInputs(sys, frequency_reference)
+end
+
+"""
+SimulationInputs build function for ImplicitModels
+"""
+function SimulationInputs(::ImplicitModel, sys::PSY.System, frequency_reference = ReferenceBus)
+    return SimulationInputs(sys, frequency_reference)
+end
 
 function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::Int)
     injector_data = get_injectors_with_dynamics(sys)
@@ -147,10 +161,10 @@ function _wrap_static_injectors(sys::PSY.System, lookup::Dict{Int, Int})
     static_injection_data = get_injection_without_dynamics(sys)
     container = Vector{StaticWrapper}(undef, length(static_injection_data))
     isempty(static_injection_data) && return container
-    for (ix, ld) in enumerate(static_injetion_data)
+    for (ix, ld) in enumerate(static_injection_data)
         bus_n = PSY.get_number(PSY.get_bus(ld))
         bus_ix = lookup[bus_n]
-        containter[ix] = StaticWrapper(ld, bus_ix)
+        container[ix] = StaticWrapper(ld, bus_ix)
     end
     return container
 end

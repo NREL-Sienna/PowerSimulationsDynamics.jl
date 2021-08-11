@@ -1,6 +1,7 @@
 mutable struct Simulation{T <: SimulationModel}
     status::BUILD_STATUS
     problem::Union{Nothing, SciMLBase.DEProblem}
+    tspan::NTuple{2, Float64}
     sys::PSY.System
     perturbations::Vector{<:Perturbation}
     x0_init::Vector{Float64}
@@ -8,7 +9,7 @@ mutable struct Simulation{T <: SimulationModel}
     tstops::Vector{Float64}
     callbacks::DiffEqBase.CallbackSet
     simulation_folder::String
-    simulation_inputs::SimulationInputs
+    simulation_inputs::Union{Nothing, SimulationInputs}
     console_level::Base.CoreLogging.LogLevel
     file_level::Base.CoreLogging.LogLevel
     multimachine::Bool
@@ -16,40 +17,33 @@ end
 
 get_system(sim::Simulation) = sim.sys
 get_simulation_inputs(sim::Simulation) = sim.simulation_inputs
+get_initial_conditions(sim::Simulation) = sim.x0_init
 
 function Simulation(
     ::Type{T},
     sys::PSY.System;
     tspan,
     initial_conditions,
-    perturbations = Vector{Perturbation}(),
-    simulation_folder::String = "",
-    console_level = Logging.Warn,
-    file_level = Logging.Debug,
+    initialize_simulation,
+    perturbations,
+    simulation_folder,
+    console_level,
+    file_level,
 ) where {T <: SimulationModel}
     PSY.set_units_base_system!(sys, "DEVICE_BASE")
-    simulation_inputs = SimulationInputs(sys, tspan)
-
-    if isempty(initial_conditions)
-        @debug "Initial Condition set to flat start"
-        bus_count = get_bus_count(simulation_inputs)
-        var_count = get_variable_count(simulation_inputs)
-        initial_conditions = zeros(var_count)
-        initial_conditions[1:bus_count] .= 1.0
-    end
 
     return Simulation{T}(
         BUILD_INCOMPLETE,
         nothing,
+        tspan,
         sys,
         perturbations,
         initial_conditions,
-        false,
+        !initialize_simulation,
         Vector{Float64}(),
         DiffEqBase.CallbackSet(),
-        nothing,
         simulation_folder,
-        simulation_inputs,
+        nothing,
         console_level,
         file_level,
         false,
@@ -83,6 +77,7 @@ Builds the simulation object and conducts the indexing process. The initial cond
 
 # Accepted Key Words
 - `initialize_simulation::Bool : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
+- `initial_conditions::Vector{Float64} : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
 - `system_to_file::Bool`: Serializes the initialized system
 - `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 - `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
@@ -102,6 +97,7 @@ function Simulation!(
         system;
         tspan = tspan,
         initial_conditions = get(kwargs, :initial_conditions, Vector{Float64}()),
+        initialize_simulation = get(kwargs, :initial_conditions, true),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
@@ -153,7 +149,7 @@ end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
-    sim.simulation_inputs = SimulationInputs(get_system(sim), sim.simulation_inputs.tspan)
+    sim.simulation_inputs = SimulationInputs(T(), get_system(sim), sim.simulation_inputs.tspan)
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
@@ -176,8 +172,53 @@ end
 function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
     sim.status = BUILD_INCOMPLETE
-    build!(sim.simulation_inputs, T, simulation_system)
+    sim.simulation_inputs = SimulationInputs(T(), simulation_system)
     @debug "Simulation Inputs Created"
+    return
+end
+
+function _get_flat_start(inputs::SimulationInputs)
+    bus_count = get_bus_count(inputs)
+    var_count = get_variable_count(inputs)
+    initial_conditions = zeros(var_count)
+    initial_conditions[1:bus_count] .= 1.0
+    return initial_conditions
+end
+
+function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel}
+    simulation_inputs = get_simulation_inputs(sim)
+    if isempty(get_initial_conditions(sim)) && sim.initialized
+        @warn "Initial Conditions set to flat start"
+        sim.x0_init = _get_flat_start(simulation_inputs)
+    elseif isempty(get_initial_conditions(sim)) && !sim.initialized
+        sim.x0_init = _get_flat_start(simulation_inputs)
+    elseif !isempty(get_initial_conditions(sim)) && sim.initialized
+        if length(sim.x0_init) != get_variable_count(simulation_inputs)
+            IS.ConflictingInputsError("The size of the provided initial state space does not match the model's state space.")
+        end
+    elseif !isempty(get_initial_conditions(sim)) && !sim.initialized
+        if length(sim.x0_init) != get_variable_count(simulation_inputs)
+            @warn("The size of the provided initial state space does not match the model's state space. Ignoring user provided initial conditions")
+            sim.x0_init = _get_flat_start(simulation_inputs)
+        end
+    else
+        @assert false
+    end
+end
+
+function _get_jacobian(sim::Simulation{T}) where {T <: SimulationModel}
+
+end
+
+
+function _initialize_simulation!(sim::Simulation; kwargs...)
+    if get(kwargs, :initialize_simulation, true)
+        @info("Initializing Simulation States")
+        sim.initialized = calculate_initial_conditions!(sim)
+    else
+        sim.initialized = true
+        sim.status = SIMULATION_INITIALIZED
+    end
     return
 end
 
@@ -204,27 +245,16 @@ function _build_perturbations!(sim::Simulation)
     return
 end
 
-function _initialize_simulation!(sim::Simulation; kwargs...)
-    if get(kwargs, :initialize_simulation, true)
-        @info("Initializing Simulation States")
-        sim.initialized = calculate_initial_conditions!(sim)
-    else
-        sim.initialized = true
-        sim.status = SIMULATION_INITIALIZED
-    end
-    return
-end
-
 function _build!(sim::Simulation{ImplicitModel}; kwargs...)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     sim.status = BUILD_INCOMPLETE
     _build_inputs!(sim)
+    _initialize_state_space(sim)
     _initialize_simulation!(sim; kwargs...)
     _build_perturbations!(sim)
     if sim.status != BUILD_FAILED
         try
             simulation_inputs = get_simulation_inputs(sim)
-            simulation_pre_step!(simulation_inputs, Float64)
             var_count = get_variable_count(simulation_inputs)
             dx0 = zeros(Float64, var_count)
             sim.problem = SciMLBase.DAEProblem(
@@ -254,14 +284,14 @@ function _build!(sim::Simulation{MassMatrixModel}; kwargs...)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     sim.status = BUILD_INCOMPLETE
     _build_inputs!(sim)
+    _initialize_state_space(sim)
+
     _initialize_simulation!(sim; kwargs...)
     _build_perturbations!(sim)
 
     if sim.status != BUILD_FAILED
         try
             simulation_inputs = get_simulation_inputs(sim)
-            # TODO: Not use Real here. It has a bad performance hit.
-            simulation_pre_step!(simulation_inputs, Real)
             sim.problem = SciMLBase.ODEProblem(
                 SciMLBase.ODEFunction(
                     system_mass_matrix!,
@@ -315,7 +345,6 @@ function simulation_pre_step!(
     end
 
     reset_simulation && reset!(sim)
-    simulation_pre_step!(sim.simulation_inputs, T)
     return
 end
 

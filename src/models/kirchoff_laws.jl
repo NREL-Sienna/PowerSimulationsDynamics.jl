@@ -1,6 +1,6 @@
 function Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i)
-    I_bus = get_aux_arrays(inputs)[5]
-    I_balance = get_aux_arrays(inputs)[6]
+    I_bus = get_current_bus(cache, T)
+    I_balance = get_current_balance(cache, T)
     Ybus = get_Ybus(inputs) + get_total_shunts(inputs)
     # Note: BLAS doesn't work because the the type of Vr and Vi is not Matrix of Complex
     LinearAlgebra.mul!(I_bus, Ybus, (V_r + V_i .* 1im))

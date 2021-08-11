@@ -220,7 +220,7 @@ end
 """
 Returns a Dictionary with the resulting initial conditions of the simulation
 """
-function get_initial_conditions(sim::Simulation)
+function read_initial_conditions(sim::Simulation)
     system = get_system(sim)
     simulation_inputs = get_simulation_inputs(sim)
     bus_size = get_bus_count(simulation_inputs)

@@ -1,5 +1,6 @@
 get_inner_vars_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
+get_inner_vars_count(::PSY.PeriodicVariableSource) = 0
 
 index(::PSY.TurbineGov) = 1
 index(::PSY.PSS) = 2
