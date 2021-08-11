@@ -21,16 +21,44 @@ struct JacobianCache{T, U} <: Cache
     current_balance_dual::Vector{U}
     inner_vars::Vector{T}
     inner_vars_dual::Vector{U}
-    # always initialize with [1.0] for frequency reference value
     global_vars::Vector{T}
     global_vars_dual::Vector{U}
 end
 
+function JacobianCache{T, U}(inputs::SimulationInputs) where {T, U}
+    n = get_variable_count(inputs)
+    n_inj = get_injection_n_states(inputs)
+    n_branches = get_branches_n_states(inputs)
+    bus_count = get_bus_count(inputs)
+    inner_vars_count = get_inner_vars_count(inputs)
+    n_global_vars = length(keys(get_global_vars_update_pointers(inputs)))
+    return JacobianCache{T, U}(
+        zeros(T, n),
+        zeros(U, n),
+        zeros(T, bus_count),
+        zeros(U, bus_count),
+        zeros(T, bus_count),
+        zeros(U, bus_count),
+        zeros(T, n_inj),
+        zeros(U, n_inj),
+        zeros(T, n_branches),
+        zeros(U, n_branches),
+        zeros(T, bus_count),
+        zeros(U, bus_count),
+        zeros(T, bus_count),
+        zeros(U, bus_count),
+        zeros(T, inner_vars_count),
+        zeros(U, inner_vars_count),
+        zeros(T, n_global_vars),
+        zeros(U, n_global_vars)
+    )
+end
+
 get_dx(jc::JacobianCache, ::Type{Float64}) = jc.dx
 get_current_injections_r(jc::JacobianCache, ::Type{Float64}) = jc.current_injections_r
-get_current_injections_i(jc::JacobianCache, ::Type{Float64}) = jc._injections_i
+get_current_injections_i(jc::JacobianCache, ::Type{Float64}) = jc.current_injections_i
 get_injection_ode(jc::JacobianCache, ::Type{Float64}) = jc.injection_ode
-get_branches_ode(jc::JacobianCache, ::Type{Float64}) = jc.banches_ode
+get_branches_ode(jc::JacobianCache, ::Type{Float64}) = jc.branches_ode
 get_current_bus(jc::JacobianCache, ::Type{Float64}) = jc.current_bus
 get_current_balance(jc::JacobianCache, ::Type{Float64}) = jc.current_balance
 get_inner_vars(jc::JacobianCache, ::Type{Float64}) = jc.inner_vars
@@ -65,24 +93,32 @@ struct SimCache{T} <: Cache
     global_vars::Vector{T}
 end
 
+function SimCache{T}(inputs::SimulationInputs) where T
+    n = get_variable_count(inputs)
+    n_inj = get_injection_n_states(inputs)
+    n_branches = get_branches_n_states(inputs)
+    bus_count = get_bus_count(inputs)
+    inner_vars_count = get_inner_vars_count(inputs)
+    n_global_vars = length(keys(get_global_vars_update_pointers(inputs)))
+    return SimCache{T}(
+        zeros(T, n),
+        zeros(T, bus_count),
+        zeros(T, bus_count),
+        zeros(T, n_inj),
+        zeros(T, n_branches),
+        zeros(T, bus_count),
+        zeros(T, bus_count),
+        zeros(T, inner_vars_count),
+        zeros(T, n_global_vars),
+    )
+end
+
 get_dx(sc::SimCache, ::Type{Float64}) = sc.dx
 get_current_injections_r(sc::SimCache, ::Type{Float64}) = sc.current_injections_r
 get_current_injections_i(sc::SimCache, ::Type{Float64}) = sc._injections_i
 get_injection_ode(sc::SimCache, ::Type{Float64}) = sc.injection_ode
-get_branches_ode(sc::SimCache, ::Type{Float64}) = sc.banches_ode
+get_branches_ode(sc::SimCache, ::Type{Float64}) = sc.branches_ode
 get_current_bus(sc::SimCache, ::Type{Float64}) = sc.current_bus
 get_current_balance(sc::SimCache, ::Type{Float64}) = sc.current_balance
 get_inner_vars(sc::SimCache, ::Type{Float64}) = sc.inner_vars
 get_global_vars(sc::SimCache, ::Type{Float64}) = sc.global_vars
-
-# function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
-#     @debug "Auxiliary Arrays created with Type $(T)"
-#     bus_count = get_bus_count(inputs)
-#     get_aux_arrays(inputs)[1] = collect(zeros(T, bus_count))
-#     get_aux_arrays(inputs)[2] = collect(zeros(T, bus_count))
-#     get_aux_arrays(inputs)[3] = collect(zeros(T, get_n_injection_states(inputs)))
-#     get_aux_arrays(inputs)[4] = collect(zeros(T, get_n_branches_states(inputs)))
-#     get_aux_arrays(inputs)[5] = collect(zeros(Complex{T}, bus_count))
-#     get_aux_arrays(inputs)[6] = collect(zeros(T, 2 * bus_count))
-#     return
-# end
