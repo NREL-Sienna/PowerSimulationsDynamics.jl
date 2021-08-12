@@ -1,7 +1,7 @@
 function initialize_pss!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov} end
 
 #Currently not working properly.
@@ -9,10 +9,10 @@ function initialize_pss!(
 function initialize_pss!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSSimple},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSSSimple},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
-    ω0 = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
+    ω0 = get_ω_ref(dynamic_device)
     P0 = PSY.get_active_power(static)
     τe = get_inner_vars(dynamic_device)[τe_var]
 

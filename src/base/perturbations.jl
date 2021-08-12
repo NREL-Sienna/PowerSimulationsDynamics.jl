@@ -163,6 +163,7 @@ mutable struct ControlReferenceChange <: Perturbation
     ref_value::Float64
 end
 
+# TODO: change this to use setters
 function get_affect(system::PSY.System, pert::ControlReferenceChange)
     device = PSY.get_component(typeof(pert.device), system, PSY.get_name(pert.device))
     pert.device = device

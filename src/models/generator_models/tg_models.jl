@@ -10,11 +10,11 @@ function mdl_tg_ode!(
     device_states,
     output_ode,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Update inner vars
-    P_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
+    P_ref = get_P_ref(dynamic_device)
     get_inner_vars(dynamic_device)[τm_var] =
         P_ref * PSY.get_efficiency(PSY.get_prime_mover(dynamic_device))
 
@@ -25,12 +25,12 @@ function mdl_tg_ode!(
     device_states,
     output_ode,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
-    P_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
+    ω_ref = get_ω_ref(dynamic_device)
+    P_ref = get_P_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.TGTypeI)
@@ -80,12 +80,12 @@ function mdl_tg_ode!(
     device_states,
     output_ode,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
-    P_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
+    ω_ref = get_ω_ref(dynamic_device)
+    P_ref = get_P_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.TGTypeII)
@@ -127,13 +127,13 @@ function mdl_tg_ode!(
     device_states,
     output_ode,
     ω_sys,
-    device::PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P},
+    device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain TG
     tg = PSY.get_prime_mover(device)
     #Obtain references
-    P_ref = PSY.get_ext(device)[CONTROL_REFS][P_ref_index]
+    P_ref = get_P_ref(device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, typeof(tg))
@@ -176,11 +176,11 @@ function mdl_tg_ode!(
     device_states,
     output_ode,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.GasTG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    P_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
+    P_ref = get_P_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.GasTG)

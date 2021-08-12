@@ -18,7 +18,7 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #TODO Change EMF name for Vf in PowerSystems
@@ -31,11 +31,11 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
+    get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AVRSimple)
@@ -65,11 +65,11 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
+    V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeI)
@@ -126,11 +126,11 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
+    V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeII)
@@ -190,11 +190,11 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
+    V_ref = get_V_ref(dynamic_device)
 
     #Obtain avr
     avr = PSY.get_avr(dynamic_device)
@@ -269,11 +269,11 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
+    V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
@@ -294,7 +294,7 @@ function mdl_avr_ode!(
     avr = PSY.get_avr(dynamic_device)
     Ta_Tb = PSY.get_Ta_Tb(avr)
     K = PSY.get_K(avr)
-    V_min, V_max = PSY.get_V_lim(avr)
+    # V_min, V_max = PSY.get_V_lim(avr)
 
     #Compute auxiliary parameters
     V_in = V0_ref + Vs - V_th

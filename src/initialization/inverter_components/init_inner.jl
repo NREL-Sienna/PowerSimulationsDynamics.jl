@@ -112,7 +112,7 @@ function initialize_inner!(
         #Assumes that angle is in second position
         outer_states[2] = sol_x0[1]
         #Update V_ref (#TODO)
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[2]
+        set_V_ref(dynamic_device, sol_x0[2])
         PSY.set_V_ref!(
             PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
             sol_x0[2],

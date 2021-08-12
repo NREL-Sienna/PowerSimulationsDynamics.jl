@@ -66,7 +66,7 @@ end
 
 get_base_power(inputs::SimulationInputs) = inputs.base_power
 get_base_frequency(inputs::SimulationInputs) = inputs.base_frequency
-get_injectors_data(inputs::SimulationInputs) = inputs.injectors_data
+get_dynamic_injectors_data(inputs::SimulationInputs) = inputs.dynamic_injectors_data
 get_dynamic_branches(inputs::SimulationInputs) = inputs.dynamic_branches
 get_static_injections_data(inputs::SimulationInputs) = inputs.static_injection_data
 get_voltage_buses_ix(inputs::SimulationInputs) = inputs.voltage_buses_ix
@@ -88,7 +88,6 @@ get_inner_vars_count(inputs::SimulationInputs) = inputs.dynamic_injectors_data[e
 get_ode_range(inputs::SimulationInputs) = inputs.ode_range
 get_bus_count(inputs::SimulationInputs) = inputs.bus_count
 get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
-#get_ω_sys(inputs::SimulationInputs) = get_global_vars(inputs)[:ω_sys]
 
 """
 SimulationInputs build function for MassMatrixModels

@@ -5,7 +5,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     P0 = PSY.get_active_power(static)
@@ -71,7 +71,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     P0 = PSY.get_active_power(static)
@@ -150,7 +150,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 
@@ -251,7 +251,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 
@@ -346,7 +346,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 
@@ -443,7 +443,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 
@@ -530,7 +530,7 @@ end
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {
     M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
     S <: PSY.Shaft,
@@ -681,7 +681,7 @@ end
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #PowerFlow Data
@@ -799,7 +799,7 @@ end
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #PowerFlow Data
@@ -934,7 +934,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
 static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P},
+    dynamic_device::PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 

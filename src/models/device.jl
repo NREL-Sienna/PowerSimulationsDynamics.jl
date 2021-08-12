@@ -22,23 +22,26 @@ function device!(
     voltage_i,
     current_r,
     current_i,
-    ix_range::UnitRange{Int},
-    ode_range::UnitRange{Int},
     dynamic_device::DynamicWrapper{DynG},
     inputs::SimulationInputs,
+    cache,
     t,
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
+    bus_ix = get_bus_ix(dynamic_device)
+
     #Obtain local device states
-    device_states = @view x[ix_range]
+    ode_range = get_ode_range(dynamic_device)
+    device_states = @view x[get_ix_range(dynamic_device)]
 
     #Obtain references
     sys_Sbase = get_base_power(inputs)
     sys_f0 = get_base_frequency(inputs)
-    sys_ω = get_ω_sys(inputs)
+    sys_ω = get_ω_sys(cache, T)
 
     #Update Voltage data
-    get_inner_vars(dynamic_device)[VR_gen_var] = voltage_r[1]
-    get_inner_vars(dynamic_device)[VI_gen_var] = voltage_i[1]
+    inner_vars = @view get_inner_vars(cache, T)[get_inner_vars_index(dynamic_device)]
+    inner_vars[VR_gen_var] = voltage_r[bus_ix]
+    inner_vars[VI_gen_var] = voltage_i[bus_ix]
 
     #Obtain ODEs and Mechanical Power for Turbine Governor
     mdl_tg_ode!(device_states, view(output_ode, ode_range), sys_ω, dynamic_device)
@@ -53,8 +56,8 @@ function device!(
     mdl_machine_ode!(
         device_states,
         view(output_ode, ode_range),
-        current_r,
-        current_i,
+        view(current_r, bus_ix),
+        view(current_i, bus_ix),
         sys_Sbase,
         sys_f0,
         dynamic_device,
@@ -152,14 +155,14 @@ function device!(
     #Obtain references
     Sbase = get_base_power(inputs)
     sys_f0 = get_base_frequency(inputs)
-    sys_ω = get_ω_sys(inputs)
+    sys_ω = get_ω_sys(cache, T)
 
     #Update Voltage data
     get_inner_vars(dynamic_device)[VR_inv_var] = voltage_r[1]
     get_inner_vars(dynamic_device)[VI_inv_var] = voltage_i[1]
 
     #Update V_ref
-    V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
+    get_V_ref(dynamic_device)
     get_inner_vars(dynamic_device)[V_oc_var] = V_ref
 
     #Obtain ODES for DC side
