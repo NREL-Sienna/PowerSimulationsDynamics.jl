@@ -10,7 +10,7 @@ function mdl_pss_ode!(
     device_states,
     output_ode,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
     #Update V_pss on inner vars
@@ -25,7 +25,7 @@ function mdl_pss_ode!(
     device_states,
     output_ode,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, TG, PSY.PSSSimple},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSSSimple}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
     #Get references

@@ -1,20 +1,20 @@
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #In AVRFixed, V_ref is used as Vf
     Vf = get_inner_vars(dynamic_device)[Vf_var]
     PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vf)
     PSY.set_Vf!(PSY.get_avr(dynamic_device), Vf)
     #Update Control Refs
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = Vf
+    set_V_ref(dynamic_device, Vf)
 end
 
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #In AVRFixed, V_ref is used as Vf
     Vf0 = get_inner_vars(dynamic_device)[Vf_var]
@@ -32,13 +32,13 @@ function initialize_avr!(
     #Set V_ref
     PSY.set_V_ref!(PSY.get_avr(dynamic_device), V_ref)
     #Update Control Refs
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = V_ref
+    set_V_ref(dynamic_device, Vf)
 end
 
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
     Vf0 = get_inner_vars(dynamic_device)[Vf_var]
@@ -78,7 +78,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeI)
         avr_states = @view device_states[avr_ix]
@@ -92,7 +92,7 @@ end
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
     Vf0 = get_inner_vars(dynamic_device)[Vf_var]
@@ -136,7 +136,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeII)
         avr_states = @view device_states[avr_ix]
@@ -150,7 +150,7 @@ end
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
     Vf0 = get_inner_vars(dynamic_device)[Vf_var]
@@ -242,7 +242,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, typeof(avr))
         avr_states = @view device_states[avr_ix]
@@ -257,7 +257,7 @@ end
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
     Vf0 = get_inner_vars(dynamic_device)[Vf_var]
@@ -292,7 +292,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
         avr_states = @view device_states[avr_ix]

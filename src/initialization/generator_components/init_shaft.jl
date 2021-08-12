@@ -1,13 +1,13 @@
 function initialize_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS} end
 
 function initialize_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     shaft_ix = get_local_state_ix(dynamic_device, PSY.FiveMassShaft)
     shaft_states = @view device_states[shaft_ix]

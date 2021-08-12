@@ -32,28 +32,24 @@ function system_implicit!(
     fill!(I_injections_r, 0.0)
     fill!(I_injections_i, 0.0)
 
-    #Index Setup
-    bus_size = get_bus_count(inputs)
-    bus_vars_count = 2 * bus_size
-    bus_range = 1:bus_vars_count
-    branches_start = get_branches_pointer(inputs)
-
     #Network quantities
-    V_r = @view x[1:bus_size]
-    V_i = @view x[(bus_size + 1):bus_vars_count]
+    bus_counts = get_bus_count(inputs)
+    V_r = @view x[1:bus_counts]
+    V_i = @view x[bus_counts+1:get_bus_range(inputs)[end]]
 
-    for d in get_injectors_data(inputs)
+    for dynamic_device in get_dynamic_injectors_data(inputs)
+        ix_range = get_ix_range(dynamic_device)
+        ode_range = get_ode_range(dynamic_device)
         device!(
             x,
             injection_ode,
-            view(V_r, bus_ix),
-            view(V_i, bus_ix),
-            view(I_injections_r, bus_ix),
-            view(I_injections_i, bus_ix),
-            ix_range,
-            ode_range,
+            V_r,
+            V_i,
+            I_injections_r,
+            I_injections_i,
             dynamic_device,
             inputs,
+            cache,
             t,
         )
         M_ = @view M[ix_range, ix_range]

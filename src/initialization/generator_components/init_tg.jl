@@ -1,7 +1,7 @@
 function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
     tg = PSY.get_prime_mover(dynamic_device)
     τm0 = get_inner_vars(dynamic_device)[τm_var]
@@ -9,13 +9,13 @@ function initialize_tg!(
     P_ref = τm0 / eff
     PSY.set_P_ref!(tg, P_ref)
     #Update Control Refs
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = P_ref
+    get_P_ref(dynamic_device) = P_ref
 end
 
 function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
@@ -29,7 +29,7 @@ function initialize_tg!(
     T5 = PSY.get_T5(tg)
 
     #Get References
-    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
+    ω_ref = get_ω_ref(dynamic_device)
     ω0 = 1.0
 
     function f!(out, x)
@@ -54,7 +54,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = sol_x0[1]
+        get_P_ref(dynamic_device) = sol_x0[1]
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeI)
         tg_states = @view device_states[tg_ix]
@@ -67,7 +67,7 @@ end
 function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
@@ -77,7 +77,7 @@ function initialize_tg!(
     inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
-    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
+    ω_ref = get_ω_ref(dynamic_device)
     ω0 = ω_ref
 
     function f!(out, x)
@@ -94,7 +94,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = sol_x0[1]
+        get_P_ref(dynamic_device) = sol_x0[1]
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeII)
         tg_states = @view device_states[tg_ix]
@@ -105,7 +105,7 @@ end
 function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.GasTG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
@@ -121,7 +121,7 @@ function initialize_tg!(
     AT = PSY.get_AT(tg)
     KT = PSY.get_Kt(tg)
     V_min, V_max = PSY.get_V_lim(tg)
-    ω_ref = dynamic_device.ext[CONTROL_REFS][ω_ref_index]
+    ω_ref = get_ω_ref(dynamic_device)
     ω0 = ω_ref
 
     function f!(out, x)
@@ -145,7 +145,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        dynamic_device.ext[CONTROL_REFS][P_ref_index] = sol_x0[1]
+        set_ω_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
@@ -156,7 +156,7 @@ end
 function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
@@ -197,7 +197,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        dynamic_device.ext[CONTROL_REFS][P_ref_index] = sol_x0[1]
+        set_ω_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]

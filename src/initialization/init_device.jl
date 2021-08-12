@@ -86,8 +86,8 @@ function initialize_static_device!(device::PSY.Source)
         θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
         PSY.set_internal_voltage!(device, V_internal)
         PSY.set_internal_angle!(device, θ_internal)
-        device.ext[CONTROL_REFS] .=
-            [PSY.get_internal_voltage(device), PSY.get_internal_angle(device)]
+        set_V_ref(device, PSY.get_internal_voltage(device))
+        set_θ_ref(device, PSY.get_internal_angle(device))
     end
 end
 

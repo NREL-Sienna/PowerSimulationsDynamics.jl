@@ -11,7 +11,7 @@ function mdl_shaft_ode!(
     output_ode,
     f0::Float64,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
@@ -42,7 +42,7 @@ function mdl_shaft_ode!(
     output_ode,
     f0::Float64,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device

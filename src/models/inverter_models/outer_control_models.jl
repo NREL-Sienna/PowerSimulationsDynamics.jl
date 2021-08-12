@@ -342,10 +342,10 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
-    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
-    V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
-    q_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index]
+    p_ref = get_P_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
+    get_V_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -423,10 +423,10 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
-    ω_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.ω_ref_index]
-    V_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.V_ref_index]
-    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+    p_ref = get_P_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -507,8 +507,8 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
-    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+    p_ref = get_P_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
