@@ -2,18 +2,18 @@ get_inner_vars_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.PeriodicVariableSource) = 0
 
-index(::PSY.TurbineGov) = 1
-index(::PSY.PSS) = 2
-index(::PSY.Machine) = 3
-index(::PSY.Shaft) = 4
-index(::PSY.AVR) = 5
+index(::Type{<:PSY.TurbineGov}) = 1
+index(::Type{<:PSY.PSS}) = 2
+index(::Type{<:PSY.Machine}) = 3
+index(::Type{<:PSY.Shaft}) = 4
+index(::Type{<:PSY.AVR}) = 5
 
-index(::PSY.DCSource) = 1
-index(::PSY.FrequencyEstimator) = 2
-index(::PSY.OuterControl) = 3
-index(::PSY.InnerControl) = 4
-index(::PSY.Converter) = 5
-index(::PSY.Filter) = 6
+index(::Type{<:PSY.DCSource}) = 1
+index(::Type{<:PSY.FrequencyEstimator}) = 2
+index(::Type{<:PSY.OuterControl}) = 3
+index(::Type{<:PSY.InnerControl}) = 4
+index(::Type{<:PSY.Converter}) = 5
+index(::Type{<:PSY.Filter}) = 6
 
 """
 Wraps DynamicInjection devices from PowerSystems to handle changes in controls and connection
@@ -48,9 +48,10 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
         input_port_mapping = Dict{Int, Vector{Int}}()
 
         for c in PSY.get_dynamic_components(dynamic_device)
-            component_state_mapping[index(c)] =
+            ix = index(typeof(c))
+            component_state_mapping[ix] =
                 _index_local_states(c, device_states)
-            input_port_mapping[index(c)] = _index_port_mapping!(c, device_states)
+            input_port_mapping[ix] = _index_port_mapping!(c, device_states)
         end
 
         new{typeof(dynamic_device)}(
@@ -146,12 +147,20 @@ PSY.get_freq_estimator(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInvert
 PSY.get_filter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.filter
 
-function get_local_state_ix(wrapper::DynamicWrapper, component::PSY.DynamicComponent)
-    return wrapper.device_state_mapping[index(component)]
+function get_local_state_ix(wrapper::DynamicWrapper, ::Type{T}) where T <: PSY.DynamicComponent
+    return wrapper.device_state_mapping[index(T)]
 end
 
-function get_input_port_ix(wrapper::DynamicWrapper, component::PSY.DynamicComponent)
-    return wrapper.input_port_mapping[index(component)]
+function get_input_port_ix(wrapper::DynamicWrapper, ::Type{T}) where T <: PSY.DynamicComponent
+    return wrapper.input_port_mapping[index(T)]
+end
+
+function get_local_state_ix(wrapper::DynamicWrapper, ::T) where T <: PSY.DynamicComponent
+    return get_local_state_ix(wrapper, T)
+end
+
+function get_input_port_ix(wrapper::DynamicWrapper, ::T) where T <: PSY.DynamicComponent
+    return get_input_port_ix(wrapper, T)
 end
 
 struct StaticWrapper{T <: PSY.StaticInjection, V}

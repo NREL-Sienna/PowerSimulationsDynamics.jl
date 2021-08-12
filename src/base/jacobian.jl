@@ -7,7 +7,7 @@ struct JacobianFunctionWrapper{T}
     Jf::T
     Jv::SparseMatrixCSC{Float64, Int64}
     x::Vector{Float64}
-    function modelJ(input, x)
+    function JacobianFunctionWrapper(inputs, x)
         model = modelf(input, zeros(3))
         fu = (u) -> model(u, 0)
         jconfig = ForwardDiff.JacobianConfig(fu, x, ForwardDiff.Chunk{3}())
@@ -17,6 +17,15 @@ struct JacobianFunctionWrapper{T}
         new{typeof(Jf)}(input, Jf, sJ, x)
     end
 end
+
+    inif! = (out, x) -> PSID.system_implicit!(
+        out,    #output of the function
+        dx0,    #derivatives equal to zero
+        x,      #states
+        inputs,    #Parameters
+        cache,
+        -99.0,    #time val not relevant
+    )
 
 function (J::modelJ{T})(x) where {T <: Function}
     J.x .= x

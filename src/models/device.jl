@@ -28,6 +28,7 @@ function device!(
     t,
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
     bus_ix = get_bus_ix(dynamic_device)
+    inner_vars = @view get_inner_vars(cache, T)[get_inner_vars_index(dynamic_device)]
 
     #Obtain local device states
     ode_range = get_ode_range(dynamic_device)
@@ -39,23 +40,24 @@ function device!(
     sys_ω = get_ω_sys(cache, T)
 
     #Update Voltage data
-    inner_vars = @view get_inner_vars(cache, T)[get_inner_vars_index(dynamic_device)]
+
     inner_vars[VR_gen_var] = voltage_r[bus_ix]
     inner_vars[VI_gen_var] = voltage_i[bus_ix]
 
     #Obtain ODEs and Mechanical Power for Turbine Governor
-    mdl_tg_ode!(device_states, view(output_ode, ode_range), sys_ω, dynamic_device)
+    mdl_tg_ode!(device_states, view(output_ode, ode_range), inner_vars, sys_ω, dynamic_device)
 
     #Obtain ODEs for AVR
-    mdl_pss_ode!(device_states, view(output_ode, ode_range), sys_ω, dynamic_device)
+    mdl_pss_ode!(device_states, view(output_ode, ode_range), inner_vars, sys_ω, dynamic_device)
 
     #Obtain ODEs for AVR
-    mdl_avr_ode!(device_states, view(output_ode, ode_range), dynamic_device)
+    mdl_avr_ode!(device_states, view(output_ode, ode_range), inner_vars, dynamic_device)
 
     #Obtain ODEs for Machine
     mdl_machine_ode!(
         device_states,
         view(output_ode, ode_range),
+        inner_vars,
         view(current_r, bus_ix),
         view(current_i, bus_ix),
         sys_Sbase,
@@ -67,8 +69,10 @@ function device!(
     mdl_shaft_ode!(
         device_states,
         view(output_ode, ode_range),
+        inner_vars,
         sys_f0,
         sys_ω,
+        inner_vars,
         dynamic_device,
     )
 
