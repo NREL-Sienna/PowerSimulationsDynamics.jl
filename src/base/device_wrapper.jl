@@ -148,7 +148,7 @@ PSY.get_filter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.filter
 
 function get_local_state_ix(wrapper::DynamicWrapper, ::Type{T}) where T <: PSY.DynamicComponent
-    return wrapper.device_state_mapping[index(T)]
+    return wrapper.component_state_mapping[index(T)]
 end
 
 function get_input_port_ix(wrapper::DynamicWrapper, ::Type{T}) where T <: PSY.DynamicComponent
