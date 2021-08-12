@@ -62,6 +62,7 @@ get_branches_ode(jc::JacobianCache, ::Type{Float64}) = jc.branches_ode
 get_current_bus(jc::JacobianCache, ::Type{Float64}) = jc.current_bus
 get_current_balance(jc::JacobianCache, ::Type{Float64}) = jc.current_balance
 get_inner_vars(jc::JacobianCache, ::Type{Float64}) = jc.inner_vars
+get_global_vars(jc::JacobianCache, ::Type{Float64}) = jc.global_vars
 
 get_du(jc::JacobianCache, ::Type{T}) where {T <: ForwardDiff.Dual} =
     reinterpret(T, jc.dx_dual)
@@ -79,6 +80,8 @@ get_current_balance(jc::JacobianCache, ::Type{T}) where {T <: ForwardDiff.Dual} 
     reinterpret(T, jc.current_balance_dual)
 get_inner_vars(jc::JacobianCache, ::Type{T}) where {T <: ForwardDiff.Dual} =
     reinterpret(T, jc.inner_vars_dual)
+get_global_vars(jc::JacobianCache, ::Type{T}) where {T <: ForwardDiff.Dual} =
+    reinterpret(T, jc.global_vars_dual)
 
 struct SimCache{T} <: Cache
     dx::Vector{T}
@@ -122,3 +125,6 @@ get_current_bus(sc::SimCache, ::Type{Float64}) = sc.current_bus
 get_current_balance(sc::SimCache, ::Type{Float64}) = sc.current_balance
 get_inner_vars(sc::SimCache, ::Type{Float64}) = sc.inner_vars
 get_global_vars(sc::SimCache, ::Type{Float64}) = sc.global_vars
+
+
+get_ω_sys(cache::Cache, T::Type{<:Real}) = get_global_vars(cache, T)[GLOBAL_VAR_SYS_FREQ_INDEX]
