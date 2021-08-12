@@ -72,7 +72,6 @@ function device!(
         inner_vars,
         sys_f0,
         sys_ω,
-        inner_vars,
         dynamic_device,
     )
 

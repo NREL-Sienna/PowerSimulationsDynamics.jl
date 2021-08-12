@@ -9,6 +9,7 @@ end
 function mdl_shaft_ode!(
     device_states,
     output_ode,
+inner_vars,
     f0::Float64,
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
@@ -22,8 +23,8 @@ function mdl_shaft_ode!(
     ω = internal_states[2]
 
     #Obtain inner variables for component
-    τe = get_inner_vars(dynamic_device)[τe_var]
-    τm = get_inner_vars(dynamic_device)[τm_var]
+    τe = inner_vars[τe_var]
+    τm = inner_vars[τm_var]
 
     #Get parameters
     shaft = PSY.get_shaft(dynamic_device)
@@ -40,6 +41,7 @@ end
 function mdl_shaft_ode!(
     device_states,
     output_ode,
+inner_vars,
     f0::Float64,
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
@@ -62,8 +64,8 @@ function mdl_shaft_ode!(
     ω_ex = internal_states[10]
 
     #Obtain inner variables for component
-    τe = get_inner_vars(dynamic_device)[τe_var]
-    τm = get_inner_vars(dynamic_device)[τm_var]
+    τe = inner_vars[τe_var]
+    τm = inner_vars[τm_var]
 
     #Get parameters
     shaft = PSY.get_shaft(dynamic_device)
