@@ -558,7 +558,7 @@ test26_eigvals_noTE = [
     -0.24592182992188777 + 0.14919699127432942im
 ]
 
-test28_eigvals = [
+test29_eigvals = [
     -59.73208159935036 + 0.0im
     -50.0 + 0.0im
     -50.0 + 0.0im
@@ -571,7 +571,7 @@ test28_eigvals = [
 ]
 
 #This one fails (probably numerical error)
-test28_eigvals_fflag = [
+test29_eigvals_fflag = [
     -59.72926303103045 + 0.0im
     -50.64322740674875 + 0.0im
     -50.0 + 0.0im
