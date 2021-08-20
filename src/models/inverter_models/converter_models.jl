@@ -9,7 +9,6 @@ end
 function mdl_converter_ode!(
     device_states,
     output_ode,
-    Q_gen0::Float64,
     dynamic_device::PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
 ) where {
     O <: PSY.OuterControl,
