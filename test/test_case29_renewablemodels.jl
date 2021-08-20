@@ -9,7 +9,7 @@ and the generator located in bus 3. The infinite generator is located at bus 2.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test28.jl"))
+include(joinpath(dirname(@__FILE__), "data_tests/test29.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -28,17 +28,13 @@ csv_files = (
     joinpath(dirname(@__FILE__), "benchmarks/psse/RENA/TEST_RENA_FREQ_FLAG.csv"),
 )
 
-init_conditions = [test28_x0_init, test28_x0_Fflag_init]
+init_conditions = [test29_x0_init, test29_x0_Fflag_init]
 
-eigs_values = [test28_eigvals, test28_eigvals_fflag]
+eigs_values = [test29_eigvals, test29_eigvals_fflag]
 
 #time span
 tspan = (0.0, 5.0);
-#Define Fault: Change of YBus
-Ybus_change = NetworkSwitch(
-    1.0, #change at t = 1.0
-    Ybus_fault,
-) #New YBus
+
 function test_renA_implicit(dyr_file, csv_file, init_cond, eigs_value, F_Flag)
     path = (joinpath(pwd(), "test-psse-renA"))
     !isdir(path) && mkdir(path)
@@ -167,7 +163,7 @@ function test_renA_mass_matrix(dyr_file, csv_file, init_cond, eigs_value, F_Flag
     end
 end
 
-@testset "Test 28 RENA ImplicitModel" begin
+@testset "Test 29 RENA ImplicitModel" begin
     for (ix, name) in enumerate(names)
         @testset "$(name)" begin
             dyr_file = dyr_files[ix]
@@ -180,7 +176,7 @@ end
     end
 end
 
-@testset "Test 28 RENA MassMatrixModel" begin
+@testset "Test 29 RENA MassMatrixModel" begin
     for (ix, name) in enumerate(names)
         @testset "$(name)" begin
             dyr_file = dyr_files[ix]

@@ -10,7 +10,7 @@ threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusRenewable.raw")
 
 ### Case 2 Generators ###
 
-function inv_generic_renewable(generator, F_Flag)
+function inv_generic_renewable(static_device, F_Flag)
     if F_Flag == 0
         return PSY.DynamicInverter(
             get_name(static_device),
@@ -35,12 +35,3 @@ function inv_generic_renewable(generator, F_Flag)
         )
     end
 end
-
-for g in get_components(Generator, threebus_sys)
-    case_gen = inv_generic(g)
-    add_component!(threebus_sys, case_gen, g)
-end
-
-#Compute Y_bus after fault
-fault_branches = deepcopy(collect(get_components(Branch, threebus_sys))[2:end])
-Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :]
