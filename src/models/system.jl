@@ -1,34 +1,25 @@
-struct SystemModel{T<:PSID.SimulationModel, Ctype <: Cache}
+struct SystemModel{T<:PSID.SimulationModel}
     inputs::SimulationInputs
-    cache::Ctype
+    cache::Cache
 end
 
-function SystemModel(Model::ImplicitModel, inputs, x0_init::Vector{T}) where T <: Number
+"""
+    Instantiate an ImplicitModel for ForwardDiff calculations
+"""
+function ImplicitModel(inputs, x0_init::Vector{T}, ::Type{Ctype}) where {T <: Number, Ctype <: JacobianCache}
     U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_implicit!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
-    cache = JacobianCache{T, U}
-    new{Model, typeof(cache)}(inputs, cache)
+    return SystemModel{ImplicitModel}(inputs, Ctype{T,U}(inputs))
 end
 
-function (m::SystemModel{ImplicitModel, U})(out::AbstractArray{T}, du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {U <: Cache, T <: Real}
-    system_implicit!(out, du, u, f.inputs, f.cache, t)
+"""
+Instantiate an ImplicitModel for ODE inputs.
+"""
+function ImplicitModel(inputs, ::Vector{T}, ::Type{Ctype}) where {Ctype <: SimCache{T}} where {T <: Real}
+    return SystemModel{ImplicitModel}(inputs, Ctype(inputs))
 end
 
-function SystemModel(Model::MassMatrixModel, inputs, x0_init::Vector{T}) where T <: Number
-
-    U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_mass_matrix!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
-    cache = JacobianCache{T, U}
-    new{Model, typeof(cache)}(inputs, cache)
-end
-
-function (m::SystemModel{MassMatrixModel, U})(du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {U <: Cache, T <: Real}
-    system_mass_matrix!(du, u, f.inputs, f.cache, t)
-end
-
-function update_global_vars!(cache::Cache, inputs::SimulationInputs, x::AbstractArray{U}) where {U <: Real}
-    index = get_global_vars_update_pointers(inputs)[GLOBAL_VAR_SYS_FREQ_INDEX]
-    index == 0 && return
-    # get_global_vars(cache)[:ω_sys] = x[index]
-    return
+function (m::SystemModel{ImplicitModel})(out::AbstractArray{T}, du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {T <: Real}
+    return system_implicit!(out, du, u, f.inputs, f.cache, t)
 end
 
 function system_implicit!(
@@ -51,7 +42,7 @@ function system_implicit!(
     #Network quantities
     bus_counts = get_bus_count(inputs)
     bus_range = get_bus_range(inputs)
-    V = @view x[bus_range]
+    voltages = @view x[bus_range]
     V_r = @view x[1:bus_counts]
     V_i = @view x[bus_counts+1:bus_range[end]]
 
@@ -89,16 +80,8 @@ function system_implicit!(
 
     if has_dyn_lines(inputs)
         for br in get_dynamic_branches(inputs)
-            arc = PSY.get_arc(br)
-            n_states = PSY.get_n_states(br)
-            from_bus_number = PSY.get_number(arc.from)
-            to_bus_number = PSY.get_number(arc.to)
-            bus_ix_from = get_lookup(inputs)[from_bus_number]
-            bus_ix_to = get_lookup(inputs)[to_bus_number]
-            ix_range = range(branches_start, length = n_states)
-            ode_range = range(branches_count, length = n_states)
-            branches_count = branches_count + n_states
-            branches_start += n_states
+            ix_range = get_ix_range(dynamic_branch)
+            ode_range = get_ode_range(dynamic_branch)
             branch!(
                 x,
                 dx,
@@ -123,9 +106,23 @@ function system_implicit!(
         end
     end
 
-    out[bus_range] .=
-        network_model(inputs, cache, V_r, V_i) .-
-        M[bus_range, bus_range] * dx[bus_range]
+    out[bus_range] .= network_model(inputs, cache, voltages) .- M[bus_range, bus_range] * dx[bus_range]
+end
+
+"""
+Instantiate a MassMatrixModel for ODE inputs.
+"""
+function MassMatrixModel(inputs, ::Vector{T}, ::Type{Ctype}) where {Ctype <: SimCache{T}} where T <: Number
+    return SystemModel{MassMatrixModel}(inputs, Ctype(inputs))
+end
+
+function MassMatrixModel(inputs, x0_init::Vector{T}, ::Type{Ctype}) where {T <: Number, Ctype <: JacobianCache}
+    U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_mass_matrix!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
+    return SystemModel{MassMatrixModel}(inputs, Ctype{T,U}(inputs))
+end
+
+function (m::SystemModel{MassMatrixModel})(du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {T <: Real}
+    system_mass_matrix!(du, u, f.inputs, f.cache, t)
 end
 
 function system_mass_matrix!(
@@ -139,32 +136,20 @@ function system_mass_matrix!(
     I_injections_i = get_current_injections_i(cache, T)
     injection_ode = get_injection_ode(cache, T)
     branches_ode = get_branches_ode(cache, T)
-
-    #Index Setup
-    bus_size = get_bus_count(inputs)
-    bus_vars_count = 2 * bus_size
-    bus_range = 1:bus_vars_count
-    injection_start = get_injection_pointer(inputs)
-    injection_count = 1
-    branches_start = get_branches_pointer(inputs)
-    branches_count = 1
-    update_global_vars!(inputs, x)
-
-    #Network quantities
-    V_r = @view x[1:bus_size]
-    V_i = @view x[(bus_size + 1):bus_vars_count]
+    update_global_vars!(cache, inputs, x)
     fill!(I_injections_r, 0.0)
     fill!(I_injections_i, 0.0)
 
-    for d in get_injectors_data(inputs)
-        dynamic_device = PSY.get_dynamic_injector(d)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = get_lookup(inputs)[bus_n]
-        n_states = PSY.get_n_states(dynamic_device)
-        ix_range = range(injection_start, length = n_states)
-        ode_range = range(injection_count, length = n_states)
-        injection_count = injection_count + n_states
-        injection_start = injection_start + n_states
+    #Network quantities
+    bus_counts = get_bus_count(inputs)
+    bus_range = get_bus_range(inputs)
+    voltages = @view x[bus_range]
+    V_r = @view x[1:bus_counts]
+    V_i = @view x[bus_counts+1:bus_range[end]]
+
+    for dynamic_device in get_injectors_data(inputs)
+        ix_range = get_ix_range(dynamic_device)
+        ode_range = get_ode_range(dynamic_device)
         device!(
             x,
             injection_ode,
@@ -181,32 +166,23 @@ function system_mass_matrix!(
         dx[ix_range] .= injection_ode[ode_range]
     end
 
-    for d in get_static_injectiors_data(inputs)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = get_lookup(inputs)[bus_n]
+    for static_device in get_static_injectiors_data(inputs)
         device!(
-            view(V_r, bus_ix),
-            view(V_i, bus_ix),
-            view(I_injections_r, bus_ix),
-            view(I_injections_i, bus_ix),
-            d,
+            V_r,
+            V_i,
+            I_injections_r,
+            I_injections_i,
+            static_device,
             inputs,
+            cache,
             t,
         )
     end
 
     if has_dyn_lines(inputs)
-        for br in get_dynamic_branches(inputs)
-            arc = PSY.get_arc(br)
-            n_states = PSY.get_n_states(br)
-            from_bus_number = PSY.get_number(arc.from)
-            to_bus_number = PSY.get_number(arc.to)
-            bus_ix_from = get_lookup(inputs)[from_bus_number]
-            bus_ix_to = get_lookup(inputs)[to_bus_number]
-            ix_range = range(branches_start, length = n_states)
-            ode_range = range(branches_count, length = n_states)
-            branches_count = branches_count + n_states
-            branches_start += n_states
+        for dynamic_branch in get_dynamic_branches(inputs)
+            ix_range = get_ix_range(dynamic_branch)
+            ode_range = get_ode_range(dynamic_branch)
             branch!(
                 x,
                 dx,
@@ -230,5 +206,5 @@ function system_mass_matrix!(
         end
     end
 
-    dx[bus_range] .= network_model(inputs, V_r, V_i, I_injections_r, I_injections_i)
+    dx[bus_range] .= network_model(inputs, cache, voltages)
 end

@@ -21,6 +21,7 @@ status, and allocate the required indexes of the state space.
 """
 struct DynamicWrapper{T <: PSY.DynamicInjection}
     device::T
+    static_type::Type{<:PSY.StaticInjection}
     bus_category::Type{<:BusCategory}
     connection_status::Base.RefValue{Float64}
     v_ref::Base.RefValue{Float64}
@@ -56,6 +57,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
 
         new{typeof(dynamic_device)}(
             dynamic_device,
+            T,
             BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
             Base.Ref(1.0),
             Base.Ref(PSY.get_V_ref(dynamic_device)),
@@ -234,3 +236,5 @@ set_V_ref(wrapper::StaticWrapper, val::Float64) = wrapper.V_ref[] = val
 set_θ_ref(wrapper::StaticWrapper, val::Float64) = wrapper.θ_ref[] = val
 
 PSY.get_bus(wrapper::StaticWrapper) = PSY.get_bus(wrapper.device)
+PSY.get_active_power(wrapper::StaticWrapper) = PSY.get_active_power(wrapper.device)
+PSY.get_reactive_power(wrapper::StaticWrapper) = PSY.get_reactive_power(wrapper.device)

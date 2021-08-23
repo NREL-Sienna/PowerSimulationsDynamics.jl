@@ -42,18 +42,18 @@ end
 function _initialize_dynamic_injection!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
+    system::PSY.System,
 )
     @debug "Updating Dynamic Injection Component Initial Guess"
-    injection_start = get_injection_pointer(inputs)
+    initial_inner_vars = zeros(get_inner_vars_count(inputs))
     try
-        for d in get_injectors_data(inputs)
-            dynamic_device = PSY.get_dynamic_injector(d)
-            @debug PSY.get_name(d) typeof(d) typeof(dynamic_device)
+        for dynamic_device in get_dynamic_injectors_data(inputs)
+            static = PSY.get_component(dynamic_device.static_type, system, PSY.get_name(dynamic_device))
+            @debug PSY.get_name(dynamic_device) typeof(dynamic_device)
             n_states = PSY.get_n_states(dynamic_device)
-            ix_range = range(injection_start, length = n_states)
-            injection_start = injection_start + n_states
-            x0_device = initialize_dynamic_device!(dynamic_device, d)
+            x0_device = initialize_dynamic_device!(dynamic_device, static, initial_inner_vars)
             @assert length(x0_device) == n_states
+            ix_range = get_ix_range(dynamic_device)
             initial_guess[ix_range] = x0_device
         end
     catch e
@@ -197,7 +197,7 @@ function _calculate_initial_conditions!(sim::Simulation)
     while sim.status == BUILD_INCOMPLETE
         sim.status = _power_flow_solution!(sim.x0_init, get_system(sim), inputs)
         sim.status = _initialize_static_injection!(inputs)
-        sim.status = _initialize_dynamic_injection!(sim.x0_init, inputs)
+        sim.status = _initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
         if has_dyn_lines(inputs)
             sim.status = _initialize_dynamic_branches!(sim.x0_init, inputs)
         else
