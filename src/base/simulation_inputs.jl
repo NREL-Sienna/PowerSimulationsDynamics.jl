@@ -10,9 +10,9 @@ struct SimulationInputs
     variable_count::Int
     bus_count::Int
     ode_range::UnitRange{Int}
-    Ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
+    ybus_rectangular::SparseArrays.SparseMatrixCSC{Float64, Int}
     dyn_lines::Bool
-    total_shunts::LinearAlgebra.Diagonal{Complex{Float64}}
+    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int}
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
     mass_matrix::LinearAlgebra.Diagonal{Float64}
@@ -20,7 +20,7 @@ struct SimulationInputs
 
     function SimulationInputs(sys::PSY.System, frequency_reference)
         n_buses = get_n_buses(sys)
-        Ybus, lookup = _get_Ybus(sys)
+        Ybus, lookup = _get_ybus(sys)
         wrapped_branches = _wrap_dynamic_branches(sys, lookup)
         has_dyn_lines = !isempty(wrapped_branches)
         branch_state_counts = 2 * length(wrapped_branches)
@@ -68,10 +68,10 @@ get_base_power(inputs::SimulationInputs) = inputs.base_power
 get_base_frequency(inputs::SimulationInputs) = inputs.base_frequency
 get_dynamic_injectors_data(inputs::SimulationInputs) = inputs.dynamic_injectors_data
 get_dynamic_branches(inputs::SimulationInputs) = inputs.dynamic_branches
-get_static_injections_data(inputs::SimulationInputs) = inputs.static_injection_data
+get_static_injectiors_data(inputs::SimulationInputs) = inputs.static_injectors_data
 get_voltage_buses_ix(inputs::SimulationInputs) = inputs.voltage_buses_ix
 get_current_buses_ix(inputs::SimulationInputs) = inputs.current_buses_ix
-get_Ybus(inputs::SimulationInputs) = inputs.Ybus
+get_ybus(inputs::SimulationInputs) = inputs.ybus_rectangular
 get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
 get_lookup(inputs::SimulationInputs) = inputs.lookup
 get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
@@ -181,21 +181,23 @@ function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
     return container
 end
 
-function _get_Ybus(sys::PSY.System)
+function _get_ybus(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     dyn_lines = PSY.get_components(PSY.DynamicBranch, sys)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
         Ybus_ = PSY.Ybus(sys)
-        Ybus = Ybus_[:, :]
+        ybus = Ybus_[:, :]
         lookup = Ybus_.lookup[1]
         for br in dyn_lines
             ybus_update!(Ybus, br, lookup, -1.0)
         end
+        # TODO: Improve performance of building the rectangular YBus
+        ybus_rectangular = hcat(vcat(real(ybus), -imag(ybus)), vcat(imag(ybus), real(ybus)))
     else
-        Ybus = SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}(zeros(n_buses, n_buses))
+        ybus_rectangular = SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}(zeros(2*n_buses, 2*n_buses))
         lookup = Dict{Int.Int}()
     end
-    return Ybus, lookup
+    return ybus_rectangular, lookup
 end
 
 function _static_injection_inputs!(inputs::SimulationInputs, ::Vector{Int}, sys::PSY.System)
@@ -240,33 +242,35 @@ function _make_DAE_vector(mass_matrix::AbstractArray, var_count::Int, n_buses::I
 end
 
 function _make_total_shunts(wrapped_branches, n_buses::Int)
-    total_shunts = LinearAlgebra.Diagonal(zeros(Complex{Float64}, n_buses))
+    shunts = SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2*n_buses, 2*n_buses))
     if isempty(wrapped_branches)
-        return total_shunts
+        return shunts
     else
         for br in wrapped_branches
             bus_ix_from = get_bus_ix_from(br)
             bus_ix_to = get_bus_ix_to(br)
             b_from = PSY.get_b(br).from
             b_to = PSY.get_b(br).to
-            total_shunts[bus_ix_from, bus_ix_from] += 1im * b_from
-            total_shunts[bus_ix_to, bus_ix_to] += 1im * b_to
+            shunts[bus_ix_from, bus_ix_from + n_buses] += -b_from
+            shunts[bus_ix_to, bus_ix_to + n_buses] += -b_to
+            shunts[bus_ix_from + n_buses, bus_ix_from] += b_from
+            shunts[bus_ix_to + n_buses, bus_ix_to] += b_to
         end
     end
-    return total_shunts
+    return shunts
 end
 
 function _adjust_states!(
     DAE_vector::BitVector,
     mass_matrix::LinearAlgebra.Diagonal{Float64},
-    total_shunts::LinearAlgebra.Diagonal{Complex{Float64}},
+    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int},
     n_buses::Int,
     sys_f::Float64,
 )
     all(iszero.(total_shunts)) && return
     line_constant = 1 / (2.0 * π * sys_f)
-    for (ix, shunt) in enumerate(total_shunts)
-        val = imag(shunt)
+    shunts = total_shunts[1:n_buses, n_buses+1:end]
+    for (ix, val) in enumerate(shunts)total_shunts[n_buses:end]
         if val > 0
             mass_matrix[ix, ix] =
                 mass_matrix[ix + n_buses, ix + n_buses] = val * line_constant
