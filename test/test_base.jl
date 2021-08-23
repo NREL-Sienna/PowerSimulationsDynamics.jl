@@ -20,7 +20,7 @@ Ybus_change = NetworkSwitch(
     try
         #Define Simulation Problem
         sim = Simulation(
-            ImplicitModel,
+            ResidualModel,
             omib_sys, #system
             path1,
             (0.0, 30.0), #time span
@@ -46,7 +46,7 @@ Ybus_change = NetworkSwitch(
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             omib_sys, #system
             path2,
             (0.0, 30.0), #time span
@@ -98,7 +98,7 @@ end
     end
 
     # Tests for all Dynamic Lines
-    sim = Simulation(ImplicitModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
+    sim = Simulation(ResidualModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
     @test sim.status == PSID.BUILT
     sim_inputs = sim.simulation_inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
@@ -117,7 +117,7 @@ end
     # Tests for dynamic lines with b = 0
     set_b!(dyn_branch12, (from = 0.0, to = 0.0))
     set_b!(dyn_branch23, (from = 0.0, to = 0.0))
-    sim = Simulation(ImplicitModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
+    sim = Simulation(ResidualModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
     @test sim.status == PSID.BUILT
     sim_inputs = sim.simulation_inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)

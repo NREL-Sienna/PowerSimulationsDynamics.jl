@@ -209,7 +209,7 @@ function _calculate_initial_conditions!(sim::Simulation)
     return sim.status != BUILD_FAILED
 end
 
-function calculate_initial_conditions!(sim::Simulation{ImplicitModel})
+function calculate_initial_conditions!(sim::Simulation{ResidualModel})
     return _calculate_initial_conditions!(sim)
 end
 

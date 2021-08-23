@@ -12,13 +12,13 @@ raw_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/ThreeBusMulti.raw"
 dyr_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/ThreeBus_GAST.dyr")
 csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
 
-@testset "Test 21 GAST ImplicitModel" begin
+@testset "Test 21 GAST ResidualModel" begin
     path = (joinpath(pwd(), "test-psse-gast"))
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file, dyr_file)
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             sys, #system
             path,
             (0.0, 20.0), #time span

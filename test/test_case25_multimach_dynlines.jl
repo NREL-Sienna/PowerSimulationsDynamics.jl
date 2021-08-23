@@ -28,12 +28,12 @@ t_offset = 49.0
 gen2 = get_dynamic_injector(get_component(Generator, sys, "generator-102-1"));
 Pref_change = ControlReferenceChange(1.0, gen2, 1, 0.9);
 
-@testset "Test 25 Marconato with Dynamic Lines ImplicitModel" begin
+@testset "Test 25 Marconato with Dynamic Lines ResidualModel" begin
     path = (joinpath(pwd(), "test-25"))
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
-        sim = Simulation!(ImplicitModel, sys, path, tspan, Pref_change)
+        sim = Simulation!(ResidualModel, sys, path, tspan, Pref_change)
 
         small_sig = small_signal_analysis(sim)
         @test small_sig.stable

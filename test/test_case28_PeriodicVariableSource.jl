@@ -18,13 +18,13 @@ tspan = (0.0, 1.0);
 step = 1e-1
 tsteps = tspan[1]:step:tspan[2]
 
-@testset "Test 28 Periodic Variable Source ImplicitModel" begin
+@testset "Test 28 Periodic Variable Source ResidualModel" begin
     path = (joinpath(pwd(), "test-28"))
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             sys, # system
             path,
             tspan,

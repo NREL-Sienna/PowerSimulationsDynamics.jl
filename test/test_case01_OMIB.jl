@@ -19,13 +19,13 @@ Ybus_change = NetworkSwitch(
     Ybus_fault,
 ) #New YBus
 
-@testset "Test 01 OMIB ImplicitModel" begin
+@testset "Test 01 OMIB ResidualModel" begin
     path = (joinpath(pwd(), "test-01"))
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             omib_sys, #system
             path,
             (0.0, 20.0), #time span

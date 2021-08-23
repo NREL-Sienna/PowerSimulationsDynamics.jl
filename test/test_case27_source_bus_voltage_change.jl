@@ -24,13 +24,13 @@ case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 #Define Fault using Callbacks
 V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.V_source_index, 1.1)
 
-@testset "Test 27 Source Bus Voltage Magnitude Perturbation ImplicitModel" begin
+@testset "Test 27 Source Bus Voltage Magnitude Perturbation ResidualModel" begin
     path = (joinpath(pwd(), "test-27"))
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             threebus_sys, # system
             path,
             tspan,
@@ -98,13 +98,13 @@ case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 #Define Fault using Callbacks
 V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.θ_source_index, 0.1)
 
-@testset "Test 27 Source Bus Voltage Angle Perturbation ImplicitModel" begin
+@testset "Test 27 Source Bus Voltage Angle Perturbation ResidualModel" begin
     path = (joinpath(pwd(), "test-27"))
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             threebus_sys, # system
             path,
             tspan,

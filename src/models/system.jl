@@ -4,21 +4,21 @@ struct SystemModel{T<:PSID.SimulationModel}
 end
 
 """
-    Instantiate an ImplicitModel for ForwardDiff calculations
+    Instantiate an ResidualModel for ForwardDiff calculations
 """
-function ImplicitModel(inputs, x0_init::Vector{T}, ::Type{Ctype}) where {T <: Number, Ctype <: JacobianCache}
+function ResidualModel(inputs, x0_init::Vector{T}, ::Type{Ctype}) where {T <: Number, Ctype <: JacobianCache}
     U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_implicit!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
-    return SystemModel{ImplicitModel}(inputs, Ctype{T,U}(inputs))
+    return SystemModel{ResidualModel}(inputs, Ctype{T,U}(inputs))
 end
 
 """
-Instantiate an ImplicitModel for ODE inputs.
+Instantiate an ResidualModel for ODE inputs.
 """
-function ImplicitModel(inputs, ::Vector{T}, ::Type{Ctype}) where {Ctype <: SimCache{T}} where {T <: Real}
-    return SystemModel{ImplicitModel}(inputs, Ctype(inputs))
+function ResidualModel(inputs, ::Vector{T}, ::Type{Ctype}) where {Ctype <: SimCache{T}} where {T <: Real}
+    return SystemModel{ResidualModel}(inputs, Ctype(inputs))
 end
 
-function (m::SystemModel{ImplicitModel})(out::AbstractArray{T}, du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {T <: Real}
+function (m::SystemModel{ResidualModel})(out::AbstractArray{T}, du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {T <: Real}
     return system_implicit!(out, du, u, f.inputs, f.cache, t)
 end
 

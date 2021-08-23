@@ -13,7 +13,7 @@ export BranchTrip
 export SourceBusVoltageChange
 # export BusTrip
 
-export ImplicitModel
+export ResidualModel
 export MassMatrixModel
 
 # Export for routines
