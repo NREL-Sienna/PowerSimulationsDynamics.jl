@@ -42,7 +42,7 @@ function get_frequency_reference(::Type{ReferenceBus}, dynamic_injection_data::V
             reference = _get_frequency_state(first(ref_devices))
         end
     else
-        @warn("The reference Bus has a Source connected to it. The frequency reference will change to FixedFrequency")
+        @warn("The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency")
         reference = 0
     end
     return reference

@@ -1,11 +1,27 @@
-struct System{Ctype <: Cache}
+struct SystemModel{T<:PSID.SimulationModel, Ctype <: Cache}
     inputs::SimulationInputs
     cache::Ctype
-    function System(inputs, x0_init::Vector{T}) where T <: Number
-        U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_implicit!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
-        cache = JacobianCache{T, U}
-        new{typeof(cache)}(inputs, cache)
-    end
+end
+
+function SystemModel(Model::ImplicitModel, inputs, x0_init::Vector{T}) where T <: Number
+    U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_implicit!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
+    cache = JacobianCache{T, U}
+    new{Model, typeof(cache)}(inputs, cache)
+end
+
+function (m::SystemModel{ImplicitModel, U})(out::AbstractArray{T}, du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {U <: Cache, T <: Real}
+    system_implicit!(out, du, u, f.inputs, f.cache, t)
+end
+
+function SystemModel(Model::MassMatrixModel, inputs, x0_init::Vector{T}) where T <: Number
+
+    U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_mass_matrix!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
+    cache = JacobianCache{T, U}
+    new{Model, typeof(cache)}(inputs, cache)
+end
+
+function (m::SystemModel{MassMatrixModel, U})(du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {U <: Cache, T <: Real}
+    system_mass_matrix!(du, u, f.inputs, f.cache, t)
 end
 
 function update_global_vars!(cache::Cache, inputs::SimulationInputs, x::AbstractArray{U}) where {U <: Real}
@@ -17,12 +33,12 @@ end
 
 function system_implicit!(
     out::Vector{T},
-    dx::Vector{T},
-    x::Vector{T},
+    dx::Vector{U},
+    x::Vector{V},
     inputs::SimulationInputs,
     cache::Cache,
     t::Float64,
-) where {T <: Real}
+) where {T, U, V <: Real}
     I_injections_r = get_current_injections_r(cache, T)
     I_injections_i = get_current_injections_i(cache, T)
     injection_ode = get_injection_ode(cache, T)
@@ -34,8 +50,10 @@ function system_implicit!(
 
     #Network quantities
     bus_counts = get_bus_count(inputs)
+    bus_range = get_bus_range(inputs)
+    V = @view x[bus_range]
     V_r = @view x[1:bus_counts]
-    V_i = @view x[bus_counts+1:get_bus_range(inputs)[end]]
+    V_i = @view x[bus_counts+1:bus_range[end]]
 
     for dynamic_device in get_dynamic_injectors_data(inputs)
         ix_range = get_ix_range(dynamic_device)
@@ -56,16 +74,15 @@ function system_implicit!(
         out[ix_range] .= injection_ode[ode_range] .- M_ * dx[ix_range]
     end
 
-    for d in get_static_injections_data(inputs)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = get_lookup(inputs)[bus_n]
+    for static_device in get_static_injectiors_data(inputs)
         device!(
-            view(V_r, bus_ix),
-            view(V_i, bus_ix),
-            view(I_injections_r, bus_ix),
-            view(I_injections_i, bus_ix),
-            d,
+            V_r,
+            V_i,
+            I_injections_r,
+            I_injections_i,
+            static_device,
             inputs,
+            cache,
             t,
         )
     end
@@ -107,19 +124,19 @@ function system_implicit!(
     end
 
     out[bus_range] .=
-        Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i) .-
+        network_model(inputs, cache, V_r, V_i) .-
         M[bus_range, bus_range] * dx[bus_range]
 end
 
 function system_mass_matrix!(
-    dx::AbstractArray{U},
-    x::AbstractArray{U},
+    dx::Vector{T},
+    x::Vector{T},
     inputs::SimulationInputs,
     cache::Cache,
     t,
-) where {U <: Real}
-    I_injections_r = get_current_injections_r(cache)
-    I_injections_i = get_current_injections_i(cache)
+) where {T <: Real}
+    I_injections_r = get_current_injections_r(cache, T)
+    I_injections_i = get_current_injections_i(cache, T)
     injection_ode = get_injection_ode(cache, T)
     branches_ode = get_branches_ode(cache, T)
 
@@ -164,7 +181,7 @@ function system_mass_matrix!(
         dx[ix_range] .= injection_ode[ode_range]
     end
 
-    for d in get_static_injections_data(inputs)
+    for d in get_static_injectiors_data(inputs)
         bus_n = PSY.get_number(PSY.get_bus(d))
         bus_ix = get_lookup(inputs)[bus_n]
         device!(
@@ -213,5 +230,5 @@ function system_mass_matrix!(
         end
     end
 
-    dx[bus_range] .= Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i)
+    dx[bus_range] .= network_model(inputs, V_r, V_i, I_injections_r, I_injections_i)
 end
