@@ -175,7 +175,7 @@ end
 function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
     sim.status = BUILD_INCOMPLETE
-    sim.simulation_inputs = SimulationInputs(T(), simulation_system)
+    sim.simulation_inputs = SimulationInputs(T, simulation_system)
     @debug "Simulation Inputs Created"
     return
 end

@@ -1,7 +1,8 @@
 function initialize_dynamic_device!(
-    dynamic_device::PSY.DynamicGenerator,
+    dynamic_device::DynamicWrapper{DynG},
     static::PSY.StaticInjection,
-)
+    initial_inner_vars::Vector
+) where {DynG <: PSY.DynamicGenerator}
     #Obtain States
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
@@ -20,9 +21,10 @@ function initialize_dynamic_device!(
 end
 
 function initialize_dynamic_device!(
-    dynamic_device::PSY.DynamicInverter,
+    dynamic_device::DynamicWrapper{DynI},
     static::PSY.StaticInjection,
-)
+    initial_inner_vars::Vector
+)  where {DynI <: PSY.DynamicInverter}
     #Obtain States
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
@@ -41,15 +43,15 @@ function initialize_dynamic_device!(
     return device_states
 end
 
-function initialize_static_device!(::PSY.PowerLoad)
+function initialize_static_device!(::StaticWrapper{PSY.PowerLoad, T}) where T <: LoadCategory
     return
 end
 
-function initialize_static_device!(::PSY.FixedAdmittance)
+function initialize_static_device!(::StaticWrapper{PSY.FixedAdmittance, T}) where T <: LoadCategory
     return
 end
 
-function initialize_static_device!(device::PSY.Source)
+function initialize_static_device!(device::StaticWrapper{PSY.Source, T}) where T <: BusCategory
     #PowerFlow Data
     P0 = PSY.get_active_power(device)
     Q0 = PSY.get_reactive_power(device)
@@ -62,8 +64,8 @@ function initialize_static_device!(device::PSY.Source)
     I = conj(S0 / V)
     I_R = real(I)
     I_I = imag(I)
-    R_th = PSY.get_R_th(device)
-    X_th = PSY.get_X_th(device)
+    R_th = PSY.get_R_th(device.device)
+    X_th = PSY.get_X_th(device.device)
     Zmag = R_th^2 + X_th^2
 
     function f!(out, x)
@@ -84,10 +86,10 @@ function initialize_static_device!(device::PSY.Source)
         #Update terminal voltages
         V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
         θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
-        PSY.set_internal_voltage!(device, V_internal)
-        PSY.set_internal_angle!(device, θ_internal)
-        set_V_ref(device, PSY.get_internal_voltage(device))
-        set_θ_ref(device, PSY.get_internal_angle(device))
+        PSY.set_internal_voltage!(device.device, V_internal)
+        PSY.set_internal_angle!(device.device, θ_internal)
+        set_V_ref(device, PSY.get_internal_voltage(device.device))
+        set_θ_ref(device, PSY.get_internal_angle(device.device))
     end
 end
 

@@ -98,14 +98,14 @@ get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
 """
 SimulationInputs build function for MassMatrixModels
 """
-function SimulationInputs(::MassMatrixModel, sys::PSY.System, frequency_reference = ReferenceBus)
+function SimulationInputs(::Type{MassMatrixModel}, sys::PSY.System, frequency_reference = ReferenceBus)
     return SimulationInputs(sys, frequency_reference)
 end
 
 """
 SimulationInputs build function for ImplicitModels
 """
-function SimulationInputs(::ImplicitModel, sys::PSY.System, frequency_reference = ReferenceBus)
+function SimulationInputs(::Type{ImplicitModel}, sys::PSY.System, frequency_reference = ReferenceBus)
     return SimulationInputs(sys, frequency_reference)
 end
 
