@@ -15,12 +15,12 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/TEST_TGOV1.csv")
 #Construct system
 sys = System(raw_file, dyr_file);
 
-@testset "Test 21 SteamTurbineGov1 ImplicitModel" begin
+@testset "Test 21 SteamTurbineGov1 ResidualModel" begin
     path = (joinpath(pwd(), "test-psse-tgov1"))
     !isdir(path) && mkdir(path)
     try
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             sys, #system
             path,
             (0.0, 20.0), #time span

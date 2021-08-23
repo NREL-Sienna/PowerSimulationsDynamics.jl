@@ -97,9 +97,9 @@ function SimulationInputs(::Type{MassMatrixModel}, sys::PSY.System, frequency_re
 end
 
 """
-SimulationInputs build function for ImplicitModels
+SimulationInputs build function for ResidualModels
 """
-function SimulationInputs(::Type{ImplicitModel}, sys::PSY.System, frequency_reference = ReferenceBus)
+function SimulationInputs(::Type{ResidualModel}, sys::PSY.System, frequency_reference = ReferenceBus)
     return SimulationInputs(sys, frequency_reference)
 end
 

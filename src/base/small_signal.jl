@@ -19,7 +19,7 @@ function _determine_stability(vals::Vector{Complex{Float64}})
 end
 
 function _calculate_forwardiff_jacobian(
-    sim::Simulation{ImplicitModel},
+    sim::Simulation{ResidualModel},
     x_eval::Vector{Float64},
 )
     var_count = get_variable_count(sim.simulation_inputs)

@@ -27,13 +27,13 @@ t_offset = 9.0
 #Define Fault using Callbacks
 Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
 
-@testset "Test 08 VSM Inverter Infinite Bus ImplicitModel" begin
+@testset "Test 08 VSM Inverter Infinite Bus ResidualModel" begin
     path = (joinpath(pwd(), "test-08"))
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             omib_sys, # system
             path,
             tspan,

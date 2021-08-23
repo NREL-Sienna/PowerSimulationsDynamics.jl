@@ -14,13 +14,13 @@ include(joinpath(dirname(@__FILE__), "data_tests/test17.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-@testset "Test 17 GENROU AVR ImplicitModel" begin
+@testset "Test 17 GENROU AVR ResidualModel" begin
     path = (joinpath(pwd(), "test-psse-genrou-avr"))
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             sys, #system
             path,
             (0.0, 30.0), #time span

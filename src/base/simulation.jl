@@ -245,7 +245,7 @@ function _build_perturbations!(sim::Simulation)
     return
 end
 
-function _build!(sim::Simulation{ImplicitModel}; kwargs...)
+function _build!(sim::Simulation{ResidualModel}; kwargs...)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     sim.status = BUILD_INCOMPLETE
     _build_inputs!(sim)
@@ -348,7 +348,7 @@ function simulation_pre_step!(
     return
 end
 
-function execute!(sim::Simulation{ImplicitModel}, solver; kwargs...)
+function execute!(sim::Simulation{ResidualModel}, solver; kwargs...)
     @debug "status before execute" sim.status
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Float64)
     sim.status = SIMULATION_STARTED

@@ -47,7 +47,7 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
 
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             sys, #system
             path,
             tspan, #time span

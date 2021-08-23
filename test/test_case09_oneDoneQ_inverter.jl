@@ -21,13 +21,13 @@ case_inv = collect(PSY.get_components(PSY.DynamicInverter, threebus_sys))[1]
 #Define Fault using Callbacks
 Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 1.2)
 
-@testset "Test 09 VSM Inverter and OneDoneQ ImplicitModel" begin
+@testset "Test 09 VSM Inverter and OneDoneQ ResidualModel" begin
     path = (joinpath(pwd(), "test-09"))
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             threebus_sys, # system
             path,
             tspan,

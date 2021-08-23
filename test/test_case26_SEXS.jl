@@ -38,7 +38,7 @@ function test_sexs_implicit(dyr_file, csv_file, init_cond, eigs_value)
 
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             sys, #system
             path,
             tspan, #time span
@@ -147,7 +147,7 @@ function test_sexs_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
     end
 end
 
-@testset "Test 26 SEXS ImplicitModel" begin
+@testset "Test 26 SEXS ResidualModel" begin
     for (ix, name) in enumerate(names)
         @testset "$(name)" begin
             dyr_file = dyr_files[ix]
