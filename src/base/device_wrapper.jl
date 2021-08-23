@@ -117,11 +117,11 @@ set_V_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.V_ref[] = val
 set_ω_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.ω_ref[] = val
 
 # PSY overloads for the wrapper
-PSY.get_name(wrapper::DynamicWrapper) = wrapper.device.name
-PSY.get_ext(wrapper::DynamicWrapper) = wrapper.device.ext
-PSY.get_states(wrapper::DynamicWrapper) = wrapper.device.states
-PSY.get_n_states(wrapper::DynamicWrapper) = wrapper.device.n_states
-PSY.get_base_power(wrapper::DynamicWrapper) = wrapper.device.base_power
+PSY.get_name(wrapper::DynamicWrapper) = PSY.get_name(wrapper.device)
+PSY.get_ext(wrapper::DynamicWrapper) = PSY.get_ext(wrapper.device)
+PSY.get_states(wrapper::DynamicWrapper) = PSY.get_states(wrapper.device)
+PSY.get_n_states(wrapper::DynamicWrapper) = PSY.get_n_states(wrapper.device)
+PSY.get_base_power(wrapper::DynamicWrapper) = PSY.get_base_power(wrapper.device)
 
 PSY.get_machine(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator} =
     wrapper.device.machine
@@ -215,6 +215,10 @@ function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.ElectricLoad}
     )
 end
 
+# TODO: something smart to forward fields
+
+get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
+
 # get_bustype is already exported in PSY. So this is named this way to avoid name collisions
 get_bus_category(::StaticWrapper{<: PSY.ElectricLoad, U}) where {U} = PQBus
 get_load_category(::StaticWrapper{<: PSY.ElectricLoad, U}) where {U} = U
@@ -228,3 +232,5 @@ set_P_ref(wrapper::StaticWrapper, val::Float64) = wrapper.P_ref[] = val
 set_Q_ref(wrapper::StaticWrapper, val::Float64) = wrapper.P_ref[] = val
 set_V_ref(wrapper::StaticWrapper, val::Float64) = wrapper.V_ref[] = val
 set_θ_ref(wrapper::StaticWrapper, val::Float64) = wrapper.θ_ref[] = val
+
+PSY.get_bus(wrapper::StaticWrapper) = PSY.get_bus(wrapper.device)

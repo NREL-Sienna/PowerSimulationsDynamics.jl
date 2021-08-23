@@ -17,7 +17,7 @@ end
 
 function device!(
     x,
-    output_ode::Vector{T},
+    output_ode::AbstractArray{T},
     voltage_r,
     voltage_i,
     current_r,
@@ -83,10 +83,11 @@ function device!(
     voltage_i,
     current_r,
     current_i,
-    device::PSY.Source,
+    device::StaticWrapper{PSY.Source, T},
     ::SimulationInputs,
+    ::Cache,
     t,
-)
+) where T <: BusCategory
     mdl_source!(voltage_r, voltage_i, current_r, current_i, device)
     return
 end
@@ -96,8 +97,9 @@ function device!(
     voltage_i,
     current_r,
     current_i,
-    device::PSY.PowerLoad,
+    device::StaticWrapper{PSY.PowerLoad, ConstantImpedance},
     ::SimulationInputs,
+    ::Cache,
     t,
 )
     mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device)
