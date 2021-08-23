@@ -73,7 +73,7 @@ include("base/small_signal.jl")
 #Common Models
 include("models/branch.jl")
 include("models/device.jl")
-include("models/kirchoff_laws.jl")
+include("models/network_model.jl")
 include("models/dynline_model.jl")
 include("models/ref_transformations.jl")
 
