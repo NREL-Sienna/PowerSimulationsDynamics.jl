@@ -1,21 +1,21 @@
 function initialize_dynamic_device!(
     dynamic_device::DynamicWrapper{DynG},
     static::PSY.StaticInjection,
-    initial_inner_vars::Vector
+    initial_inner_vars::AbstractVector,
 ) where {DynG <: PSY.DynamicGenerator}
     #Obtain States
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
     #Initialize Machine and Shaft: δ and ω
-    initialize_mach_shaft!(device_states, static, dynamic_device)
+    initialize_mach_shaft!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize extra Shaft states
-    initialize_shaft!(device_states, static, dynamic_device)
+    initialize_shaft!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize AVR
-    initialize_avr!(device_states, static, dynamic_device)
+    initialize_avr!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize TG
-    initialize_tg!(device_states, static, dynamic_device)
+    initialize_tg!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize PSS
-    initialize_pss!(device_states, static, dynamic_device)
+    initialize_pss!(device_states, static, dynamic_device, initial_inner_vars)
 
     return device_states
 end
@@ -23,23 +23,23 @@ end
 function initialize_dynamic_device!(
     dynamic_device::DynamicWrapper{DynI},
     static::PSY.StaticInjection,
-    initial_inner_vars::Vector
+    initial_inner_vars::AbstractVector,
 )  where {DynI <: PSY.DynamicInverter}
     #Obtain States
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
     #Initialize Machine and Shaft: V and I
-    initialize_filter!(device_states, static, dynamic_device)
+    initialize_filter!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize freq estimator
-    initialize_frequency_estimator!(device_states, static, dynamic_device)
+    initialize_frequency_estimator!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize OuterLoop
-    initialize_outer!(device_states, static, dynamic_device)
+    initialize_outer!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize DCside
-    initialize_DCside!(device_states, static, dynamic_device)
+    initialize_DCside!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize InnerLoop
-    initialize_inner!(device_states, static, dynamic_device)
+    initialize_inner!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize Converter
-    initialize_converter!(device_states, static, dynamic_device)
+    initialize_converter!(device_states, static, dynamic_device, initial_inner_vars)
     return device_states
 end
 
