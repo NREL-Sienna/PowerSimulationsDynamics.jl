@@ -24,7 +24,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
     static_type::Type{<:PSY.StaticInjection}
     bus_category::Type{<:BusCategory}
     connection_status::Base.RefValue{Float64}
-    v_ref::Base.RefValue{Float64}
+    V_ref::Base.RefValue{Float64}
     ω_ref::Base.RefValue{Float64}
     P_ref::Base.RefValue{Float64}
     Q_ref::Base.RefValue{Float64}
