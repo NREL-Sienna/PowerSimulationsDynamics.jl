@@ -1,0 +1,84 @@
+┌ Info: 2021-08-24T02:06:37.274 [2682:1]: Validating connectivity with Goderya algorithm
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/Rjz37/src/utils/network_calculations/ybus_calculations.jl:296
+┌ Info: 2021-08-24T02:06:37.569 [2682:1]: The System has no islands
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/Rjz37/src/utils/network_calculations/ybus_calculations.jl:242
+┌ Debug: 2021-08-24T02:06:37.569 [2682:1]: System doesn't contain Dynamic Branches
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:154
+┌ Debug: 2021-08-24T02:06:37.768 [2682:1]: generator-102-1
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:115
+┌ Debug: 2021-08-24T02:06:39.631 [2682:1]: Using default mass matrix entries TGFixed
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/tg_models.jl:6
+┌ Debug: 2021-08-24T02:06:39.631 [2682:1]: Using default mass matrix entries PSSFixed
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/pss_models.jl:6
+┌ Debug: 2021-08-24T02:06:39.631 [2682:1]: Using default mass matrix entries AVRFixed)
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/avr_models.jl:6
+┌ Debug: 2021-08-24T02:06:39.631 [2682:1]: Using default mass matrix entries BaseMachine
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/machine_models.jl:6
+┌ Debug: 2021-08-24T02:06:39.631 [2682:1]: Using default mass matrix entries SingleMass
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/shaft_models.jl:6
+┌ Warning: 2021-08-24T02:06:39.863 [2682:1]: The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:45
+┌ Debug: 2021-08-24T02:06:39.874 [2682:1]: Simulation Inputs Created
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:176
+┌ Info: 2021-08-24T02:06:39.875 [2682:1]: Initializing Simulation States
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:216
+┌ Debug: 2021-08-24T02:06:39.875 [2682:1]: Start state intialization routine
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:197
+┌ Info: 2021-08-24T02:06:39.875 [2682:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/Rjz37/src/base.jl:339
+┌ Info: 2021-08-24T02:06:39.875 [2682:1]: Validating connectivity with Goderya algorithm
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/Rjz37/src/utils/network_calculations/ybus_calculations.jl:296
+┌ Info: 2021-08-24T02:06:39.875 [2682:1]: The System has no islands
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/Rjz37/src/utils/network_calculations/ybus_calculations.jl:242
+┌ Info: 2021-08-24T02:06:41.571 [2682:1]: PowerFlow solve converged, the results have been stored in the system
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/Rjz37/src/utils/power_flow.jl:311
+┌ Info: 2021-08-24T02:06:41.571 [2682:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/Rjz37/src/base.jl:345
+┌ Debug: 2021-08-24T02:06:41.571 [2682:1]: Updating Voltage guess
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:12
+┌ Debug: 2021-08-24T02:06:41.571 [2682:1]: BUS 1
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:14
+┌ Debug: 2021-08-24T02:06:41.637 [2682:1]: V_r
+│   PSY.get_magnitude(bus) * cos(PSY.get_angle(bus)) = 1.05
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:15
+┌ Debug: 2021-08-24T02:06:41.734 [2682:1]: V_i
+│   PSY.get_magnitude(bus) * sin(PSY.get_angle(bus)) = 0.0
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:16
+┌ Debug: 2021-08-24T02:06:41.757 [2682:1]: BUS 2
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:14
+┌ Debug: 2021-08-24T02:06:41.757 [2682:1]: V_r
+│   PSY.get_magnitude(bus) * cos(PSY.get_angle(bus)) = 1.039727418725999
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:15
+┌ Debug: 2021-08-24T02:06:41.757 [2682:1]: V_i
+│   PSY.get_magnitude(bus) * sin(PSY.get_angle(bus)) = 0.023809551641536846
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:16
+┌ Debug: 2021-08-24T02:06:41.757 [2682:1]: Updating Source internal voltages
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:26
+┌ Debug: 2021-08-24T02:06:44.155 [2682:1]: Updating Dynamic Injection Component Initial Guess
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:47
+┌ Debug: 2021-08-24T02:06:44.236 [2682:1]: generator-102-1
+│   typeof(dynamic_device) = PowerSimulationsDynamics.DynamicWrapper{DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}}
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:52
+┌ Debug: 2021-08-24T02:06:46.880 [2682:1]: No Dynamic Branches in the system
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:205
+┌ Debug: 2021-08-24T02:06:46.880 [2682:1]: Start NLSolve System Run
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:167
+┌ Debug: 2021-08-24T02:06:47.098 [2682:1]: [1.05, 1.039727418725999, 0.0, 0.023809551641536846, 0.539920981973487, 1.0]
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:168
+┌ Error: 2021-08-24T02:06:50.104 [2682:1]: NLsolve failed to solve
+│   exception = (MethodError(PowerSimulationsDynamics.system_implicit!, (ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}, Float64, 6}[Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(1.05,0.0,0.0,0.0,0.0,0.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(1.039727418725999,0.0,0.0,0.0,0.0,0.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(0.0,0.0,0.0,0.0,0.0,0.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(0.023809551641536846,0.0,0.0,0.0,0.0,0.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(0.539920981973487,0.0,0.0,0.0,0.0,0.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(1.0,0.0,0.0,0.0,0.0,0.0,0.0)], [0.0, 0.0, 0.0, 0.0, 0.0, 0.0], ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}, Float64, 6}[Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(1.05,1.0,0.0,0.0,0.0,0.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(1.039727418725999,0.0,1.0,0.0,0.0,0.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(0.0,0.0,0.0,1.0,0.0,0.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(0.023809551641536846,0.0,0.0,0.0,1.0,0.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(0.539920981973487,0.0,0.0,0.0,0.0,1.0,0.0), Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var"#40#41"{PowerSimulationsDynamics.SimulationInputs, Vector{Float64}}, Float64}}(1.0,0.0,0.0,0.0,0.0,0.0,1.0)], PowerSimulationsDynamics.SimulationInputs(100.0, 60.0, PowerSimulationsDynamics.DynamicWrapper[PowerSimulationsDynamics.DynamicWrapper{DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}}(DynamicGenerator(generator-102-1, 1.0, BaseMachine(0.0, 1.0, 0.9726336064052628, Dict{String, Any}(), Symbol[], 0, InfrastructureSystems.InfrastructureSystemsInternal(UUID("d655f930-d9de-4ee7-84ad-95333cef321c"), nothing, nothing)), SingleMass(3.148, 2.0, Dict{String, Any}(), [:δ, :ω], 2, InfrastructureSystems.InfrastructureSystemsInternal(UUID("144ede2f-fb94-4d73-8c41-5381e6495588"), nothing, nothing)), AVRFixed(0.9726336064052628, 0.9726336064052628, Dict{String, Any}(), Symbol[], 0, StateTypes[], InfrastructureSystems.InfrastructureSystemsInternal(UUID("a8b177c5-c966-4eab-b8de-75e8ee6b5c4d"), nothing, nothing)), TGFixed(1.0, 0.5, Dict{String, Any}(), Symbol[], 0, InfrastructureSystems.InfrastructureSystemsInternal(UUID("2110921a-4e2c-442e-b640-0db01f776f66"), nothing, nothing)), PSSFixed(0.0, Dict{String, Any}(), Symbol[], 0, InfrastructureSystems.InfrastructureSystemsInternal(UUID("f34c1591-6a94-49f2-af7f-bf7dd42cc2b5"), nothing, nothing)), 100.0, 2, [:δ, :ω], Dict{String, Any}()), ThermalStandard, PowerSimulationsDynamics.PVBus, Base.RefValue{Float64}(1.0), Base.RefValue{Float64}(0.9726336064052628), Base.RefValue{Float64}(1.0), Base.RefValue{Float64}(1.0), Base.RefValue{Float64}(0.0), [1, 2, 3, 4, 5, 6, 7, 8, 9], [5, 6], [1, 2], 2, Base.ImmutableDict(:δ => 5, :ω => 6), Base.ImmutableDict(1 => [], 3 => [], 2 => [], 4 => [1, 2], 5 => []), Base.ImmutableDict(1 => [2], 3 => [1, 2], 2 => [2], 4 => [], 5 => []))], PowerSimulationsDynamics.StaticWrapper[PowerSimulationsDynamics.StaticWrapper{Source, PowerSimulationsDynamics.SLACKBus}(Source(generator-101-1, true, Bus(101, BUS 1, BusTypes.REF = 4, 0.0, 1.05, (min = 0.94, max = 1.06), 230.0, Area(1, 0.0, 0.0, 0.0), LoadZone(1, 2.478, 0.0), Dict{String, Any}("neighbors" => Set([2, 1]))), 1.978, 0.2157242, 0.0, 1.0, 2.2638235553530954, 0.9829486042908178, nothing, Service[], Dict{String, Any}()), Base.RefValue{Float64}(1.0), Base.RefValue{Float64}(2.2638235553530954), Base.RefValue{Float64}(0.9829486042908178), Base.RefValue{Float64}(5.0), Base.RefValue{Float64}(0.0), 1)], Any[PowerSimulationsDynamics.StaticWrapper{PowerLoad, PowerSimulationsDynamics.ConstantPower}(PowerLoad(load1011, true, Bus(101, BUS 1, BusTypes.REF = 4, 0.0, 1.05, (min = 0.94, max = 1.06), 230.0, Area(1, 0.0, 0.0, 0.0), LoadZone(1, 2.478, 0.0), Dict{String, Any}("neighbors" => Set([2, 1]))), LoadModels.ConstantPower = 3, 2.478, 0.0, 100.0, 2.478, 0.0, Service[], nothing, Dict{String, Any}()), Base.RefValue{Float64}(1.0), Base.RefValue{Float64}(1.05), Base.RefValue{Float64}(0.0), Base.RefValue{Float64}(2.478), Base.RefValue{Float64}(0.0), 1)], PowerSimulationsDynamics.BranchWrapper[], 2, 0, 6, 2, 5:6, 
+    ⋅      ⋅   -20.0   20.0
+    ⋅      ⋅    20.0  -20.0
+  20.0  -20.0     ⋅      ⋅ 
+ -20.0   20.0     ⋅      ⋅ , false, 
+  ⋅    ⋅    ⋅    ⋅ 
+  ⋅    ⋅    ⋅    ⋅ 
+  ⋅    ⋅    ⋅    ⋅ 
+  ⋅    ⋅    ⋅    ⋅ , Dict(102 => 2, 101 => 1), Bool[0, 0, 0, 0, 1, 1], [0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 0.0 0.0; 0.0 0.0 0.0 0.0 1.0 0.0; 0.0 0.0 0.0 0.0 0.0 1.0], Dict(1 => 0)), -99.0), 0x00000000000074ee), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007f77c3de474c, Ptr{Nothing} @0x00007f77c3dea8a4, Ptr{Nothing} @0x00007f77c3debbe2, Ptr{Nothing} @0x00007f7775e3c42f, Ptr{Nothing} @0x00007f7775e3c4c1, Ptr{Nothing} @0x00007f7775e3c558, Ptr{Nothing} @0x00007f7775e3c5cb, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f7775e3aec4, Ptr{Nothing} @0x00007f7775e3af66, Ptr{Nothing} @0x00007f7775e3ada8, Ptr{Nothing} @0x00007f7775e3adcb, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f7775e1ea65, Ptr{Nothing} @0x00007f7775e1f964, Ptr{Nothing} @0x00007f7775e29a95, Ptr{Nothing} @0x00007f7775e38f8b, Ptr{Nothing} @0x00007f7775e392bc, Ptr{Nothing} @0x00007f7775e3933c, Ptr{Nothing} @0x00007f7775ccae1d, Ptr{Nothing} @0x00007f7775ccd33a, Ptr{Nothing} @0x00007f7775cd6710, Ptr{Nothing} @0x00007f7775cd682f, Ptr{Nothing} @0x00007f7775cd8330, Ptr{Nothing} @0x00007f7775cd9246, Ptr{Nothing} @0x00007f7775cd925c, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77b504cf55, Ptr{Nothing} @0x00007f7775c80260, Ptr{Nothing} @0x00007f7775c80e45, Ptr{Nothing} @0x00007f7775c80fab, Ptr{Nothing} @0x00007f7775c81049, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77c3e07f15, Ptr{Nothing} @0x00007f77c3e07bce, Ptr{Nothing} @0x00007f77c3e08811, Ptr{Nothing} @0x00007f77c3e09297, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__quick_start_guide at statement 1, Ptr{Nothing} @0x00007f77c3e24b31, Ptr{Nothing} @0x00007f77c3e24d7c, Ptr{Nothing} @0x00007f77c3e26949, Ptr{Nothing} @0x00007f77aec4caaa, Ptr{Nothing} @0x00007f77aec4cdc8, Ptr{Nothing} @0x00007f77aec4d6eb, Ptr{Nothing} @0x00007f77aec4dccc, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77b504cf55, Ptr{Nothing} @0x00007f77aec4c610, Ptr{Nothing} @0x00007f77aec4c7ee, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77aec4b4c0, Ptr{Nothing} @0x00007f77aec4b525, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77aec4814f, Ptr{Nothing} @0x00007f77aec48e99, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77c3dfe828, Ptr{Nothing} @0x00007f77aec1096a, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77aec0cbcb, Ptr{Nothing} @0x00007f77aec0d023, Ptr{Nothing} @0x00007f77aec0d242, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77aebd79a4, Ptr{Nothing} @0x00007f77aebd7b70, Ptr{Nothing} @0x00007f77aebd80dd, Ptr{Nothing} @0x00007f77aebd8161, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77c3e07f15, Ptr{Nothing} @0x00007f77c3e07bce, Ptr{Nothing} @0x00007f77c3e08811, Ptr{Nothing} @0x00007f77c3e09297, Base.InterpreterIP in top-level CodeInfo for Main at statement 47, Ptr{Nothing} @0x00007f77c3e24b31, Ptr{Nothing} @0x00007f77c3e24d7c, Ptr{Nothing} @0x00007f77c3e26949, Ptr{Nothing} @0x00007f77b5806427, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77b5806082, Ptr{Nothing} @0x00007f77b533ca75, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77b5673f5c, Ptr{Nothing} @0x00007f77b509809e, Ptr{Nothing} @0x00007f77b5098215, Ptr{Nothing} @0x00007f77c3deb769, Ptr{Nothing} @0x00007f77c3e473c5, Ptr{Nothing} @0x00007f77c3e47d6c, Ptr{Nothing} @0x00000000004007a8, Ptr{Nothing} @0x00007f77c4bbd0b2, Ptr{Nothing} @0x00000000004007d8])
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:145
+┌ Info: 2021-08-24T02:06:56.442 [2682:1]: Attaching Perturbations
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:226
+┌ Debug: 2021-08-24T02:06:56.744 [2682:1]: BranchTrip(1.0, "BUS 1-BUS 2-i_1")
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:237
+┌ Error: 2021-08-24T02:06:57.018 [2682:1]: The simulation couldn't be initialized correctly. Simulations status = BUILD_FAILED
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:278
