@@ -18,8 +18,6 @@ function mdl_converter_ode!(
     F <: PSY.Filter,
 }
 
-    #Obtain external states inputs for component
-
     #Obtain inner variables for component
     md = get_inner_vars(dynamic_device)[md_var]
     mq = get_inner_vars(dynamic_device)[mq_var]
@@ -61,8 +59,6 @@ function mdl_converter_ode!(
     function get_value_I(v::ForwardDiff.Dual)
         return v.value
     end
-    #Obtain external states inputs for component
-    #external_ix = get_input_port_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
 
     #Obtain inner variables for component
     V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
@@ -71,10 +67,6 @@ function mdl_converter_ode!(
     θ = atan(V_I / V_R)
     Ip_cmd = get_inner_vars(dynamic_device)[Id_ic_var]
     Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
-    Ir_filt = get_inner_vars(dynamic_device)[Ir_inv_var]
-    Ii_filt = get_inner_vars(dynamic_device)[Ii_inv_var]
-    #Ir_filt_internal = Ir_filt * cos(θ) + Ii_filt * sin(θ)
-    #Ii_filt_internal = - Ir_filt * sin(θ) + Ii_filt * cos(θ)
 
     #Get Converter parameters
     converter = PSY.get_converter(dynamic_device)
@@ -105,10 +97,9 @@ function mdl_converter_ode!(
 
     # Compute additional variables
     # Active Power Part
-    Rp_dn = -Inf
-    Rp_up = Inf
     #Update Ip ramp limits
-    Ip >= 0.0 ? Rp_up = Rrpwr : Rp_dn = -Rrpwr
+    Rp_up = Ip >= 0 ? Rrpwr : Inf
+    Rp_dn = Ip >= 0 ? -Inf : -Rrpwr
     #Saturate Ip if LVPL is active
     Ip_sat = Ip
     Ip_binary = 1.0
@@ -122,10 +113,9 @@ function mdl_converter_ode!(
     G_lv = get_LV_current_gain(V_t, Lv_pnt0, Lv_pnt1)
 
     # Reactive Power Part
-    Rq_dn = -Inf
-    Rq_up = Inf
     #Update Iq ramp limits
-    Q_ref >= 0 ? Rq_up = Iqr_max : Rq_dn = Iqr_min
+    Rq_up = Q_ref >= 0 ? Iqr_max : Inf
+    Rq_dn = Q_ref >= 0 ? -Inf : Iqr_min
     Iq_in = clamp(Iq_cmd - Iq, Rq_dn, Rq_up)
     Iq_extra = max(K_hv * (V_t - Vo_lim), 0.0)
     Id_cnv = G_lv * Ip_sat
