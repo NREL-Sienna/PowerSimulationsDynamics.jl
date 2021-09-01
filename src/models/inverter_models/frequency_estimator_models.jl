@@ -25,9 +25,6 @@ function mdl_freq_estimator_ode!(
     Vr_filter = device_states[external_ix[1]]
     Vi_filter = device_states[external_ix[2]]
 
-    #V_tR = get_inner_vars(dynamic_device)[Vr_inv_var]
-    #V_tI = get_inner_vars(dynamic_device)[Vi_inv_var]
-
     #Get parameters
     pll_control = PSY.get_freq_estimator(dynamic_device)
     ω_lp = PSY.get_ω_lp(pll_control)
@@ -47,8 +44,6 @@ function mdl_freq_estimator_ode!(
 
     #Transform to internal dq-PLL reference frame
     V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
-
-    #Inputs (control signals)
 
     #Compute 6 states ODEs (D'Arco EPSR122 Model)
     #Output Voltage LPF (internal state)
@@ -89,9 +84,6 @@ function mdl_freq_estimator_ode!(
     Vr_filter = device_states[external_ix[1]]
     Vi_filter = device_states[external_ix[2]]
 
-    #V_tR = get_inner_vars(dynamic_device)[Vr_inv_var]
-    #V_tI = get_inner_vars(dynamic_device)[Vi_inv_var]
-
     #Get parameters
     pll_control = PSY.get_freq_estimator(dynamic_device)
     ω_lp = PSY.get_ω_lp(pll_control)
@@ -110,8 +102,6 @@ function mdl_freq_estimator_ode!(
 
     #Transform to internal dq-PLL reference frame
     V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
-
-    #Inputs (control signals)
 
     #Output Voltage LPF (internal state)
     #𝜕vpll_q/𝜕t, Low Pass Filter, Johnson COMPEL2017 eqn. 3.1
