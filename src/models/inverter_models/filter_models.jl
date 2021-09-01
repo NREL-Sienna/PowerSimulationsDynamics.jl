@@ -130,14 +130,12 @@ function mdl_filter_ode!(
         Vi_cnv = get_inner_vars(dynamic_device)[Vi_cnv_var]
         Vr_inv = get_inner_vars(dynamic_device)[Vr_inv_var]
         Vi_inv = get_inner_vars(dynamic_device)[Vi_inv_var]
-        Zmag = rf^2 + lf^2
-        Ir_filt = (1.0 / Zmag) * ((Vr_cnv - Vr_inv) * rf + (Vi_cnv - Vi_inv) * lf)
-        Ii_filt = (1.0 / Zmag) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
+        Zmag_squared = rf^2 + lf^2
+        Ir_filt = (1.0 / Zmag_squared) * ((Vr_cnv - Vr_inv) * rf + (Vi_cnv - Vi_inv) * lf)
+        Ii_filt = (1.0 / Zmag_squared) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
     else
-        Id_cnv = get_inner_vars(dynamic_device)[Ir_cnv_var]
-        Iq_cnv = get_inner_vars(dynamic_device)[Ii_cnv_var]
-        Ir_filt = Id_cnv
-        Ii_filt = Iq_cnv
+        Ir_filt = get_inner_vars(dynamic_device)[Ir_cnv_var]
+        Ii_filt = get_inner_vars(dynamic_device)[Ii_cnv_var]
     end
 
     #Update Inner Vars
