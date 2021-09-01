@@ -267,6 +267,8 @@ function initialize_inner!(
     end
 
     #Update additional variables
+    # Based on PSS/E manual, if user does not provide V_ref0, then
+    # V_ref0 is considered to be the output voltage of the PF solution
     if PSY.get_V_ref0(inner_control) == 0.0
         PSY.set_V_ref0!(inner_control, V_t)
     end
