@@ -217,11 +217,6 @@ function initialize_outer!(
         return v.value
     end
 
-    #Obtain external states inputs for component
-    #external_ix = get_input_port_ix(
-    #    dynamic_device,
-    #    PSY.OuterControl{PSY.ActiveRenewableControllerAB, PSY.ReactiveRenewableControllerAB},
-    #)
     V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
     V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
     I_R = get_value_I(get_inner_vars(dynamic_device)[Ir_inv_var])
