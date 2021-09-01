@@ -46,12 +46,10 @@ Inverter Inner Vars:
 * `V_oc_var` :: Control voltage reference in the d-axis supplied from the outer loop control to the inner loop (for Voltage Mode Control)
 * `Id_oc_var` :: Control current reference in the d-axis supplied from the outer loop control to the inner loop (for Current Mode Control)
 * `Iq_oc_var` :: Control current reference in the q-axis supplied from the outer loop control to the inner loop (for Current Mode Control)
-* `Id_oc_flt_var` :: Control current reference in the d-axis supplied from the outer loop control to the inner loop (for Generic Models)
-* `Iq_oc_flt_var` :: Control current reference in the q-axis supplied from the outer loop control to the inner loop (for Generic Models)
 * `Id_ic_var` :: Control current reference in the d-axis supplied from the inner loop control to the converter (for Generic Models)
 * `Iq_ic_var` :: Control current reference in the q-axis supplied from the inner loop control to the converter (for Generic Models)
-* `Ir_cnv_var` :: Control current reference in the d-axis supplied from the converter to the filter (for Generic Models)
-* `Ii_cnv_var` :: Control current reference in the q-axis supplied from the converter to the filter (for Generic Models)
+* `Ir_cnv_var` :: Control current reference in the R-axis supplied from the converter to the filter (for Generic Models)
+* `Ii_cnv_var` :: Control current reference in the I-axis supplied from the converter to the filter (for Generic Models)
 * `ω_oc_var` :: Control frequency supplied from the outer loop control the inner loop
 * `θ_oc_var` :: Variation of the angle (PLL or VSM) of the inverter
 * `Vr_inv_var` :: Real terminal voltage on the inverter
@@ -71,21 +69,19 @@ Inverter Inner Vars:
     V_oc_var = 8
     Id_oc_var = 9
     Iq_oc_var = 10
-    Id_oc_flt_var = 11
-    Iq_oc_flt_var = 12
-    Id_ic_var = 13
-    Iq_ic_var = 14
-    Ir_cnv_var = 15
-    Ii_cnv_var = 16
-    Ir_inv_var = 17
-    Ii_inv_var = 18
-    ω_oc_var = 19
-    θ_oc_var = 20
-    Vr_inv_var = 21
-    Vi_inv_var = 22
-    Vr_cnv_var = 23
-    Vi_cnv_var = 24
-    P_ES_var = 25
+    Id_ic_var = 11
+    Iq_ic_var = 12
+    Ir_cnv_var = 13
+    Ii_cnv_var = 14
+    Ir_inv_var = 15
+    Ii_inv_var = 16
+    ω_oc_var = 17
+    θ_oc_var = 18
+    Vr_inv_var = 19
+    Vi_inv_var = 20
+    Vr_cnv_var = 21
+    Vi_cnv_var = 22
+    P_ES_var = 23
 end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
@@ -124,8 +120,9 @@ const PORTS = "ports"
 const INNER_VARS = "inner_vars"
 const CONTROL_REFS = "control_refs"
 const GEN_INNER_VARS_SIZE = 9
-const INV_INNER_VARS_SIZE = 25
+const INV_INNER_VARS_SIZE = 23
 const PVS_INNER_VARS_SIZE = 0
+const VOLTAGE_DIVISION_LOWER_BOUND = 0.01
 
 const SIMULATION_ACCEPTED_KWARGS =
     [:initialize_simulation, :system_to_file, :file_level, :console_level]
