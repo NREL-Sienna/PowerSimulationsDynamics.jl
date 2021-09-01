@@ -244,8 +244,10 @@ function initialize_inner!(
     #Get Current Controller parameters
     inner_control = PSY.get_inner_control(dynamic_device)
     Q_Flag = PSY.get_Q_Flag(inner_control)
+    PQ_Flag = PSY.get_PQ_Flag(inner_control)
 
-    Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(inner_control, V_t, Ip_oc, Iq_cmd)
+    Ip_min, Ip_max, Iq_min, Iq_max =
+        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, V_t, Ip_oc, Iq_cmd)
     Ip_min < Ip_oc < Ip_max ? nothing :
     error("Inverter out of current limits. Check Power Flow or Parameters")
     Iq_min < Iq_oc < Iq_max ? nothing :

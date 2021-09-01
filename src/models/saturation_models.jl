@@ -67,41 +67,53 @@ end
 
 function current_limit_logic(
     inner_control::PSY.RECurrentControlB,
+    ::Type{Base.RefValue{0}}, #PQ_Flag = 0: Q Priority
     Vt_filt::X,
     Ip_cmd::Y,
     Iq_cmd::Z,
 ) where {X, Y, Z <: Real}
     # X,Y,Z should be the same. Future work: Correct bug to work always with Float64 or Dual.
     I_max = PSY.get_I_max(inner_control)
-    PQ_Flag = PSY.get_PQ_Flag(inner_control)
     Iq_max = I_max
-    Ip_max = I_max
-
-    if PQ_Flag == 0 # Q Priority
-        Iq_min = -Iq_max
-        local_I = I_max^2 - Iq_cmd^2
-        if local_I < 0
-            local_I = 0
-        else
-            local_I = sqrt(local_I)
-        end
-        if local_I < Ip_max
-            Ip_max = local_I
-        end
-        Ip_min = 0.0
-    else # P Priority
-        Ip_min = 0.0
-        local_I = I_max^2 - Ip_cmd^2
-        if local_I < 0
-            local_I = 0
-        else
-            local_I = sqrt(local_I)
-        end
-        if local_I < Iq_max
-            Iq_max = local_I
-        end
-        Iq_min = -Iq_max
+    Iq_min = -Iq_max
+    Ip_min = 0.0
+    local_I = I_max^2 - Iq_cmd^2
+    if local_I < 0
+        local_I = 0
+    else
+        local_I = sqrt(local_I)
     end
+    if local_I < I_max
+        Ip_max = local_I
+    else
+        Ip_max = I_max
+    end
+    return Ip_min, Ip_max, Iq_min, Iq_max
+end
+
+function current_limit_logic(
+    inner_control::PSY.RECurrentControlB,
+    ::Type{Base.RefValue{1}}, #PQ_Flag = 1: P Priority
+    Vt_filt::X,
+    Ip_cmd::Y,
+    Iq_cmd::Z,
+) where {X, Y, Z <: Real}
+    # X,Y,Z should be the same. Future work: Correct bug to work always with Float64 or Dual.
+    I_max = PSY.get_I_max(inner_control)
+    Ip_max = I_max
+    Ip_min = 0.0
+    local_I = I_max^2 - Ip_cmd^2
+    if local_I < 0
+        local_I = 0
+    else
+        local_I = sqrt(local_I)
+    end
+    if local_I < Iq_max
+        Iq_max = local_I
+    else
+        Iq_max = I_max
+    end
+    Iq_min = -Iq_max
     return Ip_min, Ip_max, Iq_min, Iq_max
 end
 
