@@ -71,6 +71,7 @@ function current_limit_logic(
     Ip_cmd::Y,
     Iq_cmd::Z,
 ) where {X, Y, Z <: Real}
+    # X,Y,Z should be the same. Future work: Correct bug to work always with Float64 or Dual.
     I_max = PSY.get_I_max(inner_control)
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
     Iq_max = I_max
