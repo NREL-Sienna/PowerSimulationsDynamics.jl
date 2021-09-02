@@ -11,7 +11,7 @@ In this way, we provide a common set of development requirements for contributor
 
 ```math
 \begin{align}
-M\frac{dx(t)}{dt} = x(t)
+M\frac{dx(t)}{dt} = f(x(t))
 \end{align}
 ```
 
@@ -22,7 +22,7 @@ At this stage we have not conducted extensive tests with all the solvers in [Dif
 
 ```math
 \begin{align}
-r(t) = \frac{dx(t)}{dt} - x(t)
+r(t) = \frac{dx(t)}{dt} - f(x(t))
 \end{align}
 ```
 

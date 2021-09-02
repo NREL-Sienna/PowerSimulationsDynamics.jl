@@ -28,3 +28,15 @@ v_r^\text{cv} + jv_i^\text{cv} = (v_d^\text{cv} + jv_q^\text{cv})e^{j\delta\thet
 ```
 
 that comes from the converter model.
+
+## RL Filter ```[RLFilter]```
+
+The algebraic RL filter is used to connect the output of the converter through a RL series filter using algebraic phasor equations. The equations for the output current are:
+
+```math
+\begin{align}
+    i_r + ji_i &= \frac{(v_r^\text{cv} + j v_i^\text{cv}) - (v_r^\text{grid} + jv_i^\text{grid})}{r_f + jl_f} \tag{2a}
+\end{align}
+```
+
+on which ``v_r^\text{cv} + jv_i^\text{cv}`` comes from the converter model.

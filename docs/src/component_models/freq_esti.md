@@ -12,9 +12,9 @@ inverters do not use frequency estimators.
 
 The following equations present a PLL used to estimate the frequency and PLL angle of
 the grid. There are two reference frames considered in this inverter. Those are the VSM
-of the outer-loop control ``\delta\theta_{\text{olc}}`` and the PLL one
-``\delta\theta_{\text{pll}}``. The notation used a ``\delta\theta`` to refer as the variation
-of the respective angle ``\theta`` with respect to the grid SRF (instead of the fixed
+of the outer-loop control ``\theta_{\text{olc}}`` and the PLL one
+``\theta_{\text{pll}}``. The notation used a ``\delta\theta`` refers as the variation
+of the respective angle ``\theta^\text{grid}`` with respect to the grid SRF (instead of the fixed
 ``\alpha`` component of the ``\alpha\beta`` transformation):
 
 ```math
@@ -33,6 +33,30 @@ with
 \begin{align}
 \delta\omega_{\text{pll}} &= k_{p,\text{pll}} \tan^{-1} \left(\frac{v_{q,\text{pll}}}{v_{d,\text{pll}}} \right) + k_{i,\text{pll}} \varepsilon_{\text{pll}} \tag{1e} \\
 v_{d,\text{out}} + jv_{q,\text{out}} &= (v_r + jv_i)e^{-\delta\theta_\text{pll}}  \tag{1f}
+\end{align}
+```
+
+on which ``v_r + jv_i`` is the voltage in the grid reference frame on which the PLL is
+measuring (i.e. point of common coupling), that could be in the capacitor of an LCL filter
+or the last branch of such filter.
+
+## Reduced Order Phase-Locked Loop (PLL) ```[ReducedOrderPLL]```
+
+The following equations presents a simplified PLL used to estimate the frequency and PLL angle of the grid. The model assumes that the voltage in the d-axis is always zero (i.e. locked) and hence it does not model it. With that the equations are given by:
+
+```math
+\begin{align}
+\dot{v}_{q,\text{pll}} &= \omega_{\text{lp}} \left [v_{q,\text{out}} - v_{q,\text{pll}} \right] \tag{2a} \\
+\dot{\varepsilon}_{\text{pll}} &= v_{q,\text{pll}} \tag{2b} \\
+\dot{\theta}_{\text{pll}} &= \Omega_b \delta \omega_{\text{pll}} \tag{2c}
+\end{align}
+```
+
+with
+```math
+\begin{align}
+\delta\omega_{\text{pll}} &= k_{p,\text{pll}} v_{q,\text{pll}} + k_{i,\text{pll}} \varepsilon_{\text{pll}} \tag{2d} \\
+v_{d,\text{out}} + jv_{q,\text{out}} &= (v_r + jv_i)e^{-\delta\theta_\text{pll}}  \tag{2e}
 \end{align}
 ```
 
