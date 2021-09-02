@@ -34,9 +34,19 @@ In order to support both formulations, the default implementation of the Implici
 
 ```math
 \begin{align}
-r(t) = M\frac{dx(t)}{dt} - x(t)
+r(t) = M\frac{dx(t)}{dt} - f(x(t))
 \end{align}
 ```
+
+## Solution approaches
+
+`PowerSimulationsDynamics.jl` construct the entire function that is passed to [DifferentialEquations](https://diffeq.sciml.ai/) to solve it using different solvers. This is called the Simultaneous-solution approach to numerically integrate over time. It gives the user the flexibility to model devices with a combination of differential and algebraic states. In addition, it gives the flexibility to model the network using an algebraic or differential model.
+
+On the other hand, industrial tools such as PSS/E uses a Partitioned-solution approach, on which the network must be modeled using an algebraic approach, and the differential equations and algebraic equations are solved sequentially. This method is usually faster if the heuristics for convergence when solving sequentially are properly tuned. However, boundary techniques must be considered when the connection with the devices and network is not converging when applying the partitioned-solution approach.
+
+The difference in solution methods can complicate the validation and comparison between software tools. In addition it can affect the computational properties due to reliance of heuristics. These solution aspects are important to consider when using different tools for simulating power systems dynamics.
+
+For more details, check Brian Stott paper ["Power system dynamic response calculations"](https://ieeexplore.ieee.org/document/1455502).
 
 ## Generator Models
 
