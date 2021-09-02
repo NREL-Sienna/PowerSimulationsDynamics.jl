@@ -96,6 +96,7 @@ function _mdl_ode_RE_inner_controller_B!(
         get_inner_vars(dynamic_device)[Vi_inv_var]^2,
     )
     Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
+    V_oc = get_inner_vars(dynamic_device)[V_oc_var]
 
     #Get Current Controller parameters
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
