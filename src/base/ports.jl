@@ -59,8 +59,8 @@ function Ports(::PSY.Filter)
     #TODO: If converter has dynamics, need to connect state_input
     state_input = [:θ_oc] #[:Vd_c, :Vq_c] #, :Id_c, :Iq_c]
     inner_input = [
-        VR_inv_var,
-        VI_inv_var,
+        Vr_inv_var,
+        Vi_inv_var,
         Vr_cnv_var,
         Vi_cnv_var,
         θ_oc_var,
@@ -81,7 +81,8 @@ end
 
 #### Outer Control Ports ####
 function Ports(::PSY.OuterControl)
-    state_input = [:vr_filter, :vi_filter, :ir_filter, :ii_filter, :ir_cnv, :ii_cnv]
+    state_input =
+        [:vr_filter, :vi_filter, :ir_filter, :ii_filter, :ir_cnv, :ii_cnv, :Vt_filt]
     inner_input = [Vr_filter_var, Vi_filter_var, ω_freq_estimator_var]
     return Ports(state_input, inner_input)
 end

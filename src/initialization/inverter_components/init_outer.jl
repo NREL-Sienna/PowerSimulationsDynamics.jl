@@ -185,3 +185,118 @@ function initialize_outer!(
         q_elec_out,
     )
 end
+
+function initialize_outer!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicInverter{
+        C,
+        PSY.OuterControl{
+            PSY.ActiveRenewableControllerAB,
+            PSY.ReactiveRenewableControllerAB,
+        },
+        IC,
+        DC,
+        P,
+        F,
+    },
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+    function get_value_I(v::Float64)
+        return v
+    end
+    function get_value_I(v::Int)
+        return v
+    end
+    function get_value_I(v::ForwardDiff.Dual)
+        return v.value
+    end
+
+    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
+    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    I_R = get_value_I(get_inner_vars(dynamic_device)[Ir_inv_var])
+    I_I = get_value_I(get_inner_vars(dynamic_device)[Ii_inv_var])
+    V_t = sqrt(V_R^2 + V_I^2)
+    p_elec_out = I_R * V_R + I_I * V_I
+    q_elec_out = -I_I * V_R + I_R * V_I
+    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+
+    #Get Outer Controller parameters
+    outer_control = PSY.get_outer_control(dynamic_device)
+    active_power_control = PSY.get_active_power(outer_control)
+    Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag
+
+    #Set state counter for variable number of states due to flags
+    state_ct = 1
+
+    #Update inner_vars
+    get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(
+        dynamic_device,
+        PSY.OuterControl{
+            PSY.ActiveRenewableControllerAB,
+            PSY.ReactiveRenewableControllerAB,
+        },
+    )
+    internal_states = @view device_states[local_ix]
+
+    if Freq_Flag == 1
+        #Obtain Parameters
+        K_ig = PSY.get_K_ig(active_power_control)
+        #Update States
+        internal_states[state_ct] = p_elec_out
+        internal_states[state_ct + 1] = p_elec_out / K_ig
+        internal_states[state_ct + 2] = p_elec_out #p_ext
+        internal_states[state_ct + 3] = p_elec_out #p_ord
+        state_ct += 4
+        #Update Inner Vars
+        get_inner_vars(dynamic_device)[Id_oc_var] = p_elec_out / max(V_t, 0.01)
+    else
+        #Update States
+        internal_states[state_ct] = p_elec_out
+        #Update Inner Vars
+        get_inner_vars(dynamic_device)[Id_oc_var] = p_elec_out / max(V_t, 0.01)
+        state_ct += 1
+    end
+
+    reactive_power_control = PSY.get_reactive_power(outer_control)
+    #Note: Monitoring power from other branch not supported.
+    VC_Flag = PSY.get_VC_Flag(reactive_power_control)
+    Ref_Flag = PSY.get_Ref_Flag(reactive_power_control)
+    PF_Flag = PSY.get_PF_Flag(reactive_power_control)
+    V_Flag = PSY.get_V_Flag(reactive_power_control)
+    #Update references
+    if VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
+        #Get Reactive Controller Parameters
+        K_i = PSY.get_K_i(reactive_power_control)
+        K_qi = PSY.get_K_qi(reactive_power_control)
+        #Update states
+        internal_states[state_ct] = q_elec_out
+        internal_states[state_ct + 1] = q_elec_out / K_i
+        internal_states[state_ct + 2] = q_elec_out
+        internal_states[state_ct + 3] = V_t / K_qi
+        state_ct += 4
+        #Update Inner Vars
+        get_inner_vars(dynamic_device)[V_oc_var] = 0.0
+        get_inner_vars(dynamic_device)[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
+    elseif VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
+        K_i = PSY.get_K_i(reactive_power_control)
+        #Update states
+        internal_states[state_ct] = q_ref
+        internal_states[state_ct + 1] = q_ref / K_i
+        internal_states[state_ct + 2] = q_ref
+        state_ct += 3
+        #Update Inner Vars
+        get_inner_vars(dynamic_device)[V_oc_var] = q_ref - V_t
+        get_inner_vars(dynamic_device)[Iq_oc_var] = q_ref / max(V_t, 0.01)
+    else
+        error("Flags for Generic Renewable Model not supported yet")
+    end
+end

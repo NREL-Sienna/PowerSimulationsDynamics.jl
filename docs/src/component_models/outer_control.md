@@ -98,3 +98,96 @@ This models requires a PLL to have a SRF for an internal ``dq`` reference frame.
 to the Grid-Forming model, it cannot work without a PLL. Since this Outer Control outputs
 a current reference, it can only be used with a current mode inner control (i.e. that receives 
 a current reference instead of a voltage reference).
+
+## Active and Reactive Generic Renewable Controller Type AB ```[OuterControl]```
+
+The following model represents an outer controller for both active and reactive power from generic industrial
+models REPCA and REECB to generate the current references that will be used in the Current Controller of the inner control
+```RECurrentControlB```. The constructor is ```OuterControl{ActiveRenewableControllerAB, ReactiveRenewableControllerAB}```.
+The equations will depend on the flags used.
+
+### Active part
+
+In the case of `F_Flag = 1` the equations (without limits and freezing) are:
+
+```math
+\begin{align}
+    \dot{p}_{\text{flt}} &= \frac{1}{T_p} (p_e - p_{\text{flt}}) \tag{4a} \\
+    \dot{\xi}_{P} &= p_{\text{err}} \tag{4b} \\
+    \dot{p}_{\text{ext}} &= \frac{1}{T_g} (K_{pg} p_{\text{err}} + K_{ig} \xi_P) \tag{4c} \\
+    \dot{p}_{\text{ord}} &= \frac{1}{T_{\text{pord}}} (p_{\text{ext}} - p_{\text{ord}}) \tag{4d}
+\end{align}
+```
+
+with
+
+```math
+\begin{align}
+    p_e &= v_ri_r + v_ii_i \tag{4e} \\
+    p_\text{err} &= p_\text{ref} + p_\text{droop} - p_\text{flt} \tag{4f} 
+\end{align}
+```
+
+In the case of `F_Flag = 0` the equations (without limits) are simply
+
+```math
+\begin{align}
+    \dot{p}_{\text{ord}} &= \frac{1}{T_{\text{pord}}} (p_{\text{ref}} - p_{\text{ord}}) \tag{4g}
+\end{align}
+```
+
+The current command going to the Inner Loop is computed as:
+
+```math
+\begin{align}
+    I_{\text{oc,pcmd}} &= \frac{p_{\text{ord}}}{V_{\text{t,flt}}} \tag{4h}
+\end{align}
+```
+
+on which ``V_\text{t,flt}`` is the filtered terminal bus voltage coming from the inner controller.
+
+### Reactive part
+
+In the case of `VC_Flag = 0, Ref_Flag = 0, PF_Flag = 0, V_Flag = 1` the equations (without limits and freezing) are:
+
+```math
+\begin{align}
+    \dot{q}_\text{flt} &= \frac{1}{T_\text{fltr}} (q_e - q_\text{flt}) \tag{4i} \\
+    \dot{\xi}_\text{q,oc} &= q_\text{err} \tag{4j} \\
+    \dot{q}_{LL} &= \frac{1}{T_{fv}}(Q_\text{pi} ( 1 - T_{ft}/T_{fv}) - q_{LL}) \tag{4k} \\
+    \dot{\xi}_Q &= V_\text{pi,in} \tag{4l} 
+\end{align}
+```
+
+with
+
+```math
+\begin{align}
+    q_e &= v_ii_r - v_ri_i \tag{4m} \\
+    q_\text{err} &= q_\text{ref} - q_flt \tag{4n} \\
+    Q_\text{pi} &= K_p q_\text{err} + K_i \xi_\text{q,oc} \tag{4o} \\
+    Q_\text{ext} &= q_{LL} + \frac{T_{ft}}{T_{fv}} Q_\text{pi} \tag{4p} \\
+    V_\text{pi,in} &= Q_\text{ext} - q_e \tag{4q} 
+\end{align}
+```
+
+The output to the inner controller are ``V_\text{oc,qcmd}`` if the `Q_Flag = 1` on the Inner Controller, or ``I_\text{oc,qcmd}`` if `Q_Flag = 0`:
+
+```math
+\begin{align}
+    V_\text{oc,qcmd} &= (K_{qp} V_\text{pi,in} + K_{qi} \xi_Q) - V_\text{t,flt} \tag{4r} \\
+    I_\text{oc,qmcd} &= \frac{Q_\text{ext}}{\max(V_\text{t,flt}, 0.01)} \tag{4s}
+\end{align}
+```
+
+In the case of `VC_Flag = 0, Ref_Flag = 0, PF_Flag = 0, V_Flag = 1` the equations (without limits and freezing) are:
+
+```math
+\begin{align}
+    \dot{q}_\text{flt} &= \frac{1}{T_\text{fltr}} (q_e - q_\text{flt}) \tag{4t} \\
+    \dot{\xi}_\text{q,oc} &= q_\text{err} \tag{4u} \\
+    \dot{q}_{LL} &= \frac{1}{T_{fv}}(Q_\text{pi} ( 1 - T_{ft}/T_{fv}) - q_{LL}) \tag{4v} \\
+\end{align}
+```
+
+The remaining models for other flags will be included when implemented in `PowerSimulationsDynamics.jl`.

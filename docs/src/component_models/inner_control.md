@@ -87,3 +87,44 @@ i_{d,\text{cv}} + ji_{q,\text{cv}} = (i_{r,\text{cv}} + ji_{i,\text{cv}})e^{-j\t
 ```
 
 In here ``\theta_{olc}`` is the outer-loop angle. In the case of grid-following models, this angle is equal to the angle provided from the PLL.
+
+## Generic Renewable Inner Controller Type B ```[RECurrentControlB]```
+
+This models the inner control part of the [REECB](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) model. The equations (without limiters) when `Q_Flag = 1` are:
+
+```math
+\begin{align}
+    T_{rv} \dot{V}_\text{t,flt} &= V_t - \dot{V}_\text{t,flt} \tag{3a} \\
+    \dot{\xi}_{icv} &= V_\text{oc,qcmd} \tag{3b}
+\end{align}
+```
+
+on which ``V_\text{oc,qcmd}`` comes from the Outer Controller and the output current commands ``I_\text{pcmd}`` and ``I_\text{qcmd}`` are computed as:
+
+```math
+\begin{align}
+    I_\text{pcmd} &= I_\text{oc, pcmd} \tag{3c} \\
+    I_\text{qcmd} &= I_{icv} + I_\text{qinj} \tag{3d} \\
+    I_{icv} &= K_{vp} V_\text{oc,qcmd} + K_{vi} \xi_{icv} \tag{3e} \\
+    I_{\text{qinj}} &= K_{qv} (V_\text{ref0} - V_\text{t,flt}) \tag{3f}
+\end{align}
+```
+
+The equations when `Q_Flag = 0` are:
+
+```math
+\begin{align}
+    T_{rv} \dot{V}_\text{t,flt} &= V_t - \dot{V}_\text{t,flt} \tag{3g} \\
+    T_{iq} \dot{I}_{icv} &= I_\text{oc,qcmd} - I_{icv} \tag{3h}
+\end{align}
+```
+
+on which ``I_\text{oc,qcmd}`` comes from the Outer Controller and the output current commands ``I_\text{pcmd}`` and ``I_\text{qcmd}`` are computed as:
+
+```math
+\begin{align}
+    I_\text{pcmd} &= I_\text{oc, pcmd} \tag{3i} \\
+    I_\text{qcmd} &= I_{icv} + I_\text{qinj} \tag{3j} \\
+    I_{\text{qinj}} &= K_{qv} (V_\text{ref0} - V_\text{t,flt}) \tag{3k}
+\end{align}
+```
