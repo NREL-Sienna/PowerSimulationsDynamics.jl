@@ -12,6 +12,7 @@ makedocs(
         "Initialization" => "initialization.md",
         "Small Signal" => "small.md",
         "Reference Frames" => "reference_frames.md",
+        "Renewable Models" => "generic.md",
         "Generator Component Library" => Any[
             "Machine" => "component_models/machines.md",
             "Shaft" => "component_models/shafts.md",
