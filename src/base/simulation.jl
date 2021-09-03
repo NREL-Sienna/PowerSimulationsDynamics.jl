@@ -23,6 +23,7 @@ function Simulation(
     sys::PSY.System;
     tspan,
     initial_conditions,
+    initialize_simulation,
     perturbations = Vector{Perturbation}(),
     simulation_folder::String = "",
     console_level = Logging.Warn,
@@ -31,21 +32,13 @@ function Simulation(
     PSY.set_units_base_system!(sys, "DEVICE_BASE")
     simulation_inputs = SimulationInputs(sys, tspan)
 
-    if isempty(initial_conditions)
-        @debug "Initial Condition set to flat start"
-        bus_count = get_bus_count(simulation_inputs)
-        var_count = get_variable_count(simulation_inputs)
-        initial_conditions = zeros(var_count)
-        initial_conditions[1:bus_count] .= 1.0
-    end
-
     return Simulation{T}(
         BUILD_INCOMPLETE,
         nothing,
         sys,
         perturbations,
-        initial_conditions,
-        false,
+        deepcopy(initial_conditions),
+        !initialize_simulation,
         Vector{Float64}(),
         DiffEqBase.CallbackSet(),
         nothing,
@@ -102,7 +95,7 @@ function Simulation!(
         T,
         system;
         tspan = tspan,
-        initial_conditions = get(kwargs, :initial_conditions, Vector{Float64}()),
+        initial_conditions = deepcopy(init_conditions),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
@@ -120,6 +113,7 @@ Initializes the simulations and builds the indexing. The input system is not mod
 
 # Accepted Key Words
 - `initialize_simulation::Bool : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
+- `initial_conditions::Vector{Float64} : Initial conditions provided by the user. Must be used with initialize_simulation = false to not be override.`
 - `system_to_file::Bool`: Serializes the original input system
 - `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debugg
 - `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
@@ -140,6 +134,7 @@ function Simulation(
         simulation_system;
         tspan = tspan,
         initial_conditions = get(kwargs, :initial_conditions, Vector{Float64}()),
+        initialize_simulation = get(kwargs, :initialize_simulation, true),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
@@ -182,6 +177,36 @@ function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     return
 end
 
+function _get_flat_start(inputs::SimulationInputs)
+    bus_count = get_bus_count(inputs)
+    var_count = get_variable_count(inputs)
+    initial_conditions = zeros(var_count)
+    initial_conditions[1:bus_count] .= 1.0
+    return initial_conditions
+end
+
+function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel}
+    simulation_inputs = get_simulation_inputs(sim)
+    x0_init = sim.x0_init
+    if isempty(x0_init) && sim.initialized
+        @warn "Initial Conditions set to flat start"
+        sim.x0_init = _get_flat_start(simulation_inputs)
+    elseif isempty(x0_init) && !sim.initialized
+        sim.x0_init = _get_flat_start(simulation_inputs)
+    elseif !isempty(x0_init) && sim.initialized
+        if length(sim.x0_init) != get_variable_count(simulation_inputs)
+            throw(IS.ConflictingInputsError("The size of the provided initial state space does not match the model's state space."))
+        end
+    elseif !isempty(x0_init) && !sim.initialized
+        @warn "initial_conditions were provided with initialize_simulation. User's initial_conditions will be overwritten."
+        if length(sim.x0_init) != get_variable_count(simulation_inputs)
+            sim.x0_init = _get_flat_start(simulation_inputs)
+        end
+    else
+        @assert false
+    end
+end
+
 function _build_perturbations!(sim::Simulation)
     @info "Attaching Perturbations"
     if isempty(sim.perturbations)
@@ -220,6 +245,7 @@ function _build!(sim::Simulation{ImplicitModel}; kwargs...)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     sim.status = BUILD_INCOMPLETE
     _build_inputs!(sim)
+    _initialize_state_space(sim)
     _initialize_simulation!(sim; kwargs...)
     _build_perturbations!(sim)
     if sim.status != BUILD_FAILED
@@ -255,9 +281,9 @@ function _build!(sim::Simulation{MassMatrixModel}; kwargs...)
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     sim.status = BUILD_INCOMPLETE
     _build_inputs!(sim)
+    _initialize_state_space(sim)
     _initialize_simulation!(sim; kwargs...)
     _build_perturbations!(sim)
-
     if sim.status != BUILD_FAILED
         try
             simulation_inputs = get_simulation_inputs(sim)
