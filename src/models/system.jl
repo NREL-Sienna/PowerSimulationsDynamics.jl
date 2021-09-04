@@ -1,4 +1,4 @@
-struct SystemModel{T<:PSID.SimulationModel}
+struct SystemModel{T <: PSID.SimulationModel}
     inputs::SimulationInputs
     cache::Cache
 end
@@ -6,23 +6,42 @@ end
 """
     Instantiate an ResidualModel for ForwardDiff calculations
 """
-function ResidualModel(inputs, x0_init::Vector{T}, ::Type{Ctype}) where {T <: Number, Ctype <: JacobianCache}
-    U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_implicit!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
-    return SystemModel{ResidualModel}(inputs, Ctype{T,U}(inputs))
+function ResidualModel(
+    inputs,
+    x0_init::Vector{T},
+    ::Type{Ctype},
+) where {T <: Number, Ctype <: JacobianCache}
+    U = ForwardDiff.Dual{
+        typeof(ForwardDiff.Tag(nothing, T)),
+        T,
+        ForwardDiff.pickchunksize(length(x0_init)),
+    }
+    return SystemModel{ResidualModel}(inputs, Ctype{T, U}(inputs))
 end
 
 """
 Instantiate an ResidualModel for ODE inputs.
 """
-function ResidualModel(inputs, ::Vector{T}, ::Type{Ctype}) where {Ctype <: SimCache{T}} where {T <: Real}
+function ResidualModel(
+    inputs,
+    ::Vector{T},
+    ::Type{Ctype},
+) where {Ctype <: SimCache{T}} where {T <: Real}
     return SystemModel{ResidualModel}(inputs, Ctype(inputs))
 end
 
-function (m::SystemModel{ResidualModel})(out::AbstractArray{T}, du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {T <: Real}
-    return system_implicit!(out, du, u, f.inputs, f.cache, t)
+function (m::SystemModel{ResidualModel})(
+    out::AbstractArray{T},
+    du::AbstractArray{U},
+    u::AbstractArray{V},
+    p,
+    t,
+) where {T, U, V <: Real}
+    _system_implicit!(out, du, u, m.inputs, m.cache, t)
+    return
 end
 
-function system_implicit!(
+function _system_implicit!(
     out::Vector{T},
     dx::Vector{U},
     x::Vector{V},
@@ -44,7 +63,7 @@ function system_implicit!(
     bus_range = get_bus_range(inputs)
     voltages = @view x[bus_range]
     V_r = @view x[1:bus_counts]
-    V_i = @view x[bus_counts+1:bus_range[end]]
+    V_i = @view x[(bus_counts + 1):bus_range[end]]
 
     for dynamic_device in get_dynamic_injectors_data(inputs)
         ix_range = get_ix_range(dynamic_device)
@@ -66,16 +85,7 @@ function system_implicit!(
     end
 
     for static_device in get_static_injectiors_data(inputs)
-        device!(
-            V_r,
-            V_i,
-            I_injections_r,
-            I_injections_i,
-            static_device,
-            inputs,
-            cache,
-            t,
-        )
+        device!(V_r, V_i, I_injections_r, I_injections_i, static_device, inputs, cache, t)
     end
 
     if has_dyn_lines(inputs)
@@ -106,26 +116,45 @@ function system_implicit!(
         end
     end
 
-    out[bus_range] .= network_model(inputs, cache, voltages) .- M[bus_range, bus_range] * dx[bus_range]
+    out[bus_range] .=
+        network_model(inputs, cache, voltages) .- M[bus_range, bus_range] * dx[bus_range]
+    return
 end
 
 """
 Instantiate a MassMatrixModel for ODE inputs.
 """
-function MassMatrixModel(inputs, ::Vector{T}, ::Type{Ctype}) where {Ctype <: SimCache{T}} where T <: Number
+function MassMatrixModel(
+    inputs,
+    ::Vector{T},
+    ::Type{Ctype},
+) where {Ctype <: SimCache{T}} where {T <: Number}
     return SystemModel{MassMatrixModel}(inputs, Ctype(inputs))
 end
 
-function MassMatrixModel(inputs, x0_init::Vector{T}, ::Type{Ctype}) where {T <: Number, Ctype <: JacobianCache}
-    U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_mass_matrix!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
-    return SystemModel{MassMatrixModel}(inputs, Ctype{T,U}(inputs))
+function MassMatrixModel(
+    inputs,
+    x0_init::Vector{T},
+    ::Type{Ctype},
+) where {T <: Number, Ctype <: JacobianCache}
+    U = ForwardDiff.Dual{
+        typeof(ForwardDiff.Tag(system_mass_matrix!, T)),
+        T,
+        ForwardDiff.pickchunksize(length(x0_init)),
+    }
+    return SystemModel{MassMatrixModel}(inputs, Ctype{T, U}(inputs))
 end
 
-function (m::SystemModel{MassMatrixModel})(du::AbstractArray{T}, u::AbstractArray{T}, p, t) where {T <: Real}
+function (m::SystemModel{MassMatrixModel})(
+    du::AbstractArray{T},
+    u::AbstractArray{T},
+    p,
+    t,
+) where {T <: Real}
     system_mass_matrix!(du, u, f.inputs, f.cache, t)
 end
 
-function system_mass_matrix!(
+function _system_mass_matrix!(
     dx::Vector{T},
     x::Vector{T},
     inputs::SimulationInputs,
@@ -145,7 +174,7 @@ function system_mass_matrix!(
     bus_range = get_bus_range(inputs)
     voltages = @view x[bus_range]
     V_r = @view x[1:bus_counts]
-    V_i = @view x[bus_counts+1:bus_range[end]]
+    V_i = @view x[(bus_counts + 1):bus_range[end]]
 
     for dynamic_device in get_injectors_data(inputs)
         ix_range = get_ix_range(dynamic_device)
@@ -167,16 +196,7 @@ function system_mass_matrix!(
     end
 
     for static_device in get_static_injectiors_data(inputs)
-        device!(
-            V_r,
-            V_i,
-            I_injections_r,
-            I_injections_i,
-            static_device,
-            inputs,
-            cache,
-            t,
-        )
+        device!(V_r, V_i, I_injections_r, I_injections_i, static_device, inputs, cache, t)
     end
 
     if has_dyn_lines(inputs)
