@@ -3,31 +3,31 @@
 # in SparseDiffTools
 
 struct JacobianFunctionWrapper{T}
-    input::sim_inputs
     Jf::T
     Jv::SparseMatrixCSC{Float64, Int64}
     x::Vector{Float64}
-    function JacobianFunctionWrapper(inputs, x)
-        model = modelf(input, zeros(3))
-        fu = (u) -> model(u, 0)
-        jconfig = ForwardDiff.JacobianConfig(fu, x, ForwardDiff.Chunk{3}())
-        Jf = (Jv, x) -> ForwardDiff.jacobian!(Jv, fu, x, jconfig)
-        n = length(x)
-        sJ = sparse(Jf(zeros(n, n), x))
-        new{typeof(Jf)}(input, Jf, sJ, x)
+    function JacobianFunctionWrapper(
+        m!,
+        x0;
+        # Improve the heuristic to do sparsity detection
+        sparse_retrieve_loop = 3,
+    )
+        n = length(x0)
+        m_ = (residual, x) -> m!(residual, zeros(n), x, nothing, 0.0)
+        jconfig = ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
+        Jf = (Jv, x) -> ForwardDiff.jacobian!(Jv, fu, zeros(n), x, jconfig)
+        jac_proto = zeros(n, n)
+        for _ in 1:sparse_retrieve_loop
+            temp = zeros(n, n)
+            Jf(temp, abs(x0 + Random.rand(n) - Random.rand(n)))
+            jac_proto .+= abs(temp)
+        end
+        Jv = sparse(jac_proto)
+        new(Jf, Jv, x)
     end
 end
 
-    inif! = (out, x) -> PSID.system_implicit!(
-        out,    #output of the function
-        dx0,    #derivatives equal to zero
-        x,      #states
-        inputs,    #Parameters
-        cache,
-        -99.0,    #time val not relevant
-    )
-
-function (J::modelJ{T})(x) where {T <: Function}
+function (J::JacobianFunctionWrapper{T})(x) where {T <: Function}
     J.x .= x
     return J.Jf(J.Jv, x)
 end
