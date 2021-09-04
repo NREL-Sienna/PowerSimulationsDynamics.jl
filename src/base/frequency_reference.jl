@@ -1,15 +1,19 @@
 struct FixedFrequency end
 struct ReferenceBus end
 
-function _get_frequency_state(d::DynamicWrapper{T}) where T <: PSY.DynamicGenerator
+function _get_frequency_state(d::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator}
     return get_global_index(d)[:ω]
 end
 
-function _get_frequency_state(d::DynamicWrapper{T}) where T <: PSY.DynamicInverter
+function _get_frequency_state(d::DynamicWrapper{T}) where {T <: PSY.DynamicInverter}
     return get_global_index(d)[:ω_oc]
 end
 
-function get_frequency_reference!(::Type{FixedFrequency}, ::Vector, static_injection_data::Vector)
+function get_frequency_reference!(
+    ::Type{FixedFrequency},
+    ::Vector,
+    static_injection_data::Vector,
+)
     ref_devices = filter(x -> get_bus_category(x) == SLACKBus, static_injection_data)
     if length(ref_devices) < 1
         throw(
@@ -21,7 +25,11 @@ function get_frequency_reference!(::Type{FixedFrequency}, ::Vector, static_injec
     return 0
 end
 
-function get_frequency_reference(::Type{ReferenceBus}, dynamic_injection_data::Vector, static_injection_data::Vector)
+function get_frequency_reference(
+    ::Type{ReferenceBus},
+    dynamic_injection_data::Vector,
+    static_injection_data::Vector,
+)
     reference = -1
     static_ref_devices = filter(x -> get_bus_category(x) == SLACKBus, static_injection_data)
     if isempty(static_ref_devices)
@@ -42,7 +50,9 @@ function get_frequency_reference(::Type{ReferenceBus}, dynamic_injection_data::V
             reference = _get_frequency_state(first(ref_devices))
         end
     else
-        @warn("The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency")
+        @warn(
+            "The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency"
+        )
         reference = 0
     end
     return reference

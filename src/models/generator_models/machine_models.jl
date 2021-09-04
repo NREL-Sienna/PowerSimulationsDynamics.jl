@@ -13,7 +13,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_machine_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     current_r,
     current_i,
     Sbase::Float64,
@@ -132,7 +132,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_machine_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     current_r,
     current_i,
     Sbase::Float64,
@@ -218,12 +218,14 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_machine_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     current_r,
     current_i,
     Sbase::Float64,
     f0::Float64,
-    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P}},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
+    },
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
@@ -302,12 +304,14 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_machine_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     current_r,
     current_i,
     Sbase::Float64,
     f0::Float64,
-    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P}},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
+    },
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
@@ -383,7 +387,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_machine_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     current_r,
     current_i,
     Sbase::Float64,
@@ -458,7 +462,7 @@ end
 function mdl_machine_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     current_r,
     current_i,
     Sbase::Float64,
@@ -562,12 +566,14 @@ end
 function mdl_machine_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     current_r,
     current_i,
     Sbase::Float64,
     f0::Float64,
-    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P}},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
+    },
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
@@ -641,12 +647,14 @@ end
 function mdl_machine_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     current_r,
     current_i,
     Sbase::Float64,
     f0::Float64,
-    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P}},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
+    },
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device

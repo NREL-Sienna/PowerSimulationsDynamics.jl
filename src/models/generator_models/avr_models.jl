@@ -18,7 +18,7 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -32,7 +32,7 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -47,10 +47,7 @@ inner_vars,
     Vf = internal_states[1]
 
     #Define external states for device
-    V_th = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get Parameters
     Kv = PSY.get_Kv(PSY.get_avr(dynamic_device))
@@ -67,7 +64,7 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -85,10 +82,7 @@ inner_vars,
     Vm = internal_states[4]
 
     #Define external states for device
-    V_th = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
@@ -129,7 +123,7 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -147,10 +141,7 @@ inner_vars,
     Vm = internal_states[4]
 
     #Define external states for device
-    V_th = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
@@ -194,7 +185,7 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -216,10 +207,7 @@ inner_vars,
     Vr3 = internal_states[5]
 
     #Define external states for device
-    V_th = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
     Vs = inner_vars[V_pss_var]
     Xad_Ifd = inner_vars[Xad_Ifd_var]
 
@@ -274,7 +262,7 @@ end
 function mdl_avr_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -290,10 +278,7 @@ inner_vars,
     Vr = internal_states[2]
 
     #Define external states for device
-    V_th = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
     Vs = inner_vars[V_pss_var]
 
     #Get parameters

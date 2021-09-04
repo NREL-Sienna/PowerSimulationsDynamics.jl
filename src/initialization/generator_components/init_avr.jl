@@ -21,10 +21,7 @@ function initialize_avr!(
     #In AVRFixed, V_ref is used as Vf
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
     #Solve V_ref
     V_ref = Vm
     #Set Vf state equals to Vf0
@@ -46,10 +43,7 @@ function initialize_avr!(
     #Obtain Vf0 solved from Machine
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -101,10 +95,7 @@ function initialize_avr!(
     #Obtain Vf0 solved from Machine
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -162,10 +153,7 @@ function initialize_avr!(
     #Obtain I_fd obtained from Machine:
     Xad_Ifd0 = inner_vars[Xad_Ifd_var]
     #Obtain measured terminal voltage
-    Vm0 = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    Vm0 = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -268,10 +256,7 @@ function initialize_avr!(
     #Obtain Vf0 solved from Machine
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(
-        inner_vars[VR_gen_var]^2 +
-        inner_vars[VI_gen_var]^2,
-    )
+    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)

@@ -45,10 +45,22 @@ function device!(
     inner_vars[VI_gen_var] = voltage_i[bus_ix]
 
     #Obtain ODEs and Mechanical Power for Turbine Governor
-    mdl_tg_ode!(device_states, view(output_ode, ode_range), inner_vars, sys_ω, dynamic_device)
+    mdl_tg_ode!(
+        device_states,
+        view(output_ode, ode_range),
+        inner_vars,
+        sys_ω,
+        dynamic_device,
+    )
 
     #Obtain ODEs for AVR
-    mdl_pss_ode!(device_states, view(output_ode, ode_range), inner_vars, sys_ω, dynamic_device)
+    mdl_pss_ode!(
+        device_states,
+        view(output_ode, ode_range),
+        inner_vars,
+        sys_ω,
+        dynamic_device,
+    )
 
     #Obtain ODEs for AVR
     mdl_avr_ode!(device_states, view(output_ode, ode_range), inner_vars, dynamic_device)
@@ -87,7 +99,7 @@ function device!(
     ::SimulationInputs,
     ::Cache,
     t,
-) where T <: BusCategory
+) where {T <: BusCategory}
     mdl_source!(voltage_r, voltage_i, current_r, current_i, device)
     return
 end

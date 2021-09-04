@@ -149,7 +149,8 @@ end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
-    sim.simulation_inputs = SimulationInputs(T(), get_system(sim), sim.simulation_inputs.tspan)
+    sim.simulation_inputs =
+        SimulationInputs(T(), get_system(sim), sim.simulation_inputs.tspan)
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
@@ -194,11 +195,15 @@ function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel
         sim.x0_init = _get_flat_start(simulation_inputs)
     elseif !isempty(get_initial_conditions(sim)) && sim.initialized
         if length(sim.x0_init) != get_variable_count(simulation_inputs)
-            IS.ConflictingInputsError("The size of the provided initial state space does not match the model's state space.")
+            IS.ConflictingInputsError(
+                "The size of the provided initial state space does not match the model's state space.",
+            )
         end
     elseif !isempty(get_initial_conditions(sim)) && !sim.initialized
         if length(sim.x0_init) != get_variable_count(simulation_inputs)
-            @warn("The size of the provided initial state space does not match the model's state space. Ignoring user provided initial conditions")
+            @warn(
+                "The size of the provided initial state space does not match the model's state space. Ignoring user provided initial conditions"
+            )
             sim.x0_init = _get_flat_start(simulation_inputs)
         end
     else
@@ -206,10 +211,7 @@ function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel
     end
 end
 
-function _get_jacobian(sim::Simulation{T}) where {T <: SimulationModel}
-
-end
-
+function _get_jacobian(sim::Simulation{T}) where {T <: SimulationModel} end
 
 function _initialize_simulation!(sim::Simulation; kwargs...)
     if get(kwargs, :initialize_simulation, true)
