@@ -195,7 +195,11 @@ function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel
         sim.x0_init = _get_flat_start(simulation_inputs)
     elseif !isempty(x0_init) && sim.initialized
         if length(sim.x0_init) != get_variable_count(simulation_inputs)
-            throw(IS.ConflictingInputsError("The size of the provided initial state space does not match the model's state space."))
+            throw(
+                IS.ConflictingInputsError(
+                    "The size of the provided initial state space does not match the model's state space.",
+                ),
+            )
         end
     elseif !isempty(x0_init) && !sim.initialized
         @warn "initial_conditions were provided with initialize_simulation. User's initial_conditions will be overwritten."
