@@ -154,33 +154,34 @@ end
 
 function device!(
     x,
-    output_ode::Vector{T},
+    output_ode::AbstractArray{T},
     voltage_r,
     voltage_i,
     current_r,
     current_i,
-    ix_range::UnitRange{Int},
-    ode_range::UnitRange{Int},
     dynamic_device::DynamicWrapper{DynI},
     inputs::SimulationInputs,
-    cache::Cache,
+    cache,
     t,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
-    #Obtain local device states
-    device_states = @view x[ix_range]
+    bus_ix = get_bus_ix(dynamic_device)
+    inner_vars = @view get_inner_vars(cache, T)[get_inner_vars_index(dynamic_device)]
 
+    #Obtain local device states
+    ode_range = get_ode_range(dynamic_device)
+    device_states = @view x[get_ix_range(dynamic_device)]
     #Obtain references
     Sbase = get_base_power(inputs)
     sys_f0 = get_base_frequency(inputs)
     sys_ω = get_ω_sys(cache, T)
 
     #Update Voltage data
-    get_inner_vars(dynamic_device)[Vr_inv_var] = voltage_r[1]
-    get_inner_vars(dynamic_device)[Vi_inv_var] = voltage_i[1]
+    inner_vars[Vr_inv_var] = voltage_r[1]
+    inner_vars[Vi_inv_var] = voltage_i[1]
 
     #Update V_ref
     get_V_ref(dynamic_device)
-    get_inner_vars(dynamic_device)[V_oc_var] = V_ref
+    inner_vars[V_oc_var] = V_ref
 
     #Obtain ODES for DC side
     mdl_DCside_ode!(
