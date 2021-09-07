@@ -76,5 +76,18 @@ function (J::JacobianFunctionWrapper)(
 )
     J.x .= x
     JM .= J.Jf(J.Jv, x)
-    return J
+    return JM
+end
+
+function (J::JacobianFunctionWrapper)(
+    JM::SparseArrays.SparseMatrixCSC{Float64, Int64},
+    dx::AbstractVector{Float64},
+    x::AbstractVector{Float64},
+    p,
+    gamma,
+    t,
+)
+    J.x .= x
+    JM .= gamma * LinearAlgebra.Diagonal(ones(length(x))) .- J.Jf(J.Jv, x)
+    return JM
 end
