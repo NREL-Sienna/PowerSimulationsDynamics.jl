@@ -1,10 +1,14 @@
-struct SystemModel{T <: PSID.SimulationModel}
+struct SystemModel{T <: PSID.SimulationModel, C <: Cache} <: Function
     inputs::SimulationInputs
-    cache::Cache
+    cache::C
+end
+
+function SystemModel{T}(inputs, cache::U) where {T <: PSID.SimulationModel, U <: Cache}
+    return SystemModel{T, U}(inputs, cache)
 end
 
 """
-    Instantiate an ResidualModel for ForwardDiff calculations
+Instantiate an ResidualModel for ForwardDiff calculations
 """
 function ResidualModel(
     inputs,
@@ -16,7 +20,7 @@ function ResidualModel(
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    return SystemModel{ResidualModel}(inputs, Ctype{T, U}(inputs))
+    return SystemModel{ResidualModel}(inputs, Ctype{T, U}(system_residual!, inputs))
 end
 
 """
@@ -26,8 +30,8 @@ function ResidualModel(
     inputs,
     ::Vector{T},
     ::Type{Ctype},
-) where {Ctype <: SimCache{T}} where {T <: Real}
-    return SystemModel{ResidualModel}(inputs, Ctype(inputs))
+) where {Ctype <: SimCache, T <: Real}
+    return SystemModel{ResidualModel}(inputs, Ctype{T}(system_residual!, inputs))
 end
 
 function (m::SystemModel{ResidualModel})(
@@ -37,11 +41,11 @@ function (m::SystemModel{ResidualModel})(
     p,
     t,
 ) where {T, U, V <: Real}
-    _system_implicit!(out, du, u, m.inputs, m.cache, t)
+    system_residual!(out, du, u, m.inputs, m.cache, t)
     return
 end
 
-function _system_implicit!(
+function system_residual!(
     out::Vector{T},
     dx::Vector{U},
     x::Vector{V},
@@ -49,16 +53,16 @@ function _system_implicit!(
     cache::Cache,
     t::Float64,
 ) where {T, U, V <: Real}
-    I_injections_r = get_current_injections_r(cache, T)
-    I_injections_i = get_current_injections_i(cache, T)
+    fill!(get_current_balance(cache, T), zero(T))
     injection_ode = get_injection_ode(cache, T)
     branches_ode = get_branches_ode(cache, T)
     M = get_mass_matrix(inputs)
     update_global_vars!(cache, inputs, x)
-    fill!(I_injections_r, 0.0)
-    fill!(I_injections_i, 0.0)
 
-    #Network quantities
+    I_injections_r = get_current_injections_r(cache, T)
+    I_injections_i = get_current_injections_i(cache, T)
+
+    # Network quantities
     bus_counts = get_bus_count(inputs)
     bus_range = get_bus_range(inputs)
     voltages = @view x[bus_range]
@@ -154,22 +158,24 @@ function (m::SystemModel{MassMatrixModel})(
     system_mass_matrix!(du, u, f.inputs, f.cache, t)
 end
 
-function _system_mass_matrix!(
+function system_mass_matrix!(
     dx::Vector{T},
     x::Vector{T},
     inputs::SimulationInputs,
     cache::Cache,
     t,
 ) where {T <: Real}
-    I_injections_r = get_current_injections_r(cache, T)
-    I_injections_i = get_current_injections_i(cache, T)
+    fill!(get_current_balance(cache, T), zero(T))
     injection_ode = get_injection_ode(cache, T)
     branches_ode = get_branches_ode(cache, T)
     update_global_vars!(cache, inputs, x)
-    fill!(I_injections_r, 0.0)
-    fill!(I_injections_i, 0.0)
 
-    #Network quantities
+    I_injections_r = get_current_injections_r(cache, T)
+    I_injections_i = get_current_injections_i(cache, T)
+    update_global_vars!(cache, inputs, x)
+
+
+    # Network quantities
     bus_counts = get_bus_count(inputs)
     bus_range = get_bus_range(inputs)
     voltages = @view x[bus_range]
