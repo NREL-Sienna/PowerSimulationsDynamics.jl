@@ -2,7 +2,7 @@
 # custom code since the structure of the system models is not compatible with the functionalities
 # in SparseDiffTools
 
-struct JacobianFunctionWrapper{F}
+struct JacobianFunctionWrapper{F} <: Function
     Jf::F
     Jv::SparseArrays.SparseMatrixCSC{Float64, Int64}
     x::Vector{Float64}
