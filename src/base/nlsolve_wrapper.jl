@@ -14,7 +14,7 @@ end
 
 function _get_model_closure(model::SystemModel{ResidualModel}, x0::Vector{Float64})
     dx0 = zeros(length(x0))
-    return (residual, x) -> model(residual, x, dx0, nothing, 0.0)
+    return (residual, x) -> model(residual, dx0, x, nothing, 0.0)
 end
 
 function _nlsolve_call(
