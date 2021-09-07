@@ -19,7 +19,10 @@ mutable struct BranchImpedanceChange <: Perturbation
     multiplier::Float64
 end
 
-function _get_branch_for_perturbation(sys::PSY.System, perturbation)
+function _get_branch_for_perturbation(sys::PSY.System, perturbation::T) <: Perturbation
+    if perturbation.branch_type == PSY.DynamicBranch
+        error("DynamicBranch is not supported currently with perturbation $T")
+    end
     branch = PSY.get_component(perturbation.branch_type, sys, perturbation.branch_name)
     if branch === nothing || !PSY.get_available(branch)
         throw(
