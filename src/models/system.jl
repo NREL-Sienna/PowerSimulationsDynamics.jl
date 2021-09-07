@@ -101,8 +101,6 @@ function system_residual!(
                 view(I_injections_i, bus_ix_from),
                 view(I_injections_r, bus_ix_to),
                 view(I_injections_i, bus_ix_to),
-                ix_range,
-                ode_range,
                 br,
                 inputs,
             )
@@ -212,8 +210,6 @@ function system_mass_matrix!(
                 view(I_injections_i, bus_ix_from),
                 view(I_injections_r, bus_ix_to),
                 view(I_injections_i, bus_ix_to),
-                ix_range,
-                ode_range,
                 br,
                 inputs,
             )
