@@ -137,6 +137,7 @@ function Simulation(
         tspan = tspan,
         initial_conditions = get(kwargs, :initial_conditions, Vector{Float64}()),
         simulation_folder = simulation_folder,
+        initialize_simulation = get(kwargs, :system_to_file, true),
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
         file_level = get(kwargs, :file_level, Logging.Debug),
@@ -189,22 +190,23 @@ end
 
 function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_inputs = get_simulation_inputs(sim)
-    if isempty(get_initial_conditions(sim)) && sim.initialized
+    x0_init = sim.x0_init
+    if isempty(x0_init) && sim.initialized
         @warn "Initial Conditions set to flat start"
         sim.x0_init = _get_flat_start(simulation_inputs)
-    elseif isempty(get_initial_conditions(sim)) && !sim.initialized
+    elseif isempty(x0_init) && !sim.initialized
         sim.x0_init = _get_flat_start(simulation_inputs)
-    elseif !isempty(get_initial_conditions(sim)) && sim.initialized
+    elseif !isempty(x0_init) && sim.initialized
         if length(sim.x0_init) != get_variable_count(simulation_inputs)
-            IS.ConflictingInputsError(
-                "The size of the provided initial state space does not match the model's state space.",
+            throw(
+                IS.ConflictingInputsError(
+                    "The size of the provided initial state space does not match the model's state space.",
+                ),
             )
         end
-    elseif !isempty(get_initial_conditions(sim)) && !sim.initialized
+    elseif !isempty(x0_init) && !sim.initialized
+        @warn "initial_conditions were provided with initialize_simulation. User's initial_conditions will be overwritten."
         if length(sim.x0_init) != get_variable_count(simulation_inputs)
-            @warn(
-                "The size of the provided initial state space does not match the model's state space. Ignoring user provided initial conditions"
-            )
             sim.x0_init = _get_flat_start(simulation_inputs)
         end
     else
@@ -306,7 +308,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     simulation_inputs = get_simulation_inputs(sim)
     model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
     _initialize_simulation!(sim, model, jacobian; kwargs...)
-    #_build_perturbations!(sim)
+    _build_perturbations!(sim)
     if sim.status != BUILD_FAILED
         try
             simulation_inputs = get_simulation_inputs(sim)
@@ -360,14 +362,14 @@ function execute!(sim::Simulation{ResidualModel}, solver; kwargs...)
     @debug "status before execute" sim.status
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Float64)
     sim.status = SIMULATION_STARTED
-    sim.solution = SciMLBase.solve(
+    solution = SciMLBase.solve(
         sim.problem,
         solver;
         callback = sim.callbacks,
         tstops = sim.tstops,
         kwargs...,
     )
-    if sim.solution.retcode == :Success
+    if solution.retcode == :Success
         sim.status = SIMULATION_FINALIZED
     else
         sim.status = SIMULATION_FAILED

@@ -137,3 +137,13 @@ end
     voltage_buses_ix = PSID.get_voltage_buses_ix(sim_inputs)
     @test isempty(voltage_buses_ix)
 end
+
+@testset "Test Branch Perturbations" begin
+    line_trip = BranchTrip(1.0, Line, "NON_EXISTING_LINE_NAME")
+    @test_throws IS.ConflictingInputsError PSID.get_affect(omib_sys, line_trip)
+    branch_mult = BranchImpedanceChange(1.0, Line, "NON_EXISTING_LINE_NAME", 2.0)
+    @test_throws IS.ConflictingInputsError PSID.get_affect(omib_sys, branch_mult)
+    line_name = PSY.get_name(first(get_components(Line, omib_sys)))
+    branch_mult = BranchImpedanceChange(1.0, Line, line_name, -1.0)
+    @test_throws IS.ConflictingInputsError PSID.get_affect(omib_sys, branch_mult)
+end
