@@ -259,17 +259,18 @@ function _get_diffeq_problem(
     model::SystemModel{ResidualModel},
     jacobian::JacobianFunctionWrapper,
 )
-    var_count = get_variable_count(simulation_inputs)
-    dx0 = zeros(Float64, var_count)
-    SciMLBase.ODEFunction{SciMLBase.iip, false}(
-        model;
-        jac = jacobian.Jf,
-        jac_prototype = jacobian.Jv,
-    )
+    x0 = get_initial_conditions(sim)
+    dx0 = zeros(length(x0))
+    simulation_inputs = PSID.get_simulation_inputs(sim)
     sim.problem = SciMLBase.DAEProblem(
-        system_implicit!,
+        SciMLBase.DAEFunction{true}(
+            model;
+            #jac = jacobian,
+            tgrad = nothing,
+            #jac_prototype = jacobian.Jv,
+        ),
         dx0,
-        sim.x0_init,
+        x0,
         get_tspan(sim),
         simulation_inputs,
         differential_vars = get_DAE_vector(simulation_inputs),
@@ -283,7 +284,7 @@ function _get_diffeq_problem(
 )
     simulation_inputs = PSID.get_simulation_inputs(sim)
     return SciMLBase.ODEProblem(
-        SciMLBase.ODEFunction{true, false}(
+        SciMLBase.ODEFunction{true}(
             model,
             mass_matrix = get_mass_matrix(simulation_inputs),
             jac = jacobian,
