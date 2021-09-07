@@ -1,17 +1,8 @@
-struct SystemModel{T <: PSID.SimulationModel, C <: Cache} <: Function
-    inputs::SimulationInputs
-    cache::C
-end
-
-function SystemModel{T}(inputs, cache::U) where {T <: PSID.SimulationModel, U <: Cache}
-    return SystemModel{T, U}(inputs, cache)
-end
-
 """
 Instantiate an ResidualModel for ForwardDiff calculations
 """
 function ResidualModel(
-    inputs,
+    inputs::SimulationInputs,
     x0_init::Vector{T},
     ::Type{Ctype},
 ) where {T <: Number, Ctype <: JacobianCache}
@@ -34,13 +25,13 @@ function ResidualModel(
     return SystemModel{ResidualModel}(inputs, Ctype{T}(system_residual!, inputs))
 end
 
-function (m::SystemModel{ResidualModel})(
+function (m::SystemModel{ResidualModel, C})(
     out::AbstractArray{T},
     du::AbstractArray{U},
     u::AbstractArray{V},
     p,
     t,
-) where {T, U, V <: Real}
+) where {C <: Cache, T <: Real, U <: Real, V <: Real}
     system_residual!(out, du, u, m.inputs, m.cache, t)
     return
 end
@@ -132,12 +123,12 @@ function MassMatrixModel(
     inputs,
     ::Vector{T},
     ::Type{Ctype},
-) where {Ctype <: SimCache{T}} where {T <: Number}
-    return SystemModel{MassMatrixModel}(inputs, Ctype(inputs))
+) where {Ctype <: SimCache} where {T <: Number}
+    return SystemModel{MassMatrixModel}(inputs, Ctype{T}(system_mass_matrix!, inputs))
 end
 
 function MassMatrixModel(
-    inputs,
+    inputs::SimulationInputs,
     x0_init::Vector{T},
     ::Type{Ctype},
 ) where {T <: Number, Ctype <: JacobianCache}
@@ -146,25 +137,25 @@ function MassMatrixModel(
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    return SystemModel{MassMatrixModel}(inputs, Ctype{T, U}(inputs))
+    return SystemModel{MassMatrixModel}(inputs, Ctype{T, U}(system_mass_matrix!, inputs))
 end
 
-function (m::SystemModel{MassMatrixModel})(
+function (m::SystemModel{MassMatrixModel, C})(
     du::AbstractArray{T},
-    u::AbstractArray{T},
+    u::AbstractArray{U},
     p,
     t,
-) where {T <: Real}
-    system_mass_matrix!(du, u, f.inputs, f.cache, t)
+) where {C <: Cache, U <: Real, T <: Real}
+    system_mass_matrix!(du, u, m.inputs, m.cache, t)
 end
 
 function system_mass_matrix!(
     dx::Vector{T},
-    x::Vector{T},
+    x::Vector{U},
     inputs::SimulationInputs,
     cache::Cache,
     t,
-) where {T <: Real}
+) where {T <: Real, U <: Real}
     fill!(get_current_balance(cache, T), zero(T))
     injection_ode = get_injection_ode(cache, T)
     branches_ode = get_branches_ode(cache, T)
@@ -174,7 +165,6 @@ function system_mass_matrix!(
     I_injections_i = get_current_injections_i(cache, T)
     update_global_vars!(cache, inputs, x)
 
-
     # Network quantities
     bus_counts = get_bus_count(inputs)
     bus_range = get_bus_range(inputs)
@@ -182,20 +172,19 @@ function system_mass_matrix!(
     V_r = @view x[1:bus_counts]
     V_i = @view x[(bus_counts + 1):bus_range[end]]
 
-    for dynamic_device in get_injectors_data(inputs)
+    for dynamic_device in get_dynamic_injectors_data(inputs)
         ix_range = get_ix_range(dynamic_device)
         ode_range = get_ode_range(dynamic_device)
         device!(
             x,
             injection_ode,
-            view(V_r, bus_ix),
-            view(V_i, bus_ix),
-            view(I_injections_r, bus_ix),
-            view(I_injections_i, bus_ix),
-            ix_range,
-            ode_range,
+            V_r,
+            V_i,
+            I_injections_r,
+            I_injections_i,
             dynamic_device,
             inputs,
+            cache,
             t,
         )
         dx[ix_range] .= injection_ode[ode_range]
