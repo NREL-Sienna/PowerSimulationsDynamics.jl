@@ -137,3 +137,60 @@ end
     voltage_buses_ix = PSID.get_voltage_buses_ix(sim_inputs)
     @test isempty(voltage_buses_ix)
 end
+
+@testset "Remove Generation Unit" begin
+    #Create system with 2 GENROU generators
+    threebus_file_dir =
+        joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBusMulti_LessLoad.raw")
+    dyr_file_dir =
+        joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBus_GENROU_SEXS.dyr")
+    sys = System(threebus_file_dir, dyr_file_dir)
+    x0_test = zeros(23)
+    x0_test[1:6] .= 1.0
+    #Initialize System from given initial condition
+    sim = Simulation(
+        ImplicitModel,
+        sys,
+        pwd(),
+        (0.0, 20.0),
+        BranchTrip(1.0, "BUS 1-BUS 2-i_1");
+        initialize_simulation = false,
+        initial_conditions = x0_test,
+    )
+    @test LinearAlgebra.norm(sim.x0_init - x0_test) <= 1e-6
+    #Initialize System normally
+    sim_normal = Simulation(
+        ImplicitModel,
+        sys,
+        pwd(),
+        (0.0, 20.0),
+        BranchTrip(1.0, "BUS 1-BUS 2-i_1"),
+    )
+    #Save states without generator at bus 2
+    x0 = sim_normal.x0_init
+    x0_no_gen = vcat(x0[1:6], x0[13:end])
+    #Make Generator 2 unavailable and transform bus into PQ bus
+    gen = PSY.get_component(ThermalStandard, sys, "generator-102-1")
+    PSY.set_available!(gen, false)
+    b = PSY.get_component(Bus, sys, "BUS 2")
+    PSY.set_bustype!(b, PSY.BusTypes.PQ)
+    #Create Simulation without Gen 2 starting from steady-state with Gen 2
+    sim_trip_gen = Simulation(
+        ImplicitModel,
+        sys,
+        pwd(),
+        (0.0, 20.0);
+        initialize_simulation = false,
+        initial_conditions = x0_no_gen,
+    )
+    @test LinearAlgebra.norm(sim_trip_gen.x0_init - x0_no_gen) <= 1e-6
+    #Create Simulation without Gen 2 at steady state
+    sim_normal_no_gen = Simulation(
+        ImplicitModel,
+        sys,
+        pwd(),
+        (0.0, 20.0),
+        BranchTrip(1.0, "BUS 1-BUS 2-i_1"),
+    )
+    @test length(sim_normal_no_gen.x0_init) == 17
+end
