@@ -18,6 +18,7 @@ end
 get_system(sim::Simulation) = sim.sys
 get_simulation_inputs(sim::Simulation) = sim.simulation_inputs
 get_initial_conditions(sim::Simulation) = sim.x0_init
+get_tspan(sim::Simulation) = sim.tspan
 
 function Simulation(
     ::Type{T},
@@ -211,15 +212,21 @@ function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel
     end
 end
 
-function _get_jacobian(sim::Simulation{T}) where {T <: SimulationModel} end
+function _get_jacobian(sim::Simulation{T}) where {T <: SimulationModel}
+    inputs = get_simulation_inputs(sim)
+    x0_init = get_initial_conditions(sim)
+    return PSID.JacobianFunctionWrapper(T(inputs, x0_init, PSID.JacobianCache), x0_init)
+end
 
-function _initialize_simulation!(sim::Simulation; kwargs...)
-    if get(kwargs, :initialize_simulation, true)
+function _initialize_simulation!(
+    sim::Simulation,
+    model::SystemModel,
+    jacobian::JacobianFunctionWrapper;
+    kwargs...,
+)
+    if sim.initialized != true
         @info("Initializing Simulation States")
-        sim.initialized = calculate_initial_conditions!(sim)
-    else
-        sim.initialized = true
-        sim.status = SIMULATION_INITIALIZED
+        sim.initialized = calculate_initial_conditions!(sim, model, jacobian)
     end
     return
 end
@@ -247,69 +254,67 @@ function _build_perturbations!(sim::Simulation)
     return
 end
 
-function _build!(sim::Simulation{ResidualModel}; kwargs...)
-    check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
-    sim.status = BUILD_INCOMPLETE
-    _build_inputs!(sim)
-    _initialize_state_space(sim)
-    _initialize_simulation!(sim; kwargs...)
-    _build_perturbations!(sim)
-    if sim.status != BUILD_FAILED
-        try
-            simulation_inputs = get_simulation_inputs(sim)
-            var_count = get_variable_count(simulation_inputs)
-            dx0 = zeros(Float64, var_count)
-            sim.problem = SciMLBase.DAEProblem(
-                system_implicit!,
-                dx0,
-                sim.x0_init,
-                get_tspan(sim.simulation_inputs),
-                simulation_inputs,
-                differential_vars = get_DAE_vector(simulation_inputs);
-                kwargs...,
-            )
-            sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
-            sim.status = BUILT
-            @info "Simulations status = $(sim.status)"
-        catch e
-            bt = catch_backtrace()
-            @error "DiffEq DAEProblem failed to build" exception = e, bt
-            sim.status = BUILD_FAILED
-        end
-    else
-        @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
-    end
-    return
+function _get_diffeq_problem(
+    sim::Simulation,
+    model::SystemModel{ResidualModel},
+    jacobian::JacobianFunctionWrapper,
+)
+    var_count = get_variable_count(simulation_inputs)
+    dx0 = zeros(Float64, var_count)
+    SciMLBase.ODEFunction{SciMLBase.iip, false}(
+        model;
+        jac = jacobian.Jf,
+        jac_prototype = jacobian.Jv,
+    )
+    sim.problem = SciMLBase.DAEProblem(
+        system_implicit!,
+        dx0,
+        sim.x0_init,
+        get_tspan(sim),
+        simulation_inputs,
+        differential_vars = get_DAE_vector(simulation_inputs),
+    )
 end
 
-function _build!(sim::Simulation{MassMatrixModel}; kwargs...)
+function _get_diffeq_problem(
+    sim::Simulation,
+    model::SystemModel{MassMatrixModel},
+    jacobian::JacobianFunctionWrapper,
+)
+    simulation_inputs = PSID.get_simulation_inputs(sim)
+    return SciMLBase.ODEProblem(
+        SciMLBase.ODEFunction{true, false}(
+            model,
+            mass_matrix = get_mass_matrix(simulation_inputs),
+            jac = jacobian,
+            jac_prototype = jacobian.Jv,
+            tgrad = nothing,
+        ),
+        sim.x0_init,
+        get_tspan(sim),
+        simulation_inputs,
+    )
+end
+
+function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     sim.status = BUILD_INCOMPLETE
     _build_inputs!(sim)
     _initialize_state_space(sim)
-
-    _initialize_simulation!(sim; kwargs...)
-    _build_perturbations!(sim)
-
+    jacobian = _get_jacobian(sim)
+    simulation_inputs = get_simulation_inputs(sim)
+    model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
+    _initialize_simulation!(sim, model, jacobian; kwargs...)
+    #_build_perturbations!(sim)
     if sim.status != BUILD_FAILED
         try
             simulation_inputs = get_simulation_inputs(sim)
-            sim.problem = SciMLBase.ODEProblem(
-                SciMLBase.ODEFunction(
-                    system_mass_matrix!,
-                    mass_matrix = get_mass_matrix(simulation_inputs),
-                ),
-                sim.x0_init,
-                get_tspan(sim.simulation_inputs),
-                simulation_inputs;
-                kwargs...,
-            )
-            sim.multimachine = (get_global_vars(simulation_inputs)[:ω_sys_index] != 0)
+            sim.problem = _get_diffeq_problem(sim, model, jacobian)
             sim.status = BUILT
             @info "Simulations status = $(sim.status)"
         catch e
             bt = catch_backtrace()
-            @error "DiffEq ODEProblem failed to build" exception = e, bt
+            @error "DiffEq DEProblem for $T failed to build" exception = e, bt
             sim.status = BUILD_FAILED
         end
     else
@@ -373,14 +378,14 @@ function execute!(sim::Simulation{MassMatrixModel}, solver; kwargs...)
     @debug "status before execute" sim.status
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
     sim.status = SIMULATION_STARTED
-    sim.solution = SciMLBase.solve(
+    solution = SciMLBase.solve(
         sim.problem,
         solver;
         callback = sim.callbacks,
         tstops = sim.tstops,
         kwargs...,
     )
-    if sim.solution.retcode == :Success
+    if solution.retcode == :Success
         sim.status = SIMULATION_FINALIZED
     else
         sim.status = SIMULATION_FAILED
