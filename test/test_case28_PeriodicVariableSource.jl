@@ -1,5 +1,3 @@
-using Revise
-using Plots
 """
 Case 28:
 This case studies a OMIB with a simple Periodic Variable Source with a single frequency component.

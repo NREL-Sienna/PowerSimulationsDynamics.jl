@@ -217,3 +217,63 @@ function initialize_inner!(
         inner_states[2] = sol_x0[2] #γ_q
     end
 end
+
+function initialize_inner!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external states inputs for component
+    #external_ix = get_input_port_ix(dynamic_device, PSY.CurrentModeControl)
+
+    #Obtain inner variables for component
+    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
+    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    V_t = sqrt(V_R^2 + V_I^2)
+
+    #Get inner vars
+    Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
+    Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
+    Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
+
+    #Get Current Controller parameters
+    inner_control = PSY.get_inner_control(dynamic_device)
+    Q_Flag = PSY.get_Q_Flag(inner_control)
+    PQ_Flag = PSY.get_PQ_Flag(inner_control)
+
+    Ip_min, Ip_max, Iq_min, Iq_max =
+        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, V_t, Ip_oc, Iq_cmd)
+    Ip_min < Ip_oc < Ip_max ? nothing :
+    error("Inverter out of current limits. Check Power Flow or Parameters")
+    Iq_min < Iq_oc < Iq_max ? nothing :
+    error("Inverter out of current limits. Check Power Flow or Parameters")
+
+    if Q_Flag == 0
+        local_ix = get_local_state_ix(dynamic_device, PSY.RECurrentControlB)
+        #Define internal states for Inner Control
+        internal_states = @view device_states[local_ix]
+        internal_states[1] = V_t
+        internal_states[2] = Iq_oc
+    else
+        local_ix = get_local_state_ix(dynamic_device, PSY.RECurrentControlB)
+        K_vi = PSY.get_K_vi(inner_control)
+        #Define internal states for Inner Control
+        internal_states = @view device_states[local_ix]
+        internal_states[1] = V_t
+        internal_states[2] = Iq_cmd / K_vi
+    end
+
+    #Update additional variables
+    # Based on PSS/E manual, if user does not provide V_ref0, then
+    # V_ref0 is considered to be the output voltage of the PF solution
+    if PSY.get_V_ref0(inner_control) == 0.0
+        PSY.set_V_ref0!(inner_control, V_t)
+    end
+end

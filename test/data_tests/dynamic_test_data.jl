@@ -329,6 +329,153 @@ current_mode_inner() = CurrentModeControl(
     kffv = 1.0,     #Binary variable enabling the voltage feed-forward in output of current controllers
 )
 
+#########################################
+####### Generic Renewable Models ########
+#########################################
+
+function outer_control_TypeAB()
+    function active_ab()
+        return ActiveRenewableControllerAB(
+            bus_control = 0,
+            from_branch_control = 0,
+            to_branch_control = 0,
+            branch_id_control = "0",
+            Freq_Flag = 0,
+            K_pg = 1.0,
+            K_ig = 0.05,
+            T_p = 0.25,
+            fdbd_pnts = (-0.01, 0.01),
+            fe_lim = (-99.0, 99.0),
+            P_lim = (0.0, 1.2),
+            T_g = 0.1,
+            D_dn = 0.0,
+            D_up = 0.0,
+            dP_lim = (-99.0, 99.0),
+            P_lim_inner = (0.0, 1.2),
+            T_pord = 0.02,
+        )
+    end
+    function reactive_ab()
+        return ReactiveRenewableControllerAB(
+            bus_control = 0,
+            from_branch_control = 0,
+            to_branch_control = 0,
+            branch_id_control = "0",
+            VC_Flag = 0,
+            Ref_Flag = 0,
+            PF_Flag = 0,
+            V_Flag = 0,
+            T_fltr = 0.02,
+            K_p = 18.0,
+            K_i = 50.0,
+            T_ft = 0.0,
+            T_fv = 0.05,
+            V_frz = 0.0,
+            R_c = 0.0,
+            X_c = 0.0,
+            K_c = 0.0,
+            e_lim = (-0.1, 0.1),
+            dbd_pnts = (-0.01, 0.01),
+            Q_lim = (-0.43, 0.43),
+            T_p = 0.0,
+            Q_lim_inner = (-0.44, 0.44),
+            V_lim = (0.9, 1.05),
+            K_qp = 0.0,
+            K_qi = 0.01,
+        )
+    end
+    return OuterControl(active_ab(), reactive_ab())
+end
+
+function outer_control_TypeAB_FreqFlag()
+    function active_ab_fflag()
+        return ActiveRenewableControllerAB(
+            bus_control = 0,
+            from_branch_control = 0,
+            to_branch_control = 0,
+            branch_id_control = "0",
+            Freq_Flag = 1,
+            K_pg = 1.0,
+            K_ig = 0.05,
+            T_p = 0.25,
+            fdbd_pnts = (-0.01, 0.01),
+            fe_lim = (-99.0, 99.0),
+            P_lim = (0.0, 1.2),
+            T_g = 0.1,
+            D_dn = 0.0,
+            D_up = 0.0,
+            dP_lim = (-99.0, 99.0),
+            P_lim_inner = (0.0, 1.2),
+            T_pord = 0.02,
+        )
+    end
+    function reactive_ab()
+        return ReactiveRenewableControllerAB(
+            bus_control = 0,
+            from_branch_control = 0,
+            to_branch_control = 0,
+            branch_id_control = "0",
+            VC_Flag = 0,
+            Ref_Flag = 0,
+            PF_Flag = 0,
+            V_Flag = 0,
+            T_fltr = 0.02,
+            K_p = 18.0,
+            K_i = 50.0,
+            T_ft = 0.0,
+            T_fv = 0.05,
+            V_frz = 0.0,
+            R_c = 0.0,
+            X_c = 0.0,
+            K_c = 0.0,
+            e_lim = (-0.1, 0.1),
+            dbd_pnts = (-0.01, 0.01),
+            Q_lim = (-0.43, 0.43),
+            T_p = 0.0,
+            Q_lim_inner = (-0.44, 0.44),
+            V_lim = (0.9, 1.05),
+            K_qp = 0.0,
+            K_qi = 0.01,
+        )
+    end
+    return OuterControl(active_ab_fflag(), reactive_ab())
+end
+
+inner_ctrl_typeB() = RECurrentControlB(
+    Q_Flag = 0,
+    PQ_Flag = 0,
+    Vdip_lim = (-99.0, 99.0),
+    T_rv = 0.02,
+    dbd_pnts = (-0.01, 0.01),
+    K_qv = 1.0,
+    Iqinj_lim = (-1.1, 1.1),
+    V_ref0 = 0.0,
+    K_vp = 10.0,
+    K_vi = 60.0,
+    T_iq = 0.02,
+    I_max = 1.11,
+)
+
+converter_regca() = RenewableEnergyConverterTypeA(
+    T_g = 0.02,
+    Rrpwr = 10.0,
+    Brkpt = 0.9,
+    Zerox = 0.4,
+    Lvpl1 = 1.22,
+    Vo_lim = 1.2,
+    Lv_pnts = (0.5, 0.9),
+    Io_lim = -1.3,
+    T_fltr = 0.2,
+    K_hv = 0.0,
+    Iqr_lims = (-100.0, 100.0),
+    Accel = 0.7,
+    Lvpl_sw = 0,
+    R_source = 0.000,
+    X_source = 1.0e5,
+)
+
+filt_current() = RLFilter(rf = 0.0, lf = 0.0)
+
 ####### Devices #######
 
 function dyn_gen_second_order(generator)

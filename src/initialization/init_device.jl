@@ -30,6 +30,8 @@ function initialize_dynamic_device!(
 
     #Initialize Machine and Shaft: V and I
     initialize_filter!(device_states, static, dynamic_device, initial_inner_vars)
+    #Initialize Converter
+    initialize_converter!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize freq estimator
     initialize_frequency_estimator!(
         device_states,
@@ -41,10 +43,10 @@ function initialize_dynamic_device!(
     initialize_outer!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize DCside
     initialize_DCside!(device_states, static, dynamic_device, initial_inner_vars)
-    #Initialize InnerLoop
-    initialize_inner!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize Converter
     initialize_converter!(device_states, static, dynamic_device, initial_inner_vars)
+    #Initialize InnerLoop
+    initialize_inner!(device_states, static, dynamic_device, initial_inner_vars)
     return device_states
 end
 

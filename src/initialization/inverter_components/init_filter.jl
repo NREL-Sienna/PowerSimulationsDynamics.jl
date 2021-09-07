@@ -84,3 +84,62 @@ function initialize_filter!(
         filter_states[6] = I_I #Ii_filter
     end
 end
+
+function initialize_filter!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+}
+    #PowerFlow Data
+    P0 = PSY.get_active_power(static)
+    Q0 = PSY.get_reactive_power(static)
+    Vm = PSY.get_magnitude(PSY.get_bus(static))
+    θ = PSY.get_angle(PSY.get_bus(static))
+    S0 = P0 + Q0 * 1im
+    V_R = Vm * cos(θ)
+    V_I = Vm * sin(θ)
+    V = V_R + V_I * 1im
+    # Doesn't match PSS/e initialization because PTI doesn't use the conjugate.
+    I = conj(S0 / V)
+    # PSS/e names I_R as Ip. But is calculated as P/Vt
+    I_R = real(I)
+    # PSS/e names I_I as Iq. But is calculated as Q/Vt
+    I_I = imag(I)
+
+    # Update Control References
+    PSY.set_Q_ref!(PSY.get_converter(dynamic_device), Q0)
+    PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = Q0
+    PSY.set_Q_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Q0)
+    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), P0)
+    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = P0
+
+    #Get Parameters
+    filt = PSY.get_filter(dynamic_device)
+    rf = PSY.get_rf(filt)
+    lf = PSY.get_lf(filt)
+    converter = PSY.get_converter(dynamic_device)
+    R_source = PSY.get_R_source(converter)
+    X_source = PSY.get_X_source(converter)
+
+    #Update terminal voltages
+    get_inner_vars(dynamic_device)[Vr_inv_var] = V_R
+    get_inner_vars(dynamic_device)[Vi_inv_var] = V_I
+    #Update filter currents (output of converter)
+    get_inner_vars(dynamic_device)[Ir_inv_var] = I_R
+    get_inner_vars(dynamic_device)[Ii_inv_var] = I_I
+    #Update converter currents
+    V_cnv = V + (rf + lf * 1im) * I
+    I_aux = V_cnv / (R_source + X_source * 1im)
+    I_cnv = I + I_aux
+
+    get_inner_vars(dynamic_device)[Vr_cnv_var] = real(V_cnv)
+    get_inner_vars(dynamic_device)[Vi_cnv_var] = imag(V_cnv)
+    get_inner_vars(dynamic_device)[Ir_cnv_var] = real(I_cnv)
+    get_inner_vars(dynamic_device)[Ii_cnv_var] = imag(I_cnv)
+end

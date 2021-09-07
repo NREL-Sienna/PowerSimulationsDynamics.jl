@@ -27,8 +27,8 @@ function mdl_filter_ode!(
     #θ_oc = device_states[external_ix[1]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(dynamic_device)[VR_inv_var]
-    V_tI = get_inner_vars(dynamic_device)[VI_inv_var]
+    V_tR = get_inner_vars(dynamic_device)[Vr_inv_var]
+    V_tI = get_inner_vars(dynamic_device)[Vi_inv_var]
     Vr_cnv = get_inner_vars(dynamic_device)[Vr_cnv_var]
     Vi_cnv = get_inner_vars(dynamic_device)[Vi_cnv_var]
 
@@ -97,4 +97,52 @@ function mdl_filter_ode!(
     #Update current
     current_r[1] += I_RI[1]
     current_i[1] += I_RI[2]
+end
+
+function mdl_filter_ode!(
+    device_states,
+    output_ode,
+    current_r,
+    current_i,
+    sys_Sbase,
+    f0,
+    ω_sys,
+    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+}
+    #Obtain inner variables for component
+    basepower = PSY.get_base_power(dynamic_device)
+    ratio_power = basepower / sys_Sbase
+
+    #Obtain parameters
+    filt = PSY.get_filter(dynamic_device)
+    rf = PSY.get_rf(filt)
+    lf = PSY.get_lf(filt)
+
+    #Compute output currents
+    if lf != 0.0 || rf != 0.0
+        Vr_cnv = get_inner_vars(dynamic_device)[Vr_cnv_var]
+        Vi_cnv = get_inner_vars(dynamic_device)[Vi_cnv_var]
+        Vr_inv = get_inner_vars(dynamic_device)[Vr_inv_var]
+        Vi_inv = get_inner_vars(dynamic_device)[Vi_inv_var]
+        Zmag_squared = rf^2 + lf^2
+        Ir_filt = (1.0 / Zmag_squared) * ((Vr_cnv - Vr_inv) * rf + (Vi_cnv - Vi_inv) * lf)
+        Ii_filt = (1.0 / Zmag_squared) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
+    else
+        Ir_filt = get_inner_vars(dynamic_device)[Ir_cnv_var]
+        Ii_filt = get_inner_vars(dynamic_device)[Ii_cnv_var]
+    end
+
+    #Update Inner Vars
+    get_inner_vars(dynamic_device)[Ir_inv_var] = Ir_filt
+    get_inner_vars(dynamic_device)[Ii_inv_var] = Ii_filt
+
+    #Update current
+    current_r[1] += ratio_power * Ir_filt
+    current_i[1] += ratio_power * Ii_filt
 end

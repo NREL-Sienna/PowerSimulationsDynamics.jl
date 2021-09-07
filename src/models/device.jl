@@ -175,8 +175,8 @@ function device!(
     sys_ω = get_ω_sys(cache, T)
 
     #Update Voltage data
-    get_inner_vars(dynamic_device)[VR_inv_var] = voltage_r[1]
-    get_inner_vars(dynamic_device)[VI_inv_var] = voltage_i[1]
+    get_inner_vars(dynamic_device)[Vr_inv_var] = voltage_r[1]
+    get_inner_vars(dynamic_device)[Vi_inv_var] = voltage_i[1]
 
     #Update V_ref
     get_V_ref(dynamic_device)
@@ -213,7 +213,7 @@ function device!(
     mdl_inner_ode!(device_states, view(output_ode, ode_range), dynamic_device)
 
     #Obtain converter relations
-    mdl_converter_ode!(dynamic_device)
+    mdl_converter_ode!(device_states, view(output_ode, ode_range), dynamic_device)
 
     #Obtain ODEs for output filter
     mdl_filter_ode!(

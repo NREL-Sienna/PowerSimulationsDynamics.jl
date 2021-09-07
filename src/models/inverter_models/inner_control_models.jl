@@ -6,6 +6,131 @@ function mass_matrix_inner_entries!(
     @debug "Using default mass matrix entries $IC"
 end
 
+function mass_matrix_inner_entries!(
+    mass_matrix,
+    inner_control::PSY.RECurrentControlB,
+    global_index::Dict{Symbol, Int64},
+)
+    mass_matrix[global_index[:Vt_filt], global_index[:Vt_filt]] =
+        PSY.get_T_rv(inner_control)
+    if PSY.get_Q_Flag(inner_control) == 0
+        mass_matrix[global_index[:I_icv], global_index[:I_icv]] =
+            PSY.get_T_iq(inner_control)
+    end
+end
+
+#####################################################
+### Auxiliary ODE calculations via Flags dispatch ###
+#####################################################
+
+### Inner Controllers ###
+
+#Q_Flag = 0
+function _mdl_ode_RE_inner_controller_B!(
+    inner_controller_ode,
+    inner_controller_states,
+    ::Type{Base.RefValue{0}},
+    inner_control::PSY.RECurrentControlB,
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+    #Obtain inner variables for component
+    V_t = sqrt(
+        get_inner_vars(dynamic_device)[Vr_inv_var]^2 +
+        get_inner_vars(dynamic_device)[Vi_inv_var]^2,
+    )
+    Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
+    Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
+
+    #Get Current Controller parameters
+    PQ_Flag = PSY.get_PQ_Flag(inner_control)
+    dbd1, dbd2 = PSY.get_dbd_pnts(inner_control)
+    K_qv = PSY.get_K_qv(inner_control)
+    I_ql1, I_qh1 = PSY.get_Iqinj_lim(inner_control)
+    V_ref0 = PSY.get_V_ref0(inner_control)
+
+    #Read local states
+    Vt_filt = inner_controller_states[1]
+    I_icv = inner_controller_states[2]
+
+    #Compute additional states
+    V_err = deadband_function(V_ref0 - Vt_filt, dbd1, dbd2)
+    Iq_inj = clamp(K_qv * V_err, I_ql1, I_qh1)
+    Iq_cmd = I_icv + Iq_inj
+    Ip_min, Ip_max, Iq_min, Iq_max =
+        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, Vt_filt, Ip_oc, Iq_cmd)
+    Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
+    Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
+
+    #ODE update
+    inner_controller_ode[1] = V_t - Vt_filt
+    inner_controller_ode[2] = Iq_oc - I_icv
+
+    #Update Inner Vars
+    get_inner_vars(dynamic_device)[Id_ic_var] = Ip_cmd
+    get_inner_vars(dynamic_device)[Iq_ic_var] = Iq_cmd
+end
+
+#Q_Flag = 1
+function _mdl_ode_RE_inner_controller_B!(
+    inner_controller_ode,
+    inner_controller_states,
+    ::Type{Base.RefValue{1}},
+    inner_control::PSY.RECurrentControlB,
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+    #Obtain inner variables for component
+    V_t = sqrt(
+        get_inner_vars(dynamic_device)[Vr_inv_var]^2 +
+        get_inner_vars(dynamic_device)[Vi_inv_var]^2,
+    )
+    Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
+    V_oc = get_inner_vars(dynamic_device)[V_oc_var]
+
+    #Get Current Controller parameters
+    PQ_Flag = PSY.get_PQ_Flag(inner_control)
+    K_vp = PSY.get_K_vp(inner_control)
+    K_vi = PSY.get_K_vi(inner_control)
+
+    #Read local states
+    Vt_filt = inner_controller_states[1]
+    ξ_icv = inner_controller_states[2]
+
+    #Compute additional states
+    V_err = deadband_function(V_ref0 - Vt_filt, dbd1, dbd2)
+    Iq_inj = clamp(K_qv * V_err, I_ql1, I_qh1)
+    #To do: Limits on PI non-windup
+    I_icv = K_vp * V_oc + K_vi * ξ_icv
+    Iq_cmd = I_icv + Iq_inj
+    Ip_min, Ip_max, Iq_min, Iq_max =
+        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, Vt_filt, Ip_oc, Iq_cmd)
+    Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
+    Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
+
+    #ODE update
+    inner_controller_ode[1] = V_t - Vt_filt
+    inner_controller_ode[2] = V_oc
+
+    #Update Inner Vars
+    get_inner_vars(dynamic_device)[Id_ic_var] = Ip_cmd
+    get_inner_vars(dynamic_device)[Iq_ic_var] = Iq_cmd
+end
+
+############################################
+### ODE calculations via device dispatch ###
+############################################
+
 function mdl_inner_ode!(
     device_states,
     output_ode,
@@ -192,4 +317,37 @@ function mdl_inner_ode!(
     #Modulation Commands to Converter
     get_inner_vars(dynamic_device)[md_var] = Vd_cnv_ref / Vdc
     get_inner_vars(dynamic_device)[mq_var] = Vq_cnv_ref / Vdc
+end
+
+function mdl_inner_ode!(
+    device_states,
+    output_ode,
+    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+    #Get Current Controller parameters
+    inner_control = PSY.get_inner_control(dynamic_device)
+    Q_Flag = PSY.get_Q_Flag(inner_control)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, PSY.RECurrentControlB)
+    #Define internal states for Inner Control
+    internal_states = @view device_states[local_ix]
+    internal_ode = @view output_ode[local_ix]
+
+    # TO DO: Voltage Dip Freeze logic
+
+    #Dispatch inner controller ODE calculation 
+    _mdl_ode_RE_inner_controller_B!(
+        internal_ode,
+        internal_states,
+        Base.RefValue{Q_Flag},
+        inner_control,
+        dynamic_device,
+    )
 end
