@@ -1,18 +1,73 @@
 abstract type Perturbation end
 
 """
-Use to model the trip of an AC Branch in in the system. Accepts lines or transformer lines
+Use to model the trip of an AC Branch in in the system. Accepts any ACBranch
 """
 mutable struct BranchTrip <: Perturbation
     time::Float64
+    branch_type::Type{<:PSY.ACBranch}
     branch_name::String
+end
+
+"""
+Use to model changes in the network as sudden impedance changes. Mostly used for small system analysis.
+"""
+mutable struct BranchImpedanceChange <: Perturbation
+    time::Float64
+    branch_type::Type{<:PSY.ACBranch}
+    branch_name::String
+    multiplier::Float64
+end
+
+function _get_branch_for_perturbation(sys::PSY.System, perturbation)
+    branch = PSY.get_component(perturbation.branch_type, sys, perturbation.branch_name)
+    if branch === nothing || !PSY.get_available(branch)
+        throw(
+            IS.ConflictingInputsError(
+                "Branch $(perturbation.branch_type) $(perturbation.branch_name) not existent or unavailable in the system. Use PSY.show_components(system, $(perturbation.branch_type)) to check valid component names",
+            ),
+        )
+    end
+    return branch
+end
+
+function get_affect(sys::PSY.System, pert::BranchImpedanceChange)
+    branch = _get_branch_for_perturbation(sys, pert)
+    mult = 0.0
+    if pert.multiplier < 0.0
+        throw(
+            IS.ConflictingInputsError(
+                "Negative multipliers are not allowed for BranchImpedanceChange perturbations",
+            ),
+        )
+    elseif pert.multiplier < 1.0
+        mult = 1.0 - pert.multiplier
+    elseif pert.multiplier > 1.0
+        mult = pert.multiplier - 1.0
+    else
+        @assert pert.multiplier == 1.0
+    end
+
+    return (integrator) -> begin
+        ybus_update!(integrator.p, branch, mult)
+    end
+
+    return
+end
+
+function get_affect(sys::PSY.System, pert::BranchTrip)
+    branch = _get_branch_for_perturbation(sys, pert)
+    return (integrator) -> begin
+        ybus_update!(integrator.p, branch, -1.0)
+    end
+    return
 end
 
 function ybus_update!(
     ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
     b::PSY.ACBranch,
     num_bus::Dict{Int, Int},
-    mult::Float64 = 1.0,
+    mult::Float64,
 )
     arc = PSY.get_arc(b)
     bus_from_no = num_bus[PSY.get_number(arc.from)]
@@ -35,7 +90,7 @@ function ybus_update!(
     ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
     b::PSY.TapTransformer,
     num_bus::Dict{Int, Int},
-    mult::Float64 = 1.0,
+    mult::Float64,
 )
     arc = PSY.get_arc(b)
     bus_from_no = num_bus[PSY.get_number(arc.from)]
@@ -61,7 +116,7 @@ function ybus_update!(
     ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
     b::PSY.PhaseShiftingTransformer,
     num_bus::Dict{Int, Int},
-    mult::Float64 = 1.0,
+    mult::Float64,
 )
     arc = PSY.get_arc(b)
     bus_from_no = num_bus[PSY.get_number(arc.from)]
@@ -87,7 +142,7 @@ function ybus_update!(
     ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
     fa::PSY.FixedAdmittance,
     num_bus::Dict{Int, Int},
-    mult::Float64 = 1.0,
+    mult::Float64,
 )
     bus = PSY.get_bus(fa)
     bus_ix = num_bus[PSY.get_number(bus)]
@@ -97,16 +152,6 @@ end
 
 function ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
     ybus_update!(integrator_params.Ybus, branch, integrator_params.lookup, mult)
-    return
-end
-
-function get_affect(sys::PSY.System, pert::BranchTrip)
-    branch = first(
-        PSY.get_components(PSY.ACBranch, sys, x -> PSY.get_name(x) == pert.branch_name),
-    )
-    return (integrator) -> begin
-        ybus_update!(integrator.p, branch, -1.0)
-    end
     return
 end
 
