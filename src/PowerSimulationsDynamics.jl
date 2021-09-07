@@ -10,6 +10,7 @@ export execute!
 export NetworkSwitch
 export ControlReferenceChange
 export BranchTrip
+export BranchImpedanceChange
 export SourceBusVoltageChange
 # export BusTrip
 
