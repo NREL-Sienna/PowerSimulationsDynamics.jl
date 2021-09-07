@@ -113,8 +113,13 @@ const VOLTAGE_DIVISION_LOWER_BOUND = 0.01
 const GLOBAL_VAR_SYS_FREQ_INDEX = 1
 const GLOBAL_VARS_IX = () -> Dict{Int, Int}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
 
-const SIMULATION_ACCEPTED_KWARGS =
-    [:initialize_simulation, :system_to_file, :file_level, :console_level]
+const SIMULATION_ACCEPTED_KWARGS = [
+    :initialize_simulation,
+    :initial_conditions,
+    :system_to_file,
+    :file_level,
+    :console_level,
+]
 const SMALL_SIGNAL_ACCEPTED_KWARGS = [:reset_simulation!]
 const RELAXED_NL_SOLVE_TOLERANCE = :1e-6
 const STRICT_NL_SOLVE_TOLERANCE = :1e-9
