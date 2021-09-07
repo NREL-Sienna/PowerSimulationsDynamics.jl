@@ -4,7 +4,8 @@
 
 abstract type Cache end
 
-struct JacobianCache{T, U} <: Cache
+struct JacobianCache{F, T, U} <: Cache
+    f!::F
     bus_count::Int
     dx::Vector{T}
     dx_dual::Vector{U}
@@ -20,14 +21,15 @@ struct JacobianCache{T, U} <: Cache
     global_vars_dual::Vector{U}
 end
 
-function JacobianCache{T, U}(inputs::SimulationInputs) where {T, U}
+function JacobianCache{T, U}(F, inputs::SimulationInputs) where {T, U}
     n = get_variable_count(inputs)
     n_inj = get_injection_n_states(inputs)
     n_branches = get_branches_n_states(inputs)
     bus_count = get_bus_count(inputs)
     inner_vars_count = get_inner_vars_count(inputs)
     n_global_vars = length(keys(get_global_vars_update_pointers(inputs)))
-    return JacobianCache{T, U}(
+    return JacobianCache{typeof(F), T, U}(
+        F,
         bus_count,
         zeros(T, n),
         zeros(U, n),
@@ -72,10 +74,10 @@ get_inner_vars(jc::JacobianCache, ::Type{T}) where {T <: ForwardDiff.Dual} =
 get_global_vars(jc::JacobianCache, ::Type{T}) where {T <: ForwardDiff.Dual} =
     reinterpret(T, jc.global_vars_dual)
 
-struct SimCache{T} <: Cache
+struct SimCache{F, T} <: Cache
+    f!::F
+    bus_count::Int
     dx::Vector{T}
-    current_injections_r::Vector{T}
-    current_injections_i::Vector{T}
     injection_ode::Vector{T}
     branches_ode::Vector{T}
     current_balance::Vector{T}
@@ -84,28 +86,30 @@ struct SimCache{T} <: Cache
     global_vars::Vector{T}
 end
 
-function SimCache{T}(inputs::SimulationInputs) where {T}
+function SimCache{T}(f!, inputs::SimulationInputs) where {T}
     n = get_variable_count(inputs)
     n_inj = get_injection_n_states(inputs)
     n_branches = get_branches_n_states(inputs)
     bus_count = get_bus_count(inputs)
     inner_vars_count = get_inner_vars_count(inputs)
     n_global_vars = length(keys(get_global_vars_update_pointers(inputs)))
-    return SimCache{T}(
+    return SimCache{typeof(f!), T}(
+        f!,
+        bus_count,
         zeros(T, n),
-        zeros(T, bus_count),
-        zeros(T, bus_count),
         zeros(T, n_inj),
         zeros(T, n_branches),
-        zeros(T, bus_count),
+        zeros(T, 2 * bus_count),
         zeros(T, inner_vars_count),
         zeros(T, n_global_vars),
     )
 end
 
+get_current_injections_r(sc::SimCache, ::Type{Float64}) =
+    sc.current_balance[1:(sc.bus_count)]
+get_current_injections_i(sc::SimCache, ::Type{Float64}) =
+    sc.current_balance[(sc.bus_count + 1):end]
 get_dx(sc::SimCache, ::Type{Float64}) = sc.dx
-get_current_injections_r(sc::SimCache, ::Type{Float64}) = sc.current_injections_r
-get_current_injections_i(sc::SimCache, ::Type{Float64}) = sc._injections_i
 get_injection_ode(sc::SimCache, ::Type{Float64}) = sc.injection_ode
 get_branches_ode(sc::SimCache, ::Type{Float64}) = sc.branches_ode
 get_current_balance(sc::SimCache, ::Type{Float64}) = sc.current_balance
