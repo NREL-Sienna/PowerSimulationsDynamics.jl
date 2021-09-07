@@ -95,7 +95,8 @@ function Simulation!(
         T,
         system;
         tspan = tspan,
-        initial_conditions = deepcopy(init_conditions),
+        initial_conditions = get(kwargs, :initial_conditions, Vector{Float64}()),
+        initialize_simulation = get(kwargs, :initialize_simulation, true),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
