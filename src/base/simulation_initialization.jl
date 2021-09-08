@@ -95,20 +95,27 @@ end
 
 function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationInputs)
     invalid_initial_guess = String[]
+    for i in get_bus_range(inputs)
+        if initial_guess[i] > 1.3 || initial_guess[i] < 0.7
+            push!(invalid_initial_guess, "Voltage entry $i")
+        end
+    end
+
     for device in get_dynamic_injectors_data(inputs)
         device_initial_guess = initial_guess[get_ix_range(device)]
         device_index = get_global_index(device)
         if haskey(device_index, :ω)
             dev_freq = initial_guess[device_index[:ω]]
             if dev_freq > 1.2 || dev_freq < 0.8
-                push!(invalid_initial_guess, "$(get_name(device)) - :ω")
+                push!(invalid_initial_guess, "$(PSY.get_name(device)) - :ω")
             end
         end
         all(isfinite, initial_guess) && continue
-        i = findall(!isfinite, device_initial_guess)
-        for state in if state.second ∈ i
-            push!(invalid_initial_guess, "$device - $(p.first)")
-        end
+        invalid_set = findall(!isfinite, device_initial_guess)
+        for state in get_global_index(device)
+            if state.second ∈ i
+                push!(invalid_initial_guess, "$device - $(p.first)")
+            end
         end
     end
 
