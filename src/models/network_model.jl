@@ -20,7 +20,6 @@ function network_model(
             I_balance[n + bus_count] -= ybus_vals[i] * voltages[rows_vals[i]]
         end
     end
-
     return I_balance
 end
 
