@@ -19,7 +19,10 @@ mutable struct BranchImpedanceChange <: Perturbation
     multiplier::Float64
 end
 
-function _get_branch_for_perturbation(sys::PSY.System, perturbation::T) where T <: Perturbation
+function _get_branch_for_perturbation(
+    sys::PSY.System,
+    perturbation::T,
+) where {T <: Perturbation}
     if perturbation.branch_type == PSY.DynamicBranch
         error("DynamicBranch is not supported currently with perturbation $T")
     end
@@ -154,7 +157,7 @@ function ybus_update!(
 end
 
 function ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
-    ybus_update!(integrator_params.Ybus, branch, integrator_params.lookup, mult)
+    ybus_update!(integrator_params.ybus_rectangular, branch, integrator_params.lookup, mult)
     return
 end
 

@@ -40,7 +40,6 @@ function device!(
     sys_ω = get_ω_sys(cache, T)
 
     #Update Voltage data
-
     inner_vars[VR_gen_var] = voltage_r[bus_ix]
     inner_vars[VI_gen_var] = voltage_i[bus_ix]
 
