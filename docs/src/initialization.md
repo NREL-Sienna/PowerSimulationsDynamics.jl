@@ -1,7 +1,7 @@
 # Initialization Routine
 
-Dynamic Simulations require a reasonable initial condition for the model. In most analysis,
-power systems models are initialized at a stable equilibrium, which implies that:
+Dynamic Simulations require a reasonable initial condition for the system model.
+In most analysis, power systems models are initialized at a stable equilibrium, which implies that:
 
 ```math
 \begin{align}
@@ -15,9 +15,62 @@ for the dynamic injection devices' components is well known and used in free and
 software (see [Power System Modelling and Scripting](https://www.springer.com/gp/book/9783642136689) page 224).
 However, in the case of converter interface dynamic injection models, such routines are not documented.
 
-This page shows the initialization details in `PowerSimulationsDynamics.jl`
+Initializing the system also requires finding valid set-points for the devices in the system.
+For instance, finding the reference voltage in an AVR to match the voltage magnitude resulting from
+the power flow solution. `PowerSimulationsDynamics.jl` prioritizes mathching the dynamic components
+control references to match the power flow results.
 
-## System-wide routine
+Finally, the initialization must instantiate not only the values of the states but also the
+inner vars. `PowerSimulationsDynamics.jl` handles all this initializations by default.
+
+## Initialization interface
+
+By default `PowerSimulationsDynamics.jl` initializes the system following the steps described below.
+it is possible to provide an initial guess for the initial conditions to speed up the initialization process.
+
+```julia
+Simulation(
+        ImplicitModel,
+        sys,
+        pwd(),
+        (0.0, 20.0);
+        initial_conditions = x0_init,
+    )
+```
+
+It is also possible to initialize the simulation using a flat start (`V_mag = 1.0`, `V_angle = 0.0` and `x0 = zeros`)
+using `initialize_simulation = false`. However, for medium or large system this is unlikely to
+result in a valid initial condition for the simulation.
+
+```julia
+Simulation(
+        ImplicitModel,
+        sys,
+        pwd(),
+        (0.0, 20.0);
+        initialize_simulation = false,
+    )
+```
+
+If you want to avoid `PowerSimulationsDynamics.jl` from finding an stable equilibrium automatically
+and provide the initial condition manually you can use the following flag combination.
+
+```julia
+Simulation(
+        ImplicitModel,
+        sys,
+        pwd(),
+        (0.0, 20.0);
+        initialize_simulation = false,
+        initial_conditions = x0_init,
+    )
+```
+
+<span style="color:red">*WARNING!*</span>: when the `initialize_simulation` is set to `false`,
+neither the device set points nor the inner vars are initialized. Use these keywords with care
+and make sure the values in the system components match the initial conditions provided.
+
+## System-wide initialization routine
 
 The initialization routine starts from the solution of the power flow equations. For each
 dynamic injection device `PowerSimulationsDynamics.jl` finds the solution of the systems of
