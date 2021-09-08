@@ -19,7 +19,7 @@ function _power_flow_solution!(
         initial_guess[bus_ix] = PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
         initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
     end
-    return BUILD_INCOMPLETE
+    return BUILD_IN_PROGRESS
 end
 
 function _initialize_static_injection!(inputs::SimulationInputs)
@@ -36,7 +36,7 @@ function _initialize_static_injection!(inputs::SimulationInputs)
             return BUILD_FAILED
         end
     end
-    return BUILD_INCOMPLETE
+    return BUILD_IN_PROGRESS
 end
 
 function _initialize_dynamic_injection!(
@@ -66,7 +66,7 @@ function _initialize_dynamic_injection!(
         @error "Dynamic Injection Failed to Initialize" exception = e, bt
         return BUILD_FAILED
     end
-    return BUILD_INCOMPLETE
+    return BUILD_IN_PROGRESS
 end
 
 function _initialize_dynamic_branches!(
@@ -90,7 +90,7 @@ function _initialize_dynamic_branches!(
         @error "Dynamic Branches Failed to Initialize" exception = e, bt
         return BUILD_FAILED
     end
-    return BUILD_INCOMPLETE
+    return BUILD_IN_PROGRESS
 end
 
 function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationInputs)
@@ -116,7 +116,7 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
         @error("Invalid initial guess values $invalid_initial_guess")
         return BUILD_FAILED
     end
-    return BUILT
+    return BUILD_INCOMPLETE
 end
 
 # Default implementation for both models. This implementation is to future proof if there is
@@ -124,7 +124,7 @@ end
 function _calculate_device_initial_conditions!(sim::Simulation)
     inputs = get_simulation_inputs(sim)
     @debug "Start state intialization routine"
-    while sim.status == BUILD_INCOMPLETE
+    while sim.status == BUILD_IN_PROGRESS
         sim.status = _power_flow_solution!(sim.x0_init, get_system(sim), inputs)
         sim.status = _initialize_static_injection!(inputs)
         sim.status = _initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
@@ -138,13 +138,8 @@ function _calculate_device_initial_conditions!(sim::Simulation)
     return
 end
 
-function calculate_initial_conditions!(
-    sim::Simulation,
-    model::SystemModel,
-    jacobian::JacobianFunctionWrapper,
-)
+function precalculate_initial_conditions!(sim::Simulation)
     _calculate_device_initial_conditions!(sim)
-    refine_initial_condition!(sim, model, jacobian)
     return sim.status != BUILD_FAILED
 end
 
