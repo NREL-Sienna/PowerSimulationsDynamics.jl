@@ -13,10 +13,10 @@ function network_model(
     for n in UnitRange{Int}(1, bus_count)
         # The indexing works this way because of the shape of ybus_rectangular and because of the
         # ordering of
-        for i in SparseArrays.nzrange(ybus, n + bus_count)
+        for i in SparseArrays.nzrange(ybus, n)
             I_balance[n] -= ybus_vals[i] * voltages[rows_vals[i]]
         end
-        for i in SparseArrays.nzrange(ybus, n)
+        for i in SparseArrays.nzrange(ybus, n + bus_count)
             I_balance[n + bus_count] -= ybus_vals[i] * voltages[rows_vals[i]]
         end
     end
