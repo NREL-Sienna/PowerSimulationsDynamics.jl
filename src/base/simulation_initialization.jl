@@ -11,13 +11,11 @@ function _power_flow_solution!(
     bus_size = length(PSY.get_bus_numbers(sys))
     @debug "Updating Voltage guess"
     for bus in PSY.get_components(PSY.Bus, sys)
-        @debug PSY.get_name(bus)
-        @debug "V_r" PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
-        @debug "V_i" PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
         bus_n = PSY.get_number(bus)
         bus_ix = get_lookup(inputs)[bus_n]
         initial_guess[bus_ix] = PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
         initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
+        @debug "$(PSY.get_name(bus)) V_r = $(initial_guess[bus_ix]), V_i = $(initial_guess[bus_ix + bus_size])"
     end
     return BUILD_INCOMPLETE
 end
@@ -53,7 +51,7 @@ function _initialize_dynamic_injection!(
                 system,
                 PSY.get_name(dynamic_device),
             )
-            @debug PSY.get_name(dynamic_device) typeof(dynamic_device)
+            @debug "$(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
             n_states = PSY.get_n_states(dynamic_device)
             _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
             x0_device = initialize_dynamic_device!(dynamic_device, static, _inner_vars)
