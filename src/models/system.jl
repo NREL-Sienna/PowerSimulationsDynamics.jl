@@ -5,24 +5,20 @@ function ResidualModel(
     inputs::SimulationInputs,
     x0_init::Vector{T},
     ::Type{Ctype},
-) where {T <: Number, Ctype <: JacobianCache}
+) where {T <: Float64, Ctype <: JacobianCache}
     U = ForwardDiff.Dual{
-        typeof(ForwardDiff.Tag(nothing, T)),
+        typeof(ForwardDiff.Tag(system_residual!, T)),
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    return SystemModel{ResidualModel}(inputs, Ctype{T, U}(system_residual!, inputs))
+    return SystemModel{ResidualModel}(inputs, Ctype{U}(system_residual!, inputs))
 end
 
 """
 Instantiate an ResidualModel for ODE inputs.
 """
-function ResidualModel(
-    inputs,
-    ::Vector{T},
-    ::Type{Ctype},
-) where {Ctype <: SimCache, T <: Real}
-    return SystemModel{ResidualModel}(inputs, Ctype{T}(system_residual!, inputs))
+function ResidualModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
+    return SystemModel{ResidualModel}(inputs, Ctype(system_residual!, inputs))
 end
 
 function (m::SystemModel{ResidualModel, C})(
@@ -216,6 +212,5 @@ function system_mass_matrix!(
             dx[ix_range] .= branches_ode[ode_range]
         end
     end
-
     dx[bus_range] .= network_model(inputs, cache, voltages)
 end
