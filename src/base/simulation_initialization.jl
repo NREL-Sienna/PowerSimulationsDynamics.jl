@@ -19,7 +19,7 @@ function _power_flow_solution!(
         initial_guess[bus_ix] = PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
         initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
     end
-    return BUILD_IN_PROGRESS
+    return BUILD_INCOMPLETE
 end
 
 function _initialize_static_injection!(inputs::SimulationInputs)
@@ -36,7 +36,7 @@ function _initialize_static_injection!(inputs::SimulationInputs)
             return BUILD_FAILED
         end
     end
-    return BUILD_IN_PROGRESS
+    return BUILD_INCOMPLETE
 end
 
 function _initialize_dynamic_injection!(
@@ -66,7 +66,7 @@ function _initialize_dynamic_injection!(
         @error "Dynamic Injection Failed to Initialize" exception = e, bt
         return BUILD_FAILED
     end
-    return BUILD_IN_PROGRESS
+    return BUILD_INCOMPLETE
 end
 
 function _initialize_dynamic_branches!(
@@ -90,13 +90,13 @@ function _initialize_dynamic_branches!(
         @error "Dynamic Branches Failed to Initialize" exception = e, bt
         return BUILD_FAILED
     end
-    return BUILD_IN_PROGRESS
+    return BUILD_INCOMPLETE
 end
 
 function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationInputs)
     invalid_initial_guess = String[]
     for i in get_bus_range(inputs)
-        if initial_guess[i] > 1.3 || initial_guess[i] < 0.7
+        if initial_guess[i] > 1.3 || initial_guess[i] < -1.3
             push!(invalid_initial_guess, "Voltage entry $i")
         end
     end
@@ -120,18 +120,19 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
     end
 
     if !isempty(invalid_initial_guess)
-        @error("Invalid initial guess values $invalid_initial_guess")
+        @error("Invalid initial condition values $invalid_initial_guess")
         return BUILD_FAILED
     end
-    return BUILD_INCOMPLETE
+    return BUILD_IN_PROGRESS
 end
 
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-function _calculate_device_initial_conditions!(sim::Simulation)
+function _calculate_initial_guess!(sim::Simulation)
     inputs = get_simulation_inputs(sim)
-    @debug "Start state intialization routine"
-    while sim.status == BUILD_IN_PROGRESS
+    @assert sim.status == BUILD_INCOMPLETE
+    while sim.status == BUILD_INCOMPLETE
+        @debug "Start state intialization routine"
         sim.status = _power_flow_solution!(sim.x0_init, get_system(sim), inputs)
         sim.status = _initialize_static_injection!(inputs)
         sim.status = _initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
@@ -146,7 +147,7 @@ function _calculate_device_initial_conditions!(sim::Simulation)
 end
 
 function precalculate_initial_conditions!(sim::Simulation)
-    _calculate_device_initial_conditions!(sim)
+    _calculate_initial_guess!(sim)
     return sim.status != BUILD_FAILED
 end
 

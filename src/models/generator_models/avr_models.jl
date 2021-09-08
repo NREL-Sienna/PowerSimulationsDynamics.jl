@@ -3,7 +3,7 @@ function mass_matrix_avr_entries!(
     avr::T,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {T <: PSY.AVR}
-    @debug "Using default mass matrix entries $T)"
+    @debug "Using default mass matrix entries $T"
 end
 
 function mass_matrix_avr_entries!(

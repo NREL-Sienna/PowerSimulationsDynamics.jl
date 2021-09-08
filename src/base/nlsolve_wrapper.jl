@@ -75,34 +75,43 @@ function refine_initial_condition!(
     model::SystemModel,
     jacobian::JacobianFunctionWrapper,
 )
-    @assert sim.status != SIMULATION_INITIALIZED
+    @assert sim.status == BUILD_IN_PROGRESS
+
+    if sim.status == SIMULATION_INITIALIZED
+        @info "Simulation already initialized. Refinement not executed"
+        return
+    end
+
     @debug "Start NLSolve System Run"
     converged = false
     initial_guess = get_initial_conditions(sim)
-    @debug initial_guess
+    @debug "NLsolve initial guess $initial_guess"
     for tol in [STRICT_NL_SOLVE_TOLERANCE, RELAXED_NL_SOLVE_TOLERANCE]
         if converged
             break
         end
         for solv in [:trust_region, :newton]
-            # sys_solve = _nlsolve_call(initial_guess, model, jacobian, tol, solv)
+            #sys_solve = _nlsolve_call(initial_guess, model, jacobian, tol, solv)
             sys_solve = _nlsolve_call(initial_guess, model, tol, solv)
             failed(sys_solve) && return BUILD_FAILED
             converged = _convergence_check(sys_solve, tol, solv)
-            @debug "Write result to initial guess vector under condition converged = $(converged)"
+            @debug "Write initial guess vector using $solv with $tol convergence = $converged"
             initial_guess .= sys_solve.zero
             if converged
                 break
             end
         end
     end
+    sim.status = check_valid_values(initial_guess, get_simulation_inputs(sim))
+    if sim.status == BUILD_FAILED
+        error("Initial conditions refinement failed to find a valid initial condition")
+    end
     if !converged
         @warn(
-            "Initialization never converged to desired tolerances. Initial conditions do not meet conditions for an stable equilibrium. Simulation might diverge"
+            "Initialization didn't converged to desired tolerances.\\
+            Initial conditions do not meet conditions for an stable equilibrium. \\
+            Simulation might fail"
         )
-        sim.status = check_valid_values(initial_guess, inputs)
-    else
-        sim.status = SIMULATION_INITIALIZED
     end
     return
 end

@@ -174,7 +174,6 @@ end
 
 function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
-    sim.status = BUILD_INCOMPLETE
     sim.simulation_inputs = SimulationInputs(T, simulation_system)
     @debug "Simulation Inputs Created"
     return
@@ -220,7 +219,11 @@ function _pre_initialize_simulation!(sim::Simulation)
     if sim.initialized != true
         @info("Pre-Initializing Simulation States")
         sim.initialized = precalculate_initial_conditions!(sim)
+        if !sim.initialized
+            error("The simulation failed to find an adequate initial guess for the initialization. Check the intialization routine.")
+        end
     else
+        @warn("No Pre-initialization conducted. If this is unexpected, check the initialization keywords")
         sim.status = SIMULATION_INITIALIZED
     end
     return
@@ -276,6 +279,8 @@ function _get_diffeq_problem(
         simulation_inputs,
         differential_vars = get_DAE_vector(simulation_inputs),
     )
+    sim.status = BUILD_INCOMPLETE
+    return
 end
 
 function _get_diffeq_problem(
@@ -284,7 +289,7 @@ function _get_diffeq_problem(
     jacobian::JacobianFunctionWrapper,
 )
     simulation_inputs = PSID.get_simulation_inputs(sim)
-    return SciMLBase.ODEProblem(
+    sim.problem = SciMLBase.ODEProblem(
         SciMLBase.ODEFunction{true}(
             model,
             mass_matrix = get_mass_matrix(simulation_inputs),
@@ -296,11 +301,12 @@ function _get_diffeq_problem(
         get_tspan(sim),
         simulation_inputs,
     )
+    sim.status = BUILD_INCOMPLETE
+    return
 end
 
 function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
-    sim.status = BUILD_INCOMPLETE
     _build_inputs!(sim)
     _pre_initialize_simulation!(sim)
     if sim.status != BUILD_FAILED
@@ -308,12 +314,9 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
         try
             jacobian = _get_jacobian(sim)
             model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
-            if sim.status != SIMULATION_INITIALIZED
-                refine_initial_condition!(sim, model, jacobian)
-            end
+            refine_initial_condition!(sim, model, jacobian)
             _build_perturbations!(sim)
-            sim.problem = _get_diffeq_problem(sim, model, jacobian)
-            sim.status = BUILT
+            _get_diffeq_problem(sim, model, jacobian)
             @info "Simulations status = $(sim.status)"
         catch e
             bt = catch_backtrace()
