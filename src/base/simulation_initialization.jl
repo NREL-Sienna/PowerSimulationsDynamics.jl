@@ -94,20 +94,29 @@ function _initialize_dynamic_branches!(
 end
 
 function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationInputs)
-    if any(!isfinite, initial_guess)
-        i = findall(!isfinite, initial_guess)
-        invalid_initial_guess = String[]
-        for (device, states) in get_global_index(inputs)
-            for state in states
-                if state.second ∈ i
-                    push!(invalid_initial_guess, "$device - $(p.first)")
-                end
+    invalid_initial_guess = String[]
+    for device in get_dynamic_injectors_data(inputs)
+        device_initial_guess = initial_guess[get_ix_range(device)]
+        device_index = get_global_index(device)
+        if haskey(device_index, :ω)
+            dev_freq = initial_guess[device_index[:ω]]
+            if dev_freq > 1.2 || dev_freq < 0.8
+                push!(invalid_initial_guess, "$(get_name(device)) - :ω")
             end
         end
+        all(isfinite, initial_guess) && continue
+        i = findall(!isfinite, device_initial_guess)
+        for state in if state.second ∈ i
+            push!(invalid_initial_guess, "$device - $(p.first)")
+        end
+        end
+    end
+
+    if !isempty(invalid_initial_guess)
         @error("Invalid initial guess values $invalid_initial_guess")
         return BUILD_FAILED
     end
-    return BUILD_FAILED
+    return BUILT
 end
 
 # Default implementation for both models. This implementation is to future proof if there is

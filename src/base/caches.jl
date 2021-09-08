@@ -41,8 +41,8 @@ function JacobianCache{T, U}(F, inputs::SimulationInputs) where {T, U}
         zeros(U, 2 * bus_count),
         zeros(T, inner_vars_count),
         zeros(U, inner_vars_count),
-        zeros(T, n_global_vars),
-        zeros(U, n_global_vars),
+        setindex!(zeros(T, n_global_vars), 1.0, GLOBAL_VAR_SYS_FREQ_INDEX),
+        setindex!(zeros(U, n_global_vars), convert(U, 1.0), GLOBAL_VAR_SYS_FREQ_INDEX),
     )
 end
 
@@ -82,7 +82,6 @@ struct SimCache{F, T} <: Cache
     branches_ode::Vector{T}
     current_balance::Vector{T}
     inner_vars::Vector{T}
-    # always initialize with [1.0] for frequency reference value
     global_vars::Vector{T}
 end
 
@@ -101,7 +100,7 @@ function SimCache{T}(f!, inputs::SimulationInputs) where {T}
         zeros(T, n_branches),
         zeros(T, 2 * bus_count),
         zeros(T, inner_vars_count),
-        zeros(T, n_global_vars),
+        setindex!(zeros(T, n_global_vars), 1.0, GLOBAL_VAR_SYS_FREQ_INDEX),
     )
 end
 
