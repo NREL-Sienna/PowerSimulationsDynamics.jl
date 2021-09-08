@@ -214,3 +214,22 @@ end
     x0_flat[1:3] .= 1.0
     @test LinearAlgebra.norm(sim_flat.x0_init - x0_flat) <= 1e-6
 end
+
+@testset "Test Network Kirchoff Calculation" begin
+    voltages = [1.05
+        1.019861574381897
+        0.0
+        -0.016803841801155062
+        ]
+    V_r = voltages[1:2]
+    V_i = voltages[3:end]
+    ybus_ = PSY.Ybus(omib_sys).data
+    I_balance_ybus = -1*ybus_ * (V_r + V_i .* 1im)
+    inputs = PSID.SimulationInputs(ResidualModel, omib_sys)
+    sc = PSID.SimCache(nothing, inputs)
+    I_balance_sim = PSID.network_model(inputs, sc, voltages)
+    for i in 1:2
+        @test isapprox(real(I_balance_ybus[i]), I_balance_sim[i])
+        @test isapprox(imag(I_balance_ybus[i]), I_balance_sim[i + 2])
+    end
+end
