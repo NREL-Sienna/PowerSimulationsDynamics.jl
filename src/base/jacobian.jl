@@ -20,14 +20,16 @@ function JacobianFunctionWrapper(
     Jf = (Jv, x) -> begin
         @debug "Evaluating Jacobian Function"
         ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
+        return
     end
-    jac_proto = zeros(n, n)
+    jac = zeros(n, n)
     for _ in 1:sparse_retrieve_loop
         temp = zeros(n, n)
         Jf(temp, abs.(x0 + Random.rand(n) - Random.rand(n)))
-        jac_proto .+= abs.(temp)
+        jac .+= abs.(temp)
     end
-    Jv = SparseArrays.sparse(jac_proto)
+    Jv = SparseArrays.sparse(jac)
+    Jf(Jv, x0)
     return JacobianFunctionWrapper{typeof(Jf)}(Jf, Jv, x0)
 end
 
@@ -43,14 +45,16 @@ function JacobianFunctionWrapper(
     Jf = (Jv, x) -> begin
         @debug "Evaluating Jacobian Function"
         ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
+        return
     end
-    jac_proto = zeros(n, n)
+    jac = zeros(n, n)
     for _ in 1:sparse_retrieve_loop
         temp = zeros(n, n)
         Jf(temp, abs.(x0 + Random.rand(n) - Random.rand(n)))
-        jac_proto .+= abs.(temp)
+        jac .+= abs.(temp)
     end
-    Jv = SparseArrays.sparse(jac_proto)
+    Jv = SparseArrays.sparse(jac)
+    Jf(Jv, x0)
     return JacobianFunctionWrapper{typeof(Jf)}(Jf, Jv, x0)
 end
 
@@ -64,8 +68,8 @@ function (J::JacobianFunctionWrapper)(
     x::AbstractVector{Float64},
 )
     J.x .= x
-    JM .= J.Jf(J.Jv, x)
-    return JM
+    J.Jf(JM, x)
+    return
 end
 
 function (J::JacobianFunctionWrapper)(
@@ -75,8 +79,8 @@ function (J::JacobianFunctionWrapper)(
     t,
 )
     J.x .= x
-    JM .= J.Jf(J.Jv, x)
-    return JM
+    J.Jf(JM, x)
+    return
 end
 
 function (J::JacobianFunctionWrapper)(
@@ -88,6 +92,6 @@ function (J::JacobianFunctionWrapper)(
     t,
 )
     J.x .= x
-    JM .= gamma * LinearAlgebra.Diagonal(ones(length(x))) .- J.Jf(J.Jv, x)
+    JM .= gamma * LinearAlgebra.Diagonal(ones(length(x))) .- J.Jf(JM, x)
     return JM
 end
