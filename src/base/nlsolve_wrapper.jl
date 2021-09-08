@@ -26,25 +26,35 @@ function _nlsolve_call(
 )
     df = NLsolve.OnceDifferentiable(
         _get_model_closure(model, initial_guess),
-        jacobian.Jf,
+        jacobian,
         initial_guess,
         similar(initial_guess),
         jacobian.Jv,
     )
-    return try
-        sys_solve = NLsolve.nlsolve(
-            df,
-            initial_guess;
-            xtol = tolerance,
-            ftol = tolerance,
-            method = solver,
-        ) #Solve using initial guess x0
-        NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
-    catch e
-        bt = catch_backtrace()
-        @error "NLsolve failed to solve" exception = e, bt
-        NLsolveWrapper()
-    end
+    sys_solve = NLsolve.nlsolve(
+        df,
+        initial_guess;
+        xtol = tolerance,
+        ftol = tolerance,
+        method = solver,
+    ) #Solve using initial guess x0
+    return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
+end
+
+function _nlsolve_call(
+    initial_guess::Vector{Float64},
+    model::SystemModel,
+    tolerance::Float64,
+    solver::Symbol,
+)
+    sys_solve = NLsolve.nlsolve(
+        _get_model_closure(model, initial_guess),
+        initial_guess;
+        xtol = tolerance,
+        ftol = tolerance,
+        method = solver,
+    ) #Solve using initial guess x0
+    return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
 end
 
 function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbol)
@@ -61,20 +71,22 @@ function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbo
 end
 
 function refine_initial_condition!(
-    simulation::Simulation,
+    sim::Simulation,
     model::SystemModel,
     jacobian::JacobianFunctionWrapper,
 )
+    @assert sim.status != SIMULATION_INITIALIZED
     @debug "Start NLSolve System Run"
     converged = false
-    initial_guess = get_initial_conditions(simulation)
+    initial_guess = get_initial_conditions(sim)
     @debug initial_guess
     for tol in [STRICT_NL_SOLVE_TOLERANCE, RELAXED_NL_SOLVE_TOLERANCE]
         if converged
             break
         end
         for solv in [:trust_region, :newton]
-            sys_solve = _nlsolve_call(initial_guess, model, jacobian, tol, solv)
+            # sys_solve = _nlsolve_call(initial_guess, model, jacobian, tol, solv)
+            sys_solve = _nlsolve_call(initial_guess, model, tol, solv)
             failed(sys_solve) && return BUILD_FAILED
             converged = _convergence_check(sys_solve, tol, solv)
             @debug "Write result to initial guess vector under condition converged = $(converged)"
@@ -88,9 +100,9 @@ function refine_initial_condition!(
         @warn(
             "Initialization never converged to desired tolerances. Initial conditions do not meet conditions for an stable equilibrium. Simulation might diverge"
         )
-        simulation.status = check_valid_values(initial_guess, inputs)
+        sim.status = check_valid_values(initial_guess, inputs)
     else
-        simulation.status = SIMULATION_INITIALIZED
+        sim.status = SIMULATION_INITIALIZED
     end
     return
 end
