@@ -138,7 +138,7 @@ end
     @test isempty(voltage_buses_ix)
 end
 
-@testset "Remove Generation Unit" begin
+@testset "Test initial conditions externally" begin
     #Create system with 2 GENROU generators
     threebus_file_dir =
         joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBusMulti_LessLoad.raw")
@@ -193,4 +193,24 @@ end
         BranchTrip(1.0, "BUS 1-BUS 2-i_1"),
     )
     @test length(sim_normal_no_gen.x0_init) == 17
+    #Ignore Initial Conditions without passing initialize_simulation = false
+    sim_ignore_init =
+        Simulation(ImplicitModel, sys, pwd(), (0.0, 20.0); initial_conditions = x0_no_gen)
+    @test LinearAlgebra.norm(sim_ignore_init.x0_init - sim_normal_no_gen.x0_init) <= 1e-6
+    #Pass wrong vector size
+    x0_wrong = zeros(20)
+    @test_throws IS.ConflictingInputsError Simulation(
+        ImplicitModel,
+        sys,
+        pwd(),
+        (0.0, 20.0);
+        initialize_simulation = false,
+        initial_conditions = x0_wrong,
+    )
+    #Flat start initialization
+    sim_flat =
+        Simulation(ImplicitModel, sys, pwd(), (0.0, 20.0); initialize_simulation = false)
+    x0_flat = zeros(17)
+    x0_flat[1:3] .= 1.0
+    @test LinearAlgebra.norm(sim_flat.x0_init - x0_flat) <= 1e-6
 end
