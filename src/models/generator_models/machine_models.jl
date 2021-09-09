@@ -16,11 +16,9 @@ function mdl_machine_ode!(
     inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-
+    Sbase = get_system_base_power(dynamic_device)
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(dynamic_device, PSY.BaseMachine)
     δ = device_states[external_ix[1]]
@@ -67,10 +65,9 @@ function mdl_machine_ode!(
     inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    Sbase = get_system_base_power(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.OneDOneQMachine)
@@ -135,10 +132,10 @@ function mdl_machine_ode!(
     inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    Sbase = get_system_base_power(dynamic_device)
+    f0 = get_system_base_frequency(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.MarconatoMachine)
@@ -221,13 +218,12 @@ function mdl_machine_ode!(
     inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
     },
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-
+    Sbase = get_system_base_power(dynamic_device)
+    f0 = get_system_base_frequency(dynamic_device)
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.SimpleMarconatoMachine)
 
@@ -307,12 +303,12 @@ function mdl_machine_ode!(
     inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
     },
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    Sbase = get_system_base_power(dynamic_device)
+    f0 = get_system_base_frequency(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AndersonFouadMachine)
@@ -390,10 +386,10 @@ function mdl_machine_ode!(
     inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    Sbase = get_system_base_power(dynamic_device)
+    f0 = get_system_base_frequency(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.SimpleAFMachine)
@@ -465,8 +461,6 @@ function mdl_machine_ode!(
     inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {
     M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
@@ -475,6 +469,8 @@ function mdl_machine_ode!(
     TG <: PSY.TurbineGov,
     P <: PSY.PSS,
 }
+    Sbase = get_system_base_power(dynamic_device)
+    f0 = get_system_base_frequency(dynamic_device)
 
     #Obtain indices for component w/r to device
     machine = PSY.get_machine(dynamic_device)
@@ -541,17 +537,9 @@ function mdl_machine_ode!(
     output_ode[local_ix[3]] = (1.0 / Td0_pp) * (-ψ_kd + eq_p - (Xd_p - Xl) * I_d)   #2.20c ψ_kd
     output_ode[local_ix[4]] = (1.0 / Tq0_pp) * (-ψ_kq + ed_p + (Xq_p - Xl) * I_q)   #2.21c ψ_kq
 
-    function get_value_xiaf(v::Float64)
-        return v
-    end
-
-    function get_value_xiaf(v::ForwardDiff.Dual)
-        return v.value
-    end
-
     #Update inner_vars
     inner_vars[τe_var] = τ_e
-    inner_vars[Xad_Ifd_var] = get_value_xiaf(Xad_Ifd)
+    inner_vars[Xad_Ifd_var] = Xad_Ifd
 
     #Compute current from the generator to the grid
     I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
@@ -569,12 +557,12 @@ function mdl_machine_ode!(
     inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
     },
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    Sbase = get_system_base_power(dynamic_device)
+    f0 = get_system_base_frequency(dynamic_device)
 
     #Obtain indices for component w/r to device
     machine = PSY.get_machine(dynamic_device)
@@ -650,12 +638,12 @@ function mdl_machine_ode!(
     inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
     },
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    Sbase = get_system_base_power(dynamic_device)
+    f0 = get_system_base_frequency(dynamic_device)
 
     #Obtain indices for component w/r to device
     machine = PSY.get_machine(dynamic_device)
@@ -742,8 +730,6 @@ function mdl_machine_ode!(
 inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -826,8 +812,6 @@ function mdl_machine_ode!(
 inner_vars,
     current_r,
     current_i,
-    Sbase::Float64,
-    f0::Float64,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleFullMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
