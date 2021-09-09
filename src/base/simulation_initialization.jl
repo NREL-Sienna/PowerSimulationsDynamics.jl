@@ -22,7 +22,7 @@ end
 
 function _initialize_static_injection!(inputs::SimulationInputs)
     @debug "Updating Source internal voltages"
-    static_injection_devices = get_static_injectiors_data(inputs)
+    static_injection_devices = get_static_injectors_data(inputs)
     if !isempty(static_injection_devices)
         try
             for s in static_injection_devices
