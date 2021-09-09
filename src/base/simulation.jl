@@ -220,10 +220,14 @@ function _pre_initialize_simulation!(sim::Simulation)
         @info("Pre-Initializing Simulation States")
         sim.initialized = precalculate_initial_conditions!(sim)
         if !sim.initialized
-            error("The simulation failed to find an adequate initial guess for the initialization. Check the intialization routine.")
+            error(
+                "The simulation failed to find an adequate initial guess for the initialization. Check the intialization routine.",
+            )
         end
     else
-        @warn("No Pre-initialization conducted. If this is unexpected, check the initialization keywords")
+        @warn(
+            "No Pre-initialization conducted. If this is unexpected, check the initialization keywords"
+        )
         sim.status = SIMULATION_INITIALIZED
     end
     return
@@ -279,7 +283,7 @@ function _get_diffeq_problem(
         simulation_inputs,
         differential_vars = get_DAE_vector(simulation_inputs),
     )
-    sim.status = BUILD_INCOMPLETE
+    sim.status = BUILT
     return
 end
 
@@ -301,7 +305,7 @@ function _get_diffeq_problem(
         get_tspan(sim),
         simulation_inputs,
     )
-    sim.status = BUILD_INCOMPLETE
+    sim.status = BUILT
     return
 end
 

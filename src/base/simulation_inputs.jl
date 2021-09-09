@@ -1,6 +1,4 @@
 struct SimulationInputs
-    base_power::Float64
-    base_frequency::Float64
     dynamic_injectors_data::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
     static_injectors_data::Vector
     static_load_data::Vector
@@ -32,8 +30,13 @@ struct SimulationInputs
         total_shunts = _make_total_shunts(wrapped_branches, n_buses)
         wrapped_loads = _wrap_loads(sys, lookup)
         wrapped_static_injectors = _wrap_static_injectors(sys, lookup)
-        sys_f = PSY.get_frequency(sys)
-        _adjust_states!(DAE_vector, mass_matrix, total_shunts, n_buses, sys_f)
+        _adjust_states!(
+            DAE_vector,
+            mass_matrix,
+            total_shunts,
+            n_buses,
+            PSY.get_frequency(sys),
+        )
 
         global_vars = _make_global_variable_index(
             wrapped_injectors,
@@ -42,8 +45,6 @@ struct SimulationInputs
         )
 
         new(
-            PSY.get_base_power(sys),
-            sys_f,
             wrapped_injectors,
             wrapped_static_injectors,
             wrapped_loads,
@@ -68,7 +69,8 @@ get_base_power(inputs::SimulationInputs) = inputs.base_power
 get_base_frequency(inputs::SimulationInputs) = inputs.base_frequency
 get_dynamic_injectors_data(inputs::SimulationInputs) = inputs.dynamic_injectors_data
 get_dynamic_branches(inputs::SimulationInputs) = inputs.dynamic_branches
-get_static_injectiors_data(inputs::SimulationInputs) = inputs.static_injectors_data
+get_static_injectors_data(inputs::SimulationInputs) = inputs.static_injectors_data
+get_static_load_data(inputs::SimulationInputs) = inputs.static_load_data
 get_voltage_buses_ix(inputs::SimulationInputs) = inputs.voltage_buses_ix
 get_current_buses_ix(inputs::SimulationInputs) = inputs.current_buses_ix
 get_ybus(inputs::SimulationInputs) = inputs.ybus_rectangular
@@ -119,9 +121,10 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
     wrapped_injector = Vector(undef, length(injector_data))
     injection_count = 1
     inner_vars_count = 1
-
+    sys_base_power = PSY.get_base_power(sys)
+    sys_base_freq = PSY.get_frequency(sys)
     for (ix, device) in enumerate(injector_data)
-        @debug PSY.get_name(device)
+        @debug "Wrapping $(PSY.get_name(device))"
         dynamic_device = PSY.get_dynamic_injector(device)
         n_states = PSY.get_n_states(dynamic_device)
         ix_range = range(injection_start, length = n_states)
@@ -129,8 +132,15 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         bus_n = PSY.get_number(PSY.get_bus(device))
         bus_ix = lookup[bus_n]
         inner_vars_range = inner_vars_count:get_inner_vars_count(dynamic_device)
-        wrapped_injector[ix] =
-            DynamicWrapper(device, bus_ix, ix_range, ode_range, inner_vars_range)
+        wrapped_injector[ix] = DynamicWrapper(
+            device,
+            bus_ix,
+            ix_range,
+            ode_range,
+            inner_vars_range,
+            sys_base_power,
+            sys_base_freq,
+        )
         injection_count += n_states
         injection_start += n_states
         inner_vars_count = inner_vars_range[end]
