@@ -9,7 +9,7 @@ function _power_flow_solution!(
         return BUILD_FAILED
     end
     bus_size = length(PSY.get_bus_numbers(sys))
-    @debug "Updating Voltage guess"
+    @debug "Updating bus voltage magnitude and angle to match power flow result"
     for bus in PSY.get_components(PSY.Bus, sys)
         bus_n = PSY.get_number(bus)
         bus_ix = get_lookup(inputs)[bus_n]
@@ -21,7 +21,7 @@ function _power_flow_solution!(
 end
 
 function _initialize_static_injection!(inputs::SimulationInputs)
-    @debug "Updating Source internal voltages"
+    @debug "Updating Source internal voltage magnitude and angle"
     static_injection_devices = get_static_injectors_data(inputs)
     if !isempty(static_injection_devices)
         try
@@ -51,7 +51,7 @@ function _initialize_dynamic_injection!(
                 system,
                 PSY.get_name(dynamic_device),
             )
-            @debug "$(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
+            @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
             n_states = PSY.get_n_states(dynamic_device)
             _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
             x0_device = initialize_dynamic_device!(dynamic_device, static, _inner_vars)
@@ -71,16 +71,14 @@ function _initialize_dynamic_branches!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
 )
-    @debug "Updating Component Initial Guess"
-    branches_start = get_branches_pointer(inputs)
     try
+        @debug "Initializing Dynamic Branches"
         for br in get_dynamic_branches(inputs)
-            @debug PSY.get_name(br) typeof(br)
+            @debug "$(PSY.get_name(br)) -  $(typeof(br))"
             n_states = PSY.get_n_states(br)
-            ix_range = range(branches_start, length = n_states)
-            branches_start = branches_start + n_states
             x0_branch = initialize_dynamic_device!(br)
             @assert length(x0_branch) == n_states
+            ix_range = get_ix_range(br)
             initial_guess[ix_range] = x0_branch
         end
     catch e
