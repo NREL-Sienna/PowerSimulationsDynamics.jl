@@ -1,9 +1,8 @@
 function network_model(
     inputs::SimulationInputs,
-    cache::Cache,
+    I_balance::AbstractArray{T},
     voltages::AbstractArray{T},
 ) where {T <: Real}
-    I_balance = get_current_balance(cache, T)
     # This operation might need improvement, when the total shunts aren't added the
     # function is not allocating
     ybus = get_ybus(inputs) .+ get_total_shunts(inputs)
