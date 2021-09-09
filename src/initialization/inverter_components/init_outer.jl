@@ -1,13 +1,15 @@
 function initialize_outer!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
-        IC,
-        DC,
-        P,
-        F,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
+            IC,
+            DC,
+            P,
+            F,
+        },
     },
     inner_vars::AbstractVector,
 ) where {
@@ -44,13 +46,13 @@ function initialize_outer!(
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
     outer_states = @view device_states[outer_ix]
-    outer_states[1] = PSY.get_ω_ref(dynamic_device) #ω
+    outer_states[1] = get_ω_ref(dynamic_device) #ω
     outer_states[2] = θ0_oc #θ_oc
     outer_states[3] = q_elec_out #qm
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     get_P_ref(dynamic_device) = p_elec_out
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
@@ -60,13 +62,15 @@ end
 function initialize_outer!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
-        IC,
-        DC,
-        P,
-        F,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
+            IC,
+            DC,
+            P,
+            F,
+        },
     },
     inner_vars::AbstractVector,
 ) where {
@@ -119,13 +123,15 @@ end
 function initialize_outer!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
-        IC,
-        DC,
-        P,
-        F,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
+            IC,
+            DC,
+            P,
+            F,
+        },
     },
     inner_vars::AbstractVector,
 ) where {
@@ -192,16 +198,18 @@ end
 function initialize_outer!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
     },
 ) where {
     C <: PSY.Converter,
