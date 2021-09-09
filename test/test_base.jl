@@ -98,14 +98,20 @@ end
     end
 
     # Tests for all Dynamic Lines
-    sim = Simulation(ResidualModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
+    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir(), (0.0, 10.0))
     @test sim.status == PSID.BUILT
     sim_inputs = sim.simulation_inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
     @test all(DAE_vector)
+    @test all(diag(inputs.mass_matrix) .> 0)
     total_shunts = PSID.get_total_shunts(sim_inputs)
-    for v in LinearAlgebra.diag(total_shunts)
-        @test imag(v) > 0
+    # Total shunts matrix follows same pattern as the rectangular Ybus
+    for v in LinearAlgebra.diag(total_shunts[4:end, 1:3])
+        @test v > 0
+    end
+
+    for v in LinearAlgebra.diag(total_shunts[1:3, 4:end])
+        @test v < 0
     end
 
     for entry in LinearAlgebra.diag(sim_inputs.mass_matrix)
@@ -113,6 +119,7 @@ end
     end
     voltage_buses_ix = PSID.get_voltage_buses_ix(sim_inputs)
     @test length(voltage_buses_ix) == 3
+    @test isempty(PSID.get_current_buses_ix(sim_inputs))
 
     # Tests for dynamic lines with b = 0
     set_b!(dyn_branch12, (from = 0.0, to = 0.0))
