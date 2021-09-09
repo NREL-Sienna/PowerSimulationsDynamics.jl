@@ -297,15 +297,17 @@ end
 function mdl_outer_ode!(
     device_states,
     output_ode,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
-        IC,
-        DC,
-        P,
-        F,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
+            IC,
+            DC,
+            P,
+            F,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -326,7 +328,7 @@ function mdl_outer_ode!(
     Ii_filter = device_states[external_ix[4]]
 
     #Obtain inner variables for component
-    ω_pll = get_inner_vars(dynamic_device)[ω_freq_estimator_var]
+    ω_pll = inner_vars[ω_freq_estimator_var]
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
@@ -334,6 +336,7 @@ function mdl_outer_ode!(
     Ta = PSY.get_Ta(active_power_control) #VSM Inertia constant
     kd = PSY.get_kd(active_power_control) #VSM damping constant
     kω = PSY.get_kω(active_power_control) #Frequency droop gain
+    f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
@@ -344,7 +347,7 @@ function mdl_outer_ode!(
     #Obtain external parameters
     p_ref = get_P_ref(dynamic_device)
     ω_ref = get_ω_ref(dynamic_device)
-    get_V_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
     q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
@@ -370,23 +373,25 @@ function mdl_outer_ode!(
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc
-    get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
+    inner_vars[θ_oc_var] = θ_oc
+    inner_vars[ω_oc_var] = ω_oc
+    inner_vars[V_oc_var] = V_ref + kq * (q_ref - qm)
 end
 
 function mdl_outer_ode!(
     device_states,
     output_ode,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
-        IC,
-        DC,
-        P,
-        F,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
+            IC,
+            DC,
+            P,
+            F,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -407,14 +412,15 @@ function mdl_outer_ode!(
     Ii_filter = device_states[external_ix[4]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(dynamic_device)[Vr_inv_var]
-    V_tI = get_inner_vars(dynamic_device)[Vi_inv_var]
+    V_tR = inner_vars[Vr_inv_var]
+    V_tI = inner_vars[Vi_inv_var]
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power(outer_control)
     Rp = PSY.get_Rp(active_power_control) #Droop Gain
     ωz = PSY.get_ωz(active_power_control) #Frequency cutoff frequency
+    f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
@@ -453,23 +459,25 @@ function mdl_outer_ode!(
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc
-    get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
+    inner_vars[θ_oc_var] = θ_oc
+    inner_vars[ω_oc_var] = ω_oc
+    inner_vars[V_oc_var] = V_ref + kq * (q_ref - qm)
 end
 
 function mdl_outer_ode!(
     device_states,
     output_ode,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
-        IC,
-        DC,
-        P,
-        F,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
+            IC,
+            DC,
+            P,
+            F,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -534,27 +542,29 @@ function mdl_outer_ode!(
     output_ode[local_ix[4]] = ωf * (q_elec_out - q_oc)
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_pll
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_pll
-    get_inner_vars(dynamic_device)[Iq_oc_var] = Kp_p * (p_ref - p_oc) + Ki_p * σp_oc
-    get_inner_vars(dynamic_device)[Id_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
+    inner_vars[θ_oc_var] = θ_pll
+    inner_vars[ω_oc_var] = ω_pll
+    inner_vars[Iq_oc_var] = Kp_p * (p_ref - p_oc) + Ki_p * σp_oc
+    inner_vars[Id_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
 end
 
 function mdl_outer_ode!(
     device_states,
     output_ode,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
     },
 ) where {
     C <: PSY.Converter,
@@ -585,10 +595,10 @@ function mdl_outer_ode!(
     end
 
     #Monitoring power from other branch not supported.
-    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
-    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
-    I_R = get_value_I(get_inner_vars(dynamic_device)[Ir_inv_var])
-    I_I = get_value_I(get_inner_vars(dynamic_device)[Ii_inv_var])
+    V_R = inner_vars[Vr_inv_var]
+    V_I = inner_vars[Vi_inv_var]
+    I_R = get_value_I(inner_vars[Ir_inv_var])
+    I_I = get_value_I(inner_vars[Ii_inv_var])
     p_elec_out = I_R * V_R + I_I * V_I
     q_elec_out = -I_I * V_R + I_R * V_I
 

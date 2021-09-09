@@ -135,7 +135,9 @@ function mdl_inner_ode!(
     device_states,
     output_ode,
     inner_vars,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F},
+    },
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -154,10 +156,10 @@ function mdl_inner_ode!(
     Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
 
     #Obtain inner variables for component
-    ω_oc = get_inner_vars(dynamic_device)[ω_oc_var]
-    θ_oc = get_inner_vars(dynamic_device)[θ_oc_var]
-    v_refr = get_inner_vars(dynamic_device)[V_oc_var]
-    Vdc = get_inner_vars(dynamic_device)[Vdc_var]
+    ω_oc = inner_vars[ω_oc_var]
+    θ_oc = inner_vars[θ_oc_var]
+    v_refr = inner_vars[V_oc_var]
+    Vdc = inner_vars[Vdc_var]
 
     #Get Voltage Controller parameters
     inner_control = PSY.get_inner_control(dynamic_device)
@@ -241,15 +243,17 @@ function mdl_inner_ode!(
 
     #Update inner_vars
     #Modulation Commands to Converter
-    get_inner_vars(dynamic_device)[md_var] = Vd_cnv_ref / Vdc
-    get_inner_vars(dynamic_device)[mq_var] = Vq_cnv_ref / Vdc
+    inner_vars[md_var] = Vd_cnv_ref / Vdc
+    inner_vars[mq_var] = Vq_cnv_ref / Vdc
 end
 
 function mdl_inner_ode!(
     device_states,
     output_ode,
     inner_vars,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F},
+    },
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -268,9 +272,9 @@ function mdl_inner_ode!(
     Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
 
     #Obtain inner variables for component
-    ω_oc = get_inner_vars(dynamic_device)[ω_oc_var]
-    θ_oc = get_inner_vars(dynamic_device)[θ_oc_var]
-    Vdc = get_inner_vars(dynamic_device)[Vdc_var]
+    ω_oc = inner_vars[ω_oc_var]
+    θ_oc = inner_vars[θ_oc_var]
+    Vdc = inner_vars[Vdc_var]
 
     #Get Current Controller parameters
     inner_control = PSY.get_inner_control(dynamic_device)
@@ -293,8 +297,8 @@ function mdl_inner_ode!(
     V_dq_filter = ri_dq(θ_oc + pi / 2) * [Vr_filter; Vi_filter]
 
     #Input Control Signal - Links to SRF Current Controller
-    Id_cnv_ref = get_inner_vars(dynamic_device)[Id_oc_var]
-    Iq_cnv_ref = get_inner_vars(dynamic_device)[Iq_oc_var]
+    Id_cnv_ref = inner_vars[Id_oc_var]
+    Iq_cnv_ref = inner_vars[Iq_oc_var]
 
     #Current Control ODEs
     #PI Integrator (internal state)
@@ -315,14 +319,17 @@ function mdl_inner_ode!(
 
     #Update inner_vars
     #Modulation Commands to Converter
-    get_inner_vars(dynamic_device)[md_var] = Vd_cnv_ref / Vdc
-    get_inner_vars(dynamic_device)[mq_var] = Vq_cnv_ref / Vdc
+    inner_vars[md_var] = Vd_cnv_ref / Vdc
+    inner_vars[mq_var] = Vq_cnv_ref / Vdc
 end
 
 function mdl_inner_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+    inner_vars,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+    },
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,

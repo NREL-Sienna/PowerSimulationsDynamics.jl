@@ -131,17 +131,15 @@ function device!(
     dynamic_device::DynamicWrapper{DynI},
     t::Float64,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
-    bus_ix = get_bus_ix(dynamic_device)
-
     #Obtain global vars
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
     #Update Voltage data
-    inner_vars[Vr_inv_var] = voltage_r[bus_ix]
-    inner_vars[Vi_inv_var] = voltage_i[bus_ix]
+    inner_vars[Vr_inv_var] = voltage_r
+    inner_vars[Vi_inv_var] = voltage_i
 
     #Update V_ref
-    get_V_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
     inner_vars[V_oc_var] = V_ref
 
     #Obtain ODES for DC side

@@ -9,7 +9,10 @@ end
 function mdl_converter_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
+    inner_vars,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
+    },
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -19,29 +22,25 @@ function mdl_converter_ode!(
 }
 
     #Obtain inner variables for component
-    md = get_inner_vars(dynamic_device)[md_var]
-    mq = get_inner_vars(dynamic_device)[mq_var]
-    Vdc = get_inner_vars(dynamic_device)[Vdc_var]
-    θ_oc = get_inner_vars(dynamic_device)[θ_oc_var]
+    md = inner_vars[md_var]
+    mq = inner_vars[mq_var]
+    Vdc = inner_vars[Vdc_var]
+    θ_oc = inner_vars[θ_oc_var]
 
     #Transform reference frame to grid reference frame
     m_ri = dq_ri(θ_oc + pi / 2) * [md; mq]
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vr_cnv_var] = m_ri[R] * Vdc
-    get_inner_vars(dynamic_device)[Vi_cnv_var] = m_ri[I] * Vdc
+    inner_vars[Vr_cnv_var] = m_ri[R] * Vdc
+    inner_vars[Vi_cnv_var] = m_ri[I] * Vdc
 end
 
 function mdl_converter_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{
-        PSY.RenewableEnergyConverterTypeA,
-        O,
-        IC,
-        DC,
-        P,
-        PSY.RLFilter,
+    inner_vars,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
     },
 ) where {
     O <: PSY.OuterControl,
@@ -61,12 +60,12 @@ function mdl_converter_ode!(
     end
 
     #Obtain inner variables for component
-    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
-    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    V_R = inner_vars[Vr_inv_var]
+    V_I = inner_vars[Vi_inv_var]
     V_t = sqrt(V_R^2 + V_I^2)
     θ = atan(V_I / V_R)
-    Ip_cmd = get_inner_vars(dynamic_device)[Id_ic_var]
-    Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
+    Ip_cmd = inner_vars[Id_ic_var]
+    Iq_cmd = inner_vars[Iq_ic_var]
 
     #Get Converter parameters
     converter = PSY.get_converter(dynamic_device)
@@ -153,8 +152,8 @@ function mdl_converter_ode!(
     output_ode[local_ix[3]] = (1.0 / T_fltr) * (V_t - Vmeas)
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Ir_cnv_var] = Ir_cnv
-    get_inner_vars(dynamic_device)[Ii_cnv_var] = Ii_cnv
-    get_inner_vars(dynamic_device)[Vr_cnv_var] = Vr_cnv
-    get_inner_vars(dynamic_device)[Vi_cnv_var] = Vi_cnv
+    inner_vars[Ir_cnv_var] = Ir_cnv
+    inner_vars[Ii_cnv_var] = Ii_cnv
+    inner_vars[Vr_cnv_var] = Vr_cnv
+    inner_vars[Vi_cnv_var] = Vi_cnv
 end
