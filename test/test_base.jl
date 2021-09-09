@@ -149,18 +149,19 @@ end
 end
 
 @testset "Test Network Kirchoff Calculation" begin
-    voltages = [1.05
+    voltages = [
+        1.05
         1.019861574381897
         0.0
         -0.016803841801155062
-        ]
+    ]
     V_r = voltages[1:2]
     V_i = voltages[3:end]
     ybus_ = PSY.Ybus(omib_sys).data
-    I_balance_ybus = -1*ybus_ * (V_r + V_i .* 1im)
+    I_balance_ybus = -1 * ybus_ * (V_r + V_i .* 1im)
     inputs = PSID.SimulationInputs(ResidualModel, omib_sys)
-    sc = PSID.SimCache(nothing, inputs)
-    I_balance_sim = PSID.network_model(inputs, sc, voltages)
+    I_balance_sim = zeros(4)
+    PSID.network_model(inputs, I_balance_sim, voltages)
     for i in 1:2
         @test isapprox(real(I_balance_ybus[i]), I_balance_sim[i])
         @test isapprox(imag(I_balance_ybus[i]), I_balance_sim[i + 2])
