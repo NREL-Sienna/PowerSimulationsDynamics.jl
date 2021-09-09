@@ -104,6 +104,7 @@ function initialize_static_device!(
         set_V_ref(device, PSY.get_internal_voltage(device.device))
         set_θ_ref(device, PSY.get_internal_angle(device.device))
     end
+    return
 end
 
 function initialize_dynamic_device!(
@@ -173,7 +174,7 @@ function initialize_dynamic_device!(
     return device_states
 end
 
-function initialize_dynamic_device!(branch::PSY.DynamicBranch)
+function initialize_dynamic_device!(branch::BranchWrapper)
     device_states = zeros(PSY.get_n_states(branch))
     #PowerFlow Data
     arc = PSY.get_arc(branch)

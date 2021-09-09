@@ -65,14 +65,10 @@ struct SimulationInputs
     end
 end
 
-get_base_power(inputs::SimulationInputs) = inputs.base_power
-get_base_frequency(inputs::SimulationInputs) = inputs.base_frequency
 get_dynamic_injectors_data(inputs::SimulationInputs) = inputs.dynamic_injectors_data
 get_dynamic_branches(inputs::SimulationInputs) = inputs.dynamic_branches
 get_static_injectors_data(inputs::SimulationInputs) = inputs.static_injectors_data
 get_static_load_data(inputs::SimulationInputs) = inputs.static_load_data
-get_voltage_buses_ix(inputs::SimulationInputs) = inputs.voltage_buses_ix
-get_current_buses_ix(inputs::SimulationInputs) = inputs.current_buses_ix
 get_ybus(inputs::SimulationInputs) = inputs.ybus_rectangular
 get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
 get_lookup(inputs::SimulationInputs) = inputs.lookup
@@ -88,9 +84,21 @@ get_variable_count(inputs::SimulationInputs) = inputs.variable_count
 # TODO: put this in the struct
 get_inner_vars_count(inputs::SimulationInputs) =
     inputs.dynamic_injectors_data[end].inner_vars_index[end]
-get_ode_range(inputs::SimulationInputs) = inputs.ode_range
+get_ode_ouput_range(inputs::SimulationInputs) = inputs.ode_range
 get_bus_count(inputs::SimulationInputs) = inputs.bus_count
 get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
+
+# Utility function not to be used for performance sensitive operations
+function get_voltage_buses_ix(inputs::SimulationInputs)
+    n_buses = get_bus_count(inputs::SimulationInputs)
+    return findall(get_DAE_vector(inputs)[1:n_buses])
+end
+
+# Utility function not to be used for performance sensitive operations
+function get_current_buses_ix(inputs::SimulationInputs)
+    n_buses = get_bus_count(inputs::SimulationInputs)
+    return findall(.!get_DAE_vector(inputs)[1:n_buses])
+end
 
 """
 SimulationInputs build function for MassMatrixModels
@@ -131,7 +139,9 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         ode_range = range(injection_count, length = n_states)
         bus_n = PSY.get_number(PSY.get_bus(device))
         bus_ix = lookup[bus_n]
-        inner_vars_range = inner_vars_count:get_inner_vars_count(dynamic_device)
+        inner_vars_range =
+            range(inner_vars_count, length = get_inner_vars_count(dynamic_device))
+        @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range"
         wrapped_injector[ix] = DynamicWrapper(
             device,
             bus_ix,
@@ -150,11 +160,14 @@ end
 
 function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
     branches_start = 2 * get_n_buses(sys) + 1
+    sys_base_power = PSY.get_base_power(sys)
+    sys_base_freq = PSY.get_frequency(sys)
     dynamic_branches = get_dynamic_branches(sys)
     wrapped_branches = Vector{BranchWrapper}(undef, length(dynamic_branches))
     if !isempty(wrapped_branches)
         branches_count = 1
         for (ix, br) in enumerate(dynamic_branches)
+            @debug "Wrapping Branch $(PSY.get_name(br))"
             arc = PSY.get_arc(br)
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
@@ -163,9 +176,16 @@ function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
             bus_ix_to = lookup[to_bus_number]
             ix_range = range(branches_start, length = n_states)
             ode_range = range(branches_count, length = n_states)
-            branches_count = branches_count + n_states
-            wrapped_branches[ix] =
-                BranchWrapper(br, bus_ix_from, bus_ix_to, ix_range, ode_range)
+            @debug "ix_range=$ix_range ode_range=$ode_range"
+            wrapped_branches[ix] = BranchWrapper(
+                br,
+                bus_ix_from,
+                bus_ix_to,
+                ix_range,
+                ode_range,
+                sys_base_power,
+                sys_base_freq,
+            )
             branches_count += n_states
             branches_start += n_states
         end
@@ -290,9 +310,11 @@ function _adjust_states!(
 )
     all(iszero.(total_shunts)) && return
     line_constant = 1 / (2.0 * π * sys_f)
-    shunts = total_shunts[1:n_buses, (n_buses + 1):end]
+    # Takes the lower quadrant of the rectangular shunts matrix
+    shunts = LinearAlgebra.diag(total_shunts[(n_buses + 1):end, 1:n_buses])
     for (ix, val) in enumerate(shunts)
         if val > 0
+            @debug "Found shunt with value $val in bus index $ix"
             mass_matrix[ix, ix] =
                 mass_matrix[ix + n_buses, ix + n_buses] = val * line_constant
             DAE_vector[ix] = DAE_vector[ix + n_buses] = true
