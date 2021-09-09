@@ -75,7 +75,7 @@ function refine_initial_condition!(
     model::SystemModel,
     jacobian::JacobianFunctionWrapper,
 )
-    @assert sim.status == BUILD_IN_PROGRESS
+    @assert sim.status != BUILD_INCOMPLETE
 
     if sim.status == SIMULATION_INITIALIZED
         @info "Simulation already initialized. Refinement not executed"
@@ -91,11 +91,11 @@ function refine_initial_condition!(
             break
         end
         for solv in [:trust_region, :newton]
-            #sys_solve = _nlsolve_call(initial_guess, model, jacobian, tol, solv)
-            sys_solve = _nlsolve_call(initial_guess, model, tol, solv)
+            sys_solve = _nlsolve_call(initial_guess, model, jacobian, tol, solv)
+            #sys_solve = _nlsolve_call(initial_guess, model, tol, solv)
             failed(sys_solve) && return BUILD_FAILED
             converged = _convergence_check(sys_solve, tol, solv)
-            @debug "Write initial guess vector using $solv with $tol convergence = $converged"
+            @debug "Write initial guess vector using $solv with tol = $tol convergence = $converged"
             initial_guess .= sys_solve.zero
             if converged
                 break
@@ -107,11 +107,9 @@ function refine_initial_condition!(
         error("Initial conditions refinement failed to find a valid initial condition")
     end
     if !converged
-        @warn(
-            "Initialization didn't converged to desired tolerances.\\
-            Initial conditions do not meet conditions for an stable equilibrium. \\
-            Simulation might fail"
-        )
+        @warn("Initialization didn't converged to desired tolerances.\\
+              Initial conditions do not meet conditions for an stable equilibrium. \\
+              Simulation might fail")
     end
     return
 end
