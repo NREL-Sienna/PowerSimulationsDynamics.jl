@@ -1,6 +1,5 @@
 function branch!(
-    x,
-    dx,
+    device_states,
     output_ode::Vector{T},
     V_r_from,
     V_i_from,
@@ -10,13 +9,10 @@ function branch!(
     current_i_from,
     current_r_to,
     current_i_to,
-    ix_range::UnitRange{Int},
-    ode_range::UnitRange{Int},
     branch::PSY.DynamicBranch,
     inputs::SimulationInputs,
 ) where {T <: Real}
     #Obtain local device states
-    device_states = @view x[ix_range]
 
     #Obtain references
     sys_f = get_base_frequency(inputs)
