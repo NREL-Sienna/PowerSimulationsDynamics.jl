@@ -122,13 +122,13 @@ end
 function device!(
     device_states::AbstractArray{T},
     output_ode::AbstractArray{T},
-    voltage_r::AbstractArray{T},
-    voltage_i::AbstractArray{T},
+    voltage_r::T,
+    voltage_i::T,
     current_r::AbstractArray{T},
     current_i::AbstractArray{T},
     global_vars::AbstractArray{T},
-    dynamic_device::DynamicWrapper{DynI},
     inner_vars::AbstractArray{T},
+    dynamic_device::DynamicWrapper{DynI},
     t::Float64,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
     bus_ix = get_bus_ix(dynamic_device)
