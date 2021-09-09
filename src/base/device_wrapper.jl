@@ -21,6 +21,8 @@ status, and allocate the required indexes of the state space.
 """
 struct DynamicWrapper{T <: PSY.DynamicInjection}
     device::T
+    system_base_power::Float64
+    system_base_frequency::Float64
     static_type::Type{<:PSY.StaticInjection}
     bus_category::Type{<:BusCategory}
     connection_status::Base.RefValue{Float64}
@@ -35,12 +37,15 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
     global_index::Base.ImmutableDict{Symbol, Int}
     component_state_mapping::Base.ImmutableDict{Int, Vector{Int}}
     input_port_mapping::Base.ImmutableDict{Int, Vector{Int}}
+
     function DynamicWrapper(
         device::T,
         bus_ix::Int,
         ix_range,
         ode_range,
         inner_var_range,
+        sys_base_power,
+        sys_base_freq,
     ) where {T <: PSY.Device}
         dynamic_device = PSY.get_dynamic_injector(device)
         @assert dynamic_device !== nothing
@@ -56,6 +61,8 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
 
         new{typeof(dynamic_device)}(
             dynamic_device,
+            sys_base_power,
+            sys_base_freq,
             T,
             BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
             Base.Ref(1.0),
@@ -105,6 +112,9 @@ get_bus_ix(wrapper::DynamicWrapper) = wrapper.bus_ix
 get_global_index(wrapper::DynamicWrapper) = wrapper.global_index
 get_component_state_mapping(wrapper::DynamicWrapper) = wrapper.component_state_mapping
 get_input_port_mapping(wrapper::DynamicWrapper) = wrapper.input_port_mapping
+
+get_system_base_power(wrapper::DynamicWrapper) = wrapper.system_base_power
+get_system_base_frequency(wrapper::DynamicWrapper) = wrapper.system_base_frequency
 
 get_P_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
@@ -235,7 +245,7 @@ get_V_ref(wrapper::StaticWrapper) = wrapper.V_ref[]
 get_θ_ref(wrapper::StaticWrapper) = wrapper.θ_ref[]
 
 set_P_ref(wrapper::StaticWrapper, val::Float64) = wrapper.P_ref[] = val
-set_Q_ref(wrapper::StaticWrapper, val::Float64) = wrapper.P_ref[] = val
+set_Q_ref(wrapper::StaticWrapper, val::Float64) = wrapper.Q_ref[] = val
 set_V_ref(wrapper::StaticWrapper, val::Float64) = wrapper.V_ref[] = val
 set_θ_ref(wrapper::StaticWrapper, val::Float64) = wrapper.θ_ref[] = val
 
