@@ -11,10 +11,9 @@ function mdl_filter_ode!(
     output_ode,
     current_r,
     current_i,
-    sys_Sbase,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter}},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -27,13 +26,14 @@ function mdl_filter_ode!(
     #θ_oc = device_states[external_ix[1]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(dynamic_device)[Vr_inv_var]
-    V_tI = get_inner_vars(dynamic_device)[Vi_inv_var]
-    Vr_cnv = get_inner_vars(dynamic_device)[Vr_cnv_var]
-    Vi_cnv = get_inner_vars(dynamic_device)[Vi_cnv_var]
+    V_tR = inner_vars[Vr_inv_var]
+    V_tI = inner_vars[Vi_inv_var]
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
 
     #Get parameters
     filter = PSY.get_filter(dynamic_device)
+    f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0
     lf = PSY.get_lf(filter)
     rf = PSY.get_rf(filter)
@@ -41,6 +41,7 @@ function mdl_filter_ode!(
     lg = PSY.get_lg(filter)
     rg = PSY.get_rg(filter)
     basepower = PSY.get_base_power(dynamic_device)
+    sys_Sbase = get_system_base_power(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.LCLFilter)
@@ -88,8 +89,8 @@ function mdl_filter_ode!(
     )
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vr_filter_var] = Vr_filter
-    get_inner_vars(dynamic_device)[Vi_filter_var] = Vi_filter
+    inner_vars[Vr_filter_var] = Vr_filter
+    inner_vars[Vi_filter_var] = Vi_filter
 
     #Compute current from the inverter to the grid
     I_RI = (basepower / sys_Sbase) * [Ir_filter; Ii_filter]
@@ -104,10 +105,9 @@ function mdl_filter_ode!(
     output_ode,
     current_r,
     current_i,
-    sys_Sbase,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter}},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -117,6 +117,7 @@ function mdl_filter_ode!(
 }
     #Obtain inner variables for component
     basepower = PSY.get_base_power(dynamic_device)
+    sys_Sbase = get_system_base_power(dynamic_device)
     ratio_power = basepower / sys_Sbase
 
     #Obtain parameters
@@ -139,8 +140,8 @@ function mdl_filter_ode!(
     end
 
     #Update Inner Vars
-    get_inner_vars(dynamic_device)[Ir_inv_var] = Ir_filt
-    get_inner_vars(dynamic_device)[Ii_inv_var] = Ii_filt
+    inner_vars[Ir_inv_var] = Ir_filt
+    inner_vars[Ii_inv_var] = Ii_filt
 
     #Update current
     current_r[1] += ratio_power * Ir_filt
