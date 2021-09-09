@@ -16,109 +16,77 @@ function device_mass_matrix_entries!(
 end
 
 function device!(
-    x,
+    device_states::AbstractArray{T},
     output_ode::AbstractArray{T},
-    voltage_r,
-    voltage_i,
-    current_r,
-    current_i,
+    voltage_r::T,
+    voltage_i::T,
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    global_vars::AbstractArray{T},
+    inner_vars::AbstractArray{T},
     dynamic_device::DynamicWrapper{DynG},
-    inputs::SimulationInputs,
-    cache,
-    t,
+    t::Float64,
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
-    bus_ix = get_bus_ix(dynamic_device)
-    inner_vars = @view get_inner_vars(cache, T)[get_inner_vars_index(dynamic_device)]
+    inner_vars[VR_gen_var] = voltage_r
+    inner_vars[VI_gen_var] = voltage_i
 
-    #Obtain local device states
-    ode_range = get_ode_range(dynamic_device)
-    device_states = @view x[get_ix_range(dynamic_device)]
-
-    #Obtain references
-    sys_Sbase = get_base_power(inputs)
-    sys_f0 = get_base_frequency(inputs)
-    sys_ω = get_ω_sys(cache, T)
-
-    #Update Voltage data
-    inner_vars[VR_gen_var] = voltage_r[bus_ix]
-    inner_vars[VI_gen_var] = voltage_i[bus_ix]
+    sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
     #Obtain ODEs and Mechanical Power for Turbine Governor
-    mdl_tg_ode!(
-        device_states,
-        view(output_ode, ode_range),
-        inner_vars,
-        sys_ω,
-        dynamic_device,
-    )
+    mdl_tg_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
 
     #Obtain ODEs for AVR
-    mdl_pss_ode!(
-        device_states,
-        view(output_ode, ode_range),
-        inner_vars,
-        sys_ω,
-        dynamic_device,
-    )
+    mdl_pss_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
 
     #Obtain ODEs for AVR
-    mdl_avr_ode!(device_states, view(output_ode, ode_range), inner_vars, dynamic_device)
+    mdl_avr_ode!(device_states, output_ode, inner_vars, dynamic_device)
 
     #Obtain ODEs for Machine
     mdl_machine_ode!(
         device_states,
-        view(output_ode, ode_range),
+        output_ode,
         inner_vars,
-        view(current_r, bus_ix),
-        view(current_i, bus_ix),
-        sys_Sbase,
-        sys_f0,
+        current_r,
+        current_i,
         dynamic_device,
     )
 
     #Obtain ODEs for PSY.Shaft
-    mdl_shaft_ode!(
-        device_states,
-        view(output_ode, ode_range),
-        inner_vars,
-        sys_f0,
-        sys_ω,
-        dynamic_device,
-    )
-
+    mdl_shaft_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
     return
 end
 
 function device!(
-    voltage_r,
-    voltage_i,
-    current_r,
-    current_i,
-    device::StaticWrapper{PSY.Source, T},
-    ::SimulationInputs,
-    ::Cache,
-    t,
-) where {T <: BusCategory}
+    voltage_r::T,
+    voltage_i::T,
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    ::AbstractArray{T},
+    ::AbstractArray{T},
+    device::StaticWrapper{PSY.Source, U},
+    t::Float64,
+) where {T <: Real, U <: BusCategory}
     mdl_source!(voltage_r, voltage_i, current_r, current_i, device)
     return
 end
 
 function device!(
-    voltage_r,
-    voltage_i,
-    current_r,
-    current_i,
-    device::StaticWrapper{PSY.PowerLoad, ConstantImpedance},
-    ::SimulationInputs,
-    ::Cache,
+    voltage_r::T,
+    voltage_i::T,
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    ::AbstractArray{T},
+    ::AbstractArray{T},
+    device::StaticWrapper{PSY.PowerLoad, U},
     t,
-)
-    mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device)
+) where {T <: Real, U <: LoadCategory}
+    # For now model all loads as constant impedance
+    mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device.device)
     return
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix::AbstractArray,
+    mass_matrix::AbstractArray{Float64},
     dynamic_device::DynamicWrapper{DynI},
 ) where {DynI <: PSY.DynamicInverter}
     global_index = get_global_index(dynamic_device)
@@ -152,77 +120,52 @@ function device_mass_matrix_entries!(
 end
 
 function device!(
-    x,
+    device_states::AbstractArray{T},
     output_ode::AbstractArray{T},
-    voltage_r,
-    voltage_i,
-    current_r,
-    current_i,
+    voltage_r::AbstractArray{T},
+    voltage_i::AbstractArray{T},
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    global_vars::AbstractArray{T},
     dynamic_device::DynamicWrapper{DynI},
-    inputs::SimulationInputs,
-    cache,
-    t,
+    inner_vars::AbstractArray{T},
+    t::Float64,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
     bus_ix = get_bus_ix(dynamic_device)
-    inner_vars = @view get_inner_vars(cache, T)[get_inner_vars_index(dynamic_device)]
 
-    #Obtain local device states
-    ode_range = get_ode_range(dynamic_device)
-    device_states = @view x[get_ix_range(dynamic_device)]
-    #Obtain references
-    Sbase = get_base_power(inputs)
-    sys_f0 = get_base_frequency(inputs)
-    sys_ω = get_ω_sys(cache, T)
+    #Obtain global vars
+    sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
     #Update Voltage data
-    inner_vars[Vr_inv_var] = voltage_r[1]
-    inner_vars[Vi_inv_var] = voltage_i[1]
+    inner_vars[Vr_inv_var] = voltage_r[bus_ix]
+    inner_vars[Vi_inv_var] = voltage_i[bus_ix]
 
     #Update V_ref
     get_V_ref(dynamic_device)
     inner_vars[V_oc_var] = V_ref
 
     #Obtain ODES for DC side
-    mdl_DCside_ode!(
-        device_states,
-        view(output_ode, ode_range),
-        sys_f0,
-        sys_ω,
-        dynamic_device,
-    )
+    mdl_DCside_ode!(device_states, output_ode, sys_ω, inner_vars, dynamic_device)
 
     #Obtain ODEs for PLL
-    mdl_freq_estimator_ode!(
-        device_states,
-        view(output_ode, ode_range),
-        sys_f0,
-        sys_ω,
-        dynamic_device,
-    )
+    mdl_freq_estimator_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
 
     #Obtain ODEs for OuterLoop
-    mdl_outer_ode!(
-        device_states,
-        view(output_ode, ode_range),
-        sys_f0,
-        sys_ω,
-        dynamic_device,
-    )
+    mdl_outer_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
 
     #Obtain inner controller ODEs and modulation commands
-    mdl_inner_ode!(device_states, view(output_ode, ode_range), dynamic_device)
+    mdl_inner_ode!(device_states, output_ode, inner_vars, dynamic_device)
 
     #Obtain converter relations
-    mdl_converter_ode!(device_states, view(output_ode, ode_range), dynamic_device)
+    mdl_converter_ode!(device_states, output_ode, inner_vars, dynamic_device)
 
     #Obtain ODEs for output filter
     mdl_filter_ode!(
         device_states,
-        view(output_ode, ode_range),
+        output_ode,
         current_r,
         current_i,
-        Sbase,
-        sys_f0,
+        inner_vars,
         sys_ω,
         dynamic_device,
     )
@@ -249,21 +192,17 @@ function mass_matrix_pvs_entries!(
 end
 
 function device!(
-    x,
-    output_ode::Vector{T},
-    voltage_r,
-    voltage_i,
-    current_r,
-    current_i,
-    ix_range::UnitRange{Int},
-    ode_range::UnitRange{Int},
+    device_states::AbstractArray{T},
+    output_ode::AbstractArray{T},
+    voltage_r::AbstractArray{T},
+    voltage_i::AbstractArray{T},
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    ::AbstractArray{T},
     dynamic_device::PSY.PeriodicVariableSource,
-    inputs::SimulationInputs,
-    t,
+    ::AbstractArray{T},
+    t::Float64,
 ) where {T <: Real}
-    #Obtain local device states
-    internal_states = @view x[ix_range]
-    internal_ode = @view output_ode[ode_range]
     ω_θ = PSY.get_internal_angle_frequencies(dynamic_device)
     ω_V = PSY.get_internal_angle_frequencies(dynamic_device)
 
@@ -280,10 +219,10 @@ function device!(
     end
 
     # Internal Voltage states
-    V_R = internal_states[1] * cos(internal_states[2])
-    V_I = internal_states[1] * sin(internal_states[2])
-    internal_ode[1] = dV
-    internal_ode[2] = dθ
+    V_R = device_states[1] * cos(device_states[2])
+    V_I = device_states[1] * sin(device_states[2])
+    output_ode[1] = dV
+    output_ode[2] = dθ
 
     #update current
     R_th = PSY.get_R_th(dynamic_device)
