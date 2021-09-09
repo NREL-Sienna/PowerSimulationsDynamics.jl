@@ -1,7 +1,9 @@
 function initialize_inner!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F},
+    },
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -21,7 +23,7 @@ function initialize_inner!(
     Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
 
     #Obtain inner variables for component
-    ω_oc = PSY.get_ω_ref(dynamic_device)
+    ω_oc = get_ω_ref(dynamic_device)
     θ0_oc = inner_vars[θ_oc_var]
     Vdc = inner_vars[Vdc_var]
 
@@ -138,7 +140,9 @@ end
 function initialize_inner!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F},
+    },
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -221,7 +225,9 @@ end
 function initialize_inner!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+    },
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,

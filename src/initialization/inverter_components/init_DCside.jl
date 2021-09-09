@@ -1,7 +1,7 @@
 function initialize_DCside!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, PSY.FixedDCSource, P, F},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, PSY.FixedDCSource, P, F}},
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
