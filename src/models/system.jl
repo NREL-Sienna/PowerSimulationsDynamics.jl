@@ -44,7 +44,7 @@ function system_residual!(
     M = get_mass_matrix(inputs)
 
     # Global quantities
-    injection_ode = get_injection_ode(cache, V)
+    system_ode_output = get_ode_output(cache, V)
     current_balance = get_current_balance(cache, V)
     fill!(current_balance, zero(V))
     bus_counts = get_bus_count(inputs)
@@ -58,25 +58,25 @@ function system_residual!(
 
     for dynamic_device in get_dynamic_injectors_data(inputs)
         ix_range = get_ix_range(dynamic_device)
-        injection_ode = @view injection_ode[get_ode_range(dynamic_device)]
-        inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
+        device_ode_output = @view system_ode_output[get_ode_ouput_range(dynamic_device)]
+        device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
 
         device!(
             device_states,
-            injection_ode,
+            device_ode_output,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
             view(current_i, bus_ix),
             global_vars,
-            inner_vars,
+            device_inner_vars,
             dynamic_device,
             t,
         )
         M_ = @view M[ix_range, ix_range]
-        out[ix_range] .= injection_ode .- M_ * dx[ix_range]
+        out[ix_range] .= device_ode_output .- M_ * dx[ix_range]
     end
 
     for static_load in get_static_load_data(inputs)
@@ -109,34 +109,34 @@ function system_residual!(
 
     if has_dyn_lines(inputs)
         branches_ode = get_branches_ode(cache, T)
-        for br in get_dynamic_branches(inputs)
+        for dynamic_branch in get_dynamic_branches(inputs)
             ix_range = get_ix_range(dynamic_branch)
-            output_ode = @view branches_ode[get_ode_range(dynamic_branch)]
-            device_states = @view x[ix_range]
+            branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
+            branch_states = @view x[ix_range]
+            bus_ix_from = get_bus_ix_from(dynamic_branch)
+            bus_ix_to = get_bus_ix_to(dynamic_branch)
             branch!(
-                device_states,
-                output_ode,
+                branch_states,
+                branch_output_ode,
                 #Get Voltage data
-                view(V_r, bus_ix_from),
-                view(V_i, bus_ix_from),
-                view(V_r, bus_ix_to),
-                view(V_i, bus_ix_to),
+                voltage_r[bus_ix_from],
+                voltage_i[bus_ix_from],
+                voltage_r[bus_ix_to],
+                voltage_i[bus_ix_to],
                 #Get Current data
-                view(I_injections_r, bus_ix_from),
-                view(I_injections_i, bus_ix_from),
-                view(I_injections_r, bus_ix_to),
-                view(I_injections_i, bus_ix_to),
-                br,
-                inputs,
+                view(current_r, bus_ix_from),
+                view(current_i, bus_ix_from),
+                view(current_r, bus_ix_to),
+                view(current_i, bus_ix_to),
+                dynamic_branch,
             )
             M_ = @view M[ix_range, ix_range]
-            out[ix_range] .= branches_ode[ode_range] .- M_ * dx[ix_range]
+            out[ix_range] .= branch_output_ode .- M_ * dx[ix_range]
         end
     end
     voltages = @view x[bus_range]
-    out[bus_range] .=
-        network_model(inputs, current_balance, voltages) .-
-        M[bus_range, bus_range] * dx[bus_range]
+    M_ = @view M[bus_range, bus_range]
+    out[bus_range] .= network_model(inputs, current_balance, voltages) .- M_ * dx[bus_range]
     return
 end
 
@@ -179,7 +179,7 @@ function system_mass_matrix!(
     update_global_vars!(cache, inputs, x)
 
     # Global quantities
-    injection_ode = get_injection_ode(cache, V)
+    ode_output = get_ode_output(cache, V)
     current_balance = get_current_balance(cache, V)
     fill!(current_balance, zero(V))
     bus_counts = get_bus_count(inputs)
@@ -193,14 +193,14 @@ function system_mass_matrix!(
 
     for dynamic_device in get_dynamic_injectors_data(inputs)
         ix_range = get_ix_range(dynamic_device)
-        injection_ode = @view injection_ode[get_ode_range(dynamic_device)]
+        ode_output = @view _ode_output[get_ode_ouput_range(dynamic_device)]
         inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
 
         device!(
             device_states,
-            injection_ode,
+            ode_output,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -210,7 +210,7 @@ function system_mass_matrix!(
             dynamic_device,
             t,
         )
-        dx[ix_range] .= injection_ode
+        dx[ix_range] .= ode_output
     end
 
     for static_load in get_static_load_data(inputs)
@@ -244,7 +244,7 @@ function system_mass_matrix!(
     if has_dyn_lines(inputs)
         for dynamic_branch in get_dynamic_branches(inputs)
             ix_range = get_ix_range(dynamic_branch)
-            output_ode = @view branches_ode[get_ode_range(dynamic_branch)]
+            output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
             device_states = @view x[ix_range]
             branch!(
                 device_states,
