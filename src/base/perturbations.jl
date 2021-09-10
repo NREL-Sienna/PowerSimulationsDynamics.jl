@@ -316,7 +316,7 @@ function get_affect(::PSY.System, pert::NetworkSwitch)
     return (integrator) -> begin
         # TODO: This code can be more performant using SparseMatrix methods
         for (i, v) in enumerate(pert.ybus_rectangular)
-            integrator.p.ybus_reactangular[i] = v
+            integrator.p.ybus_rectangular[i] = v
         end
     end
 end
