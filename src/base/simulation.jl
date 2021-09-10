@@ -275,6 +275,7 @@ function _get_diffeq_problem(
     sim.problem = SciMLBase.DAEProblem(
         SciMLBase.DAEFunction{true}(
             model;
+            # Currently commented for Sundials compatibility
             #jac = jacobian,
             tgrad = nothing,
             #jac_prototype = jacobian.Jv,
