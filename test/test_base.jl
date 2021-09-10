@@ -2,7 +2,7 @@
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test01.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test01.jl"))
 omib_sys_file = System(PowerModelsData(omib_file_dir), runchecks = false)
 
 ##################################################
@@ -74,7 +74,7 @@ end
 
 @testset "Hybrid Line Indexing" begin
     ## Create threebus system with more dyn lines ##
-    three_bus_file_dir = joinpath(dirname(@__FILE__), "data_tests/ThreeBusInverter.raw")
+    three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
     add_source_to_ref(threebus_sys_dyns)
 
@@ -243,7 +243,7 @@ end
 end
 
 @testset "Test Network Modification Callback Affects" begin
-    three_bus_file_dir = joinpath(dirname(@__FILE__), "data_tests/ThreeBusInverter.raw")
+    three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys = System(three_bus_file_dir, runchecks = false)
     add_source_to_ref(threebus_sys)
     # Attach dyn devices

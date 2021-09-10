@@ -48,7 +48,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :θ_oc))
+        series = get_state_series(res, ("generator-102-1", :θ_oc))
         t = series[1]
         θ = series[2]
 
@@ -64,7 +64,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
         @test LinearAlgebra.norm(θ - θ_pscad) <= 3e-2
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
@@ -95,7 +95,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :θ_oc))
+        series = get_state_series(res, ("generator-102-1", :θ_oc))
         t = series[1]
         θ = series[2]
 
@@ -111,7 +111,7 @@ end
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
         @test LinearAlgebra.norm(θ - θ_pscad) <= 3e-2
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 

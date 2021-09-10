@@ -36,7 +36,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test17.jl"))
         execute!(sim, IDA(), dtmax = 0.01)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -48,7 +48,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test17.jl"))
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test17_eigvals) < 1e-3
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
     finally
         @info("removing test files")
@@ -78,7 +78,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.01)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -90,7 +90,7 @@ end
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test17_eigvals) < 1e-3
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
     finally
         @info("removing test files")

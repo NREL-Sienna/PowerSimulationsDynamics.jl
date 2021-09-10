@@ -47,7 +47,7 @@ Ybus_change = NetworkSwitch(
             dtmax = 0.02, #keywords arguments
         )
 
-        series = get_state_series(sim, ("generator-102-1", :ω))
+        series = get_state_series(res, ("generator-102-1", :ω))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -56,7 +56,7 @@ Ybus_change = NetworkSwitch(
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test12_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -86,7 +86,7 @@ end
             dtmax = 0.02, #keywords arguments
         )
 
-        series = get_state_series(sim, ("generator-102-1", :ω))
+        series = get_state_series(res, ("generator-102-1", :ω))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -95,7 +95,7 @@ end
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test12_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

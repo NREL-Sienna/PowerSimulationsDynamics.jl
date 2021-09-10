@@ -53,9 +53,9 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
         @test small_sig.stable
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         #Obtain data for voltage magnitude at bus 102
-        series2 = get_voltage_magnitude_series(sim, 102)
+        series2 = get_voltage_magnitude_series(res, 102)
         t = series[1]
         δ = series[2]
         V = series2[2]
@@ -74,7 +74,7 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
@@ -111,9 +111,9 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         @test small_sig.stable
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         #Obtain data for voltage magnitude at bus 102
-        series2 = get_voltage_magnitude_series(sim, 102)
+        series2 = get_voltage_magnitude_series(res, 102)
         t = series[1]
         δ = series[2]
         V = series2[2]
@@ -132,7 +132,7 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
