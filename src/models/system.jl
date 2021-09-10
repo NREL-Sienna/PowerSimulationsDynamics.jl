@@ -33,13 +33,13 @@ function (m::SystemModel{ResidualModel, C})(
 end
 
 function system_residual!(
-    out::Vector{T},
-    dx::Vector{U},
-    x::Vector{V},
+    out::AbstractVector{T},
+    dx::AbstractVector{T},
+    x::AbstractVector{V},
     inputs::SimulationInputs,
     cache::Cache,
     t::Float64,
-) where {T, U <: Real, V <: Real}
+) where {T <: Real, V <: Real}
     update_global_vars!(cache, inputs, x)
     M = get_mass_matrix(inputs)
 
