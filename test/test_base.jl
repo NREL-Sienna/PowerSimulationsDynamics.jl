@@ -103,7 +103,7 @@ end
     sim_inputs = sim.simulation_inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
     @test all(DAE_vector)
-    @test all(diag(inputs.mass_matrix) .> 0)
+    @test all(LinearAlgebra.diag(sim_inputs.mass_matrix) .> 0)
     total_shunts = PSID.get_total_shunts(sim_inputs)
     # Total shunts matrix follows same pattern as the rectangular Ybus
     for v in LinearAlgebra.diag(total_shunts[4:end, 1:3])
