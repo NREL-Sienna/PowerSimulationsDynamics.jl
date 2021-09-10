@@ -376,11 +376,11 @@ function execute!(sim::Simulation, solver; kwargs...)
     )
     if solution.retcode == :Success
         sim.status = SIMULATION_FINALIZED
-        sim.results = SimulationResults(inputs, get_system(sim), solution)
+        sim.results = SimulationResults(get_simulation_inputs(sim), get_system(sim), solution)
     else
         sim.status = SIMULATION_FAILED
     end
-    return
+    return sim.status
 end
 
 function read_results(sim::Simulation)
