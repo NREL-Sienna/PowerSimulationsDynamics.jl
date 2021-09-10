@@ -179,7 +179,7 @@ function system_mass_matrix!(
     update_global_vars!(cache, inputs, x)
 
     # Global quantities
-    ode_output = get_ode_output(cache, V)
+    system_ode_output = get_ode_output(cache, V)
     current_balance = get_current_balance(cache, V)
     fill!(current_balance, zero(V))
     bus_counts = get_bus_count(inputs)
@@ -193,20 +193,20 @@ function system_mass_matrix!(
 
     for dynamic_device in get_dynamic_injectors_data(inputs)
         ix_range = get_ix_range(dynamic_device)
-        ode_output = @view _ode_output[get_ode_ouput_range(dynamic_device)]
-        inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
+        device_ode_output = @view system_ode_output[get_ode_ouput_range(dynamic_device)]
+        device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
 
         device!(
             device_states,
-            ode_output,
+            device_ode_output,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
             view(current_i, bus_ix),
             global_vars,
-            inner_vars,
+            device_inner_vars,
             dynamic_device,
             t,
         )
@@ -242,25 +242,27 @@ function system_mass_matrix!(
     end
 
     if has_dyn_lines(inputs)
+        branches_ode = get_branches_ode(cache, T)
         for dynamic_branch in get_dynamic_branches(inputs)
             ix_range = get_ix_range(dynamic_branch)
-            output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
-            device_states = @view x[ix_range]
+            branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
+            branch_states = @view x[ix_range]
+            bus_ix_from = get_bus_ix_from(dynamic_branch)
+            bus_ix_to = get_bus_ix_to(dynamic_branch)
             branch!(
-                device_states,
-                output_ode,
+                branch_states,
+                branch_output_ode,
                 #Get Voltage data
-                view(V_r, bus_ix_from),
-                view(V_i, bus_ix_from),
-                view(V_r, bus_ix_to),
-                view(V_i, bus_ix_to),
+                voltage_r[bus_ix_from],
+                voltage_i[bus_ix_from],
+                voltage_r[bus_ix_to],
+                voltage_i[bus_ix_to],
                 #Get Current data
-                view(I_injections_r, bus_ix_from),
-                view(I_injections_i, bus_ix_from),
-                view(I_injections_r, bus_ix_to),
-                view(I_injections_i, bus_ix_to),
-                br,
-                inputs,
+                view(current_r, bus_ix_from),
+                view(current_i, bus_ix_from),
+                view(current_r, bus_ix_to),
+                view(current_i, bus_ix_to),
+                dynamic_branch,
             )
             dx[ix_range] .= branches_ode[ode_range]
         end
