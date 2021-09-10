@@ -16,7 +16,7 @@ end
 Function to obtain the state time series of a specific state. It receives the simulation, and a tuple
 containing the name of the Dynamic Device and the symbol of the state.
 """
-function post_proc_state_series(sim::Simulation, ref::Tuple{String, Symbol})
+function post_proc_state_series(sim::SimulationResults, ref::Tuple{String, Symbol})
     global_state_index = get_global_index(sim.simulation_inputs)
     ix = get(global_state_index[ref[1]], ref[2], 0)
     return _post_proc_state_series(sim.solution, ix)
@@ -27,7 +27,7 @@ Function to obtain voltage and output currents for a dynamic device. It receives
 of the Dynamic Device.
 """
 function post_proc_voltage_current_series(
-    sim::Simulation,
+    sim::SimulationResults,
     name::String,
 )::NTuple{4, Vector{Float64}}
     #Note: Type annotation since get_dynamic_injector is type unstable and solution is Union{Nothing, DAESol}
@@ -60,8 +60,8 @@ Function to compute the real current output time series of a Dynamic Injection s
 string name of the Dynamic Injection device.
 
 """
-function post_proc_real_current_series(sim::Simulation, name::String)
-    V_R, V_I, I_R, I_I = post_proc_voltage_current_series(sim, name)
+function post_proc_real_current_series(sim::SimulationResults, name::String)
+    _, _, I_R, _ = post_proc_voltage_current_series(sim, name)
     return I_R
 end
 """
@@ -69,8 +69,8 @@ Function to compute the imaginary current output time series of a Dynamic Inject
 string name of the Dynamic Injection device.
 
 """
-function post_proc_imaginary_current_series(sim::Simulation, name::String)
-    V_R, V_I, I_R, I_I = post_proc_voltage_current_series(sim, name)
+function post_proc_imaginary_current_series(sim::SimulationResults, name::String)
+    _, _, _, I_I = post_proc_voltage_current_series(sim, name)
     return I_I
 end
 
@@ -79,7 +79,7 @@ Function to compute the active power output time series of a Dynamic Injection s
 string name of the Dynamic Injection device.
 
 """
-function post_proc_activepower_series(sim::Simulation, name::String)
+function post_proc_activepower_series(sim::SimulationResults, name::String)
     V_R, V_I, I_R, I_I = post_proc_voltage_current_series(sim, name)
     return V_R .* I_R + V_I .* I_I
 end
@@ -89,12 +89,12 @@ Function to compute the active power output time series of a Dynamic Injection s
 string name of the Dynamic Injection device.
 
 """
-function post_proc_reactivepower_series(sim::Simulation, name::String)
+function post_proc_reactivepower_series(sim::SimulationResults, name::String)
     V_R, V_I, I_R, I_I = post_proc_voltage_current_series(sim, name)
     return V_I .* I_R - V_R .* I_I
 end
 
-function make_global_state(inputs)
+function make_global_state_map(inputs::SimulationInputs)
     dic = MAPPING_DICT()
     device_wrappers = get_dynamic_injectors_data(inputs)
     branches_wrappers = get_dynamic_branches(inputs)
