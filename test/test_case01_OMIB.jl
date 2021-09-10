@@ -41,20 +41,20 @@ Ybus_change = NetworkSwitch(
 
         @test (diff[1] < 1e-3)
 
-        #Obtain small signal results for initial conditions
-        # small_sig = small_signal_analysis(sim)
-        # eigs = small_sig.eigenvalues
-        # @test small_sig.stable
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
-        #Test Eigenvalues
+        # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test01_eigvals) < 1e-3
         @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
 
-        #Solve problem
+        # Solve problem
         @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        #Obtain data for angles
+        # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
@@ -68,7 +68,8 @@ Ybus_change = NetworkSwitch(
         t_psat, δ_psat = get_csv_delta(psat_csv)
         t_psse, δ_psse = get_csv_delta(psse_csv)
 
-        #Test Transient Simulation Results
+        # Test Transient Simulation Results
+        # We test that the time series have the same number of items for convenience.
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 2e-3
@@ -99,8 +100,22 @@ end
             Ybus_change,
         ) #Type of Fault
 
+        # Test Initial Condition
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test01_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+
+        @test (diff[1] < 1e-3)
+
         small_sig = small_signal_analysis(sim)
         eigs = small_sig.eigenvalues
+        #Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test01_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
+        #Test Small Signal
+        @test small_sig.stable
 
         execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005)
 
@@ -117,20 +132,6 @@ end
         t_psat, δ_psat = get_csv_delta(psat_csv)
         t_psse, δ_psse = get_csv_delta(psse_csv)
 
-        diff = [0.0]
-        res = get_init_values_for_comparison(sim)
-        for (k, v) in test01_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
-        end
-        #Test Initial Condition
-        @test (diff[1] < 1e-3)
-        #Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test01_eigvals) < 1e-3
-        @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
-        #Test Solution DiffEq
-        @test res.solution.retcode == :Success
-        #Test Small Signal
-        @test small_sig.stable
         #Test Transient Simulation Results
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
         # PSSE results are in Degrees
