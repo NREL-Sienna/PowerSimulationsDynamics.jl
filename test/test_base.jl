@@ -174,3 +174,51 @@ end
         @test isapprox(imag(I_balance_ybus[i]), I_balance_sim[i + 2])
     end
 end
+
+@testset "Test Network Modification Callback Affects" begin
+    three_bus_file_dir = joinpath(dirname(@__FILE__), "data_tests/ThreeBusInverter.raw")
+    threebus_sys = System(three_bus_file_dir, runchecks = false)
+    add_source_to_ref(threebus_sys)
+    # Attach dyn devices
+    for g in get_components(Generator, threebus_sys)
+        if get_number(get_bus(g)) == 102
+            case_gen = dyn_gen_second_order(g)
+            add_component!(threebus_sys, case_gen, g)
+        elseif get_number(get_bus(g)) == 103
+            case_inv = inv_case78(g)
+            add_component!(threebus_sys, case_inv, g)
+        end
+    end
+
+    ybus_original = PSY.Ybus(threebus_sys)
+
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys)
+
+    for i in 1:3, j in 1:3
+        complex_ybus = ybus_original.data[i, j]
+        @test inputs.ybus_rectangular[i, j] == real(complex_ybus)
+        @test inputs.ybus_rectangular[i + 3, j + 3] == real(complex_ybus)
+        @test inputs.ybus_rectangular[i + 3, j] == -imag(complex_ybus)
+        @test inputs.ybus_rectangular[i, j + 3] == imag(complex_ybus)
+    end
+
+    br = get_component(Line, threebus_sys, "BUS 1-BUS 3-i_1")
+    PSID.ybus_update!(inputs, br, -1.0)
+
+    remove_component!(threebus_sys, br)
+    ybus_line_trip = PSY.Ybus(threebus_sys)
+
+    # Use is approx because the inversion of complex might be different in
+    # floating point than the inversion of a single float
+    for i in 1:3, j in 1:3
+        complex_ybus = ybus_line_trip.data[i, j]
+        @test isapprox(inputs.ybus_rectangular[i, j], real(complex_ybus), atol = 1e-10)
+        @test isapprox(
+            inputs.ybus_rectangular[i + 3, j + 3],
+            real(complex_ybus),
+            atol = 1e-10,
+        )
+        @test isapprox(inputs.ybus_rectangular[i + 3, j], -imag(complex_ybus), atol = 1e-10)
+        @test isapprox(inputs.ybus_rectangular[i, j + 3], imag(complex_ybus), atol = 1e-10)
+    end
+end
