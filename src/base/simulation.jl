@@ -156,8 +156,7 @@ end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
-    sim.inputs =
-        SimulationInputs(T(), get_system(sim), sim.inputs.tspan)
+    sim.inputs = SimulationInputs(T(), get_system(sim), sim.inputs.tspan)
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
@@ -375,7 +374,8 @@ function execute!(sim::Simulation, solver; kwargs...)
     )
     if solution.retcode == :Success
         sim.status = SIMULATION_FINALIZED
-        sim.results = SimulationResults(get_simulation_inputs(sim), get_system(sim), solution)
+        sim.results =
+            SimulationResults(get_simulation_inputs(sim), get_system(sim), solution)
     else
         sim.status = SIMULATION_FAILED
     end

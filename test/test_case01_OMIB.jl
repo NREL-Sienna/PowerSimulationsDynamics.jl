@@ -51,7 +51,8 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
 
         #Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         #Obtain data for angles
