@@ -210,7 +210,7 @@ function system_mass_matrix!(
             dynamic_device,
             t,
         )
-        dx[ix_range] .= ode_output
+        dx[ix_range] .= device_ode_output
     end
 
     for static_load in get_static_load_data(inputs)
