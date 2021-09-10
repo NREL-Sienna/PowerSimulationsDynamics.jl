@@ -49,7 +49,7 @@ x0_init = read_initial_conditions(sim)
 ## Make a plot of the results
 
 ```@repl quick_start_guide
-angle = get_state_series(sim, ("generator-102-1", :δ));
+angle = get_state_series(res, ("generator-102-1", :δ));
 plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "gen-102-1");
 ```
 
