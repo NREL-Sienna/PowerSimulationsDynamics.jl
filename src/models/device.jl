@@ -25,7 +25,7 @@ function device!(
     global_vars::AbstractArray{T},
     inner_vars::AbstractArray{T},
     dynamic_device::DynamicWrapper{DynG},
-    t::Float64,
+    t,
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
     inner_vars[VR_gen_var] = voltage_r
     inner_vars[VI_gen_var] = voltage_i
@@ -64,7 +64,7 @@ function device!(
     ::AbstractArray{T},
     ::AbstractArray{T},
     device::StaticWrapper{PSY.Source, U},
-    t::Float64,
+    t,
 ) where {T <: Real, U <: BusCategory}
     mdl_source!(voltage_r, voltage_i, current_r, current_i, device)
     return
@@ -129,7 +129,7 @@ function device!(
     global_vars::AbstractArray{T},
     inner_vars::AbstractArray{T},
     dynamic_device::DynamicWrapper{DynI},
-    t::Float64,
+    t,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
     #Obtain global vars
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
@@ -199,7 +199,7 @@ function device!(
     ::AbstractArray{T},
     dynamic_device::PSY.PeriodicVariableSource,
     ::AbstractArray{T},
-    t::Float64,
+    t,
 ) where {T <: Real}
     ω_θ = PSY.get_internal_angle_frequencies(dynamic_device)
     ω_V = PSY.get_internal_angle_frequencies(dynamic_device)
