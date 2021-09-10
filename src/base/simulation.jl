@@ -9,14 +9,15 @@ mutable struct Simulation{T <: SimulationModel}
     tstops::Vector{Float64}
     callbacks::DiffEqBase.CallbackSet
     simulation_folder::String
-    simulation_inputs::Union{Nothing, SimulationInputs}
+    inputs::Union{Nothing, SimulationInputs}
+    results::Union{Nothing, SimulationResults}
     console_level::Base.CoreLogging.LogLevel
     file_level::Base.CoreLogging.LogLevel
     multimachine::Bool
 end
 
 get_system(sim::Simulation) = sim.sys
-get_simulation_inputs(sim::Simulation) = sim.simulation_inputs
+get_simulation_inputs(sim::Simulation) = sim.inputs
 get_initial_conditions(sim::Simulation) = sim.x0_init
 get_tspan(sim::Simulation) = sim.tspan
 
@@ -44,6 +45,7 @@ function Simulation(
         Vector{Float64}(),
         DiffEqBase.CallbackSet(),
         simulation_folder,
+        nothing,
         nothing,
         console_level,
         file_level,
@@ -151,8 +153,8 @@ end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
-    sim.simulation_inputs =
-        SimulationInputs(T(), get_system(sim), sim.simulation_inputs.tspan)
+    sim.inputs =
+        SimulationInputs(T(), get_system(sim), sim.inputs.tspan)
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
@@ -174,7 +176,7 @@ end
 
 function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
-    sim.simulation_inputs = SimulationInputs(T, simulation_system)
+    sim.inputs = SimulationInputs(T, simulation_system)
     @debug "Simulation Inputs Created"
     return
 end
@@ -361,7 +363,7 @@ function simulation_pre_step!(sim::Simulation, reset_sim::Bool, ::Type{T}) where
     return
 end
 
-function execute!(sim::Simulation{ResidualModel}, solver; kwargs...)
+function execute!(sim::Simulation, solver; kwargs...)
     @debug "status before execute" sim.status
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Float64)
     sim.status = SIMULATION_STARTED
@@ -374,27 +376,13 @@ function execute!(sim::Simulation{ResidualModel}, solver; kwargs...)
     )
     if solution.retcode == :Success
         sim.status = SIMULATION_FINALIZED
+        sim.results = SimulationResults(inputs, get_system(sim), solution)
     else
         sim.status = SIMULATION_FAILED
     end
     return
 end
 
-function execute!(sim::Simulation{MassMatrixModel}, solver; kwargs...)
-    @debug "status before execute" sim.status
-    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
-    sim.status = SIMULATION_STARTED
-    solution = SciMLBase.solve(
-        sim.problem,
-        solver;
-        callback = sim.callbacks,
-        tstops = sim.tstops,
-        kwargs...,
-    )
-    if solution.retcode == :Success
-        sim.status = SIMULATION_FINALIZED
-    else
-        sim.status = SIMULATION_FAILED
-    end
-    return
+function read_results(sim::Simulation)
+    return sim.results
 end
