@@ -31,15 +31,15 @@ function post_proc_voltage_current_series(
     name::String,
 )::NTuple{4, Vector{Float64}}
     #Note: Type annotation since get_dynamic_injector is type unstable and solution is Union{Nothing, DAESol}
-    system = get_system(sim)
-    sim_inputs = sim.simulation_inputs
-    n_buses = get_bus_count(sim_inputs)
+    system = get_system(res)
+    bus_lookup = get_bus_lookup(res)
+    n_buses = length(bus_lookup)
     solution = res.solution
     device = PSY.get_component(PSY.StaticInjection, system, name)
-    bus_ix = get(get_bus_lookup(sim_inputs), PSY.get_number(PSY.get_bus(device)), -1)
+    bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
     V_R, V_I = post_proc_voltage_series(solution, bus_ix, n_buses)
     dyn_device = PSY.get_dynamic_injector(device)
-    I_R, I_I = compute_output_current(sim, dyn_device, V_R, V_I)
+    I_R, I_I = compute_output_current(res, dyn_device, V_R, V_I)
     return V_R, V_I, I_R, I_I
 end
 

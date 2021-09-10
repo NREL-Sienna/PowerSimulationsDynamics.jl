@@ -11,7 +11,7 @@ function compute_output_current(
 ) where {G <: PSY.DynamicInverter}
 
     #Obtain Data
-    sys = get_system(sim)
+    sys = get_system(res)
 
     #Get machine
     filt = PSY.get_filter(dynamic_device)
@@ -26,7 +26,7 @@ function compute_output_current(
         V_R,
         V_I,
         base_power_ratio,
-        sim,
+        res,
         dynamic_device,
     )
 end
