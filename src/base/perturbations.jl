@@ -90,13 +90,13 @@ function _record_change!(
     ybus[bus_to_no, bus_from_no] += Y21_real
     ybus[bus_to_no, bus_to_no] += Y22_real
 
-    # Second Quadrant -1 * Imag Part changes
+    # Second Quadrant Imag Part changes
     ybus[bus_from_no, bus_from_no + n_buses] += Y11_imag
     ybus[bus_from_no, bus_to_no + n_buses] += Y12_imag
     ybus[bus_to_no, bus_from_no + n_buses] += Y21_imag
     ybus[bus_to_no, bus_to_no + n_buses] += Y22_imag
 
-    # Third Quadrant Imag Part changes
+    # Third Quadrant -1*Imag Part changes
     ybus[bus_from_no + n_buses, bus_from_no] -= Y11_imag
     ybus[bus_from_no + n_buses, bus_to_no] -= Y12_imag
     ybus[bus_to_no + n_buses, bus_from_no] -= Y21_imag
@@ -286,14 +286,18 @@ Use to model a change in the network by switching the underlying Ybus in the sim
 """
 mutable struct NetworkSwitch <: Perturbation
     time::Float64
-    Ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
+    ybus_reactangular::SparseArrays.SparseMatrixCSC{Float64, Int}
+    function NetworkSwitch(time::Float64, ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int})
+        ybus_rect = hcat(vcat(real(ybus), -imag(ybus)), vcat(imag(ybus), real(ybus)))
+        new(time, ybus_rect)
+    end
 end
 
 function get_affect(::PSY.System, pert::NetworkSwitch)
     return (integrator) -> begin
         # TODO: This code can be more performant using SparseMatrix methods
-        for (i, v) in enumerate(pert.Ybus)
-            integrator.p.Ybus[i] = v
+        for (i, v) in enumerate(pert.ybus_rectangular)
+            integrator.p.ybus_reactangular[i] = v
         end
     end
 end
