@@ -4,18 +4,23 @@ module PowerSimulationsDynamics
 ####################################### Structs Exports ####################################
 
 # Base Exports
+export ResidualModel
+export MassMatrixModel
+
 export Simulation
 export Simulation!
+export SimulationResults
+
 export execute!
+export read_results
+
+# export perturbations
 export NetworkSwitch
 export ControlReferenceChange
 export BranchTrip
 export BranchImpedanceChange
 export SourceBusVoltageChange
 # export BusTrip
-
-export ResidualModel
-export MassMatrixModel
 
 # Export for routines
 export small_signal_analysis
