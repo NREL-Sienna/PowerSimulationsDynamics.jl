@@ -23,7 +23,7 @@ Ybus_change = NetworkSwitch(
     path = (joinpath(pwd(), "test-01"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
             ResidualModel,
             omib_sys, #system
@@ -32,7 +32,7 @@ Ybus_change = NetworkSwitch(
             Ybus_change,
         )
 
-        #Test Initial Condition
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test01_x0_init
@@ -41,21 +41,21 @@ Ybus_change = NetworkSwitch(
 
         @test (diff[1] < 1e-3)
 
-        #Obtain small signal results for initial conditions
-        # small_sig = small_signal_analysis(sim)
-        # eigs = small_sig.eigenvalues
-        # @test small_sig.stable
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
 
-        #Test Eigenvalues
+        # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test01_eigvals) < 1e-3
         @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
 
-        #Solve problem
+        # Solve problem
         @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        #Obtain data for angles
+        # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
@@ -76,8 +76,8 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(t - t_psat) == 0.0
         @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 
-        power = get_activepower_series(res, "generator-102-1")
-        rpower = get_reactivepower_series(res, "generator-102-1")
+        power = get_activepower_series(results, "generator-102-1")
+        rpower = get_reactivepower_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
 
@@ -92,46 +92,52 @@ end
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
             MassMatrixModel,
             omib_sys, #system
             path,
             (0.0, 20.0), #time span
             Ybus_change,
-        ) #Type of Fault
+        )
 
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-
-        execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005)
-
-        #Obtain data for angles
-        series = get_state_series(res, ("generator-102-1", :δ))
-        t = series[1]
-        δ = series[2]
-
-        series2 = get_voltage_magnitude_series(results, 102)
-
-        #Obtain PSAT benchmark data
-        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test01/Test01_delta.csv")
-        psse_csv = joinpath(TEST_FILES_DIR, "benchmarks/psse/Test01/Test01_delta.csv")
-        t_psat, δ_psat = get_csv_delta(psat_csv)
-        t_psse, δ_psse = get_csv_delta(psse_csv)
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test01_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
-        #Test Initial Condition
+
         @test (diff[1] < 1e-3)
-        #Test Eigenvalues
+
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test01_eigvals) < 1e-3
         @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
-        #Test Solution DiffEq
-        @test res.solution.retcode == :Success
-        #Test Small Signal
-        @test small_sig.stable
+
+        # Solve problem
+        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+
+        # Obtain data for angles
+        series = get_state_series(results, ("generator-102-1", :δ))
+        t = series[1]
+        δ = series[2]
+
+        series2 = get_voltage_magnitude_series(results, 102)
+        series3 = get_voltage_angle_series(results, 102)
+
+        #Obtain PSAT and PSS/e benchmark data
+        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test01/Test01_delta.csv")
+        psse_csv = joinpath(TEST_FILES_DIR, "benchmarks/psse/Test01/Test01_delta.csv")
+        t_psat, δ_psat = get_csv_delta(psat_csv)
+        t_psse, δ_psse = get_csv_delta(psse_csv)
+
         #Test Transient Simulation Results
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
         # PSSE results are in Degrees
@@ -139,8 +145,8 @@ end
         @test LinearAlgebra.norm(t - t_psat) == 0.0
         @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 
-        power = PSID.get_activepower_series(res, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
+        power = get_activepower_series(results, "generator-102-1")
+        rpower = get_reactivepower_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
 
