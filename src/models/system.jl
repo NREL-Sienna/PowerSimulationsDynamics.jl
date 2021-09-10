@@ -34,12 +34,12 @@ end
 
 function system_residual!(
     out::AbstractVector{T},
-    dx::AbstractVector{T},
+    dx::AbstractVector{U},
     x::AbstractVector{V},
     inputs::SimulationInputs,
     cache::Cache,
     t::Float64,
-) where {T <: Real, V <: Real}
+) where {T <: Real, U <: Real, V <: Real}
     update_global_vars!(cache, inputs, x)
     M = get_mass_matrix(inputs)
 
