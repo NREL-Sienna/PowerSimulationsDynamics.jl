@@ -4,13 +4,13 @@ Function to obtain series of states out of DAE Solution. It receives the solutio
 and a tuple containing the string name of the Dynamic Injection device and the symbol of the state.
 
 """
-function get_state_series(sim::SimulationResults, ref::Tuple{String, Symbol})
-    if allunique(sim.solution.t)
-        return sim.solution.t, post_proc_state_series(sim, ref)
+function get_state_series(res::SimulationResults, ref::Tuple{String, Symbol})
+    if allunique(res.solution.t)
+        return res.solution.t, post_proc_state_series(res, ref)
     else
         @debug "found repeated time steps removing repetitions"
-        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
-        return sim.solution.t[ix], post_proc_state_series(sim, ref)[ix]
+        ix = unique(i -> res.solution.t[i], eachindex(res.solution.t))
+        return res.solution.t[ix], post_proc_state_series(res, ref)[ix]
     end
     return
 end
@@ -19,16 +19,16 @@ end
 Function to obtain the voltage magnitude series out of the DAE Solution. It receives the solution, the dynamical system and the bus number.
 
 """
-function get_voltage_magnitude_series(sim::SimulationResults, bus_number::Int)
-    n_buses = get_bus_count(sim.inputs)
-    bus_ix = get(get_lookup(sim.inputs), bus_number, 0)
-    V_R, V_I = post_proc_voltage_series(sim.solution, bus_ix, n_buses)
-    if allunique(sim.solution.t)
-        return sim.solution.t, sqrt.(V_R .^ 2 + V_I .^ 2)
+function get_voltage_magnitude_series(res::SimulationResults, bus_number::Int)
+    n_buses = get_bus_count(res)
+    bus_ix = get(get_bus_lookup(res), bus_number, 0)
+    V_R, V_I = post_proc_voltage_series(res.solution, bus_ix, n_buses)
+    if allunique(res.solution.t)
+        return res.solution.t, sqrt.(V_R .^ 2 + V_I .^ 2)
     else
         @debug "found repeated time steps removing repetitions"
-        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
-        return sim.solution.t[ix], sqrt.(V_R[ix] .^ 2 + V_I[ix] .^ 2)
+        ix = unique(i -> res.solution.t[i], eachindex(res.solution.t))
+        return res.solution.t[ix], sqrt.(V_R[ix] .^ 2 + V_I[ix] .^ 2)
     end
 end
 
@@ -36,16 +36,16 @@ end
 Function to obtain the voltage angle series out of the DAE Solution. It receives the solution, the dynamical system and the bus number.
 
 """
-function get_voltage_angle_series(sim::SimulationResults, bus_number::Int)
-    n_buses = get_bus_count(sim.inputs)
-    bus_ix = get(get_lookup(sim.inputs), bus_number, 0)
-    V_R, V_I = post_proc_voltage_series(sim.solution, bus_ix, n_buses)
-    if allunique(sim.solution.t)
-        return sim.solution.t, atan.(V_I ./ V_R)
+function get_voltage_angle_series(res::SimulationResults, bus_number::Int)
+    n_buses = get_bus_count(res)
+    bus_ix = get(get_bus_lookup(res), bus_number, 0)
+    V_R, V_I = post_proc_voltage_series(res.solution, bus_ix, n_buses)
+    if allunique(res.solution.t)
+        return res.solution.t, atan.(V_I ./ V_R)
     else
         @debug "found repeated time steps removing repetitions"
-        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
-        return sim.solution.t[ix], atan.(V_I[ix] ./ V_R[ix])
+        ix = unique(i -> res.solution.t[i], eachindex(res.solution.t))
+        return res.solution.t[ix], atan.(V_I[ix] ./ V_R[ix])
     end
 end
 
@@ -54,13 +54,13 @@ Function to obtain the real current time series of a Dynamic Injection series ou
 string name of the Dynamic Injection device.
 
 """
-function get_real_current_series(sim::SimulationResults, name::String)
-    if allunique(sim.solution.t)
-        return sim.solution.t, post_proc_real_current_series(sim, name)
+function get_real_current_series(res::SimulationResults, name::String)
+    if allunique(res.solution.t)
+        return res.solution.t, post_proc_real_current_series(res, name)
     else
         @debug "found repeated time steps removing repetitions"
-        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
-        return sim.solution.t[ix], post_proc_real_current_series(sim, name)[ix]
+        ix = unique(i -> res.solution.t[i], eachindex(res.solution.t))
+        return res.solution.t[ix], post_proc_real_current_series(res, name)[ix]
     end
 end
 """
@@ -68,13 +68,13 @@ Function to obtain the imaginary current time series of a Dynamic Injection seri
 string name of the Dynamic Injection device.
 
 """
-function get_imaginary_current_series(sim::SimulationResults, name::String)
-    if allunique(sim.solution.t)
-        return sim.solution.t, post_proc_imaginary_current_series(sim, name)
+function get_imaginary_current_series(res::SimulationResults, name::String)
+    if allunique(res.solution.t)
+        return res.solution.t, post_proc_imaginary_current_series(res, name)
     else
         @debug "found repeated time steps removing repetitions"
-        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
-        return sim.solution.t[ix], post_proc_imaginary_current_series(sim, name)[ix]
+        ix = unique(i -> res.solution.t[i], eachindex(res.solution.t))
+        return res.solution.t[ix], post_proc_imaginary_current_series(res, name)[ix]
     end
 end
 
@@ -83,13 +83,13 @@ Function to obtain the active power output time series of a Dynamic Injection se
 string name of the Dynamic Injection device.
 
 """
-function get_activepower_series(sim::SimulationResults, name::String)
-    if allunique(sim.solution.t)
-        return sim.solution.t, post_proc_activepower_series(sim, name)
+function get_activepower_series(res::SimulationResults, name::String)
+    if allunique(res.solution.t)
+        return res.solution.t, post_proc_activepower_series(res, name)
     else
         @debug "found repeated time steps removing repetitions"
-        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
-        return sim.solution.t[ix], post_proc_activepower_series(sim, name)[ix]
+        ix = unique(i -> res.solution.t[i], eachindex(res.solution.t))
+        return res.solution.t[ix], post_proc_activepower_series(res, name)[ix]
     end
 end
 
@@ -98,21 +98,21 @@ Function to obtain the reactive power output time series of a Dynamic Injection 
 string name of the Dynamic Injection device.
 
 """
-function get_reactivepower_series(sim::SimulationResults, name::String)
-    if allunique(sim.solution.t)
-        return sim.solution.t, post_proc_reactivepower_series(sim, name)
+function get_reactivepower_series(res::SimulationResults, name::String)
+    if allunique(res.solution.t)
+        return res.solution.t, post_proc_reactivepower_series(res, name)
     else
         @debug "found repeated time steps removing repetitions"
-        ix = unique(i -> sim.solution.t[i], eachindex(sim.solution.t))
-        return sim.solution.t[ix], post_proc_reactivepower_series(sim, name)[ix]
+        ix = unique(i -> res.solution.t[i], eachindex(res.solution.t))
+        return res.solution.t[ix], post_proc_reactivepower_series(res, name)[ix]
     end
 end
 
 """
 Function to print initial states. It receives the vector of initial states and the dynamical system.
 """
-function print_device_states(sim::SimulationResults)
-    bus_size = get_bus_count(sim.inputs)
+function print_device_states(res::SimulationResults)
+    bus_size = get_bus_count(res)
     system = get_system(sim)
     println("Voltage Variables")
     println("====================")
@@ -123,7 +123,7 @@ function print_device_states(sim::SimulationResults)
         println(name)
         println("====================")
         bus_n = PSY.get_number(bus)
-        bus_ix = get_lookup(sim.inputs)[bus_n]
+        bus_ix = get_bus_lookup(res)[bus_n]
         V_R = sim.x0_init[bus_ix]
         V_I = sim.x0_init[bus_ix + bus_size]
         Vm = sqrt(V_R^2 + V_I^2)
@@ -140,7 +140,7 @@ function print_device_states(sim::SimulationResults)
         println("Differential States")
         println(name)
         println("====================")
-        global_index = get_global_index(sim.inputs)[name]
+        global_index = get_global_index(res)[name]
         for s in states
             print(s, " ", round(sim.x0_init[global_index[s]], digits = 4), "\n")
         end
@@ -156,7 +156,7 @@ function print_device_states(sim::SimulationResults)
             printed_name = "Line " * name
             println("====================")
             println(printed_name)
-            global_index = get_global_index(sim.inputs)[name]
+            global_index = get_global_index(res)[name]
             x0_br = Dict{Symbol, Float64}()
             for (i, s) in enumerate(states)
                 print(s, " ", round(sim.x0_init[global_index[s]], digits = 5), "\n")
