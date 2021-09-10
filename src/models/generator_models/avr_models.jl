@@ -23,8 +23,8 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #TODO Change EMF name for Vf in PowerSystems
-    #Update Vf voltage on inner vars
-    inner_vars[Vf_var] = PSY.get_Vf(PSY.get_avr(dynamic_device))
+    #Update Vf voltage on inner vars. In AVRFixed, Vf = V_ref
+    inner_vars[Vf_var] = get_V_ref(dynamic_device)
 
     return
 end

@@ -6,8 +6,8 @@ function initialize_avr!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #In AVRFixed, V_ref is used as Vf
     Vf = inner_vars[Vf_var]
-    PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vf)
-    PSY.set_Vf!(PSY.get_avr(dynamic_device), Vf)
+    #PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vf)
+    #PSY.set_Vf!(PSY.get_avr(dynamic_device), Vf)
     #Update Control Refs
     set_V_ref(dynamic_device, Vf)
 end
