@@ -1,6 +1,8 @@
 struct SimulationResults
     global_index::MAPPING_DICT
-    voltage_buses::Vector{Int}
-    current_buses::Vector{Int}
+    system::PSY.System
     solution::SciMLBase.AbstractODESolution
+    function SimulationResults(inputs::SimulationResults, system::PSY.System, solution)
+        new(make_global_state_map(inputs), system, solution)
+    end
 end

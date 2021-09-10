@@ -4,7 +4,7 @@ the dynamic device and bus voltage. It is dispatched for device type to compute 
 
 """
 function compute_output_current(
-    sim::Simulation,
+    sim::SimulationResults,
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
@@ -42,7 +42,7 @@ function _output_current(
     ::Vector{Float64},
     ::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    sim::SimulationResults,
     dynamic_device::G,
 ) where {C <: PSY.Converter, G <: PSY.DynamicInverter}
     ir_filter = post_proc_state_series(sim, (name, :ir_filter))
@@ -62,7 +62,7 @@ function _output_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    sim::SimulationResults,
     dynamic_device::G,
 ) where {G <: PSY.DynamicInverter}
 

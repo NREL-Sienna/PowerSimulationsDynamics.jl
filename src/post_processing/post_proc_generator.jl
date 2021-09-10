@@ -4,7 +4,7 @@ the dynamic device and bus voltage. It is dispatched for device type to compute 
 
 """
 function compute_output_current(
-    sim::Simulation,
+    sim::SimulationResults,
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
@@ -38,7 +38,7 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    sim::SimulationResults,
 )
     δ = post_proc_state_series(sim, (name, :δ))
 
@@ -71,7 +71,7 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    sim::SimulationResults,
 )
     δ = post_proc_state_series(sim, (name, :δ))
     eq_p = post_proc_state_series(sim, (name, :eq_p))
@@ -108,7 +108,7 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    sim::SimulationResults,
 )
     δ = post_proc_state_series(sim, (name, :δ))
     eq_pp = post_proc_state_series(sim, (name, :eq_pp))
@@ -148,7 +148,7 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    sim::SimulationResults,
 )
     δ = post_proc_state_series(sim, (name, :δ))
     eq_pp = post_proc_state_series(sim, (name, :eq_pp))
@@ -185,7 +185,7 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    sim::SimulationResults,
 )
     δ = post_proc_state_series(sim, (name, :δ))
     eq_p = post_proc_state_series(sim, (name, :eq_p))
@@ -236,7 +236,7 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    sim::SimulationResults,
 )
     δ = post_proc_state_series(sim, (name, :δ))
     eq_p = post_proc_state_series(sim, (name, :eq_p))
