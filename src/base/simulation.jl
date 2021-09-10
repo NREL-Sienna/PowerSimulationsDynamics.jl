@@ -301,7 +301,8 @@ function _get_diffeq_problem(
             mass_matrix = get_mass_matrix(simulation_inputs),
             jac = jacobian,
             jac_prototype = jacobian.Jv,
-            tgrad = nothing,
+            # Necessary to avoid unnecessary calculations in Rosenbrock methods
+            tgrad = (dT,u,p,t) -> dT .= false,
         ),
         sim.x0_init,
         get_tspan(sim),
