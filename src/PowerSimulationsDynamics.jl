@@ -131,7 +131,7 @@ include("models/system.jl")
 include("post_processing/post_proc_common.jl")
 include("post_processing/post_proc_generator.jl")
 include("post_processing/post_proc_inverter.jl")
-inclide("post_processing/post_proc_results.jl")
+include("post_processing/post_proc_results.jl")
 
 #Utils
 include("utils/psy_utils.jl")
