@@ -41,8 +41,8 @@ function _mdl_ode_RE_active_controller_AB!(
 }
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
-    ω_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.ω_ref_index]
+    p_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
+    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
     # To do: Obtain proper frequency for a plant. For now using the system frequency.
     ω_plant = ω_sys
 
@@ -120,7 +120,7 @@ function _mdl_ode_RE_active_controller_AB!(
 }
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
+    p_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
     #Obtain additional Active Power Controller parameters
     T_pord = PSY.get_T_pord(active_power_control)
 
@@ -171,7 +171,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
 }
 
     #Obtain external parameters
-    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+    q_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index]
 
     # Get Reactive Controller parameters
     T_fltr = PSY.get_T_fltr(reactive_power_control)
@@ -251,7 +251,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     F <: PSY.Filter,
 }
     #Obtain external parameters
-    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+    q_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index]
 
     # Get Reactive Controller parameters
     T_fltr = PSY.get_T_fltr(reactive_power_control)
