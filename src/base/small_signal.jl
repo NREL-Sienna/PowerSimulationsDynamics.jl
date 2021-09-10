@@ -22,13 +22,13 @@ function _calculate_forwardiff_jacobian(
     sim::Simulation{ResidualModel},
     x_eval::Vector{Float64},
 )
-    var_count = get_variable_count(sim.simulation_inputs)
+    var_count = get_variable_count(sim.inputs)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     sysf! = (out, x) -> system_implicit!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
         x,              #states
-        sim.simulation_inputs,     #Parameters
+        sim.inputs,     #Parameters
         0.0,            #time equals to zero.
     )
     out = zeros(var_count) #Define a vector of zeros for the output
@@ -40,11 +40,11 @@ function _calculate_forwardiff_jacobian(
     sim::Simulation{MassMatrixModel},
     x_eval::Vector{Float64},
 )
-    var_count = get_variable_count(sim.simulation_inputs)
+    var_count = get_variable_count(sim.inputs)
     sysf! = (dx, x) -> system_mass_matrix!(
         dx,            #derivatives equal to zero
         x,              #states
-        sim.simulation_inputs,     #Parameters
+        sim.inputs,     #Parameters
         0.0,            #time equals to zero.
     )
     dx = zeros(var_count) #Define a vector of zeros for the output
