@@ -93,3 +93,25 @@ function post_proc_reactivepower_series(sim::Simulation, name::String)
     V_R, V_I, I_R, I_I = post_proc_voltage_current_series(sim, name)
     return V_I .* I_R - V_R .* I_I
 end
+
+function make_global_state(inputs)
+    dic = MAPPING_DICT()
+    device_wrappers = get_dynamic_injectors_data(inputs)
+    branches_wrappers = get_dynamic_branches(inputs)
+    buses_diffs = get_voltage_buses_ix(inputs)
+    n_buses = get_bus_count(inputs)
+    for d in device_wrappers
+        dic[PSY.get_name(d)] = get_global_index(d)
+    end
+    if !isempty(branches_wrappers)
+        for br in branches_wrappers
+            dic[PSY.get_name(br)] = get_global_index(br)
+        end
+    end
+    if !isempty(buses_diffs)
+        for ix in buses_diffs
+            dic["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
+        end
+    end
+    return dic
+end
