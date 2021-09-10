@@ -286,11 +286,30 @@ Use to model a change in the network by switching the underlying Ybus in the sim
 """
 mutable struct NetworkSwitch <: Perturbation
     time::Float64
-    ybus_reactangular::SparseArrays.SparseMatrixCSC{Float64, Int}
-    function NetworkSwitch(time::Float64, ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int})
-        ybus_rect = hcat(vcat(real(ybus), -imag(ybus)), vcat(imag(ybus), real(ybus)))
+    ybus_rectangular::SparseArrays.SparseMatrixCSC{Float64, Int}
+    function NetworkSwitch(
+        time::Float64,
+        ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int},
+    )
+        n_bus = size(ybus)[1]
+        if n_bus < 15_000
+            I = PSY._goderya(ybus)
+            if length(Set(I)) != n_bus
+                error("The Ybus provided has islands and can't be used in the simulation")
+            end
+        else
+            @warn(
+                "The number of buses in the Ybus provided is $n_bus and is too large to be verified for connectivity"
+            )
+        end
+        # TODO: Improve performance here
+        ybus_rect = transform_ybus_to_rectangular(ybus)
         new(time, ybus_rect)
     end
+end
+
+function NetworkSwitch(time::Float64, ybus::PSY.Ybus)
+    return NetworkSwitch(time, ybus.data)
 end
 
 function get_affect(::PSY.System, pert::NetworkSwitch)
