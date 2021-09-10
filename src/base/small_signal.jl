@@ -146,7 +146,7 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     jacwrapper(x_eval)
     jacobian = jacwrapper.Jv
     diff_states = get_DAE_vector(inputs)
-    jac_index = _make_reduced_jacobian_index(make_global_state(inputs), diff_states)
+    jac_index = _make_reduced_jacobian_index(make_global_state_map(inputs), diff_states)
     reduced_jacobian = _reduce_jacobian(jacobian, diff_states, mass_matrix)
     eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, sim.multimachine)
     damping = _get_damping(eigen_vals, jac_index)
