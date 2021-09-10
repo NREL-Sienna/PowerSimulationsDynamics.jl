@@ -11,3 +11,4 @@ end
 get_global_index(res::SimulationResults) = res.global_index
 get_bus_count(res::SimulationResults) = get_n_buses(res.system)
 get_bus_lookup(res::SimulationResults) = res.bus_lookup
+get_system(res::SimulationResults) = res.system
