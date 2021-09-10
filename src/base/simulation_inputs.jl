@@ -239,7 +239,7 @@ function _get_ybus(sys::PSY.System)
         # TODO: Improve performance of building the rectangular YBus
         ybus_rectangular = hcat(vcat(real(ybus), -imag(ybus)), vcat(imag(ybus), real(ybus)))
     else
-        ybus_rectangular = SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}(
+        ybus_rectangular = SparseArrays.SparseMatrixCSC{Float64, Int}(
             zeros(2 * n_buses, 2 * n_buses),
         )
         lookup = Dict{Int.Int}()
