@@ -100,7 +100,7 @@ end
     # Tests for all Dynamic Lines
     sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir(), (0.0, 10.0))
     @test sim.status == PSID.BUILT
-    sim_inputs = sim.simulation_inputs
+    sim_inputs = sim.inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
     @test all(DAE_vector)
     @test all(LinearAlgebra.diag(sim_inputs.mass_matrix) .> 0)
@@ -126,7 +126,7 @@ end
     set_b!(dyn_branch23, (from = 0.0, to = 0.0))
     sim = Simulation(ResidualModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
     @test sim.status == PSID.BUILT
-    sim_inputs = sim.simulation_inputs
+    sim_inputs = sim.inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
     @test sum(.!DAE_vector) == 6
     for (ix, entry) in enumerate(DAE_vector)
