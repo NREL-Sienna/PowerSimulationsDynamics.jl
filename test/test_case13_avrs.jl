@@ -41,7 +41,7 @@ Ybus_change = NetworkSwitch(
         execute!(sim, IDA(), dtmax = 0.02)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -50,7 +50,7 @@ Ybus_change = NetworkSwitch(
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test13_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -78,7 +78,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.02)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -87,7 +87,7 @@ end
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test13_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
     finally
         @info("removing test files")

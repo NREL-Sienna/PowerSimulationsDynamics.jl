@@ -45,10 +45,10 @@ Ybus_change = NetworkSwitch(
         execute!(sim, IDA(), dtmax = 0.001)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-103-1", :δ))
-        series2 = get_state_series(sim, ("generator-103-1", :δ_hp))
-        series3 = get_state_series(sim, ("generator-103-1", :δ_ip))
-        series4 = get_state_series(sim, ("generator-103-1", :δ_ex))
+        series = get_state_series(res, ("generator-103-1", :δ))
+        series2 = get_state_series(res, ("generator-103-1", :δ_hp))
+        series3 = get_state_series(res, ("generator-103-1", :δ_ip))
+        series4 = get_state_series(res, ("generator-103-1", :δ_ex))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -57,7 +57,7 @@ Ybus_change = NetworkSwitch(
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test07_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
     finally
         @info("removing test files")
@@ -86,10 +86,10 @@ end
         execute!(sim, Rodas5(), dtmax = 0.001)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-103-1", :δ))
-        series2 = get_state_series(sim, ("generator-103-1", :δ_hp))
-        series3 = get_state_series(sim, ("generator-103-1", :δ_ip))
-        series4 = get_state_series(sim, ("generator-103-1", :δ_ex))
+        series = get_state_series(res, ("generator-103-1", :δ))
+        series2 = get_state_series(res, ("generator-103-1", :δ_hp))
+        series3 = get_state_series(res, ("generator-103-1", :δ_ip))
+        series4 = get_state_series(res, ("generator-103-1", :δ_ex))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -98,7 +98,7 @@ end
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test07_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
     finally
         @info("removing test files")

@@ -59,11 +59,11 @@ function test_gensae_implicit(dyr_file, csv_file, init_cond, eigs_value)
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
-        series2 = get_voltage_magnitude_series(sim, 102)
+        series2 = get_voltage_magnitude_series(res, 102)
 
         t_psse, δ_psse = get_csv_delta(csv_file)
 
@@ -77,7 +77,7 @@ function test_gensae_implicit(dyr_file, csv_file, init_cond, eigs_value)
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
         #Test Transient Simulation Results
         # PSSE results are in Degrees
@@ -114,11 +114,11 @@ function test_gensae_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
-        series2 = get_voltage_magnitude_series(sim, 102)
+        series2 = get_voltage_magnitude_series(res, 102)
 
         t_psse, δ_psse = get_csv_delta(csv_file)
 
@@ -132,7 +132,7 @@ function test_gensae_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
         #Test Transient Simulation Results
         # PSSE results are in Degrees

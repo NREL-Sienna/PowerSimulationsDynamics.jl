@@ -56,11 +56,11 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
-        series2 = get_voltage_magnitude_series(sim, 102)
+        series2 = get_voltage_magnitude_series(res, 102)
 
         t_psse, δ_psse = get_csv_delta(csv_file)
 
@@ -75,14 +75,14 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-1
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
 
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(res, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
 
@@ -116,11 +116,11 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
-        series2 = get_voltage_magnitude_series(sim, 102)
+        series2 = get_voltage_magnitude_series(res, 102)
 
         t_psse, δ_psse = get_csv_delta(csv_file)
 
@@ -134,15 +134,15 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-1
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
 
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(res, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
 

@@ -45,7 +45,7 @@ Ybus_change = NetworkSwitch(
         execute!(sim, IDA())
 
         #Obtain data for voltages
-        series = get_voltage_magnitude_series(sim, 102)
+        series = get_voltage_magnitude_series(res, 102)
 
         zoom = [
             (series[1][ix], series[2][ix]) for
@@ -59,7 +59,7 @@ Ybus_change = NetworkSwitch(
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test10_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -88,7 +88,7 @@ end
         execute!(sim, Rodas5())
 
         #Obtain data for voltages
-        series = get_voltage_magnitude_series(sim, 102)
+        series = get_voltage_magnitude_series(res, 102)
 
         zoom = [
             (series[1][ix], series[2][ix]) for
@@ -102,7 +102,7 @@ end
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test10_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

@@ -61,9 +61,9 @@ function test_renA_implicit(dyr_file, csv_file, init_cond, eigs_value, F_Flag)
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005, abstol = 1e-9, reltol = 1e-9)
 
         #Obtain data for generator
-        t, voltage = get_voltage_magnitude_series(sim, 103)
-        _, power = get_activepower_series(sim, "generator-103-1")
-        _, rpower = get_reactivepower_series(sim, "generator-103-1")
+        t, voltage = get_voltage_magnitude_series(res, 103)
+        _, power = get_activepower_series(res, "generator-103-1")
+        _, rpower = get_reactivepower_series(res, "generator-103-1")
 
         M = get_csv_data(csv_file)
         M_t = M[:, 1]
@@ -84,7 +84,7 @@ function test_renA_implicit(dyr_file, csv_file, init_cond, eigs_value, F_Flag)
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
         #Test Transient Simulation Results
         # PSSE results are in Degrees
@@ -125,9 +125,9 @@ function test_renA_mass_matrix(dyr_file, csv_file, init_cond, eigs_value, F_Flag
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for generator
-        t, voltage = get_voltage_magnitude_series(sim, 103)
-        _, power = get_activepower_series(sim, "generator-103-1")
-        _, rpower = get_reactivepower_series(sim, "generator-103-1")
+        t, voltage = get_voltage_magnitude_series(res, 103)
+        _, power = get_activepower_series(res, "generator-103-1")
+        _, rpower = get_reactivepower_series(res, "generator-103-1")
 
         M = get_csv_data(csv_file)
         M_t = M[:, 1]
@@ -148,7 +148,7 @@ function test_renA_mass_matrix(dyr_file, csv_file, init_cond, eigs_value, F_Flag
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
         #Test Transient Simulation Results
         # PSSE results are in Degrees

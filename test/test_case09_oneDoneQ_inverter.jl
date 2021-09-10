@@ -42,7 +42,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 1.2)
         execute!(sim, IDA(), dtmax = 0.02)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-103-1", :θ_oc))
+        series = get_state_series(res, ("generator-103-1", :θ_oc))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -51,7 +51,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 1.2)
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test09_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -79,7 +79,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.02)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-103-1", :θ_oc))
+        series = get_state_series(res, ("generator-103-1", :θ_oc))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -88,7 +88,7 @@ end
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test09_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
     finally
         @info("removing test files")

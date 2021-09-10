@@ -33,7 +33,7 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
         #Solve problem
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
@@ -50,7 +50,7 @@ csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/GAST/GAST_TEST.csv")
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test21_eigvals) < 1e-3
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
@@ -81,7 +81,7 @@ end
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
@@ -98,7 +98,7 @@ end
         #Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test21_eigvals) < 1e-3
         #Test Solution DiffEq
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
         #Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2

@@ -48,7 +48,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         execute!(sim, Sundials.IDA(), dtmax = 0.001, saveat = 0.005)
 
         #Obtain frequency data
-        series = get_state_series(sim, ("generator-102-1", :p_oc))
+        series = get_state_series(res, ("generator-102-1", :p_oc))
         t = series[1]
         p = series[2]
 
@@ -64,12 +64,12 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
-        ir = PSID.get_real_current_series(sim, "generator-102-1")
-        ii = PSID.get_imaginary_current_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(res, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
+        ir = PSID.get_real_current_series(res, "generator-102-1")
+        ii = PSID.get_imaginary_current_series(res, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})
@@ -104,7 +104,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.001, saveat = 0.005)
 
         #Obtain frequency data
-        series = get_state_series(sim, ("generator-102-1", :p_oc))
+        series = get_state_series(res, ("generator-102-1", :p_oc))
         t = series[1]
         p = series[2]
 
@@ -120,12 +120,12 @@ end
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
-        ir = PSID.get_real_current_series(sim, "generator-102-1")
-        ii = PSID.get_imaginary_current_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(res, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
+        ir = PSID.get_real_current_series(res, "generator-102-1")
+        ii = PSID.get_imaginary_current_series(res, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})

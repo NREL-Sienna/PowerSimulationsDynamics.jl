@@ -41,7 +41,7 @@ Ybus_change = NetworkSwitch(
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
@@ -57,13 +57,13 @@ Ybus_change = NetworkSwitch(
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test02_eigvals) < 1e-3
         @test LinearAlgebra.norm(eigs - test02_eigvals_psat, Inf) < 5.0
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
         @test small_sig.stable
         @test LinearAlgebra.norm(t - t_psat) == 0.0
         @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(res, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
@@ -93,7 +93,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :δ))
+        series = get_state_series(res, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
@@ -109,12 +109,12 @@ end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test02_eigvals) < 1e-3
         @test LinearAlgebra.norm(eigs - test02_eigvals_psat, Inf) < 5.0
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
         @test LinearAlgebra.norm(t - t_psat) == 0.0
         @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(res, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally

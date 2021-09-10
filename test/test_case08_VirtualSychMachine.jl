@@ -48,7 +48,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain frequency data
-        series = get_state_series(sim, ("generator-102-1", :ω_oc))
+        series = get_state_series(res, ("generator-102-1", :ω_oc))
         t = series[1]
         ω = series[2]
 
@@ -64,10 +64,10 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(res, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4
@@ -100,7 +100,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain frequency data
-        series = get_state_series(sim, ("generator-102-1", :ω_oc))
+        series = get_state_series(res, ("generator-102-1", :ω_oc))
         t = series[1]
         ω = series[2]
 
@@ -116,10 +116,10 @@ end
         end
         @test (diff[1] < 1e-3)
         @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(res, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4
