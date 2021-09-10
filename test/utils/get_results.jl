@@ -15,30 +15,28 @@ function get_init_values_for_comparison(sim::Simulation)
     end
     results =
         Dict{String, Vector{Float64}}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
-    for device in PSY.get_components(PSY.DynamicInjection, system)
+    for device in PSID.get_dynamic_injectors_data(sim.inputs)
         states = PSY.get_states(device)
         name = PSY.get_name(device)
-        global_index = PSID.get_global_index(sim.inputs)[name]
+        global_index = PSID.get_global_index(device)
         x0_device = Vector{Float64}(undef, length(states))
         for (i, s) in enumerate(states)
             x0_device[i] = sim.x0_init[global_index[s]]
         end
         results[name] = x0_device
     end
-    dyn_branches = PSY.get_components(PSY.DynamicBranch, system)
-    if !isempty(dyn_branches)
-        for br in dyn_branches
-            states = PSY.get_states(br)
-            name = PSY.get_name(br)
-            global_index = PSID.get_global_index(sim.inputs)[name]
-            x0_br = Vector{Float64}(undef, length(states))
-            for (i, s) in enumerate(states)
-                x0_br[i] = sim.x0_init[global_index[s]]
-            end
-            printed_name = "Line " * name
-            results[printed_name] = x0_br
+    for br in PSID.get_dynamic_branches(sim.inputs)
+        states = PSY.get_states(br)
+        name = PSY.get_name(br)
+        global_index = PSID.get_global_index(br)
+        x0_br = Vector{Float64}(undef, length(states))
+        for (i, s) in enumerate(states)
+            x0_br[i] = sim.x0_init[global_index[s]]
         end
+        printed_name = "Line " * name
+        results[printed_name] = x0_br
     end
+
     return results
 end
 
