@@ -69,8 +69,49 @@ function get_affect(sys::PSY.System, pert::BranchTrip)
     return
 end
 
+function _record_change!(
+    ybus::SparseArrays.SparseMatrixCSC{Float64, Int},
+    bus_from_no::Int,
+    bus_to_no::Int,
+    n_buses::Int,
+    Y11_real::Float64,
+    Y11_imag::Float64,
+    Y22_real::Float64,
+    Y22_imag::Float64,
+    Y12_real::Float64,
+    Y21_real::Float64,
+    Y12_imag::Float64,
+    Y21_imag::Float64,
+)
+
+    # First Quadrant Real Part Changes
+    ybus[bus_from_no, bus_from_no] += Y11_real
+    ybus[bus_from_no, bus_to_no] += Y12_real
+    ybus[bus_to_no, bus_from_no] += Y21_real
+    ybus[bus_to_no, bus_to_no] += Y22_real
+
+    # Second Quadrant -1 * Imag Part changes
+    ybus[bus_from_no, bus_from_no + n_buses] += Y11_imag
+    ybus[bus_from_no, bus_to_no + n_buses] += Y12_imag
+    ybus[bus_to_no, bus_from_no + n_buses] += Y21_imag
+    ybus[bus_to_no, bus_to_no + n_buses] += Y22_imag
+
+    # Third Quadrant Imag Part changes
+    ybus[bus_from_no + n_buses, bus_from_no] -= Y11_imag
+    ybus[bus_from_no + n_buses, bus_to_no] -= Y12_imag
+    ybus[bus_to_no + n_buses, bus_from_no] -= Y21_imag
+    ybus[bus_to_no + n_buses, bus_to_no] -= Y22_imag
+
+    # Fourth Quadrant Real Part Changes
+    ybus[bus_from_no + n_buses, bus_from_no + n_buses] += Y11_real
+    ybus[bus_from_no + n_buses, bus_to_no + n_buses] += Y12_real
+    ybus[bus_to_no + n_buses, bus_from_no + n_buses] += Y21_real
+    ybus[bus_to_no + n_buses, bus_to_no + n_buses] += Y22_real
+    return
+end
+
 function ybus_update!(
-    ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
+    ybus::SparseArrays.SparseMatrixCSC{Float64, Int},
     b::PSY.ACBranch,
     num_bus::Dict{Int, Int},
     mult::Float64,
@@ -78,22 +119,36 @@ function ybus_update!(
     arc = PSY.get_arc(b)
     bus_from_no = num_bus[PSY.get_number(arc.from)]
     bus_to_no = num_bus[arc.to.number]
+    n_buses = length(num_bus)
 
     Y_l = (1 / (PSY.get_r(b) + PSY.get_x(b) * 1im))
-    Y11 = Y_l + (1im * PSY.get_b(b).from)
-    Y22 = Y_l + (1im * PSY.get_b(b).to)
-    ybus[bus_from_no, bus_from_no] += mult * Y11
-    Y12 = -Y_l
-    ybus[bus_from_no, bus_to_no] += mult * Y12
-    #Y21 = Y12
-    ybus[bus_to_no, bus_from_no] += mult * Y12
-    Y22 = Y_l + (1im * PSY.get_b(b).to)
-    ybus[bus_to_no, bus_to_no] += mult * Y22
+
+    Y11_real = mult * real(Y_l)
+    Y11_imag = mult * (imag(Y_l) + PSY.get_b(b).from)
+    Y22_real = mult * real(Y_l)
+    Y22_imag = mult * (imag(Y_l) + PSY.get_b(b).to)
+    Y12_real = Y21_real = -mult * real(Y_l)
+    Y12_imag = Y21_imag = -mult * imag(Y_l)
+
+    _record_change!(
+        ybus,
+        bus_from_no,
+        bus_to_no,
+        n_buses,
+        Y11_real,
+        Y11_imag,
+        Y22_real,
+        Y22_imag,
+        Y12_real,
+        Y21_real,
+        Y12_imag,
+        Y21_imag,
+    )
     return
 end
 
 function ybus_update!(
-    ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
+    ybus::SparseArrays.SparseMatrixCSC{Float64, Int},
     b::PSY.TapTransformer,
     num_bus::Dict{Int, Int},
     mult::Float64,
@@ -107,19 +162,37 @@ function ybus_update!(
     b = PSY.get_primary_shunt(b)
 
     Y11 = (Y_t * c^2)
-    ybus[bus_from_no, bus_from_no] += mult * Y11
-    Y12 = (-Y_t * c)
-    ybus[bus_from_no, bus_to_no] += mult * Y12
-    #Y21 = Y12
-    ybus[bus_to_no, bus_from_no] += mult * Y12
-    Y22 = Y_t
-    ybus[bus_to_no, bus_to_no] += mult * (Y22 + (1im * b))
+    Y21 = Y12 = (-Y_t * c)
+    Y22 = Y_t + (1im * b)
 
+    Y11_real = mult * real(Y11)
+    Y11_imag = mult * imag(Y12)
+    Y22_real = mult * real(Y22)
+    Y22_imag = mult * imag(Y22)
+    Y12_real = -mult * real(Y12)
+    Y21_real = -mult * real(Y21)
+    Y12_imag = -mult * imag(Y12)
+    Y21_imag = -mult * imag(Y21)
+
+    _record_change!(
+        ybus,
+        bus_from_no,
+        bus_to_no,
+        n_buses,
+        Y11_real,
+        Y11_imag,
+        Y22_real,
+        Y22_imag,
+        Y12_real,
+        Y21_real,
+        Y12_imag,
+        Y21_imag,
+    )
     return
 end
 
 function ybus_update!(
-    ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
+    ybus::SparseArrays.SparseMatrixCSC{Float64, Int},
     b::PSY.PhaseShiftingTransformer,
     num_bus::Dict{Int, Int},
     mult::Float64,
@@ -134,18 +207,39 @@ function ybus_update!(
     b = PSY.get_primary_shunt(b)
 
     Y11 = (Y_t / abs(tap)^2)
-    ybus[bus_from_no, bus_from_no] += mult * Y11
     Y12 = (-Y_t / c_tap)
-    ybus[bus_from_no, bus_to_no] += mult * Y12
     Y21 = (-Y_t / tap)
-    ybus[bus_to_no, bus_from_no] += mult * Y21
     Y22 = Y_t
-    ybus[bus_to_no, bus_to_no] += mult * (Y22 + (1im * b))
+
+    Y11_real = mult * real(Y11)
+    Y11_imag = mult * imag(Y12)
+    Y22_real = mult * real(Y22)
+    Y22_imag = mult * imag(Y22)
+    Y12_real = -mult * real(Y12)
+    Y21_real = -mult * real(Y21)
+    Y12_imag = -mult * imag(Y12)
+    Y21_imag = -mult * imag(Y21)
+
+    _record_change!(
+        ybus,
+        bus_from_no,
+        bus_to_no,
+        n_buses,
+        Y11_real,
+        Y11_imag,
+        Y22_real,
+        Y22_imag,
+        Y12_real,
+        Y21_real,
+        Y12_imag,
+        Y21_imag,
+    )
+
     return
 end
 
 function ybus_update!(
-    ybus::SparseArrays.SparseMatrixCSC{ComplexF64, Int},
+    ybus::SparseArrays.SparseMatrixCSC{Float64, Int},
     fa::PSY.FixedAdmittance,
     num_bus::Dict{Int, Int},
     mult::Float64,
