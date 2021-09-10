@@ -31,3 +31,10 @@ function _transform_all_lines!(sys::PSY.System)
         add_component!(sys, dyn_br)
     end
 end
+
+function transform_ybus_to_rectangular(
+    ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int},
+)
+    # TODO: Improve performance here
+    return hcat(vcat(real(ybus), -imag(ybus)), vcat(imag(ybus), real(ybus)))
+end
