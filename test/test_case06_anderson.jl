@@ -28,35 +28,38 @@ Ybus_change = NetworkSwitch(
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
-        sim = Simulation!(
+        sim = Simulation(
             ResidualModel,
-            threebus_sys, #system,
+            threebus_sys, #system
             path,
-            tspan, #time span
+            (0.0, 20.0), #time span
             Ybus_change, #Type of Fault
-        )
+        ) #initial guess
 
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Solve problem
-        execute!(sim, IDA(), dtmax = 0.02)
-
-        #Obtain data for angles
-        series = get_state_series(res, ("generator-102-1", :δ))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test06_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
-        @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(res, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
+        @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
+
+        #Solve problem
+        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+
+        power = PSID.get_activepower_series(results, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
@@ -70,35 +73,38 @@ end
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
-        sim = Simulation!(
+        sim = Simulation(
             MassMatrixModel,
-            threebus_sys, #system,
+            threebus_sys, #system
             path,
-            tspan, #time span
+            (0.0, 20.0), #time span
             Ybus_change, #Type of Fault
-        )
+        ) #initial guess
 
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Solve problem
-        execute!(sim, Rodas5(), dtmax = 0.02)
-
-        #Obtain data for angles
-        series = get_state_series(res, ("generator-102-1", :δ))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test06_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
-        @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(res, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
+        @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
+
+        #Solve problem
+        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+
+        power = PSID.get_activepower_series(results, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
