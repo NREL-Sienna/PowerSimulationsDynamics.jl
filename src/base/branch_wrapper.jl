@@ -57,6 +57,7 @@ PSY.get_b(wrapper::BranchWrapper) = PSY.get_b(wrapper.branch)
 PSY.get_rate(wrapper::BranchWrapper) = PSY.get_rate(wrapper.branch)
 PSY.get_angle_limits(wrapper::BranchWrapper) = PSY.get_angle_limits(wrapper.branch)
 PSY.get_ext(wrapper::BranchWrapper) = PSY.get_ext(wrapper.branch)
+PSY.get_states(wrapper::BranchWrapper) = PSY.get_states(wrapper.branch)
 PSY.get_n_states(wrapper::BranchWrapper) = PSY.get_n_states(wrapper.branch)
 
 function _add_dynamic_bus_states!(
