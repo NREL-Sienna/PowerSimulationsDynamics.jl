@@ -52,11 +52,12 @@ Ybus_change = NetworkSwitch(
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test10_eigvals) < 1e-3
 
-        #Solve problem
-        execute!(sim, IDA())
+        # Solve problem
+        @test execute!(sim, IDA()) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         # Obtain data for voltages
-        series = get_voltage_magnitude_series(res, 102)
+        series = get_voltage_magnitude_series(results, 102)
 
         # Create Zoom for comparison with dynamic lines
         zoom = [
@@ -99,10 +100,11 @@ end
         @test LinearAlgebra.norm(eigs - test10_eigvals) < 1e-3
 
         #Solve problem
-        execute!(sim, Rodas4())
+        @test execute!(sim, Rodas4()) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         # Obtain data for voltages
-        series = get_voltage_magnitude_series(res, 102)
+        series = get_voltage_magnitude_series(results, 102)
 
         # Create Zoom for comparison with dynamic lines
         zoom = [
