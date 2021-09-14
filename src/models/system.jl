@@ -264,7 +264,7 @@ function system_mass_matrix!(
                 view(current_i, bus_ix_to),
                 dynamic_branch,
             )
-            dx[ix_range] .= branches_ode[ode_range]
+            dx[ix_range] .= branch_output_ode
         end
     end
     voltages = @view x[bus_range]
