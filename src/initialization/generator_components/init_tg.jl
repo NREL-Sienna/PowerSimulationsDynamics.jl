@@ -56,7 +56,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        get_P_ref(dynamic_device) = sol_x0[1]
+        set_P_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeI)
         tg_states = @view device_states[tg_ix]
@@ -97,7 +97,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        get_P_ref(dynamic_device) = sol_x0[1]
+        set_P_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeII)
         tg_states = @view device_states[tg_ix]
@@ -149,7 +149,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_ω_ref(dynamic_device, sol_x0[1])
+        set_P_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
@@ -202,7 +202,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_ω_ref(dynamic_device, sol_x0[1])
+        set_P_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
