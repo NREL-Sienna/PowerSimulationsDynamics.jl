@@ -117,12 +117,12 @@ get_system_base_power(wrapper::DynamicWrapper) = wrapper.system_base_power
 get_system_base_frequency(wrapper::DynamicWrapper) = wrapper.system_base_frequency
 
 get_P_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
-get_Q_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
+get_Q_ref(wrapper::DynamicWrapper) = wrapper.Q_ref[]
 get_V_ref(wrapper::DynamicWrapper) = wrapper.V_ref[]
 get_ω_ref(wrapper::DynamicWrapper) = wrapper.ω_ref[]
 
 set_P_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.P_ref[] = val
-set_Q_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.P_ref[] = val
+set_Q_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.Q_ref[] = val
 set_V_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.V_ref[] = val
 set_ω_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.ω_ref[] = val
 
@@ -240,7 +240,7 @@ get_bus_category(::StaticWrapper{<:PSY.ElectricLoad, U}) where {U} = PQBus
 get_load_category(::StaticWrapper{<:PSY.ElectricLoad, U}) where {U} = U
 
 get_P_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
-get_Q_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
+get_Q_ref(wrapper::StaticWrapper) = wrapper.Q_ref[]
 get_V_ref(wrapper::StaticWrapper) = wrapper.V_ref[]
 get_θ_ref(wrapper::StaticWrapper) = wrapper.θ_ref[]
 
