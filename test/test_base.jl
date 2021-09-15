@@ -106,11 +106,11 @@ end
     @test all(LinearAlgebra.diag(sim_inputs.mass_matrix) .> 0)
     total_shunts = PSID.get_total_shunts(sim_inputs)
     # Total shunts matrix follows same pattern as the rectangular Ybus
-    for v in LinearAlgebra.diag(total_shunts[4:end, 1:3])
+    for v in LinearAlgebra.diag(total_shunts[1:3, 4:end])
         @test v > 0
     end
 
-    for v in LinearAlgebra.diag(total_shunts[1:3, 4:end])
+    for v in LinearAlgebra.diag(total_shunts[4:end, 1:3])
         @test v < 0
     end
 
