@@ -10,10 +10,11 @@ end
 
 function JacobianFunctionWrapper(
     m!::SystemModel{MassMatrixModel},
-    x0::Vector{Float64};
+    x0_guess::Vector{Float64};
     # Improve the heuristic to do sparsity detection
     sparse_retrieve_loop = 3,
 )
+    x0 = deepcopy(x0_guess)
     n = length(x0)
     m_ = (residual, x) -> m!(residual, x, nothing, 0.0)
     jconfig = ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
