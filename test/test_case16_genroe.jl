@@ -8,7 +8,7 @@ The fault drop the line connecting the infinite bus and GENROE.
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#Define dyr files
+# Define dyr files
 
 names = ["GENROE: Normal Saturation", "GENROE: High Saturation"]
 
@@ -66,7 +66,7 @@ function test_genroe_implicit(dyr_file, csv_file, init_cond, eigs_value)
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        #Obtain data for angles
+        # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
