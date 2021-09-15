@@ -69,7 +69,7 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        #Obtain data for angles
+        # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
@@ -122,7 +122,7 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
-        #Test Eigenvalues
+        # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
@@ -130,7 +130,7 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        #Obtain data for angles
+        # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
