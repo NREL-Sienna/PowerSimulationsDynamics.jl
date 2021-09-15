@@ -296,10 +296,10 @@ function _make_total_shunts(wrapped_branches, n_buses::Int)
             bus_ix_to = get_bus_ix_to(br)
             b_from = PSY.get_b(br).from
             b_to = PSY.get_b(br).to
-            shunts[bus_ix_from, bus_ix_from + n_buses] += -b_from
-            shunts[bus_ix_to, bus_ix_to + n_buses] += -b_to
-            shunts[bus_ix_from + n_buses, bus_ix_from] += b_from
-            shunts[bus_ix_to + n_buses, bus_ix_to] += b_to
+            shunts[bus_ix_from, bus_ix_from + n_buses] += b_from
+            shunts[bus_ix_to, bus_ix_to + n_buses] += b_to
+            shunts[bus_ix_from + n_buses, bus_ix_from] -= b_from
+            shunts[bus_ix_to + n_buses, bus_ix_to] -= b_to
         end
     end
     return shunts
@@ -314,8 +314,8 @@ function _adjust_states!(
 )
     all(iszero.(total_shunts)) && return
     line_constant = 1 / (2.0 * π * sys_f)
-    # Takes the lower quadrant of the rectangular shunts matrix
-    shunts = LinearAlgebra.diag(total_shunts[(n_buses + 1):end, 1:n_buses])
+    # Takes the upper quadrant of the rectangular shunts matrix
+    shunts = LinearAlgebra.diag(total_shunts[1:n_buses, (n_buses + 1):end])
     for (ix, val) in enumerate(shunts)
         if val > 0
             @debug "Found shunt with value $val in bus index $ix"
