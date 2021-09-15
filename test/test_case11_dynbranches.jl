@@ -27,7 +27,7 @@ Ybus_change = NetworkSwitch(
     path = (joinpath(pwd(), "test-11"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
             ResidualModel,
             threebus_sys, #system,
@@ -36,24 +36,28 @@ Ybus_change = NetworkSwitch(
             Ybus_change, #Type of Fault
         )
 
-        #Obtain small signal results for initial conditions
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Solve problem
-        execute!(sim, IDA())
-
-        #Obtain data for voltages
-        series = get_voltage_magnitude_series(res, 102)
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test10_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test11_eigvals) < 1e-3
-        @test res.solution.retcode == :Success
+
+        # Solve problem
+        @test execute!(sim, IDA()) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+
+        # Obtain data for voltages
+        series = get_voltage_magnitude_series(results, 102)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -64,8 +68,8 @@ end
     path = (joinpath(pwd(), "test-11"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
-        sim = Simulation!(
+         # Define Simulation Problem
+         sim = Simulation!(
             MassMatrixModel,
             threebus_sys, #system,
             path,
@@ -73,24 +77,28 @@ end
             Ybus_change, #Type of Fault
         )
 
-        #Obtain small signal results for initial conditions
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Solve problem
-        execute!(sim, Rodas5())
-
-        #Obtain data for voltages
-        series = get_voltage_magnitude_series(res, 102)
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test10_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test11_eigvals) < 1e-3
-        @test res.solution.retcode == :Success
+
+        # Solve problem
+        @test execute!(sim, Rodas4()) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+
+        # Obtain data for voltages
+        series = get_voltage_magnitude_series(results, 102)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
