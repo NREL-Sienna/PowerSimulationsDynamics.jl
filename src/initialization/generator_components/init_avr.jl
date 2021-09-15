@@ -22,16 +22,15 @@ function initialize_avr!(
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
     Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
-    #Solve V_ref
-    V_ref = Vm
+    #V_ref = Vm
     #Set Vf state equals to Vf0
     avr_ix = get_local_state_ix(dynamic_device, PSY.AVRSimple)
     avr_states = @view device_states[avr_ix]
     avr_states[1] = Vf0 #δ
     #Set V_ref
-    PSY.set_V_ref!(PSY.get_avr(dynamic_device), V_ref)
+    PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vm)
     #Update Control Refs
-    set_V_ref(dynamic_device, Vf)
+    set_V_ref(dynamic_device, Vm)
 end
 
 function initialize_avr!(
