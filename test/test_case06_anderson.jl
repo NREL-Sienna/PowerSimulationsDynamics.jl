@@ -15,9 +15,9 @@ include(joinpath(dirname(@__FILE__), "data_tests/test06.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#time span
+# time span
 tspan = (0.0, 200.0);
-#Define Fault: Change of YBus
+# Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
@@ -27,7 +27,7 @@ Ybus_change = NetworkSwitch(
     path = (joinpath(pwd(), "test-06"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation(
             ResidualModel,
             threebus_sys, #system
@@ -53,7 +53,7 @@ Ybus_change = NetworkSwitch(
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
 
-        #Solve problem
+        # Solve problem
         @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
@@ -72,7 +72,7 @@ end
     path = (joinpath(pwd(), "test-06"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation(
             MassMatrixModel,
             threebus_sys, #system
@@ -98,7 +98,7 @@ end
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
 
-        #Solve problem
+        # Solve problem
         @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)

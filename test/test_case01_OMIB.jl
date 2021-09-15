@@ -13,7 +13,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test01.jl"))
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
-#Define Fault: Change of YBus
+# Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
@@ -91,7 +91,6 @@ end
     path = (joinpath(pwd(), "test-01"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
         # Define Simulation Problem
         sim = Simulation!(
             MassMatrixModel,
@@ -132,13 +131,13 @@ end
         series2 = get_voltage_magnitude_series(results, 102)
         series3 = get_voltage_angle_series(results, 102)
 
-        #Obtain PSAT and PSS/e benchmark data
+        # Obtain PSAT and PSS/e benchmark data
         psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test01/Test01_delta.csv")
         psse_csv = joinpath(TEST_FILES_DIR, "benchmarks/psse/Test01/Test01_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
         t_psse, δ_psse = get_csv_delta(psse_csv)
 
-        #Test Transient Simulation Results
+        # Test Transient Simulation Results
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 2e-3
