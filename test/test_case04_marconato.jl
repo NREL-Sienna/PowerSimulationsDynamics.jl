@@ -15,7 +15,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test04.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#Define Fault: Change of YBus
+# Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
@@ -25,7 +25,7 @@ Ybus_change = NetworkSwitch(
     path = (joinpath(pwd(), "test-04"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation(
             ResidualModel,
             threebus_sys, #system
@@ -51,21 +51,21 @@ Ybus_change = NetworkSwitch(
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test04_eigvals) < 1e-3
 
-        #Solve problem
+        # Solve problem
         @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        #Obtain data for angles
+        # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
-        #Obtain PSAT benchmark data
+        # Obtain PSAT benchmark data
         psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test04/Test04_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
 
-        #Test Transient Simulation Results
+        # Test Transient Simulation Results
         @test LinearAlgebra.norm(t - t_psat) == 0.0
         @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 
@@ -83,7 +83,7 @@ end
     path = (joinpath(pwd(), "test-04"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
             MassMatrixModel,
             threebus_sys, #system,
@@ -109,21 +109,21 @@ end
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test04_eigvals) < 1e-3
 
-        #Solve problem
+        # Solve problem
         @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        #Obtain data for angles
+        # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
 
-        #Obtain PSAT benchmark data
+        # Obtain PSAT benchmark data
         psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test04/Test04_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
 
-        #Test Transient Simulation Results
+        # Test Transient Simulation Results
         @test LinearAlgebra.norm(t - t_psat) == 0.0
         @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 

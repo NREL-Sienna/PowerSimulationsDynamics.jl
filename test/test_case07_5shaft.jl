@@ -18,7 +18,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test07.jl"))
 
 tspan = (0.0, 20.0);
 
-#Define Fault: Change of YBus
+# Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
@@ -28,7 +28,7 @@ Ybus_change = NetworkSwitch(
     path = (joinpath(pwd(), "test-07"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
             ResidualModel,
             threebus_sys, #system,
@@ -58,7 +58,7 @@ Ybus_change = NetworkSwitch(
         @test execute!(sim, IDA(), dtmax = 0.001) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        #Obtain data for angles
+        # Obtain data for angles
         series = get_state_series(results, ("generator-103-1", :δ))
         series2 = get_state_series(results, ("generator-103-1", :δ_hp))
         series3 = get_state_series(results, ("generator-103-1", :δ_ip))
@@ -73,7 +73,7 @@ end
     path = (joinpath(pwd(), "test-07"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
             MassMatrixModel,
             threebus_sys, #system,
@@ -99,11 +99,11 @@ end
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test07_eigvals) < 1e-3
 
-        #Solve problem
+        # Solve problem
         @test execute!(sim, Rodas4(), dtmax = 0.001) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        #Obtain data for angles
+        # Obtain data for angles
         series = get_state_series(results, ("generator-103-1", :δ))
         series2 = get_state_series(results, ("generator-103-1", :δ_hp))
         series3 = get_state_series(results, ("generator-103-1", :δ_ip))

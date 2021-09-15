@@ -15,10 +15,10 @@ include(joinpath(dirname(@__FILE__), "data_tests/test12.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#Time span
+# Time span
 tspan = (0.0, 5.0)
 
-#Define Fault: Change of YBus
+# Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
@@ -54,7 +54,7 @@ Ybus_change = NetworkSwitch(
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test12_eigvals) < 1e-3
 
-        #Run simulation
+        # Run simulation
         @test execute!(
             sim, #simulation structure
             IDA(),#Sundials DAE Solver
@@ -98,7 +98,7 @@ end
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test12_eigvals) < 1e-3
 
-        #Run simulation
+        # Run simulation
         @test execute!(
             sim, #simulation structure
             Rodas4(),#Sundials DAE Solver

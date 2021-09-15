@@ -14,10 +14,10 @@ include(joinpath(dirname(@__FILE__), "data_tests/test10.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#time span
+# time span
 tspan = (0.0, 40.0)
 
-#Define Fault: Change of YBus
+# Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
@@ -99,7 +99,7 @@ end
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test10_eigvals) < 1e-3
 
-        #Solve problem
+        # Solve problem
         @test execute!(sim, Rodas4()) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
