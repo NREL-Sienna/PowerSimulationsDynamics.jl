@@ -275,7 +275,7 @@ function _get_diffeq_problem(
         SciMLBase.DAEFunction{true}(
             model;
             #jac = jacobian,
-            tgrad = nothing,
+            tgrad = (dT,u,p,t) -> dT .= false,
             #jac_prototype = jacobian.Jv,
         ),
         dx0,
@@ -300,7 +300,7 @@ function _get_diffeq_problem(
             mass_matrix = get_mass_matrix(simulation_inputs),
             jac = jacobian,
             jac_prototype = jacobian.Jv,
-            tgrad = nothing,
+            tgrad = (dT,u,p,t) -> dT .= false,
         ),
         sim.x0_init,
         get_tspan(sim),
