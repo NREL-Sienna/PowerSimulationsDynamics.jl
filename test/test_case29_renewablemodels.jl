@@ -32,7 +32,7 @@ init_conditions = [test29_x0_init, test29_x0_Fflag_init]
 
 eigs_values = [test29_eigvals, test29_eigvals_fflag]
 
-#time span
+# time span
 tspan = (0.0, 5.0);
 
 function test_renA_implicit(dyr_file, csv_file, init_cond, eigs_value, F_Flag)
@@ -49,7 +49,7 @@ function test_renA_implicit(dyr_file, csv_file, init_cond, eigs_value, F_Flag)
 
         Ybus_change = BranchTrip(1.0, "BUS 1       -BUS 3       -i_2")
 
-        sim = Simulation(ImplicitModel, sys, path, tspan, Ybus_change)
+        sim = Simulation(ResidualModel, sys, path, tspan, Ybus_change)
 
         #Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)

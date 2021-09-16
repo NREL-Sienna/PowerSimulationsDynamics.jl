@@ -49,15 +49,15 @@ function mdl_converter_ode!(
     P <: PSY.FrequencyEstimator,
 }
     #Define auxiliary functions
-    function get_value_I(v::Float64)
-        return v
-    end
-    function get_value_I(v::Int)
-        return v
-    end
-    function get_value_I(v::ForwardDiff.Dual)
-        return v.value
-    end
+    #function get_value_I(v::Float64)
+    #    return v
+    #end
+    #function get_value_I(v::Int)
+    #    return v
+    #end
+    #function get_value_I(v::ForwardDiff.Dual)
+    #    return v.value
+    #end
 
     #Obtain inner variables for component
     V_R = inner_vars[Vr_inv_var]
@@ -80,7 +80,6 @@ function mdl_converter_ode!(
     T_fltr = PSY.get_T_fltr(converter)
     K_hv = PSY.get_K_hv(converter)
     Iqr_min, Iqr_max = PSY.get_Iqr_lims(converter)
-    #Accel = PSY.get_Accel(converter)
     Lvpl_sw = PSY.get_Lvpl_sw(converter)
     Q_ref = PSY.get_Q_ref(converter)
     R_source = PSY.get_R_source(converter)

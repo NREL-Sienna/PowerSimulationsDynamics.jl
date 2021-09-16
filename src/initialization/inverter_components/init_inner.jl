@@ -228,6 +228,7 @@ function initialize_inner!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
     },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -235,19 +236,13 @@ function initialize_inner!(
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
 }
-
-    #Obtain external states inputs for component
-    #external_ix = get_input_port_ix(dynamic_device, PSY.CurrentModeControl)
-
-    #Obtain inner variables for component
-    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
-    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    # Obtain inner variables for component
+    V_R = inner_vars[Vr_inv_var]
+    V_I = inner_vars[Vi_inv_var]
     V_t = sqrt(V_R^2 + V_I^2)
-
-    #Get inner vars
-    Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
-    Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
-    Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
+    Iq_cmd = inner_vars[Iq_ic_var]
+    Ip_oc = inner_vars[Id_oc_var]
+    Iq_oc = inner_vars[Iq_oc_var]
 
     #Get Current Controller parameters
     inner_control = PSY.get_inner_control(dynamic_device)
