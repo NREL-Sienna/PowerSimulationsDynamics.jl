@@ -113,12 +113,12 @@ function initialize_filter!(
     # PSS/e names I_I as Iq. But is calculated as Q/Vt
     I_I = imag(I)
 
-    # Update Control References #TO DO
+    # Update Control References
     PSY.set_Q_ref!(PSY.get_converter(dynamic_device), Q0)
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = Q0
+    set_Q_ref(dynamic_device, Q0)
     PSY.set_Q_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Q0)
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), P0)
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = P0
+    set_P_ref(dynamic_device, P0)
 
     #Get Parameters
     filt = PSY.get_filter(dynamic_device)
@@ -129,18 +129,18 @@ function initialize_filter!(
     X_source = PSY.get_X_source(converter)
 
     #Update terminal voltages
-    get_inner_vars(dynamic_device)[Vr_inv_var] = V_R
-    get_inner_vars(dynamic_device)[Vi_inv_var] = V_I
+    inner_vars[Vr_inv_var] = V_R
+    inner_vars[Vi_inv_var] = V_I
     #Update filter currents (output of converter)
-    get_inner_vars(dynamic_device)[Ir_inv_var] = I_R
-    get_inner_vars(dynamic_device)[Ii_inv_var] = I_I
+    inner_vars[Ir_inv_var] = I_R
+    inner_vars[Ii_inv_var] = I_I
     #Update converter currents
     V_cnv = V + (rf + lf * 1im) * I
     I_aux = V_cnv / (R_source + X_source * 1im)
     I_cnv = I + I_aux
 
-    get_inner_vars(dynamic_device)[Vr_cnv_var] = real(V_cnv)
-    get_inner_vars(dynamic_device)[Vi_cnv_var] = imag(V_cnv)
-    get_inner_vars(dynamic_device)[Ir_cnv_var] = real(I_cnv)
-    get_inner_vars(dynamic_device)[Ii_cnv_var] = imag(I_cnv)
+    inner_vars[Vr_cnv_var] = real(V_cnv)
+    inner_vars[Vi_cnv_var] = imag(V_cnv)
+    inner_vars[Ir_cnv_var] = real(I_cnv)
+    inner_vars[Ii_cnv_var] = imag(I_cnv)
 end
