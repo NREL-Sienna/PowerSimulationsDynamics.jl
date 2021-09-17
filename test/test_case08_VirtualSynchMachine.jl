@@ -28,7 +28,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
     path = (joinpath(pwd(), "test-08"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
             ResidualModel,
             omib_sys, # system

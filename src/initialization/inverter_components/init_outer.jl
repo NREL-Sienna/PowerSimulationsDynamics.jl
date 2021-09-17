@@ -113,7 +113,7 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     set_P_ref(dynamic_device, p_elec_out)
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
