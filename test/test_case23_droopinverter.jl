@@ -11,7 +11,7 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test23.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test23.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -21,7 +21,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test23.jl"))
 tspan = (0.0, 4.0);
 
 #PSCAD benchmark data
-csv_file = joinpath(dirname(@__FILE__), "benchmarks/pscad/Test23/Test23_theta.csv")
+csv_file = joinpath(TEST_FILES_DIR, "benchmarks/pscad/Test23/Test23_theta.csv")
 t_offset = 9.0
 
 #Define Fault using Callbacks

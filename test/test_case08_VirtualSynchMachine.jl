@@ -11,21 +11,18 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test08.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test08.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#time span
-tspan = (0.0, 4.0);
-
 #PSCAD benchmark data
-csv_file = joinpath(dirname(@__FILE__), "benchmarks/pscad/Test08/Test08_omega.csv")
+csv_file = joinpath(TEST_FILES_DIR, "benchmarks/pscad/Test08/Test08_omega.csv")
 t_offset = 9.0
 
 #Define Fault using Callbacks
-Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
+Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
 @testset "Test 08 VSM Inverter Infinite Bus ResidualModel" begin
     path = (joinpath(pwd(), "test-08"))
@@ -36,38 +33,43 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
             ResidualModel,
             omib_sys, # system
             path,
-            tspan,
+            (0.0, 4.0),
             Pref_change,
         )
 
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Solve problem
-        execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
-
-        #Obtain frequency data
-        series = get_state_series(res, ("generator-102-1", :ω_oc))
-        t = series[1]
-        ω = series[2]
-
-        #Obtain PSCAD benchmark data
-        M = get_csv_data(csv_file)
-        t_pscad = M[:, 1] .- t_offset
-        ω_pscad = M[:, 2]
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test08_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
-        @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(res, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
+
+        # Solve problem
+        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+
+        # Obtain frequency data
+        series = get_state_series(results, ("generator-102-1", :ω_oc))
+        t = series[1]
+        ω = series[2]
+
+        # Obtain PSCAD benchmark data
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        ω_pscad = M[:, 2]
+
+        power = PSID.get_activepower_series(results, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4
@@ -88,38 +90,43 @@ end
             MassMatrixModel,
             omib_sys, # system
             path,
-            tspan,
+            (0.0, 4.0),
             Pref_change,
         )
 
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Solve problem
-        execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
-
-        #Obtain frequency data
-        series = get_state_series(res, ("generator-102-1", :ω_oc))
-        t = series[1]
-        ω = series[2]
-
-        #Obtain PSCAD benchmark data
-        M = get_csv_data(csv_file)
-        t_pscad = M[:, 1] .- t_offset
-        ω_pscad = M[:, 2]
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test08_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
-        @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(res, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
+
+        # Solve problem
+        @test execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+
+        # Obtain frequency data
+        series = get_state_series(results, ("generator-102-1", :ω_oc))
+        t = series[1]
+        ω = series[2]
+
+        # Obtain PSCAD benchmark data
+        M = get_csv_data(csv_file)
+        t_pscad = M[:, 1] .- t_offset
+        ω_pscad = M[:, 2]
+
+        power = PSID.get_activepower_series(results, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4

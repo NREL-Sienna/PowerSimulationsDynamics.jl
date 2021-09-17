@@ -9,7 +9,7 @@ The perturbation trips four (out of 5) circuits of line between buses 1 and 2, m
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test12.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test12.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

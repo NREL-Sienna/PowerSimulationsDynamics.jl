@@ -16,13 +16,13 @@ names = [
 ]
 
 dyr_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/ThreeBus_GENSAE.dyr"),
-    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/ThreeBus_GENSAE_HIGH_SAT.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENSAE/ThreeBus_GENSAE.dyr"),
+    #joinpath(TEST_FILES_DIR, "benchmarks/psse/GENSAE/ThreeBus_GENSAE_HIGH_SAT.dyr"),
 ]
 
 csv_files = (
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/TEST_GENSAE.csv"),
-    #joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/TEST_GENSAE_HIGH_SAT.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENSAE/TEST_GENSAE.csv"),
+    #joinpath(TEST_FILES_DIR, "benchmarks/psse/GENSAE/TEST_GENSAE_HIGH_SAT.csv"),
 )
 
 init_conditions = [
@@ -32,7 +32,7 @@ init_conditions = [
 
 eigs_values = [test19_eigvals]
 
-raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENSAE/ThreeBusMulti.raw")
+raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENSAE/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
 function test_gensae_implicit(dyr_file, csv_file, init_cond, eigs_value)

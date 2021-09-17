@@ -14,20 +14,20 @@ The fault drop the line connecting the infinite bus and GENROU.
 names = ["SEXS", "SEXS: TE=0"]
 
 dyr_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/SEXS/ThreeBus_SEXS.dyr"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/SEXS/ThreeBus_SEXS_noTE.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBus_SEXS.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBus_SEXS_noTE.dyr"),
 ]
 
 csv_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/AC1A/TEST_SEXS.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/AC1A/TEST_SEXS_noTE.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/TEST_SEXS.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/TEST_SEXS_noTE.csv"),
 ]
 
 init_conditions = test26_x0_init
 
 eigs_values = [test26_eigvals, test26_eigvals_noTE]
 
-raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/SEXS/ThreeBusMulti.raw")
+raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
 function test_sexs_implicit(dyr_file, csv_file, init_cond, eigs_value)

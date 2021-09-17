@@ -9,7 +9,7 @@ and the generator located in bus 3.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test05.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test05.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

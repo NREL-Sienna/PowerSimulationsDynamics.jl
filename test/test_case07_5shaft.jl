@@ -10,7 +10,7 @@ The fault disconnects a circuit between buses 1 and 2, doubling its impedance.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test07.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test07.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
