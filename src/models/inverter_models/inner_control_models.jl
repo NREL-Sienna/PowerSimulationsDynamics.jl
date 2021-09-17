@@ -31,7 +31,8 @@ function _mdl_ode_RE_inner_controller_B!(
     inner_controller_states,
     ::Type{Base.RefValue{0}},
     inner_control::PSY.RECurrentControlB,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F}},
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -41,11 +42,11 @@ function _mdl_ode_RE_inner_controller_B!(
 }
     #Obtain inner variables for component
     V_t = sqrt(
-        get_inner_vars(dynamic_device)[Vr_inv_var]^2 +
-        get_inner_vars(dynamic_device)[Vi_inv_var]^2,
+        inner_vars[Vr_inv_var]^2 +
+        inner_vars[Vi_inv_var]^2,
     )
-    Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
-    Iq_oc = get_inner_vars(dynamic_device)[Iq_oc_var]
+    Ip_oc = inner_vars[Id_oc_var]
+    Iq_oc = inner_vars[Iq_oc_var]
 
     #Get Current Controller parameters
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
@@ -72,8 +73,8 @@ function _mdl_ode_RE_inner_controller_B!(
     inner_controller_ode[2] = Iq_oc - I_icv
 
     #Update Inner Vars
-    get_inner_vars(dynamic_device)[Id_ic_var] = Ip_cmd
-    get_inner_vars(dynamic_device)[Iq_ic_var] = Iq_cmd
+    inner_vars[Id_ic_var] = Ip_cmd
+    inner_vars[Iq_ic_var] = Iq_cmd
 end
 
 #Q_Flag = 1
@@ -82,7 +83,8 @@ function _mdl_ode_RE_inner_controller_B!(
     inner_controller_states,
     ::Type{Base.RefValue{1}},
     inner_control::PSY.RECurrentControlB,
-    dynamic_device::PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F}},
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -92,11 +94,11 @@ function _mdl_ode_RE_inner_controller_B!(
 }
     #Obtain inner variables for component
     V_t = sqrt(
-        get_inner_vars(dynamic_device)[Vr_inv_var]^2 +
-        get_inner_vars(dynamic_device)[Vi_inv_var]^2,
+        inner_vars[Vr_inv_var]^2 +
+        inner_vars[Vi_inv_var]^2,
     )
-    Ip_oc = get_inner_vars(dynamic_device)[Id_oc_var]
-    V_oc = get_inner_vars(dynamic_device)[V_oc_var]
+    Ip_oc = inner_vars[Id_oc_var]
+    V_oc = inner_vars[V_oc_var]
 
     #Get Current Controller parameters
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
@@ -123,8 +125,8 @@ function _mdl_ode_RE_inner_controller_B!(
     inner_controller_ode[2] = V_oc
 
     #Update Inner Vars
-    get_inner_vars(dynamic_device)[Id_ic_var] = Ip_cmd
-    get_inner_vars(dynamic_device)[Iq_ic_var] = Iq_cmd
+    inner_vars[Id_ic_var] = Ip_cmd
+    inner_vars[Iq_ic_var] = Iq_cmd
 end
 
 ############################################
@@ -356,5 +358,6 @@ function mdl_inner_ode!(
         Base.RefValue{Q_Flag},
         inner_control,
         dynamic_device,
+        inner_vars,
     )
 end
