@@ -44,12 +44,6 @@ struct SimulationInputs
             frequency_reference,
         )
 
-        _make_global_variable_index(
-            wrapped_injectors,
-            wrapped_static_injectors,
-            frequency_reference,
-        )
-
         new(
             wrapped_injectors,
             wrapped_static_injectors,
