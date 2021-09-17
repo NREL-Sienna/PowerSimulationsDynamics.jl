@@ -204,7 +204,7 @@ function _get_ybus(sys::PSY.System)
         ybus = Ybus_[:, :]
         lookup = Ybus_.lookup[1]
         for br in dyn_lines
-            ybus_update!(Ybus, br, lookup, -1.0)
+            ybus_update!(ybus, br, lookup, -1.0)
         end
         # TODO: Improve performance of building the rectangular YBus
         ybus_rectangular = hcat(vcat(real(ybus), -imag(ybus)), vcat(imag(ybus), real(ybus)))
@@ -287,7 +287,7 @@ function _adjust_states!(
     all(iszero.(total_shunts)) && return
     line_constant = 1 / (2.0 * π * sys_f)
     shunts = total_shunts[1:n_buses, (n_buses + 1):end]
-    for (ix, val) in enumerate(shunts)total_shunts[n_buses:end]
+    for (ix, val) in enumerate(shunts)
         if val > 0
             mass_matrix[ix, ix] =
                 mass_matrix[ix + n_buses, ix + n_buses] = val * line_constant
