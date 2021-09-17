@@ -31,7 +31,9 @@ function _mdl_ode_RE_inner_controller_B!(
     inner_controller_states,
     ::Type{Base.RefValue{0}},
     inner_control::PSY.RECurrentControlB,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F}},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+    },
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -41,10 +43,7 @@ function _mdl_ode_RE_inner_controller_B!(
     F <: PSY.Filter,
 }
     #Obtain inner variables for component
-    V_t = sqrt(
-        inner_vars[Vr_inv_var]^2 +
-        inner_vars[Vi_inv_var]^2,
-    )
+    V_t = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
     Ip_oc = inner_vars[Id_oc_var]
     Iq_oc = inner_vars[Iq_oc_var]
 
@@ -83,7 +82,9 @@ function _mdl_ode_RE_inner_controller_B!(
     inner_controller_states,
     ::Type{Base.RefValue{1}},
     inner_control::PSY.RECurrentControlB,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F}},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+    },
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -93,10 +94,7 @@ function _mdl_ode_RE_inner_controller_B!(
     F <: PSY.Filter,
 }
     #Obtain inner variables for component
-    V_t = sqrt(
-        inner_vars[Vr_inv_var]^2 +
-        inner_vars[Vi_inv_var]^2,
-    )
+    V_t = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
     Ip_oc = inner_vars[Id_oc_var]
     V_oc = inner_vars[V_oc_var]
 

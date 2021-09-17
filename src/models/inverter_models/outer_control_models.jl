@@ -21,17 +21,19 @@ function _mdl_ode_RE_active_controller_AB!(
     Vt_filt,
     ::Type{Base.RefValue{1}},
     active_power_control::PSY.ActiveRenewableControllerAB,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
-    }},
+    },
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -100,17 +102,19 @@ function _mdl_ode_RE_active_controller_AB!(
     Vt_filt,
     ::Type{Base.RefValue{0}},
     active_power_control::PSY.ActiveRenewableControllerAB,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
-    }},
+    },
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -151,17 +155,19 @@ function _mdl_ode_RE_reactive_controller_AB!(
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{1}},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
-    }},
+    },
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -232,17 +238,19 @@ function _mdl_ode_RE_reactive_controller_AB!(
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
-    }},
+    },
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
