@@ -37,7 +37,7 @@ function _get_branch_for_perturbation(
     return branch
 end
 
-function get_affect(sys::PSY.System, pert::BranchImpedanceChange)
+function get_affect(inputs::SimulationInputs, pert::BranchImpedanceChange)
     branch = _get_branch_for_perturbation(sys, pert)
     mult = 0.0
     if pert.multiplier < 0.0
@@ -61,7 +61,7 @@ function get_affect(sys::PSY.System, pert::BranchImpedanceChange)
     return
 end
 
-function get_affect(sys::PSY.System, pert::BranchTrip)
+function get_affect(::SimulationInputs, pert::BranchTrip)
     branch = _get_branch_for_perturbation(sys, pert)
     return (integrator) -> begin
         ybus_update!(integrator.p, branch, -1.0)
@@ -312,7 +312,7 @@ function NetworkSwitch(time::Float64, ybus::PSY.Ybus)
     return NetworkSwitch(time, ybus.data)
 end
 
-function get_affect(::PSY.System, pert::NetworkSwitch)
+function get_affect(::SimulationInputs, pert::NetworkSwitch)
     return (integrator) -> begin
         # TODO: This code can be more performant using SparseMatrix methods
         for (i, v) in enumerate(pert.ybus_rectangular)

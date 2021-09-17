@@ -27,13 +27,12 @@ function Simulation(
     tspan,
     initial_conditions,
     initialize_simulation,
-    perturbations = Vector{Perturbation}(),
-    simulation_folder::String = "",
-    console_level = Logging.Warn,
-    file_level = Logging.Debug,
+    perturbations,
+    simulation_folder,
+    console_level,
+    file_level,
 ) where {T <: SimulationModel}
     PSY.set_units_base_system!(sys, "DEVICE_BASE")
-    simulation_inputs = SimulationInputs(sys, tspan)
 
     return Simulation{T}(
         BUILD_INCOMPLETE,
@@ -41,7 +40,7 @@ function Simulation(
         tspan,
         sys,
         perturbations,
-        deepcopy(initial_conditions),
+        initial_conditions,
         !initialize_simulation,
         Vector{Float64}(),
         DiffEqBase.CallbackSet(),
@@ -236,6 +235,12 @@ function _pre_initialize_simulation!(sim::Simulation)
     return
 end
 
+function _get_jacobian(sim::Simulation{T}) where {T <: SimulationModel}
+    inputs = get_simulation_inputs(sim)
+    x0_init = get_initial_conditions(sim)
+    return JacobianFunctionWrapper(T(inputs, x0_init, JacobianCache), x0_init)
+end
+
 function _build_perturbations!(sim::Simulation)
     @info "Attaching Perturbations"
     if isempty(sim.perturbations)
@@ -311,9 +316,7 @@ end
 function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     _build_inputs!(sim)
-    _initialize_state_space(sim)
-    _initialize_simulation!(sim; kwargs...)
-    _build_perturbations!(sim)
+    _pre_initialize_simulation!(sim)
     if sim.status != BUILD_FAILED
         simulation_inputs = get_simulation_inputs(sim)
         try
