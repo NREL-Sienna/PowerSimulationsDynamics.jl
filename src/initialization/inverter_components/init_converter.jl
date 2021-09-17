@@ -2,6 +2,7 @@ function initialize_converter!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
+    inner_vars::AbstractVector,
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -38,6 +39,12 @@ function initialize_converter!(
     # Lv_pnt0 is unused in the initialization
     _, Lv_pnt1 = PSY.get_Lv_pnts(converter)
 
+    #Obtain inner variables for component
+    md = inner_vars[md_var]
+    mq = inner_vars[mq_var]
+    Vdc = inner_vars[Vdc_var]
+    θ_oc = inner_vars[θ_oc_var]
+
     if (Iq < Io_lim) || (V_t > Vo_lim) || (V_t < Lv_pnt1)
         error("Power flow solution outside of inverter limits. Update parameters.")
     end
@@ -49,8 +56,7 @@ function initialize_converter!(
     converter_states[2] = -Iq #Iq_cnv
     converter_states[3] = V_t #Vmeas
 
-    #Update entry to converter currents (inner currents)
-    get_inner_vars(dynamic_device)[Id_ic_var] = Ip
-    # Multiplied by -1 because PSS/e doesn't do a conjugate.
-    get_inner_vars(dynamic_device)[Iq_ic_var] = -Iq
+    #Update inner_vars
+    inner_vars[Vr_cnv_var] = m_ri[R] * Vdc
+    inner_vars[Vi_cnv_var] = m_ri[I] * Vdc
 end

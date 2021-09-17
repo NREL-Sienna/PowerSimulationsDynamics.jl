@@ -2,6 +2,7 @@ function initialize_filter!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter},
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -64,14 +65,14 @@ function initialize_filter!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[Vr_inv_var] = V_R
-        get_inner_vars(dynamic_device)[Vi_inv_var] = V_I
+        inner_vars[VR_inv_var] = V_R
+        inner_vars[VI_inv_var] = V_I
         #Update Converter voltages
-        get_inner_vars(dynamic_device)[Vr_cnv_var] = sol_x0[1]
-        get_inner_vars(dynamic_device)[Vi_cnv_var] = sol_x0[2]
+        inner_vars[Vr_cnv_var] = sol_x0[1]
+        inner_vars[Vi_cnv_var] = sol_x0[2]
         #Update filter voltages
-        get_inner_vars(dynamic_device)[Vr_filter_var] = sol_x0[5]
-        get_inner_vars(dynamic_device)[Vi_filter_var] = sol_x0[6]
+        inner_vars[Vr_filter_var] = sol_x0[5]
+        inner_vars[Vi_filter_var] = sol_x0[6]
         #Update states
         filter_ix = get_local_state_ix(dynamic_device, PSY.LCLFilter)
         filter_states = @view device_states[filter_ix]

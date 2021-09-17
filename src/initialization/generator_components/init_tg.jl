@@ -2,9 +2,10 @@ function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
     tg = PSY.get_prime_mover(dynamic_device)
-    τm0 = get_inner_vars(dynamic_device)[τm_var]
+    τm0 = inner_vars[τm_var]
     eff = PSY.get_efficiency(tg)
     P_ref = τm0 / eff
     PSY.set_P_ref!(tg, P_ref)
@@ -16,10 +17,11 @@ function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
-    τm0 = get_inner_vars(dynamic_device)[τm_var]
+    τm0 = inner_vars[τm_var]
     #Get Parameters
     tg = PSY.get_prime_mover(dynamic_device)
     inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
@@ -68,10 +70,11 @@ function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
-    τm0 = get_inner_vars(dynamic_device)[τm_var]
+    τm0 = inner_vars[τm_var]
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
     inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
@@ -106,10 +109,11 @@ function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
-    τm0 = get_inner_vars(dynamic_device)[τm_var]
+    τm0 = inner_vars[τm_var]
     Δω = 0.0
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
@@ -157,10 +161,11 @@ function initialize_tg!(
     device_states,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Get mechanical torque to SyncMach
-    τm0 = get_inner_vars(dynamic_device)[τm_var]
+    τm0 = inner_vars[τm_var]
     Δω = 0.0
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)

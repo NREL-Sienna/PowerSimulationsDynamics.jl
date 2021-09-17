@@ -51,7 +51,8 @@ function _initialize_dynamic_injection!(
             static = PSY.get_component(dynamic_device.static_type, system, PSY.get_name(dynamic_device))
             @debug PSY.get_name(dynamic_device) typeof(dynamic_device)
             n_states = PSY.get_n_states(dynamic_device)
-            x0_device = initialize_dynamic_device!(dynamic_device, static, initial_inner_vars)
+            _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
+            x0_device = initialize_dynamic_device!(dynamic_device, static, _inner_vars)
             @assert length(x0_device) == n_states
             ix_range = get_ix_range(dynamic_device)
             initial_guess[ix_range] = x0_device

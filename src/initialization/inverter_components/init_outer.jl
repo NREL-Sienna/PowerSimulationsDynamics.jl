@@ -9,6 +9,7 @@ function initialize_outer!(
         P,
         F,
     },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -27,8 +28,8 @@ function initialize_outer!(
     Ir_filter = device_states[external_ix[3]]
     Ii_filter = device_states[external_ix[4]]
 
-    Vr_cnv = get_inner_vars(dynamic_device)[Vr_cnv_var]
-    Vi_cnv = get_inner_vars(dynamic_device)[Vi_cnv_var]
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
     θ0_oc = angle(Vr_cnv + 1im * Vi_cnv)
 
     #Obtain additional expressions
@@ -36,7 +37,7 @@ function initialize_outer!(
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
+    inner_vars[P_ES_var] = p_elec_out
     #Update states
     outer_ix = get_local_state_ix(
         dynamic_device,
@@ -48,8 +49,8 @@ function initialize_outer!(
     outer_states[3] = q_elec_out #qm
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ0_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
+    inner_vars[θ_oc_var] = θ0_oc
+    inner_vars[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     get_P_ref(dynamic_device) = p_elec_out
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
@@ -67,6 +68,7 @@ function initialize_outer!(
         P,
         F,
     },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -85,8 +87,8 @@ function initialize_outer!(
     Ir_filter = device_states[external_ix[3]]
     Ii_filter = device_states[external_ix[4]]
 
-    Vr_cnv = get_inner_vars(dynamic_device)[Vr_cnv_var]
-    Vi_cnv = get_inner_vars(dynamic_device)[Vi_cnv_var]
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
     θ0_oc = angle(Vr_cnv + 1im * Vi_cnv)
 
     #Obtain additional expressions
@@ -94,7 +96,7 @@ function initialize_outer!(
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
+    inner_vars[P_ES_var] = p_elec_out
     #Update states
     outer_ix = get_local_state_ix(
         dynamic_device,
@@ -106,8 +108,8 @@ function initialize_outer!(
     outer_states[3] = q_elec_out #qm
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ0_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
+    inner_vars[θ_oc_var] = θ0_oc
+    inner_vars[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     get_P_ref(dynamic_device) = p_elec_out
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
@@ -125,6 +127,7 @@ function initialize_outer!(
         P,
         F,
     },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -146,7 +149,7 @@ function initialize_outer!(
     Ii_cnv = device_states[external_ix[6]]
 
     #Obtain additional expressions
-    θ0_oc = get_inner_vars(dynamic_device)[θ_freq_estimator_var]
+    θ0_oc = inner_vars[θ_freq_estimator_var]
     I_dq_cnv = ri_dq(θ0_oc + pi / 2) * [Ir_cnv; Ii_cnv]
     p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
@@ -159,7 +162,7 @@ function initialize_outer!(
     Ki_q = PSY.get_Ki_q(reactive_power_control) #Integral Gain
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[P_ES_var] = p_elec_out
+    inner_vars[P_ES_var] = p_elec_out
     #Update states
     outer_ix = get_local_state_ix(
         dynamic_device,
@@ -172,10 +175,10 @@ function initialize_outer!(
     outer_states[4] = q_elec_out #q_oc
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ0_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
-    get_inner_vars(dynamic_device)[Id_oc_var] = I_dq_cnv[d]
-    get_inner_vars(dynamic_device)[Iq_oc_var] = I_dq_cnv[q]
+    inner_vars[θ_oc_var] = θ0_oc
+    inner_vars[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
+    inner_vars[Id_oc_var] = I_dq_cnv[d]
+    inner_vars[Iq_oc_var] = I_dq_cnv[q]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
     get_P_ref(dynamic_device) = p_elec_out
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)

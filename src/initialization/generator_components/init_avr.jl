@@ -2,9 +2,10 @@ function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #In AVRFixed, V_ref is used as Vf
-    Vf = get_inner_vars(dynamic_device)[Vf_var]
+    Vf = inner_vars[Vf_var]
     PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vf)
     PSY.set_Vf!(PSY.get_avr(dynamic_device), Vf)
     #Update Control Refs
@@ -15,13 +16,14 @@ function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #In AVRFixed, V_ref is used as Vf
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
     Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        inner_vars[VR_gen_var]^2 +
+        inner_vars[VI_gen_var]^2,
     )
     #Solve V_ref
     V_ref = Vm
@@ -39,13 +41,14 @@ function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
     Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        inner_vars[VR_gen_var]^2 +
+        inner_vars[VI_gen_var]^2,
     )
 
     #Get parameters
@@ -93,13 +96,14 @@ function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
     Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        inner_vars[VR_gen_var]^2 +
+        inner_vars[VI_gen_var]^2,
     )
 
     #Get parameters
@@ -151,15 +155,16 @@ function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain I_fd obtained from Machine:
-    Xad_Ifd0 = get_inner_vars(dynamic_device)[Xad_Ifd_var]
+    Xad_Ifd0 = inner_vars[Xad_Ifd_var]
     #Obtain measured terminal voltage
     Vm0 = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        inner_vars[VR_gen_var]^2 +
+        inner_vars[VI_gen_var]^2,
     )
 
     #Get parameters
@@ -258,13 +263,14 @@ function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
     Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
+        inner_vars[VR_gen_var]^2 +
+        inner_vars[VI_gen_var]^2,
     )
 
     #Get parameters
