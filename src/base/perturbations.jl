@@ -37,7 +37,7 @@ function _get_branch_for_perturbation(
     return branch
 end
 
-function get_affect(inputs::SimulationInputs, pert::BranchImpedanceChange)
+function get_affect(::SimulationInputs, sys::PSY.System, pert::BranchImpedanceChange)
     branch = _get_branch_for_perturbation(sys, pert)
     mult = 0.0
     if pert.multiplier < 0.0
@@ -61,7 +61,7 @@ function get_affect(inputs::SimulationInputs, pert::BranchImpedanceChange)
     return
 end
 
-function get_affect(::SimulationInputs, pert::BranchTrip)
+function get_affect(::SimulationInputs, sys::PSY.System, pert::BranchTrip)
     branch = _get_branch_for_perturbation(sys, pert)
     return (integrator) -> begin
         ybus_update!(integrator.p, branch, -1.0)
@@ -312,7 +312,7 @@ function NetworkSwitch(time::Float64, ybus::PSY.Ybus)
     return NetworkSwitch(time, ybus.data)
 end
 
-function get_affect(::SimulationInputs, pert::NetworkSwitch)
+function get_affect(::SimulationInputs, ::PSY.System, pert::NetworkSwitch)
     return (integrator) -> begin
         # TODO: This code can be more performant using SparseMatrix methods
         for (i, v) in enumerate(pert.ybus_rectangular)
@@ -365,7 +365,7 @@ function _find_device_index(inputs::SimulationInputs, device::PSY.StaticInjectio
     return wrapped_device_ixs[1]
 end
 
-function get_affect(inputs::SimulationInputs, pert::ControlReferenceChange)
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::ControlReferenceChange)
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_dynamic_injectors_data(integrator.p)[wrapped_device_ix]
@@ -384,7 +384,7 @@ mutable struct SourceBusVoltageChange <: Perturbation
     ref_value::Float64
 end
 
-function get_affect(inputs::SimulationInputs, pert::SourceBusVoltageChange)
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVoltageChange)
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_static_injectors_data(integrator.p)[wrapped_device_ix]

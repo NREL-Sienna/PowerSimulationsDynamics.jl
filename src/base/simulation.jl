@@ -255,7 +255,7 @@ function _build_perturbations!(sim::Simulation)
     for (ix, pert) in enumerate(perturbations)
         @debug pert
         condition = (x, t, integrator) -> t in [pert.time]
-        affect = get_affect(inputs, pert)
+        affect = get_affect(inputs, get_system(sim), pert)
         callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
