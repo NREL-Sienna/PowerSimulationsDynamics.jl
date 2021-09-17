@@ -143,6 +143,32 @@ function mdl_converter_ode!(
         return real(V_cnv), imag(V_cnv)
     end
 
+    #function V_cnv_calc(Ir_cnv, Ii_cnv, Vr_inv, Vi_inv)
+    #    if lf != 0.0 || rf != 0.0
+    #        Z_source_mag_sq = R_source^2 + X_source^2
+    #        Zf_mag_sq = rf^2 + lf^2
+    #        r_total_ratio = rf / Zf_mag_sq + R_source / Z_source_mag_sq
+    #        l_total_ratio = lf / Zf_mag_sq + X_source / Z_source_mag_sq
+    #        denom = 1.0 / (r_total_ratio^2 + l_total_ratio^2)
+    #        rf_ratio = rf / Zf_mag_sq
+    #        lf_ratio = lf / Zf_mag_sq
+    #        Vr_cnv =
+    #            denom * (
+    #                (Ir_cnv + Vi_inv * lf_ratio + Vr_inv * rf_ratio) * r_total_ratio -
+    #                (Ii_cnv + Vi_inv * rf_ratio - Vr_inv * lf_ratio) * l_total_ratio
+    #            )
+    #        Vi_cnv =
+    #            denom * (
+    #                (Ir_cnv + Vi_inv * lf_ratio + Vr_inv * rf_ratio) * l_total_ratio +
+    #                (Ii_cnv + Vi_inv * rf_ratio - Vr_inv * lf_ratio) * r_total_ratio
+    #            )
+    #    else
+    #        Vr_cnv = Vr_inv
+    #        Vi_cnv = Vi_inv
+    #    end
+    #    return Vr_cnv, Vi_cnv
+    #end
+
     Vr_cnv, Vi_cnv = V_cnv_calc(Ir_cnv, Ii_cnv, V_R, V_I)
 
     #Update ODEs
