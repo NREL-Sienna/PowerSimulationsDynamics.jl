@@ -86,35 +86,6 @@ function index_dynamic_injection(
     return
 end
 
-var_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
-var_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
-var_count(::PSY.PeriodicVariableSource) = PVS_INNER_VARS_SIZE
-
-function attach_inner_vars!(
-    dynamic_device::T,
-    ::Type{U} = Real,
-) where {T <: PSY.DynamicInjection, U <: Real}
-    function get_in_value(v::Float64)
-        return v
-    end
-
-    function get_in_value(v::ForwardDiff.Dual)
-        return v.value
-    end
-
-    if haskey(dynamic_device.ext, INNER_VARS)
-        map!(
-            x -> get_in_value(x),
-            dynamic_device.ext[INNER_VARS],
-            dynamic_device.ext[INNER_VARS],
-        )
-    else
-        dynamic_device.ext[INNER_VARS] =
-            Vector{U}(zeros(Float64, var_count(dynamic_device)))
-    end
-    return
-end
-
 function _attach_control_refs!(device::PSY.StaticInjection)
     dynamic_device = PSY.get_dynamic_injector(device)
     dynamic_device.ext[CONTROL_REFS] = [
@@ -134,31 +105,6 @@ end
 
 function _attach_control_refs!(device::PSY.ElectricLoad)
     return
-end
-
-function _get_internal_mapping(
-    dynamic_device::PSY.DynamicInjection,
-    key::AbstractString,
-    ty::Type{T},
-) where {T <: PSY.DynamicComponent}
-    device_index = PSY.get_ext(dynamic_device)[key]
-    val = get(device_index, ty, nothing)
-    @assert !isnothing(val)
-    return val
-end
-
-function get_local_state_ix(
-    dynamic_device::PSY.DynamicInjection,
-    ty::Type{T},
-) where {T <: PSY.DynamicComponent}
-    return _get_internal_mapping(dynamic_device, LOCAL_STATE_MAPPING, ty)
-end
-
-function get_input_port_ix(
-    dynamic_device::PSY.DynamicInjection,
-    ty::Type{T},
-) where {T <: PSY.DynamicComponent}
-    return _get_internal_mapping(dynamic_device, INPUT_PORT_MAPPING, ty)
 end
 
 """

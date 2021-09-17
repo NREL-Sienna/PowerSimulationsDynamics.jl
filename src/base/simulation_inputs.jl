@@ -15,7 +15,6 @@ struct SimulationInputs
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
     mass_matrix::SparseArrays.SparseMatrixCSC{Float64, Int}
-    aux_arrays::Dict{Int, Vector}
     tspan::NTuple{2, Float64}
 end
 
@@ -75,7 +74,6 @@ function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0.0
         lookup,
         _init_DAE_vector!(var_count, n_buses),
         mass_matrix,
-        Dict{Int, Vector{Real}}(),
         tspan,
     )
 end
@@ -95,7 +93,6 @@ get_global_vars(inputs::SimulationInputs) = inputs.global_vars
 get_lookup(inputs::SimulationInputs) = inputs.lookup
 get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
 get_mass_matrix(inputs::SimulationInputs) = inputs.mass_matrix
-get_aux_arrays(inputs::SimulationInputs) = inputs.aux_arrays
 get_tspan(inputs::SimulationInputs) = inputs.tspan
 has_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
 
@@ -110,30 +107,6 @@ get_device_index(inputs::SimulationInputs, device::D) where {D <: PSY.DynamicInj
 get_bus_count(inputs::SimulationInputs) = get_counts(inputs)[:bus_count]
 get_ω_sys(inputs::SimulationInputs) = get_global_vars(inputs)[:ω_sys]
 
-function change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
-    for d in get_injectors_data(inputs)
-        attach_inner_vars!(PSY.get_dynamic_injector(d), T)
-    end
-    return
-end
-
-function simulation_pre_step!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
-    add_aux_arrays!(inputs, T)
-    change_vector_type!(inputs, T)
-    return
-end
-
-function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
-    @debug "Auxiliary Arrays created with Type $(T)"
-    bus_count = get_bus_count(inputs)
-    get_aux_arrays(inputs)[1] = collect(zeros(T, bus_count))                       #I_injections_r
-    get_aux_arrays(inputs)[2] = collect(zeros(T, bus_count))                       #I_injections_i
-    get_aux_arrays(inputs)[3] = collect(zeros(T, get_n_injection_states(inputs)))  #injection_ode
-    get_aux_arrays(inputs)[4] = collect(zeros(T, get_n_branches_states(inputs)))   #branches_ode
-    get_aux_arrays(inputs)[5] = collect(zeros(Complex{T}, bus_count))              #I_bus
-    get_aux_arrays(inputs)[6] = collect(zeros(T, 2 * bus_count))                   #I_balance
-    return
-end
 
 function _get_Ybus(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
