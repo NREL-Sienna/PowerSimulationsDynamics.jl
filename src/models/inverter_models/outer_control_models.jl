@@ -506,8 +506,8 @@ function mdl_outer_ode!(
     Ii_filter = device_states[external_ix[4]]
 
     #Obtain inner variables for component
-    θ_pll = get_inner_vars(dynamic_device)[θ_freq_estimator_var]
-    ω_pll = get_inner_vars(dynamic_device)[ω_freq_estimator_var]
+    θ_pll = inner_vars[θ_freq_estimator_var]
+    ω_pll = inner_vars[ω_freq_estimator_var]
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)

@@ -162,7 +162,7 @@ function initialize_inner!(
     Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
 
     #Obtain inner variables for component
-    ω_oc = PSY.get_ω_ref(dynamic_device)
+    ω_oc = get_ω_ref(dynamic_device)
     θ0_oc = inner_vars[θ_freq_estimator_var]
     Vdc = inner_vars[Vdc_var]
     Id_cnv_ref = inner_vars[Id_oc_var]

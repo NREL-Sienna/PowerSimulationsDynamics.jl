@@ -182,7 +182,7 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = PSY.get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     inner_vars[Id_oc_var] = I_dq_cnv[d]
     inner_vars[Iq_oc_var] = I_dq_cnv[q]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
