@@ -215,6 +215,18 @@ function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel
     else
         @assert false
     end
+    return
+end
+
+function _pre_initialize_simulation!(sim::Simulation)
+    _initialize_state_space(sim)
+    if sim.initialized != true
+        @info("Pre-Initializing Simulation States")
+        sim.initialized = precalculate_initial_conditions!(sim)
+    else
+        sim.status = SIMULATION_INITIALIZED
+    end
+    return
 end
 
 function _build_perturbations!(sim::Simulation)
@@ -291,14 +303,20 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     _initialize_simulation!(sim; kwargs...)
     _build_perturbations!(sim)
     if sim.status != BUILD_FAILED
+        simulation_inputs = get_simulation_inputs(sim)
         try
-            simulation_inputs = get_simulation_inputs(sim)
+            jacobian = _get_jacobian(sim)
+            model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
+            if sim.status != SIMULATION_INITIALIZED
+                refine_initial_condition!(sim, model, jacobian)
+            end
+            _build_perturbations!(sim)
             sim.problem = _get_diffeq_problem(sim, model, jacobian)
             sim.status = BUILT
             @info "Simulations status = $(sim.status)"
         catch e
             bt = catch_backtrace()
-            @error "DiffEq DEProblem for $T failed to build" exception = e, bt
+            @error "$T failed to build" exception = e, bt
             sim.status = BUILD_FAILED
         end
     else
@@ -319,23 +337,19 @@ function build!(sim; kwargs...)
     return
 end
 
-function simulation_pre_step!(
-    sim::Simulation,
-    reset_simulation::Bool,
-    ::Type{T},
-) where {T <: Real}
-    reset_simulation = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_simulation
+function simulation_pre_step!(sim::Simulation, reset_sim::Bool, ::Type{T}) where {T <: Real}
+    reset_sim = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_sim
     if sim.status == BUILD_FAILED
         error(
             "The Simulation status is $(sim.status). Can not continue, correct your inputs and build the simulation again.",
         )
-    elseif sim.status != BUILT && !reset_simulation
+    elseif sim.status != BUILT && !reset_sim
         error(
             "The Simulation status is $(sim.status). Use keyword argument reset_simulation = true",
         )
     end
 
-    reset_simulation && reset!(sim)
+    reset_sim && reset!(sim)
     return
 end
 
