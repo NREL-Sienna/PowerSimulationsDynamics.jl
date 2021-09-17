@@ -1,4 +1,4 @@
-get_inner_vars_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
+get_inner_vars_count(::PSY.wrapper::DeviceWrapper{T}) where T <: PSY.DynamicGenerator = GEN_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 
 index(::PSY.TurbineGov) = 1
