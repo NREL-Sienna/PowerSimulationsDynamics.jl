@@ -11,7 +11,7 @@ The perturbation increase the reference of mechanical power of generator-2 from 
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test25.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test25.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -21,7 +21,7 @@ include(joinpath(dirname(@__FILE__), "data_tests/test25.jl"))
 tspan = (0.0, 40.0);
 
 #PSCAD benchmark data
-csv_file = joinpath(dirname(@__FILE__), "benchmarks/pscad/Test25/Test25_v102.csv")
+csv_file = joinpath(TEST_FILES_DIR, "benchmarks/pscad/Test25/Test25_v102.csv")
 t_offset = 49.0
 
 #Define Fault using Callbacks

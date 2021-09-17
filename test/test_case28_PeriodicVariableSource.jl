@@ -8,7 +8,7 @@ There is no fault, however, the system is not in steady state due to the changin
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test28.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test28.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

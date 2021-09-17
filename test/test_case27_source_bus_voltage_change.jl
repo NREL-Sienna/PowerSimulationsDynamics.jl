@@ -9,7 +9,7 @@ The test changes botht he voltage magnitude and phase angle of the source bus.
 ##################################################
 
 # Use the sme test data as Test 09
-include(joinpath(dirname(@__FILE__), "data_tests/test09.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

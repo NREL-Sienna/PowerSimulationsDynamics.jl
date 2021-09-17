@@ -8,7 +8,7 @@ The perturbation increase the reference power (analogy for mechanical power) of 
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test09.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

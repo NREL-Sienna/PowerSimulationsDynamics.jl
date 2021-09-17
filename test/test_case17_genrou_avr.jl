@@ -8,7 +8,7 @@ The fault drop the line connecting the infinite bus and GENROU.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test17.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test17.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

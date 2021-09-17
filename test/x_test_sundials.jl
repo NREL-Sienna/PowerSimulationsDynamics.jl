@@ -9,7 +9,7 @@ The objective of the test is to assess if the model can exploit Sundials' multip
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test11.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test11.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

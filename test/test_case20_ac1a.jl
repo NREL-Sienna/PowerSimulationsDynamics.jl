@@ -14,20 +14,20 @@ The fault drop the line connecting the infinite bus and GENROU.
 names = ["AC1A: No Saturation", "AC1A: with Saturation"]
 
 dyr_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/AC1A/ThreeBus_ESAC1A.dyr"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/AC1A/ThreeBus_ESAC1A_SAT.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/ThreeBus_ESAC1A.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/ThreeBus_ESAC1A_SAT.dyr"),
 ]
 
 csv_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/AC1A/TEST_ESAC1A.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/AC1A/TEST_ESAC1A_SAT.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/TEST_ESAC1A.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/TEST_ESAC1A_SAT.csv"),
 ]
 
 init_conditions = [test_psse_ac1a_init, test_psse_ac1a_sat_init]
 
 eigs_values = [test20_eigvals, test20_eigvals_sat]
 
-raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/AC1A/ThreeBusMulti.raw")
+raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
 function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)

@@ -9,7 +9,7 @@ and the generator located in bus 3. The infinite generator is located at bus 2.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test29.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test29.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -19,13 +19,13 @@ names = ["RENA: No Flags", "RENA: Freq Flag"]
 F_flags = [0, 1]
 
 #dyr_files = [
-#    joinpath(dirname(@__FILE__), "benchmarks/psse/RENA/ThreeBus_REN_A_DEFAULT_FLAG.dyr"),
-#    joinpath(dirname(@__FILE__), "benchmarks/psse/RENA/ThreeBus_REN_A_FREQ_FLAG.dyr"),
+#    joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/ThreeBus_REN_A_DEFAULT_FLAG.dyr"),
+#    joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/ThreeBus_REN_A_FREQ_FLAG.dyr"),
 #]
 
 csv_files = (
-    joinpath(dirname(@__FILE__), "benchmarks/psse/RENA/TEST_RENA_DEFAULT_FLAGS.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/RENA/TEST_RENA_FREQ_FLAG.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/TEST_RENA_DEFAULT_FLAGS.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/TEST_RENA_FREQ_FLAG.csv"),
 )
 
 init_conditions = [test29_x0_init, test29_x0_Fflag_init]

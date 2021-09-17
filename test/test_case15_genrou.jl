@@ -13,15 +13,15 @@ The fault drop the line connecting the infinite bus and GENROU.
 names = ["GENROU: Normal Saturation", "GENROU: No Saturation", "GENROU: High Saturation"]
 
 dyr_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBus_GENROU.dyr"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBus_GENROU_NO_SAT.dyr"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBus_GENROU_HIGH_SAT.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBus_GENROU.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBus_GENROU_NO_SAT.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBus_GENROU_HIGH_SAT.dyr"),
 ]
 
 csv_files = (
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/TEST_GENROU.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/TEST_GENROU_NO_SAT.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/TEST_GENROU_HIGH_SAT.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/TEST_GENROU.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/TEST_GENROU_NO_SAT.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/TEST_GENROU_HIGH_SAT.csv"),
 )
 
 init_conditions =
@@ -29,7 +29,7 @@ init_conditions =
 
 eigs_values = [test15_eigvals, test15_eigvals_no_sat, test15_eigvals_high_sat]
 
-raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBusMulti.raw")
+raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
 function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)

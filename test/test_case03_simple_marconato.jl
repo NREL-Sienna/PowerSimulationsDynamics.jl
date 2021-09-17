@@ -9,7 +9,7 @@ and the generator located in bus 3.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test03.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test03.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -65,7 +65,7 @@ Ybus_change = NetworkSwitch(
         δ = series[2]
 
         # Obtain PSAT benchmark data
-        psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test03/Test03_delta.csv")
+        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test03/Test03_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
 
         # Test Transient Simulation Results
@@ -124,7 +124,7 @@ end
         δ = series[2]
 
         # Obtain PSAT benchmark data
-        psat_csv = joinpath(dirname(@__FILE__), "benchmarks/psat/Test03/Test03_delta.csv")
+        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test03/Test03_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
 
         # Test Transient Simulation Results

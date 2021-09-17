@@ -8,9 +8,9 @@ The fault drop the line connecting the infinite bus and GENROU.
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-raw_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/ThreeBusMulti.raw")
-dyr_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/ThreeBus_TGOV1.dyr")
-csv_file = joinpath(dirname(@__FILE__), "benchmarks/psse/TGOV1/TEST_TGOV1.csv")
+raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/TGOV1/ThreeBusMulti.raw")
+dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/TGOV1/ThreeBus_TGOV1.dyr")
+csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/TGOV1/TEST_TGOV1.csv")
 
 @testset "Test 21 SteamTurbineGov1 ResidualModel" begin
     path = (joinpath(pwd(), "test-psse-tgov1"))

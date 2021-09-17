@@ -8,7 +8,7 @@ The case is similar to case 04, with different AVR and TG models.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test13.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test13.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################

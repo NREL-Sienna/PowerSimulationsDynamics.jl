@@ -13,20 +13,20 @@ The fault drop the line connecting the infinite bus and GENROE.
 names = ["GENROE: Normal Saturation", "GENROE: High Saturation"]
 
 dyr_files = [
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/ThreeBus_GENROE.dyr"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/ThreeBus_GENROE_HIGH_SAT.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROE/ThreeBus_GENROE.dyr"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROE/ThreeBus_GENROE_HIGH_SAT.dyr"),
 ]
 
 csv_files = (
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/TEST_GENROE.csv"),
-    joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/TEST_GENROE_HIGH_SAT.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROE/TEST_GENROE.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROE/TEST_GENROE_HIGH_SAT.csv"),
 )
 
 init_conditions = [test_psse_genroe_init, test_psse_genroe_high_sat_init]
 
 eigs_values = [test16_eigvals, test16_eigvals_high_sat]
 
-raw_file_dir = joinpath(dirname(@__FILE__), "benchmarks/psse/GENROE/ThreeBusMulti.raw")
+raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROE/ThreeBusMulti.raw")
 tspan = (0.0, 20.0)
 
 function test_genroe_implicit(dyr_file, csv_file, init_cond, eigs_value)
