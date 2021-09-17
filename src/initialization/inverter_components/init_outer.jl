@@ -235,7 +235,7 @@ function initialize_outer!(
     V_t = sqrt(V_R^2 + V_I^2)
     p_elec_out = I_R * V_R + I_I * V_I
     q_elec_out = -I_I * V_R + I_R * V_I
-    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+    q_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index]
 
     #Get Outer Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)

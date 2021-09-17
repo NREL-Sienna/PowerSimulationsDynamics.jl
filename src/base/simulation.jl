@@ -266,7 +266,7 @@ function _get_diffeq_problem(
 )
     x0 = get_initial_conditions(sim)
     dx0 = zeros(length(x0))
-    simulation_inputs = PSID.get_simulation_inputs(sim)
+    simulation_inputs = get_simulation_inputs(sim)
     sim.problem = SciMLBase.DAEProblem(
         SciMLBase.DAEFunction{true}(
             model;
@@ -289,7 +289,7 @@ function _get_diffeq_problem(
     model::SystemModel{MassMatrixModel},
     jacobian::JacobianFunctionWrapper,
 )
-    simulation_inputs = PSID.get_simulation_inputs(sim)
+    simulation_inputs = get_simulation_inputs(sim)
     sim.problem = SciMLBase.ODEProblem(
         SciMLBase.ODEFunction{true}(
             model,
