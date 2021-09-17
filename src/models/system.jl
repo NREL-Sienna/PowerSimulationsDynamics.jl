@@ -1,8 +1,17 @@
-function update_global_vars!(cache::Cache, x::AbstractArray{U}) where {U <: Real}
-    index = get_global_vars(cache)[]
+struct System{Ctype <: Cache}
+    inputs::SimulationInputs
+    cache::Ctype
+    function System(inputs, x0_init::Vector{T}) where T <: Number
+        U = ForwardDiff.Dual{typeof(ForwardDiff.Tag(system_implicit!, T)), T, Val{ForwardDiff.pickchunksize(length(x0_init))}}
+        cache = JacobianCache{T, U}
+        new{typeof(cache)}(inputs, cache)
+    end
+end
+
+function update_global_vars!(cache::Cache, inputs::SimulationInputs, x::AbstractArray{U}) where {U <: Real}
+    index = get_global_vars_update_pointers(inputs)[GLOBAL_VAR_SYS_FREQ_INDEX]
     index == 0 && return
-    #TO DO: Make it general for cases when ω is not a state (droop)!
-    get_global_vars(cache)[:ω_sys] = x[index]
+    # get_global_vars(cache)[:ω_sys] = x[index]
     return
 end
 
@@ -11,15 +20,15 @@ function system_implicit!(
     dx::Vector{T},
     x::Vector{T},
     inputs::SimulationInputs,
-    t::Float64,
     cache::Cache,
+    t::Float64,
 ) where {T <: Real}
-    I_injections_r = get_aux_arrays(inputs)[1]
-    I_injections_i = get_aux_arrays(inputs)[2]
-    injection_ode = get_aux_arrays(inputs)[3]
-    branches_ode = get_aux_arrays(inputs)[4]
+    I_injections_r = get_current_injections_r(cache, T)
+    I_injections_i = get_current_injections_i(cache, T)
+    injection_ode = get_injection_ode(cache, T)
+    branches_ode = get_branches_ode(cache, T)
     M = get_mass_matrix(inputs)
-    update_global_vars!(inputs, x)
+    update_global_vars!(cache, inputs, x)
     fill!(I_injections_r, 0.0)
     fill!(I_injections_i, 0.0)
 
@@ -109,15 +118,14 @@ end
 function system_mass_matrix!(
     dx::AbstractArray{U},
     x::AbstractArray{U},
-    p,
-    t,
     inputs::SimulationInputs,
     cache::Cache,
+    t,
 ) where {U <: Real}
-    I_injections_r = get_aux_arrays(inputs)[1]
-    I_injections_i = get_aux_arrays(inputs)[2]
-    injection_ode = get_aux_arrays(inputs)[3]
-    branches_ode = get_aux_arrays(inputs)[4]
+    I_injections_r = get_current_injections_r(cache)
+    I_injections_i = get_current_injections_i(cache)
+    injection_ode = get_injection_ode(cache, T)
+    branches_ode = get_branches_ode(cache, T)
 
     #Index Setup
     bus_size = get_bus_count(inputs)

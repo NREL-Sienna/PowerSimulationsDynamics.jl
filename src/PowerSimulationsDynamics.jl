@@ -22,7 +22,7 @@ export get_state_series
 export get_voltage_magnitude_series
 export get_voltage_angle_series
 export print_device_states
-export get_initial_conditions
+export read_initial_conditions
 export get_real_current_series
 export get_imaginary_current_series
 export get_activepower_series
@@ -61,9 +61,9 @@ include("base/branch_wrapper.jl")
 include("base/frequency_reference.jl")
 include("base/perturbations.jl")
 include("base/file_system.jl")
-include("base/caches.jl")
 include("base/simulation_model.jl")
 include("base/simulation_inputs.jl")
+include("base/caches.jl")
 include("base/mass_matrix.jl")
 include("base/simulation.jl")
 include("base/supplemental_accesors.jl")
