@@ -70,33 +70,3 @@ function _add_dynamic_bus_states!(
     DAE_vector[bus_ix] = DAE_vector[bus_ix + n_buses] = true
     return
 end
-
-get_connection_status(wrapper::BranchWrapper) = wrapper.connection_status[]
-get_bus_ix_from(wrapper::BranchWrapper) = wrapper.bus_ix_from
-get_bus_ix_to(wrapper::BranchWrapper) = wrapper.bus_ix_to
-get_ix_range(wrapper::BranchWrapper) = wrapper.ix_range
-get_ode_range(wrapper::BranchWrapper) = wrapper.ode_range
-get_global_index(wrapper::BranchWrapper) = wrapper.global_index
-
-PSY.get_name(wrapper::BranchWrapper) = PSY.get_name(wrapper.branch)
-PSY.get_available(wrapper::BranchWrapper) = get_available(wrapper.branch)
-PSY.get_active_power_flow(wrapper::BranchWrapper) = get_active_power(wrapper.branch)
-PSY.get_reactive_power_flow(wrapper::BranchWrapper) = get_reactive_power(wrapper.branch)
-PSY.get_arc(wrapper::BranchWrapper) = get_arc(wrapper.branch)
-PSY.get_r(wrapper::BranchWrapper) = get_r(wrapper.branch)
-PSY.get_x(wrapper::BranchWrapper) = get_x(wrapper.branch)
-PSY.get_b(wrapper::BranchWrapper) = get_b(wrapper.branch)
-PSY.get_rate(wrapper::BranchWrapper) = get_rate(wrapper.branch)
-PSY.get_angle_limits(wrapper::BranchWrapper) = get_angle_limits(wrapper.branch)
-PSY.get_ext(wrapper::BranchWrapper) = get_ext(wrapper.branch)
-
-function _add_dynamic_bus_states!(
-    DAE_vector::Vector{Bool},
-    voltage_buses_ix::Vector{Int},
-    bus_ix::Int,
-    n_buses::Int,
-)
-    push!(voltage_buses_ix, bus_ix)
-    DAE_vector[bus_ix] = DAE_vector[bus_ix + n_buses] = true
-    return
-end

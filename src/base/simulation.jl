@@ -142,7 +142,6 @@ function Simulation(
         initial_conditions = get(kwargs, :initial_conditions, Vector{Float64}()),
         initialize_simulation = get(kwargs, :initialize_simulation, true),
         simulation_folder = simulation_folder,
-        initialize_simulation = get(kwargs, :system_to_file, true),
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
         file_level = get(kwargs, :file_level, Logging.Debug),
@@ -299,7 +298,7 @@ function _get_diffeq_problem(
             jac = jacobian,
             jac_prototype = jacobian.Jv,
             # Necessary to avoid unnecessary calculations in Rosenbrock methods
-            tgrad = (dT,u,p,t) -> dT .= false,
+            tgrad = (dT, u, p, t) -> dT .= false,
         ),
         sim.x0_init,
         get_tspan(sim),
