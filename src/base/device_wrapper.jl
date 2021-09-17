@@ -104,6 +104,7 @@ function _index_port_mapping!(
     return index_component_inputs
 end
 
+get_device(wrapper::DynamicWrapper) = wrapper.device
 get_bus_category(wrapper::DynamicWrapper) = wrapper.bus_category
 get_inner_vars_index(wrapper::DynamicWrapper) = wrapper.inner_vars_index
 get_ix_range(wrapper::DynamicWrapper) = wrapper.ix_range

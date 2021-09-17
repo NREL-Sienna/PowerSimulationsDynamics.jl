@@ -327,17 +327,49 @@ Use to model control reference changes in devices of the model
 mutable struct ControlReferenceChange <: Perturbation
     time::Float64
     device::PSY.DynamicInjection
-    signal_index::Int
+    signal::Symbol
     ref_value::Float64
+
+    function ControlReferenceChange(
+        time::Float64,
+        device::PSY.DynamicInjection,
+        signal::Symbol,
+        ref_value::Float64,
+    )
+        if signal ∉ ACCEPTED_CONTROL_REFS
+            error("Signal $signal not accepted as a control reference change")
+        end
+        new(time, device, signal, ref_value)
+    end
 end
 
-# TODO: change this to use setters
-function get_affect(system::PSY.System, pert::ControlReferenceChange)
-    device = PSY.get_component(typeof(pert.device), system, PSY.get_name(pert.device))
-    pert.device = device
+function _find_device_index(inputs::SimulationInputs, device::PSY.DynamicInjection)
+    wrapped_devices = get_dynamic_injectors_data(inputs)
+    wrapped_device_ixs = findall(x -> get_device(x) == device, wrapped_devices)
+    if isempty(wrapped_device_ixs)
+        error(
+            "Device $(typeof(device))-$(PSY.get_name(device)) not found in the simulation inputs",
+        )
+    end
+    return wrapped_device_ixs[1]
+end
+
+function _find_device_index(inputs::SimulationInputs, device::PSY.StaticInjection)
+    wrapped_devices = get_static_injectors_data(inputs)
+    wrapped_device_ixs = findall(x -> get_device(x) == device, wrapped_devices)
+    if isempty(wrapped_device_ixs)
+        error(
+            "Device $(typeof(device))-$(PSY.get_name(device)) not found in the simulation inputs",
+        )
+    end
+    return wrapped_device_ixs[1]
+end
+
+function get_affect(inputs::SimulationInputs, pert::ControlReferenceChange)
+    wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
-        control_ref = PSY.get_ext(device)[CONTROL_REFS]
-        return control_ref[pert.signal_index] = pert.ref_value
+        wrapped_device = get_dynamic_injectors_data(integrator.p)[wrapped_device_ix]
+        return getfield(wrapped_device, pert.signal)[] = pert.ref_value
     end
 end
 
@@ -352,11 +384,10 @@ mutable struct SourceBusVoltageChange <: Perturbation
     ref_value::Float64
 end
 
-function get_affect(system::PSY.System, pert::SourceBusVoltageChange)
-    device = PSY.get_component(PSY.Source, system, PSY.get_name(pert.device))
-    pert.device = device
+function get_affect(inputs::SimulationInputs, pert::SourceBusVoltageChange)
+    wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
-        control_ref = PSY.get_ext(device)[CONTROL_REFS]
-        return control_ref[pert.signal_index] = pert.ref_value
+        wrapped_device = get_static_injectors_data(integrator.p)[wrapped_device_ix]
+        return set_V_ref(wrapped_device, pert.ref_value)
     end
 end
