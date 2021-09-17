@@ -243,7 +243,7 @@ function _build_perturbations!(sim::Simulation)
         @debug "The simulation has no perturbations"
         return DiffEqBase.CallbackSet(), [0.0]
     end
-    system = get_system(sim)
+    inputs = get_simulation_inputs(sim)
     perturbations = sim.perturbations
     perturbations_count = length(perturbations)
     callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
@@ -251,7 +251,7 @@ function _build_perturbations!(sim::Simulation)
     for (ix, pert) in enumerate(perturbations)
         @debug pert
         condition = (x, t, integrator) -> t in [pert.time]
-        affect = get_affect(system, pert)
+        affect = get_affect(inputs, pert)
         callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end

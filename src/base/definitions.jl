@@ -90,6 +90,7 @@ Base.to_index(ix::inverter_inner_vars) = Int(ix)
     d = 1
     q = 2
 end
+
 @enum RI_ref begin
     R = 1
     I = 2
@@ -127,6 +128,7 @@ const MINIMAL_ACCEPTABLE_NL_SOLVE_TOLERANCE = :1e-3
 
 const SIMULATION_LOG_FILENAME = "power-simulations-dynamics.log"
 
+const ACCEPTED_CONTROL_REFS = [:V_ref, :ω_ref, :P_ref, :Q_ref]
 """
 Defines the status of the simulation object
 """
