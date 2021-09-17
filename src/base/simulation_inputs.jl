@@ -42,6 +42,12 @@ struct SimulationInputs
             frequency_reference,
         )
 
+        _make_global_variable_index(
+            wrapped_injectors,
+            static_injection_data,
+            frequency_reference,
+        )
+
         new(
             PSY.get_base_power(sys),
             sys_f,
