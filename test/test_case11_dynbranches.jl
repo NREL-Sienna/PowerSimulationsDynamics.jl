@@ -68,8 +68,8 @@ end
     path = (joinpath(pwd(), "test-11"))
     !isdir(path) && mkdir(path)
     try
-         # Define Simulation Problem
-         sim = Simulation!(
+        # Define Simulation Problem
+        sim = Simulation!(
             MassMatrixModel,
             threebus_sys, #system,
             path,
@@ -94,7 +94,7 @@ end
         @test LinearAlgebra.norm(eigs - test11_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4()) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas5()) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for voltages
