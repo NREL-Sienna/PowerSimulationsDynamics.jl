@@ -24,7 +24,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test17.jl"))
             sys, #system
             path,
             (0.0, 30.0), #time span
-            BranchTrip(1.0, PSY.Line, "BUS 1-BUS 2-i_1"), #Type of Fault,
+            BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault,
         ) #Type of Fault
 
         # Test Initial Condition
@@ -66,7 +66,7 @@ end
             sys, #system
             path,
             (0.0, 30.0), #time span
-            BranchTrip(1.0, PSY.Line, "BUS 1-BUS 2-i_1"), #Type of Fault,
+            BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault,
         ) #Type of Fault
 
         # Test Initial Condition

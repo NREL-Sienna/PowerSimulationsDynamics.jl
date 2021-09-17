@@ -47,7 +47,7 @@ function test_renA_implicit(dyr_file, csv_file, init_cond, eigs_value, F_Flag)
             add_component!(sys, case_gen, g)
         end
 
-        Ybus_change = BranchTrip(1.0, "BUS 1       -BUS 3       -i_2")
+        Ybus_change = BranchTrip(1.0, Line, "BUS 1       -BUS 3       -i_2")
 
         sim = Simulation(ResidualModel, sys, path, tspan, Ybus_change)
 
@@ -61,9 +61,9 @@ function test_renA_implicit(dyr_file, csv_file, init_cond, eigs_value, F_Flag)
         execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005, abstol = 1e-9, reltol = 1e-9)
 
         #Obtain data for generator
-        t, voltage = get_voltage_magnitude_series(res, 103)
-        _, power = get_activepower_series(res, "generator-103-1")
-        _, rpower = get_reactivepower_series(res, "generator-103-1")
+        t, voltage = get_voltage_magnitude_series(results, 103)
+        _, power = get_activepower_series(results, "generator-103-1")
+        _, rpower = get_reactivepower_series(results, "generator-103-1")
 
         M = get_csv_data(csv_file)
         M_t = M[:, 1]
@@ -111,7 +111,7 @@ function test_renA_mass_matrix(dyr_file, csv_file, init_cond, eigs_value, F_Flag
             add_component!(sys, case_gen, g)
         end
 
-        Ybus_change = BranchTrip(1.0, "BUS 1       -BUS 3       -i_2")
+        Ybus_change = BranchTrip(1.0, Line, "BUS 1       -BUS 3       -i_2")
 
         sim = Simulation(MassMatrixModel, sys, path, tspan, Ybus_change)
 
@@ -125,9 +125,9 @@ function test_renA_mass_matrix(dyr_file, csv_file, init_cond, eigs_value, F_Flag
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for generator
-        t, voltage = get_voltage_magnitude_series(res, 103)
-        _, power = get_activepower_series(res, "generator-103-1")
-        _, rpower = get_reactivepower_series(res, "generator-103-1")
+        t, voltage = get_voltage_magnitude_series(results, 103)
+        _, power = get_activepower_series(results, "generator-103-1")
+        _, rpower = get_reactivepower_series(results, "generator-103-1")
 
         M = get_csv_data(csv_file)
         M_t = M[:, 1]
@@ -163,7 +163,7 @@ function test_renA_mass_matrix(dyr_file, csv_file, init_cond, eigs_value, F_Flag
     end
 end
 
-@testset "Test 29 RENA ImplicitModel" begin
+@testset "Test 29 RENA ResidualModel" begin
     for (ix, name) in enumerate(names)
         @testset "$(name)" begin
             dyr_file = dyr_files[ix]

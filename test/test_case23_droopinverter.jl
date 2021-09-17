@@ -25,7 +25,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/pscad/Test23/Test23_theta.csv")
 t_offset = 9.0
 
 #Define Fault using Callbacks
-Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
+Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
 @testset "Test 23 Droop Inverter ResidualModel" begin
     path = (joinpath(pwd(), "test-23"))
@@ -45,10 +45,12 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         @test small_sig.stable
 
         #Solve problem
-        execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
+        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         #Obtain data for angles
-        series = get_state_series(res, ("generator-102-1", :θ_oc))
+        series = get_state_series(results, ("generator-102-1", :θ_oc))
         t = series[1]
         θ = series[2]
 
@@ -95,7 +97,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
 
         #Obtain data for angles
-        series = get_state_series(res, ("generator-102-1", :θ_oc))
+        series = get_state_series(results, ("generator-102-1", :θ_oc))
         t = series[1]
         θ = series[2]
 

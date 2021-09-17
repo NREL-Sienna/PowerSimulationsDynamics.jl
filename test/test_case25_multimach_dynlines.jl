@@ -26,7 +26,7 @@ t_offset = 49.0
 
 #Define Fault using Callbacks
 gen2 = get_dynamic_injector(get_component(Generator, sys, "generator-102-1"));
-Pref_change = ControlReferenceChange(1.0, gen2, 1, 0.9);
+Pref_change = ControlReferenceChange(1.0, gen2, :P_ref, 0.9);
 
 @testset "Test 25 Marconato with Dynamic Lines ResidualModel" begin
     path = (joinpath(pwd(), "test-25"))
@@ -39,10 +39,12 @@ Pref_change = ControlReferenceChange(1.0, gen2, 1, 0.9);
         @test small_sig.stable
 
         #Solve problem in equilibrium
-        execute!(sim, Sundials.IDA(), dtmax = 0.01, saveat = 0.01)
+        @test execute!(sim, Sundials.IDA(), dtmax = 0.01, saveat = 0.01) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         #Obtain voltage magnitude data
-        series = get_voltage_magnitude_series(res, 102)
+        series = get_voltage_magnitude_series(results, 102)
         t = series[1]
         v = series[2]
 
@@ -78,10 +80,12 @@ end
         @test small_sig.stable
 
         #Solve problem in equilibrium
-        execute!(sim, Rodas5(autodiff = true), dtmax = 0.01, saveat = 0.01)
+        @test execute!(sim, Rodas5(autodiff = true), dtmax = 0.01, saveat = 0.01) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         #Obtain voltage magnitude data
-        series = get_voltage_magnitude_series(res, 102)
+        series = get_voltage_magnitude_series(results, 102)
         t = series[1]
         v = series[2]
 

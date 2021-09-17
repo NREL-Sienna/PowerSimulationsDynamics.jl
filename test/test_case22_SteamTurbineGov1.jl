@@ -24,7 +24,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/TGOV1/TEST_TGOV1.csv")
             sys, #system
             path,
             (0.0, 20.0), #time span
-            BranchTrip(1.0, PSY.Line, "BUS 1-BUS 2-i_1"), #Type of Fault
+            BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         )
 
         # Test Initial Condition
@@ -79,7 +79,7 @@ end
             sys, #system
             path,
             (0.0, 20.0), #time span
-            BranchTrip(1.0, PSY.Line, "BUS 1-BUS 2-i_1"), #Type of Fault
+            BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         )
 
         # Test Initial Condition

@@ -41,7 +41,7 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.V_source_index, 
         execute!(sim, IDA(), dtmax = 0.02)
 
         #Obtain data for angles
-        series = get_state_series(res, ("generator-103-1", :θ_oc))
+        series = get_state_series(results, ("generator-103-1", :θ_oc))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -73,7 +73,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.02)
 
         #Obtain data for angles
-        series = get_state_series(res, ("generator-103-1", :θ_oc))
+        series = get_state_series(results, ("generator-103-1", :θ_oc))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -115,7 +115,7 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.θ_source_index,
         execute!(sim, IDA(), dtmax = 0.02)
 
         #Obtain data for angles
-        series = get_state_series(res, ("generator-103-1", :θ_oc))
+        series = get_state_series(results, ("generator-103-1", :θ_oc))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -147,7 +147,7 @@ end
         execute!(sim, Rodas5(), dtmax = 0.02)
 
         #Obtain data for angles
-        series = get_state_series(res, ("generator-103-1", :θ_oc))
+        series = get_state_series(results, ("generator-103-1", :θ_oc))
 
         diff = [0.0]
         res = get_init_values_for_comparison(sim)

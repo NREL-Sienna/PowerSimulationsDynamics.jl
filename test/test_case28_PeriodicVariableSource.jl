@@ -47,8 +47,8 @@ tsteps = tspan[1]:step:tspan[2]
         end
 
         #Obtain simulation data
-        Vt_sim = get_state_series(res, ("InfBus", :Vt))
-        θt_sim = get_state_series(res, ("InfBus", :θt))
+        Vt_sim = get_state_series(results, ("InfBus", :Vt))
+        θt_sim = get_state_series(results, ("InfBus", :θt))
 
         @test res.solution.retcode == :Success
         @test LinearAlgebra.norm(Vt .- Vt_sim[2]) <= 5e-3
@@ -88,8 +88,8 @@ end
         end
 
         #Obtain simulation data
-        Vt_sim = get_state_series(res, ("InfBus", :Vt))
-        θt_sim = get_state_series(res, ("InfBus", :θt))
+        Vt_sim = get_state_series(results, ("InfBus", :Vt))
+        θt_sim = get_state_series(results, ("InfBus", :θt))
 
         @test res.solution.retcode == :Success
         @test LinearAlgebra.norm(Vt .- Vt_sim[2]) <= 5e-3

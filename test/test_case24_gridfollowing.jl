@@ -25,7 +25,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/pscad/Test24/Test24_p.csv")
 t_offset = 9.0
 
 #Define Fault using Callbacks
-Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
+Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
 @testset "Test 24 Grid Following Inverter ResidualModel" begin
     path = (joinpath(pwd(), "test-24"))
@@ -45,10 +45,12 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         @test small_sig.stable
 
         #Solve problem in equilibrium
-        execute!(sim, Sundials.IDA(), dtmax = 0.001, saveat = 0.005)
+        @test execute!(sim, Sundials.IDA(), dtmax = 0.001, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         #Obtain frequency data
-        series = get_state_series(res, ("generator-102-1", :p_oc))
+        series = get_state_series(results, ("generator-102-1", :p_oc))
         t = series[1]
         p = series[2]
 
@@ -66,10 +68,10 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
         @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(res, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
-        ir = PSID.get_real_current_series(res, "generator-102-1")
-        ii = PSID.get_imaginary_current_series(res, "generator-102-1")
+        power = PSID.get_activepower_series(results, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(results, "generator-102-1")
+        ir = PSID.get_real_current_series(results, "generator-102-1")
+        ii = PSID.get_imaginary_current_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})
@@ -101,10 +103,12 @@ end
         @test small_sig.stable
 
         #Solve problem in equilibrium
-        execute!(sim, Rodas5(), dtmax = 0.001, saveat = 0.005)
+        @test execute!(sim, Rodas5(), dtmax = 0.001, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         #Obtain frequency data
-        series = get_state_series(res, ("generator-102-1", :p_oc))
+        series = get_state_series(results, ("generator-102-1", :p_oc))
         t = series[1]
         p = series[2]
 
@@ -122,10 +126,10 @@ end
         @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
         @test res.solution.retcode == :Success
 
-        power = PSID.get_activepower_series(res, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(res, "generator-102-1")
-        ir = PSID.get_real_current_series(res, "generator-102-1")
-        ii = PSID.get_imaginary_current_series(res, "generator-102-1")
+        power = PSID.get_activepower_series(results, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(results, "generator-102-1")
+        ir = PSID.get_real_current_series(results, "generator-102-1")
+        ii = PSID.get_imaginary_current_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})

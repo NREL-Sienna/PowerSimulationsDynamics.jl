@@ -55,7 +55,7 @@ function test_sundials(solver)
         @info "$(solver)" @time execute!(sim, IDA(linear_solver = solver);)
 
         #Obtain data for voltages
-        series = get_voltage_magnitude_series(res, 102)
+        series = get_voltage_magnitude_series(results, 102)
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test10_x0_init

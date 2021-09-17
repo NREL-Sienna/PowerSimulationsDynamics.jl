@@ -156,22 +156,22 @@ end
     x0_test[1:6] .= 1.0
     #Initialize System from given initial condition
     sim = Simulation(
-        ImplicitModel,
+        ResidualModel,
         sys,
         pwd(),
         (0.0, 20.0),
-        BranchTrip(1.0, "BUS 1-BUS 2-i_1");
+        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1");
         initialize_simulation = false,
         initial_conditions = x0_test,
     )
     @test LinearAlgebra.norm(sim.x0_init - x0_test) <= 1e-6
     #Initialize System normally
     sim_normal = Simulation(
-        ImplicitModel,
+        ResidualModel,
         sys,
         pwd(),
         (0.0, 20.0),
-        BranchTrip(1.0, "BUS 1-BUS 2-i_1"),
+        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"),
     )
     #Save states without generator at bus 2
     x0 = sim_normal.x0_init
@@ -183,7 +183,7 @@ end
     PSY.set_bustype!(b, PSY.BusTypes.PQ)
     #Create Simulation without Gen 2 starting from steady-state with Gen 2
     sim_trip_gen = Simulation(
-        ImplicitModel,
+        ResidualModel,
         sys,
         pwd(),
         (0.0, 20.0);
@@ -193,21 +193,21 @@ end
     @test LinearAlgebra.norm(sim_trip_gen.x0_init - x0_no_gen) <= 1e-6
     #Create Simulation without Gen 2 at steady state
     sim_normal_no_gen = Simulation(
-        ImplicitModel,
+        ResidualModel,
         sys,
         pwd(),
         (0.0, 20.0),
-        BranchTrip(1.0, "BUS 1-BUS 2-i_1"),
+        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"),
     )
     @test length(sim_normal_no_gen.x0_init) == 17
     #Ignore Initial Conditions without passing initialize_simulation = false
     sim_ignore_init =
-        Simulation(ImplicitModel, sys, pwd(), (0.0, 20.0); initial_conditions = x0_no_gen)
+        Simulation(ResidualModel, sys, pwd(), (0.0, 20.0); initial_conditions = x0_no_gen)
     @test LinearAlgebra.norm(sim_ignore_init.x0_init - sim_normal_no_gen.x0_init) <= 1e-6
     #Pass wrong vector size
     x0_wrong = zeros(20)
     @test_throws IS.ConflictingInputsError Simulation(
-        ImplicitModel,
+        ResidualModel,
         sys,
         pwd(),
         (0.0, 20.0);
@@ -216,7 +216,7 @@ end
     )
     #Flat start initialization
     sim_flat =
-        Simulation(ImplicitModel, sys, pwd(), (0.0, 20.0); initialize_simulation = false)
+        Simulation(ResidualModel, sys, pwd(), (0.0, 20.0); initialize_simulation = false)
     x0_flat = zeros(17)
     x0_flat[1:3] .= 1.0
     @test LinearAlgebra.norm(sim_flat.x0_init - x0_flat) <= 1e-6
