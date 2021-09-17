@@ -152,7 +152,8 @@ end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
-    sim.simulation_inputs = SimulationInputs(T(), get_system(sim), sim.simulation_inputs.tspan)
+    sim.simulation_inputs =
+        SimulationInputs(T(), get_system(sim), sim.simulation_inputs.tspan)
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return

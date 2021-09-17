@@ -9,7 +9,7 @@ end
 function mdl_shaft_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     f0::Float64,
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
@@ -41,7 +41,7 @@ end
 function mdl_shaft_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     f0::Float64,
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},

@@ -12,6 +12,5 @@ function initialize_DCside!(
 }
 
     #Update inner_vars
-    inner_vars[Vdc_var] =
-        PSY.get_voltage(PSY.get_dc_source(dynamic_device))
+    inner_vars[Vdc_var] = PSY.get_voltage(PSY.get_dc_source(dynamic_device))
 end

@@ -24,7 +24,7 @@ function initialize_dynamic_device!(
     dynamic_device::DynamicWrapper{DynI},
     static::PSY.StaticInjection,
     initial_inner_vars::AbstractVector,
-)  where {DynI <: PSY.DynamicInverter}
+) where {DynI <: PSY.DynamicInverter}
     #Obtain States
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
@@ -33,7 +33,12 @@ function initialize_dynamic_device!(
     #Initialize Converter
     initialize_converter!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize freq estimator
-    initialize_frequency_estimator!(device_states, static, dynamic_device, initial_inner_vars)
+    initialize_frequency_estimator!(
+        device_states,
+        static,
+        dynamic_device,
+        initial_inner_vars,
+    )
     #Initialize OuterLoop
     initialize_outer!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize DCside
@@ -45,15 +50,21 @@ function initialize_dynamic_device!(
     return device_states
 end
 
-function initialize_static_device!(::StaticWrapper{PSY.PowerLoad, T}) where T <: LoadCategory
+function initialize_static_device!(
+    ::StaticWrapper{PSY.PowerLoad, T},
+) where {T <: LoadCategory}
     return
 end
 
-function initialize_static_device!(::StaticWrapper{PSY.FixedAdmittance, T}) where T <: LoadCategory
+function initialize_static_device!(
+    ::StaticWrapper{PSY.FixedAdmittance, T},
+) where {T <: LoadCategory}
     return
 end
 
-function initialize_static_device!(device::StaticWrapper{PSY.Source, T}) where T <: BusCategory
+function initialize_static_device!(
+    device::StaticWrapper{PSY.Source, T},
+) where {T <: BusCategory}
     #PowerFlow Data
     P0 = PSY.get_active_power(device)
     Q0 = PSY.get_reactive_power(device)

@@ -90,7 +90,8 @@ get_injection_n_states(inputs::SimulationInputs) = inputs.injection_n_states
 get_branches_n_states(inputs::SimulationInputs) = inputs.branches_n_states
 get_variable_count(inputs::SimulationInputs) = inputs.variable_count
 # TODO: put this in the struct
-get_inner_vars_count(inputs::SimulationInputs) = inputs.dynamic_injectors_data[end].inner_vars_index[end]
+get_inner_vars_count(inputs::SimulationInputs) =
+    inputs.dynamic_injectors_data[end].inner_vars_index[end]
 get_ode_range(inputs::SimulationInputs) = inputs.ode_range
 get_bus_count(inputs::SimulationInputs) = inputs.bus_count
 get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
@@ -98,14 +99,22 @@ get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
 """
 SimulationInputs build function for MassMatrixModels
 """
-function SimulationInputs(::Type{MassMatrixModel}, sys::PSY.System, frequency_reference = ReferenceBus)
+function SimulationInputs(
+    ::Type{MassMatrixModel},
+    sys::PSY.System,
+    frequency_reference = ReferenceBus,
+)
     return SimulationInputs(sys, frequency_reference)
 end
 
 """
 SimulationInputs build function for ResidualModels
 """
-function SimulationInputs(::Type{ResidualModel}, sys::PSY.System, frequency_reference = ReferenceBus)
+function SimulationInputs(
+    ::Type{ResidualModel},
+    sys::PSY.System,
+    frequency_reference = ReferenceBus,
+)
     return SimulationInputs(sys, frequency_reference)
 end
 
@@ -200,7 +209,9 @@ function _get_ybus(sys::PSY.System)
         # TODO: Improve performance of building the rectangular YBus
         ybus_rectangular = hcat(vcat(real(ybus), -imag(ybus)), vcat(imag(ybus), real(ybus)))
     else
-        ybus_rectangular = SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}(zeros(2*n_buses, 2*n_buses))
+        ybus_rectangular = SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}(
+            zeros(2 * n_buses, 2 * n_buses),
+        )
         lookup = Dict{Int.Int}()
     end
     return ybus_rectangular, lookup
@@ -248,7 +259,7 @@ function _make_DAE_vector(mass_matrix::AbstractArray, var_count::Int, n_buses::I
 end
 
 function _make_total_shunts(wrapped_branches, n_buses::Int)
-    shunts = SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2*n_buses, 2*n_buses))
+    shunts = SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2 * n_buses, 2 * n_buses))
     if isempty(wrapped_branches)
         return shunts
     else
@@ -275,7 +286,7 @@ function _adjust_states!(
 )
     all(iszero.(total_shunts)) && return
     line_constant = 1 / (2.0 * π * sys_f)
-    shunts = total_shunts[1:n_buses, n_buses+1:end]
+    shunts = total_shunts[1:n_buses, (n_buses + 1):end]
     for (ix, val) in enumerate(shunts)total_shunts[n_buses:end]
         if val > 0
             mass_matrix[ix, ix] =
@@ -290,7 +301,7 @@ function _make_global_variable_index(
     wrapped_injectors::Vector,
     static_injection_data::Vector,
     frequency_reference::Type{T},
-) where T <: Union{FixedFrequency, ReferenceBus}
+) where {T <: Union{FixedFrequency, ReferenceBus}}
     global_vars_dict = GLOBAL_VARS_IX()
     global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference(
         frequency_reference,

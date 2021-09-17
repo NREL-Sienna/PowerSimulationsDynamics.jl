@@ -32,6 +32,7 @@ export get_reactivepower_series
 import Logging
 import InfrastructureSystems
 import SciMLBase
+import Random
 import DiffEqBase
 import ForwardDiff
 import SparseArrays
@@ -64,6 +65,7 @@ include("base/file_system.jl")
 include("base/simulation_model.jl")
 include("base/simulation_inputs.jl")
 include("base/caches.jl")
+include("base/jacobian.jl")
 include("base/mass_matrix.jl")
 include("base/simulation.jl")
 include("base/global_variables.jl")

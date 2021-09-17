@@ -1,4 +1,8 @@
-function network_model(inputs::SimulationInputs, cache::Cache, voltages::AbstractArray{T}) where T <: Real
+function network_model(
+    inputs::SimulationInputs,
+    cache::Cache,
+    voltages::AbstractArray{T},
+) where {T <: Real}
     I_balance = get_current_balance(cache, T)
     # This operation might need improvement, when the total shunts aren't added the
     # function is not allocating
@@ -10,10 +14,10 @@ function network_model(inputs::SimulationInputs, cache::Cache, voltages::Abstrac
         # The indexing works this way because of the shape of ybus_rectangular and because of the
         # ordering of
         for i in SparseArrays.nzrange(ybus, n + bus_count)
-            I_balance[n] -= ybus_vals[i]*voltages[rows_vals[i]]
+            I_balance[n] -= ybus_vals[i] * voltages[rows_vals[i]]
         end
         for i in SparseArrays.nzrange(ybus, n)
-            I_balance[n + bus_count] -= ybus_vals[i]*voltages[rows_vals[i]]
+            I_balance[n + bus_count] -= ybus_vals[i] * voltages[rows_vals[i]]
         end
     end
 

@@ -134,7 +134,7 @@ end
 function mdl_inner_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     dynamic_device::PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F},
 ) where {
     C <: PSY.Converter,
@@ -248,7 +248,7 @@ end
 function mdl_inner_ode!(
     device_states,
     output_ode,
-inner_vars,
+    inner_vars,
     dynamic_device::PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F},
 ) where {
     C <: PSY.Converter,

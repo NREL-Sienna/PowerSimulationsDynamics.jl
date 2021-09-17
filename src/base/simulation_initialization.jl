@@ -48,7 +48,11 @@ function _initialize_dynamic_injection!(
     initial_inner_vars = zeros(get_inner_vars_count(inputs))
     try
         for dynamic_device in get_dynamic_injectors_data(inputs)
-            static = PSY.get_component(dynamic_device.static_type, system, PSY.get_name(dynamic_device))
+            static = PSY.get_component(
+                dynamic_device.static_type,
+                system,
+                PSY.get_name(dynamic_device),
+            )
             @debug PSY.get_name(dynamic_device) typeof(dynamic_device)
             n_states = PSY.get_n_states(dynamic_device)
             _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]

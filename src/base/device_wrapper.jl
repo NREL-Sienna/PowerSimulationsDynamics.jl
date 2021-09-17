@@ -50,8 +50,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
 
         for c in PSY.get_dynamic_components(dynamic_device)
             ix = index(typeof(c))
-            component_state_mapping[ix] =
-                _index_local_states(c, device_states)
+            component_state_mapping[ix] = _index_local_states(c, device_states)
             input_port_mapping[ix] = _index_port_mapping!(c, device_states)
         end
 
@@ -107,7 +106,6 @@ get_global_index(wrapper::DynamicWrapper) = wrapper.global_index
 get_component_state_mapping(wrapper::DynamicWrapper) = wrapper.component_state_mapping
 get_input_port_mapping(wrapper::DynamicWrapper) = wrapper.input_port_mapping
 
-
 get_P_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
 get_V_ref(wrapper::DynamicWrapper) = wrapper.V_ref[]
@@ -149,19 +147,25 @@ PSY.get_freq_estimator(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInvert
 PSY.get_filter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.filter
 
-function get_local_state_ix(wrapper::DynamicWrapper, ::Type{T}) where T <: PSY.DynamicComponent
+function get_local_state_ix(
+    wrapper::DynamicWrapper,
+    ::Type{T},
+) where {T <: PSY.DynamicComponent}
     return wrapper.component_state_mapping[index(T)]
 end
 
-function get_input_port_ix(wrapper::DynamicWrapper, ::Type{T}) where T <: PSY.DynamicComponent
+function get_input_port_ix(
+    wrapper::DynamicWrapper,
+    ::Type{T},
+) where {T <: PSY.DynamicComponent}
     return wrapper.input_port_mapping[index(T)]
 end
 
-function get_local_state_ix(wrapper::DynamicWrapper, ::T) where T <: PSY.DynamicComponent
+function get_local_state_ix(wrapper::DynamicWrapper, ::T) where {T <: PSY.DynamicComponent}
     return get_local_state_ix(wrapper, T)
 end
 
-function get_input_port_ix(wrapper::DynamicWrapper, ::T) where T <: PSY.DynamicComponent
+function get_input_port_ix(wrapper::DynamicWrapper, ::T) where {T <: PSY.DynamicComponent}
     return get_input_port_ix(wrapper, T)
 end
 
@@ -202,7 +206,7 @@ function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.Source}
 end
 
 # get_bustype is already exported in PSY. So this is named this way to avoid name collisions
-get_bus_category(::StaticWrapper{<: PSY.StaticInjection, U}) where {U} = U
+get_bus_category(::StaticWrapper{<:PSY.StaticInjection, U}) where {U} = U
 
 function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.ElectricLoad}
     bus = PSY.get_bus(device)
@@ -222,8 +226,8 @@ end
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
 
 # get_bustype is already exported in PSY. So this is named this way to avoid name collisions
-get_bus_category(::StaticWrapper{<: PSY.ElectricLoad, U}) where {U} = PQBus
-get_load_category(::StaticWrapper{<: PSY.ElectricLoad, U}) where {U} = U
+get_bus_category(::StaticWrapper{<:PSY.ElectricLoad, U}) where {U} = PQBus
+get_load_category(::StaticWrapper{<:PSY.ElectricLoad, U}) where {U} = U
 
 get_P_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
