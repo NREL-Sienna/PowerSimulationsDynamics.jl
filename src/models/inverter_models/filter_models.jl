@@ -127,16 +127,16 @@ function mdl_filter_ode!(
 
     #Compute output currents
     if lf != 0.0 || rf != 0.0
-        Vr_cnv = get_inner_vars(dynamic_device)[Vr_cnv_var]
-        Vi_cnv = get_inner_vars(dynamic_device)[Vi_cnv_var]
-        Vr_inv = get_inner_vars(dynamic_device)[Vr_inv_var]
-        Vi_inv = get_inner_vars(dynamic_device)[Vi_inv_var]
+        Vr_cnv = inner_vars[Vr_cnv_var]
+        Vi_cnv = inner_vars[Vi_cnv_var]
+        Vr_inv = inner_vars[Vr_inv_var]
+        Vi_inv = inner_vars[Vi_inv_var]
         Zmag_squared = rf^2 + lf^2
         Ir_filt = (1.0 / Zmag_squared) * ((Vr_cnv - Vr_inv) * rf + (Vi_cnv - Vi_inv) * lf)
         Ii_filt = (1.0 / Zmag_squared) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
     else
-        Ir_filt = get_inner_vars(dynamic_device)[Ir_cnv_var]
-        Ii_filt = get_inner_vars(dynamic_device)[Ii_cnv_var]
+        Ir_filt = inner_vars[Ir_cnv_var]
+        Ii_filt = inner_vars[Ii_cnv_var]
     end
 
     #Update Inner Vars
