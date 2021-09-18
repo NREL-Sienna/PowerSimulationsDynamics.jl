@@ -9,6 +9,10 @@ function _get_frequency_state(d::DynamicWrapper{T}) where {T <: PSY.DynamicInver
     return get_global_index(d)[:ω_oc]
 end
 
+function _get_frequency_state(d::DynamicWrapper{PSY.PeriodicVariableSource})
+    return -1
+end
+
 function get_frequency_reference!(
     ::Type{FixedFrequency},
     ::Vector,
