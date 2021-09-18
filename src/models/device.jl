@@ -172,19 +172,18 @@ function device!(
 end
 
 function device_mass_matrix_entries!(
-    sim_inputs::SimulationInputs,
-    dynamic_device::PSY.PeriodicVariableSource,
+    mass_matrix::AbstractArray,
+    dynamic_device::DynamicWrapper{PSY.PeriodicVariableSource},
 )
-    mass_matrix = get_mass_matrix(sim_inputs)
-    global_index = get_global_index(sim_inputs)[PSY.get_name(dynamic_device)]
+    global_index = get_global_index(dynamic_device)
     mass_matrix_pvs_entries!(mass_matrix, dynamic_device, global_index)
     return
 end
 
 function mass_matrix_pvs_entries!(
     mass_matrix,
-    pvs::PSY.PeriodicVariableSource,
-    global_index::Dict{Symbol, Int64},
+    pvs::DynamicWrapper{PSY.PeriodicVariableSource},
+    global_index::ImmutableDict{Symbol, Int64},
 )
     @debug "Using default mass matrix entries $pvs"
 end
