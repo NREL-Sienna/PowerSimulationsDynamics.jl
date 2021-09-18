@@ -105,6 +105,7 @@ function _index_port_mapping!(
 end
 
 get_device(wrapper::DynamicWrapper) = wrapper.device
+get_device_type(::DynamicWrapper{T}) where {T <: PSY.DynamicInjection} = T
 get_bus_category(wrapper::DynamicWrapper) = wrapper.bus_category
 get_inner_vars_index(wrapper::DynamicWrapper) = wrapper.inner_vars_index
 get_ix_range(wrapper::DynamicWrapper) = wrapper.ix_range
@@ -233,7 +234,7 @@ function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.ElectricLoad}
 end
 
 # TODO: something smart to forward fields
-
+get_device(wrapper::StaticWrapper) = wrapper.device
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
 
 # get_bustype is already exported in PSY. So this is named this way to avoid name collisions
@@ -253,3 +254,5 @@ set_θ_ref(wrapper::StaticWrapper, val::Float64) = wrapper.θ_ref[] = val
 PSY.get_bus(wrapper::StaticWrapper) = PSY.get_bus(wrapper.device)
 PSY.get_active_power(wrapper::StaticWrapper) = PSY.get_active_power(wrapper.device)
 PSY.get_reactive_power(wrapper::StaticWrapper) = PSY.get_reactive_power(wrapper.device)
+PSY.get_name(wrapper::StaticWrapper) = PSY.get_name(wrapper.device)
+PSY.get_ext(wrapper::StaticWrapper) = PSY.get_ext(wrapper.device)

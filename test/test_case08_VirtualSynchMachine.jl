@@ -29,7 +29,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
     !isdir(path) && mkdir(path)
     try
         # Define Simulation Problem
-        sim = Simulation!(
+        sim = Simulation(
             ResidualModel,
             omib_sys, # system
             path,
@@ -86,7 +86,7 @@ end
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
-        sim = Simulation!(
+        sim = Simulation(
             MassMatrixModel,
             omib_sys, # system
             path,

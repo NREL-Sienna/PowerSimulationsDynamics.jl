@@ -17,19 +17,19 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
 
 ####### Changing magnitude of votlage at source bus #########
 
-#time span
+# time span
 tspan = (0.0, 20.0);
 case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 
-#Define Fault using Callbacks
+# Define Fault using Callbacks
 V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.V_source_index, 1.1)
 
 @testset "Test 27 Source Bus Voltage Magnitude Perturbation ResidualModel" begin
     path = (joinpath(pwd(), "test-27"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
-        sim = Simulation!(
+        # Define Simulation Problem
+        sim = Simulation(
             ResidualModel,
             threebus_sys, # system
             path,
@@ -37,19 +37,20 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.V_source_index, 
             V_source_change,
         )
 
-        #Solve problem
-        execute!(sim, IDA(), dtmax = 0.02)
-
-        #Obtain data for angles
-        series = get_state_series(results, ("generator-103-1", :θ_oc))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
-        @test res.solution.retcode == :Success
+
+        # Solve problem
+        execute!(sim, IDA(), dtmax = 0.02)
+        results = read_results(sim)
+
+        # Obtain data for angles
+        series = get_state_series(results, ("generator-103-1", :θ_oc))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -60,8 +61,8 @@ end
     path = (joinpath(pwd(), "test-27"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
-        sim = Simulation!(
+        # Define Simulation Problem
+        sim = Simulation(
             MassMatrixModel,
             threebus_sys, # system
             path,
@@ -69,20 +70,20 @@ end
             V_source_change,
         )
 
-        #Solve problem
-        execute!(sim, Rodas5(), dtmax = 0.02)
-
-        #Obtain data for angles
-        series = get_state_series(results, ("generator-103-1", :θ_oc))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
-        @test res.solution.retcode == :Success
 
+        # Solve problem
+        execute!(sim, Rodas4(), dtmax = 0.02)
+        results = read_results(sim)
+
+        # Obtain data for angles
+        series = get_state_series(results, ("generator-103-1", :θ_oc))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -102,8 +103,8 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.θ_source_index,
     path = (joinpath(pwd(), "test-27"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
-        sim = Simulation!(
+        # Define Simulation Problem
+        sim = Simulation(
             ResidualModel,
             threebus_sys, # system
             path,
@@ -111,19 +112,20 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.θ_source_index,
             V_source_change,
         )
 
-        #Solve problem
-        execute!(sim, IDA(), dtmax = 0.02)
-
-        #Obtain data for angles
-        series = get_state_series(results, ("generator-103-1", :θ_oc))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
-        @test res.solution.retcode == :Success
+
+        # Solve problem
+        execute!(sim, IDA(), dtmax = 0.02)
+        results = read_results(sim)
+
+        # Obtain data for angles
+        series = get_state_series(results, ("generator-103-1", :θ_oc))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -134,8 +136,7 @@ end
     path = (joinpath(pwd(), "test-27"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
-        sim = Simulation!(
+        sim = Simulation(
             MassMatrixModel,
             threebus_sys, # system
             path,
@@ -143,20 +144,20 @@ end
             V_source_change,
         )
 
-        #Solve problem
-        execute!(sim, Rodas5(), dtmax = 0.02)
-
-        #Obtain data for angles
-        series = get_state_series(results, ("generator-103-1", :θ_oc))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
-        @test res.solution.retcode == :Success
 
+        # Solve problem
+        execute!(sim, Rodas4(), dtmax = 0.02)
+        results = read_results(sim)
+
+        # Obtain data for angles
+        series = get_state_series(results, ("generator-103-1", :θ_oc))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
