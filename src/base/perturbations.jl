@@ -343,9 +343,22 @@ mutable struct ControlReferenceChange <: Perturbation
     end
 end
 
+function _is_same_device(device1::DynamicWrapper{T}, device2::U) where {T <: PSY.DynamicInjection, U <: PSY.DynamicInjection}
+    if T != U 
+        return false
+    end
+    if PSY.get_name(device1) == PSY.get_name(device2)
+        return true
+    elseif PSY.get_name(device1) != PSY.get_name(device2)
+        return false
+    else
+        error("comparison failed for $device1 and $device2")
+    end
+end  
+
 function _find_device_index(inputs::SimulationInputs, device::PSY.DynamicInjection)
     wrapped_devices = get_dynamic_injectors_data(inputs)
-    wrapped_device_ixs = findall(x -> get_device(x) == device, wrapped_devices)
+    wrapped_device_ixs = findall(x -> _is_same_device(x, device), wrapped_devices)
     if isempty(wrapped_device_ixs)
         error(
             "Device $(typeof(device))-$(PSY.get_name(device)) not found in the simulation inputs",
@@ -354,9 +367,22 @@ function _find_device_index(inputs::SimulationInputs, device::PSY.DynamicInjecti
     return wrapped_device_ixs[1]
 end
 
+function _is_same_device(device1::StaticWrapper{T}, device2::U) where {T <: PSY.StaticInjection, U <: PSY.StaticInjection}
+    if T != U 
+        return false
+    end
+    if PSY.get_name(device1) == PSY.get_name(device2)
+        return true
+    elseif PSY.get_name(device1) != PSY.get_name(device2)
+        return false
+    else
+        error("comparison failed for $device1 and $device2")
+    end
+end  
+
 function _find_device_index(inputs::SimulationInputs, device::PSY.StaticInjection)
     wrapped_devices = get_static_injectors_data(inputs)
-    wrapped_device_ixs = findall(x -> get_device(x) == device, wrapped_devices)
+    wrapped_device_ixs = findall(x -> _is_same_device(x, device), wrapped_devices)
     if isempty(wrapped_device_ixs)
         error(
             "Device $(typeof(device))-$(PSY.get_name(device)) not found in the simulation inputs",
