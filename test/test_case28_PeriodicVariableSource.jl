@@ -31,7 +31,8 @@ tsteps = tspan[1]:step:tspan[2]
         )
 
         #Solve problem
-        execute!(sim, IDA(), saveat = tsteps)
+        @test execute!(sim, IDA(), saveat = tsteps) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
         pvs = collect(get_components(PeriodicVariableSource, sys))[1]
 
         #get time domain results from PVS data
@@ -72,7 +73,8 @@ end
         )
 
         #Solve problem
-        execute!(sim, Rodas5(), saveat = tsteps)
+        @test execute!(sim, Rodas4(), saveat = tsteps) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
         pvs = collect(get_components(PeriodicVariableSource, sys))[1]
 
         #get time domain results from PVS data
