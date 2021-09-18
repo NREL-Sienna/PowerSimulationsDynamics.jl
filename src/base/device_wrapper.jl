@@ -37,48 +37,82 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
     global_index::Base.ImmutableDict{Symbol, Int}
     component_state_mapping::Base.ImmutableDict{Int, Vector{Int}}
     input_port_mapping::Base.ImmutableDict{Int, Vector{Int}}
+end
 
-    function DynamicWrapper(
-        device::T,
-        bus_ix::Int,
-        ix_range,
-        ode_range,
-        inner_var_range,
+function DynamicWrapper(
+    device::T,
+    bus_ix::Int,
+    ix_range,
+    ode_range,
+    inner_var_range,
+    sys_base_power,
+    sys_base_freq,
+) where {T <: PSY.Device}
+    dynamic_device = PSY.get_dynamic_injector(device)
+    @assert dynamic_device !== nothing
+    device_states = PSY.get_states(dynamic_device)
+    component_state_mapping = Dict{Int, Vector{Int}}()
+    input_port_mapping = Dict{Int, Vector{Int}}()
+
+    for c in PSY.get_dynamic_components(dynamic_device)
+        ix = index(typeof(c))
+        component_state_mapping[ix] = _index_local_states(c, device_states)
+        input_port_mapping[ix] = _index_port_mapping!(c, device_states)
+    end
+
+    return DynamicWrapper{typeof(dynamic_device)}(
+        dynamic_device,
         sys_base_power,
         sys_base_freq,
-    ) where {T <: PSY.Device}
-        dynamic_device = PSY.get_dynamic_injector(device)
-        @assert dynamic_device !== nothing
-        device_states = PSY.get_states(dynamic_device)
-        component_state_mapping = Dict{Int, Vector{Int}}()
-        input_port_mapping = Dict{Int, Vector{Int}}()
+        T,
+        BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
+        Base.Ref(1.0),
+        Base.Ref(PSY.get_V_ref(dynamic_device)),
+        Base.Ref(PSY.get_ω_ref(dynamic_device)),
+        Base.Ref(PSY.get_P_ref(dynamic_device)),
+        Base.Ref(PSY.get_reactive_power(device)),
+        inner_var_range,
+        ix_range,
+        ode_range,
+        bus_ix,
+        Base.ImmutableDict(Dict(device_states .=> ix_range)...),
+        Base.ImmutableDict(component_state_mapping...),
+        Base.ImmutableDict(input_port_mapping...),
+    )
+end
 
-        for c in PSY.get_dynamic_components(dynamic_device)
-            ix = index(typeof(c))
-            component_state_mapping[ix] = _index_local_states(c, device_states)
-            input_port_mapping[ix] = _index_port_mapping!(c, device_states)
-        end
+function DynamicWrapper(
+    device::PSY.Source,
+    bus_ix::Int,
+    ix_range,
+    ode_range,
+    inner_var_range,
+    sys_base_power,
+    sys_base_freq,
+)
+    dynamic_device = PSY.get_dynamic_injector(device)
+    @assert dynamic_device !== nothing
+    device_states = PSY.get_states(dynamic_device)
 
-        new{typeof(dynamic_device)}(
-            dynamic_device,
-            sys_base_power,
-            sys_base_freq,
-            T,
-            BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
-            Base.Ref(1.0),
-            Base.Ref(PSY.get_V_ref(dynamic_device)),
-            Base.Ref(PSY.get_ω_ref(dynamic_device)),
-            Base.Ref(PSY.get_P_ref(dynamic_device)),
-            Base.Ref(PSY.get_reactive_power(device)),
-            inner_var_range,
-            ix_range,
-            ode_range,
-            bus_ix,
-            Base.ImmutableDict(Dict(device_states .=> ix_range)...),
-            Base.ImmutableDict(component_state_mapping...),
-            Base.ImmutableDict(input_port_mapping...),
-        )
-    end
+    return DynamicWrapper{typeof(dynamic_device)}(
+        dynamic_device,
+        sys_base_power,
+        sys_base_freq,
+        PSY.Source,
+        BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
+        Base.Ref(1.0),
+        Base.Ref(0.0),
+        Base.Ref(0.0),
+        Base.Ref(0.0),
+        Base.Ref(0.0),
+        collect(inner_var_range),
+        collect(ix_range),
+        collect(ode_range),
+        bus_ix,
+        Base.ImmutableDict(Dict(device_states .=> ix_range)...),
+        Base.ImmutableDict{Int, Vector{Int}}(),
+        Base.ImmutableDict{Int, Vector{Int}}(),
+    )
 end
 
 function _index_local_states(component::PSY.DynamicComponent, device_states::Vector{Symbol})
