@@ -9,7 +9,7 @@ end
 function mass_matrix_inner_entries!(
     mass_matrix,
     inner_control::PSY.RECurrentControlB,
-    global_index::Dict{Symbol, Int64},
+    global_index::ImmutableDict{Symbol, Int64},
 )
     mass_matrix[global_index[:Vt_filt], global_index[:Vt_filt]] =
         PSY.get_T_rv(inner_control)
