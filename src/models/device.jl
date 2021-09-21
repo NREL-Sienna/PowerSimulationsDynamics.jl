@@ -142,6 +142,9 @@ function device!(
     V_ref = get_V_ref(dynamic_device)
     inner_vars[V_oc_var] = V_ref
 
+    #Update current inner_vars
+    _update_inner_vars!(device_states, output_ode, sys_ω, inner_vars, dynamic_device)
+
     #Obtain ODES for DC side
     mdl_DCside_ode!(device_states, output_ode, sys_ω, inner_vars, dynamic_device)
 
@@ -229,4 +232,125 @@ function device!(
     current_i[1] += R_th * (V_I - voltage_i[1]) / Zmag - X_th * (V_R - voltage_r[1]) / Zmag #in system pu flowing out
 
     return
+end
+
+function _update_inner_vars!(
+    device_states,
+    output_ode,
+    ω_sys,
+    inner_vars,
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, F}},
+) where {
+    C <: PSY.Converter,
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+    #do nothing
+end
+
+function _update_inner_vars!(
+    device_states,
+    output_ode,
+    ω_sys,
+    inner_vars,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
+    },
+) where {
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+}
+    V_R = inner_vars[Vr_inv_var]
+    V_I = inner_vars[Vi_inv_var]
+    V_t = sqrt(V_R^2 + V_I^2)
+    θ = atan(V_I / V_R)
+
+    #Get Converter parameters
+    converter = PSY.get_converter(dynamic_device)
+    Brkpt = PSY.get_Brkpt(converter)
+    Zerox = PSY.get_Zerox(converter)
+    Lvpl1 = PSY.get_Lvpl1(converter)
+    Vo_lim = PSY.get_Vo_lim(converter)
+    Lv_pnt0, Lv_pnt1 = PSY.get_Lv_pnts(converter)
+    K_hv = PSY.get_K_hv(converter)
+    Lvpl_sw = PSY.get_Lvpl_sw(converter)
+    R_source = PSY.get_R_source(converter)
+    X_source = PSY.get_X_source(converter)
+
+    #Define internal states for Converter
+    converter_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
+    converter_states = @view device_states[converter_ix]
+    Ip = converter_states[1]
+    Iq = converter_states[2]
+    Vmeas = converter_states[3]
+
+    #Saturate Ip if LVPL is active
+    Ip_sat = Ip
+    if Lvpl_sw == 1
+        LVPL = get_LVPL_gain(Vmeas, Zerox, Brkpt, Lvpl1)
+        Ip_sat = Ip <= LVPL ? Ip : LVPL
+    end
+    G_lv = get_LV_current_gain(V_t, Lv_pnt0, Lv_pnt1)
+    Iq_extra = max(K_hv * (V_t - Vo_lim), 0.0)
+    Id_cnv = G_lv * Ip_sat
+    Iq_cnv = -Iq - Iq_extra
+    #Reference Transformation
+    Ir_cnv = Id_cnv * cos(θ) - Iq_cnv * sin(θ)
+    Ii_cnv = Id_cnv * sin(θ) + Iq_cnv * cos(θ)
+
+    #Obtain parameters
+    filt = PSY.get_filter(dynamic_device)
+    rf = PSY.get_rf(filt)
+    lf = PSY.get_lf(filt)
+
+    function V_cnv_calc(Ir_cnv, Ii_cnv, Vr_inv, Vi_inv)
+        if lf != 0.0 || rf != 0.0
+            Z_source_mag_sq = R_source^2 + X_source^2
+            Zf_mag_sq = rf^2 + lf^2
+            r_total_ratio = rf / Zf_mag_sq + R_source / Z_source_mag_sq
+            l_total_ratio = lf / Zf_mag_sq + X_source / Z_source_mag_sq
+            denom = 1.0 / (r_total_ratio^2 + l_total_ratio^2)
+            rf_ratio = rf / Zf_mag_sq
+            denom * (
+                (Ir_cnv + Vi_inv * lf_ratio + Vr_inv * rf_ratio) * r_total_ratio -
+                (Ii_cnv + Vi_inv * rf_ratio - Vr_inv * lf_ratio) * l_total_ratio
+            )
+            Vi_cnv =
+                denom * (
+                    (Ir_cnv + Vi_inv * lf_ratio + Vr_inv * rf_ratio) * l_total_ratio +
+                    (Ii_cnv + Vi_inv * rf_ratio - Vr_inv * lf_ratio) * r_total_ratio
+                )
+        else
+            Vr_cnv = Vr_inv
+            Vi_cnv = Vi_inv
+        end
+        return Vr_cnv, Vi_cnv
+    end
+
+    Vr_cnv, Vi_cnv = V_cnv_calc(Ir_cnv, Ii_cnv, V_R, V_I)
+
+    #Compute output currents
+    if lf != 0.0 || rf != 0.0
+        Vr_inv = V_R
+        Vi_inv = V_I
+        Zmag_squared = rf^2 + lf^2
+        Ir_filt = (1.0 / Zmag_squared) * ((Vr_cnv - Vr_inv) * rf + (Vi_cnv - Vi_inv) * lf)
+        Ii_filt = (1.0 / Zmag_squared) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
+    else
+        Ir_filt = Ir_cnv
+        Ii_filt = Ii_cnv
+    end
+
+    #Update inner_vars
+    inner_vars[Ir_cnv_var] = Ir_cnv
+    inner_vars[Ii_cnv_var] = Ii_cnv
+    inner_vars[Vr_cnv_var] = Vr_cnv
+    inner_vars[Vi_cnv_var] = Vi_cnv
+    inner_vars[Ir_inv_var] = Ir_filt
+    inner_vars[Ii_inv_var] = Ii_filt
 end
