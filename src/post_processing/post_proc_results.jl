@@ -113,7 +113,7 @@ Function to print initial states. It receives the vector of initial states and t
 """
 function print_device_states(res::SimulationResults)
     bus_size = get_bus_count(res)
-    system = get_system(sim)
+    system = get_system(res)
     println("Voltage Variables")
     println("====================")
     buses_sorted =
