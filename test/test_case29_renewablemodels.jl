@@ -42,7 +42,7 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
             add_component!(sys, case_gen, g)
         end
 
-        Ybus_change = BranchTrip(1.0, Line, "BUS 1       -BUS 3       -i_2")
+        Ybus_change = BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2")
 
         sim = Simulation(ResidualModel, sys, path, tspan, Ybus_change)
 
@@ -112,7 +112,7 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
             add_component!(sys, case_gen, g)
         end
 
-        Ybus_change = BranchTrip(1.0, Line, "BUS 1       -BUS 3       -i_2")
+        Ybus_change = BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2")
 
         sim = Simulation(MassMatrixModel, sys, path, tspan, Ybus_change)
 
