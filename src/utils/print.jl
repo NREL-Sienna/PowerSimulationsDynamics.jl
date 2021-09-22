@@ -1,5 +1,11 @@
-function Base.show(io::IO, ::Simulation)
-    println(io, "Simulation()")
+function Base.show(io::IO, ::MIME"text/html", sim::Simulation)
+    show_simulation_table(io, sim, backend = :html)
+    println(io)
+end
+
+function Base.show(io::IO, ::MIME"text/plain", sim::Simulation)
+    show_simulation_table(io, sim, backend = :auto)
+    println(io)
 end
 
 function Base.show(io::IO, ::SimulationInputs)
@@ -44,6 +50,33 @@ function show_results_table(io::IO, res::SimulationResults; kwargs...)
         table,
         header;
         title = "Simulation Results Summary",
+        alignment = :l,
+        kwargs...,
+    )
+end
+
+function show_simulation_table(
+    io::IO,
+    sim::Simulation{T};
+    kwargs...,
+) where {T <: SimulationModel}
+    header = ["Property", "Value"]
+    val_multimachine = sim.multimachine ? "Yes" : "No"
+    val_initialized = sim.initialized ? "Yes" : "No"
+    val_model = T == ResidualModel ? "Residual Model" : "Mass Matrix Model"
+    table = [
+        "Simulation Type" val_model
+        "Initialized?" val_initialized
+        "Multimachine system?" val_multimachine
+        "Time Span" string(sim.tspan)
+        "Number of States" string(length(sim.x0_init))
+        "Number of Perturbations" string(length(sim.perturbations))
+    ]
+    PrettyTables.pretty_table(
+        io,
+        table,
+        header;
+        title = "Simulation Summary",
         alignment = :l,
         kwargs...,
     )
