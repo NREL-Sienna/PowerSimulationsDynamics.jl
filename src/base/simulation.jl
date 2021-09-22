@@ -369,7 +369,11 @@ function execute!(sim::Simulation, solver; kwargs...)
     @debug "status before execute" sim.status
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Float64)
     sim.status = SIMULATION_STARTED
-    solution = SciMLBase.solve(
+    time_log = Dict{Symbol, Any}()
+    solution,
+    time_log[:timed_solve_time],
+    time_log[:solve_bytes_alloc],
+    time_log[:sec_in_gc] = @timed SciMLBase.solve(
         sim.problem,
         solver;
         callback = sim.callbacks,
@@ -378,9 +382,14 @@ function execute!(sim::Simulation, solver; kwargs...)
     )
     if solution.retcode == :Success
         sim.status = SIMULATION_FINALIZED
-        sim.results =
-            SimulationResults(get_simulation_inputs(sim), get_system(sim), solution)
+        sim.results = SimulationResults(
+            get_simulation_inputs(sim),
+            get_system(sim),
+            time_log,
+            solution,
+        )
     else
+        @error("The simulation failed with return code $(solution.retcode)")
         sim.status = SIMULATION_FAILED
     end
     return sim.status

@@ -44,6 +44,7 @@ function show_results_table(io::IO, res::SimulationResults; kwargs...)
         "Time Span" string((sol.t[1], sol.t[end]))
         "Total Time Steps" string(length(sol.t))
         "Number of States" string(length(sol.u[1]))
+        "Total solve time" string(res.time_log[:timed_solve_time])
     ]
     PrettyTables.pretty_table(
         io,
