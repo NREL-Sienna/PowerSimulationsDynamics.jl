@@ -51,7 +51,6 @@ tsteps = tspan[1]:step:tspan[2]
         Vt_sim = get_state_series(results, ("InfBus", :Vt))
         θt_sim = get_state_series(results, ("InfBus", :θt))
 
-        @test res.solution.retcode == :Success
         @test LinearAlgebra.norm(Vt .- Vt_sim[2]) <= 5e-3
         @test LinearAlgebra.norm(θt .- θt_sim[2]) <= 5e-3
     finally
@@ -93,7 +92,6 @@ end
         Vt_sim = get_state_series(results, ("InfBus", :Vt))
         θt_sim = get_state_series(results, ("InfBus", :θt))
 
-        @test res.solution.retcode == :Success
         @test LinearAlgebra.norm(Vt .- Vt_sim[2]) <= 5e-3
         @test LinearAlgebra.norm(θt .- θt_sim[2]) <= 5e-3
     finally
