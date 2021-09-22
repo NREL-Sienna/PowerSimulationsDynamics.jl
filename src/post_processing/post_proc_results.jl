@@ -111,7 +111,7 @@ end
 """
 Function to print initial states. It receives the vector of initial states and the dynamical system.
 """
-function print_device_states(res::SimulationResults)
+function show_states_initial_value(res::SimulationResults)
     bus_size = get_bus_count(res)
     system = get_system(res)
     x0_init = res.solution.u[1]
@@ -157,7 +157,6 @@ function print_device_states(res::SimulationResults)
             println("====================")
             println(printed_name)
             global_index = get_global_index(res)[name]
-            x0_br = Dict{Symbol, Float64}()
             for (i, s) in enumerate(states)
                 print(s, " ", round(x0_init[global_index[s]], digits = 5), "\n")
             end
@@ -170,7 +169,7 @@ end
 """
 Function to print initial states. It receives the vector of initial states and the dynamical system.
 """
-function print_device_states(sim::Simulation)
+function show_states_initial_value(sim::Simulation)
     inputs = sim.inputs
     bus_size = get_bus_count(inputs)
     system = get_system(sim)

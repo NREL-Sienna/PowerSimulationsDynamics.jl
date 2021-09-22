@@ -27,7 +27,7 @@ export small_signal_analysis
 export get_state_series
 export get_voltage_magnitude_series
 export get_voltage_angle_series
-export print_device_states
+export show_states_initial_value
 export read_initial_conditions
 export get_real_current_series
 export get_imaginary_current_series
