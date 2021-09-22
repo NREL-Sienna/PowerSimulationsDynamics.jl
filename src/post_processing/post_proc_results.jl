@@ -114,6 +114,7 @@ Function to print initial states. It receives the vector of initial states and t
 function print_device_states(res::SimulationResults)
     bus_size = get_bus_count(res)
     system = get_system(res)
+    x0_init = res.solution.u[1]
     println("Voltage Variables")
     println("====================")
     buses_sorted =
@@ -124,8 +125,8 @@ function print_device_states(res::SimulationResults)
         println("====================")
         bus_n = PSY.get_number(bus)
         bus_ix = get_bus_lookup(res)[bus_n]
-        V_R = sim.x0_init[bus_ix]
-        V_I = sim.x0_init[bus_ix + bus_size]
+        V_R = x0_init[bus_ix]
+        V_I = x0_init[bus_ix + bus_size]
         Vm = sqrt(V_R^2 + V_I^2)
         θ = angle(V_R + V_I * 1im)
         print("Vm ", round(Vm, digits = 4), "\n")
@@ -133,8 +134,7 @@ function print_device_states(res::SimulationResults)
         println("====================")
     end
     println("====================")
-    for g in get_injectors_data(get_simulation_inputs(sim))
-        device = PSY.get_dynamic_injector(g)
+    for device in PSY.get_components(PSY.DynamicInjection, system)
         states = PSY.get_states(device)
         name = PSY.get_name(device)
         println("Differential States")
@@ -142,7 +142,7 @@ function print_device_states(res::SimulationResults)
         println("====================")
         global_index = get_global_index(res)[name]
         for s in states
-            print(s, " ", round(sim.x0_init[global_index[s]], digits = 4), "\n")
+            print(s, " ", round(x0_init[global_index[s]], digits = 4), "\n")
         end
         println("====================")
     end
@@ -159,7 +159,7 @@ function print_device_states(res::SimulationResults)
             global_index = get_global_index(res)[name]
             x0_br = Dict{Symbol, Float64}()
             for (i, s) in enumerate(states)
-                print(s, " ", round(sim.x0_init[global_index[s]], digits = 5), "\n")
+                print(s, " ", round(x0_init[global_index[s]], digits = 5), "\n")
             end
             println("====================")
         end
