@@ -6,6 +6,7 @@ struct SimulationInputs
     injection_n_states::Int
     branches_n_states::Int
     variable_count::Int
+    inner_vars_count::Int
     bus_count::Int
     ode_range::UnitRange{Int}
     ybus_rectangular::SparseArrays.SparseMatrixCSC{Float64, Int}
@@ -44,6 +45,14 @@ struct SimulationInputs
             frequency_reference,
         )
 
+        inner_vars_count = 0
+        for i in length(wrapped_injectors):-1:1
+            if length(wrapped_injectors[i].inner_vars_index) > 0
+                inner_vars_count = wrapped_injectors[i].inner_vars_index[end]
+                break
+            end
+        end
+        IS.@assert_op inner_vars_count > 0
         new(
             wrapped_injectors,
             wrapped_static_injectors,
@@ -52,6 +61,7 @@ struct SimulationInputs
             var_count - 2 * n_buses - branch_state_counts,
             branch_state_counts,
             var_count,
+            inner_vars_count,
             n_buses,
             injection_start:var_count,
             Ybus,
@@ -81,9 +91,7 @@ get_global_vars_update_pointers(inputs::SimulationInputs) =
 get_injection_n_states(inputs::SimulationInputs) = inputs.injection_n_states
 get_branches_n_states(inputs::SimulationInputs) = inputs.branches_n_states
 get_variable_count(inputs::SimulationInputs) = inputs.variable_count
-# TODO: put this in the struct
-get_inner_vars_count(inputs::SimulationInputs) =
-    inputs.dynamic_injectors_data[end].inner_vars_index[end]
+get_inner_vars_count(inputs::SimulationInputs) = inputs.inner_vars_count
 get_ode_ouput_range(inputs::SimulationInputs) = inputs.ode_range
 get_bus_count(inputs::SimulationInputs) = inputs.bus_count
 get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
