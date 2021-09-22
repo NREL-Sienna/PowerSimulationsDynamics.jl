@@ -32,6 +32,9 @@ function device!(
 
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
+    #Update Inner Vars
+    _update_inner_vars!(device_states, output_ode, sys_ω, inner_vars, dynamic_device)
+
     #Obtain ODEs and Mechanical Power for Turbine Governor
     mdl_tg_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
 
@@ -234,6 +237,185 @@ function device!(
     current_i[1] += R_th * (V_I - voltage_i[1]) / Zmag - X_th * (V_R - voltage_r[1]) / Zmag #in system pu flowing out
 
     return
+end
+
+function _update_inner_vars!(
+    device_states,
+    output_ode,
+    ω_sys,
+    inner_vars,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #do nothing
+end
+
+function _update_inner_vars!(
+    device_states,
+    output_ode,
+    ω_sys,
+    inner_vars,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
+) where {
+    M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
+    S <: PSY.Shaft,
+    A <: PSY.AVR,
+    TG <: PSY.TurbineGov,
+    P <: PSY.PSS,
+}
+    #Obtain indices for component w/r to device
+    machine = PSY.get_machine(dynamic_device)
+    local_ix = get_local_state_ix(dynamic_device, M)
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    eq_p = internal_states[1]
+    ed_p = internal_states[2]
+    ψ_kd = internal_states[3]
+    ψ_kq = internal_states[4]
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(dynamic_device, M)
+    δ = device_states[external_ix[1]]
+
+    #Obtain inner variables for component
+    V_tR = inner_vars[VR_gen_var]
+    V_tI = inner_vars[VI_gen_var]
+
+    #Get parameters
+    R = PSY.get_R(machine)
+    Xd = PSY.get_Xd(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = Xd_pp
+    Xl = PSY.get_Xl(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+
+    #RI to dq transformation
+    V_dq = ri_dq(δ) * [V_tR; V_tI]
+
+    #Additional Fluxes
+    ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
+    ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
+    ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+    #Currents
+    I_d =
+        (1.0 / (R^2 + Xq_pp * Xd_pp)) *
+        (-R * (V_dq[1] - ψq_pp) + Xq_pp * (-V_dq[2] + ψd_pp))
+    Se = saturation_function(machine, ψ_pp)
+    Xad_Ifd = eq_p + (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd + γ_d2 * eq_p) + Se * ψd_pp
+
+    #Update Xad_Ifd
+    inner_vars[Xad_Ifd_var] = Xad_Ifd
+end
+
+function _update_inner_vars!(
+    device_states,
+    output_ode,
+    ω_sys,
+    inner_vars,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
+    },
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain indices for component w/r to device
+    machine = PSY.get_machine(dynamic_device)
+    local_ix = get_local_state_ix(dynamic_device, typeof(machine))
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    eq_p = internal_states[1]
+    ψ_kd = internal_states[2]
+    ψq_pp = internal_states[3]
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(dynamic_device, typeof(machine))
+    δ = device_states[external_ix[1]]
+
+    #Obtain inner variables for component
+    V_tR = inner_vars[VR_gen_var]
+    V_tI = inner_vars[VI_gen_var]
+
+    #Get parameters
+    R = PSY.get_R(machine)
+    Xd = PSY.get_Xd(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xl = PSY.get_Xl(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+
+    #RI to dq transformation
+    V_d, V_q = ri_dq(δ) * [V_tR; V_tI]
+
+    #Additional Fluxes
+    ψd_pp = γ_d1 * eq_p + γ_q1 * ψ_kd
+
+    #Currents
+    I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d + ψq_pp) + Xd_pp * (ψd_pp - V_q))
+    Se = saturation_function(machine, eq_p)
+    Xad_Ifd =
+        eq_p + Se * eq_p + (Xd - Xd_p) * (I_d + γ_d2 * (eq_p - ψ_kd - (Xd_p - Xl) * I_d))
+
+    #Update Xad_Ifd
+    inner_vars[Xad_Ifd_var] = Xad_Ifd
+end
+
+function _update_inner_vars!(
+    device_states,
+    output_ode,
+    ω_sys,
+    inner_vars,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
+    },
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain indices for component w/r to device
+    machine = PSY.get_machine(dynamic_device)
+    local_ix = get_local_state_ix(dynamic_device, typeof(machine))
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    eq_p = internal_states[1]
+    ψ_kd = internal_states[2]
+    ψq_pp = internal_states[3]
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(dynamic_device, typeof(machine))
+    δ = device_states[external_ix[1]]
+
+    #Obtain inner variables for component
+    V_tR = inner_vars[VR_gen_var]
+    V_tI = inner_vars[VI_gen_var]
+
+    #Get parameters
+    R = PSY.get_R(machine)
+    Xd = PSY.get_Xd(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = Xd_pp
+    Xl = PSY.get_Xl(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+
+    #RI to dq transformation
+    V_d, V_q = ri_dq(δ) * [V_tR; V_tI]
+
+    #Additional Fluxes
+    ψd_pp = γ_d1 * eq_p + γ_q1 * ψ_kd
+    ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+
+    #Currents
+    I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d - ψq_pp) + Xq_pp * (-V_q + ψd_pp))
+    Se = saturation_function(machine, ψ_pp)
+    Xad_Ifd =
+        eq_p + Se * ψd_pp + (Xd - Xd_p) * (I_d + γ_d2 * (eq_p - ψ_kd - (Xd_p - Xl) * I_d))
+
+    #Update Xad_Ifd
+    inner_vars[Xad_Ifd_var] = Xad_Ifd
 end
 
 function _update_inner_vars!(
