@@ -108,12 +108,10 @@ function initialize_static_device!(
 end
 
 function initialize_dynamic_device!(
-    dynamic_device::PSY.PeriodicVariableSource,
+    dynamic_device::DynamicWrapper{PSY.PeriodicVariableSource},
     source::PSY.Source,
+    ::AbstractVector,
 )
-    @assert PSY.get_X_th(dynamic_device) == PSY.get_X_th(source)
-    @assert PSY.get_R_th(dynamic_device) == PSY.get_R_th(source)
-
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
     #PowerFlow Data
@@ -151,15 +149,15 @@ function initialize_dynamic_device!(
         θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
 
         V_internal_freqs = 0.0
-        V_freqs = PSY.get_internal_voltage_frequencies(dynamic_device)
-        V_coeff = PSY.get_internal_voltage_coefficients(dynamic_device)
+        V_freqs = PSY.get_internal_voltage_frequencies(get_device(dynamic_device))
+        V_coeff = PSY.get_internal_voltage_coefficients(get_device(dynamic_device))
         for (ix, ω) in enumerate(V_freqs)
             V_internal_freqs += V_coeff[ix][2]     #sin(0) = 0; cos(0)=1
         end
 
         θ_internal_freqs = 0.0
-        θ_freqs = PSY.get_internal_angle_frequencies(dynamic_device)
-        θ_coeff = PSY.get_internal_angle_coefficients(dynamic_device)
+        θ_freqs = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
+        θ_coeff = PSY.get_internal_angle_coefficients(get_device(dynamic_device))
         for (ix, ω) in enumerate(θ_freqs)
             θ_internal_freqs += θ_coeff[ix][2]     #sin(0) = 0; cos(0)=1
         end
@@ -168,8 +166,8 @@ function initialize_dynamic_device!(
 
         device_states[1] = V_internal
         device_states[2] = θ_internal
-        PSY.set_internal_voltage_bias!(dynamic_device, V_internal_bias)
-        PSY.set_internal_angle_bias!(dynamic_device, θ_internal_bias)
+        PSY.set_internal_voltage_bias!(get_device(dynamic_device), V_internal_bias)
+        PSY.set_internal_angle_bias!(get_device(dynamic_device), θ_internal_bias)
     end
     return device_states
 end

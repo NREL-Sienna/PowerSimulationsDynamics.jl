@@ -93,6 +93,8 @@ function DynamicWrapper(
     dynamic_device = PSY.get_dynamic_injector(device)
     @assert dynamic_device !== nothing
     device_states = PSY.get_states(dynamic_device)
+    @assert PSY.get_X_th(dynamic_device) == PSY.get_X_th(device)
+    @assert PSY.get_R_th(dynamic_device) == PSY.get_R_th(device)
 
     return DynamicWrapper{typeof(dynamic_device)}(
         dynamic_device,
