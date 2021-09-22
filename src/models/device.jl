@@ -194,26 +194,28 @@ end
 function device!(
     device_states::AbstractArray{T},
     output_ode::AbstractArray{T},
-    voltage_r::AbstractArray{T},
-    voltage_i::AbstractArray{T},
+    voltage_r::T,
+    voltage_i::T,
     current_r::AbstractArray{T},
     current_i::AbstractArray{T},
     ::AbstractArray{T},
-    dynamic_device::PSY.PeriodicVariableSource,
     ::AbstractArray{T},
+    dynamic_device::DynamicWrapper{PSY.PeriodicVariableSource},
     t,
 ) where {T <: Real}
-    ω_θ = PSY.get_internal_angle_frequencies(dynamic_device)
-    ω_V = PSY.get_internal_angle_frequencies(dynamic_device)
+    ω_θ = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
+    ω_V = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
 
     dV = 0
-    for (ix, A) in enumerate(PSY.get_internal_voltage_coefficients(dynamic_device))
+    for (ix, A) in
+        enumerate(PSY.get_internal_voltage_coefficients(get_device(dynamic_device)))
         t <= 0 && continue
         dV += ω_V[ix] * (A[1] * cos(ω_V[ix] * t) - A[2] * sin(ω_V[ix] * t))
     end
 
     dθ = 0
-    for (ix, A) in enumerate(PSY.get_internal_angle_coefficients(dynamic_device))
+    for (ix, A) in
+        enumerate(PSY.get_internal_angle_coefficients(get_device(dynamic_device)))
         t <= 0 && continue
         dθ += ω_θ[ix] * (A[1] * cos(ω_θ[ix] * t) - A[2] * sin(ω_θ[ix] * t))
     end
@@ -225,8 +227,8 @@ function device!(
     output_ode[2] = dθ
 
     #update current
-    R_th = PSY.get_R_th(dynamic_device)
-    X_th = PSY.get_X_th(dynamic_device)
+    R_th = PSY.get_R_th(get_device(dynamic_device))
+    X_th = PSY.get_X_th(get_device(dynamic_device))
     Zmag = R_th^2 + X_th^2
     current_r[1] += R_th * (V_R - voltage_r[1]) / Zmag + X_th * (V_I - voltage_i[1]) / Zmag #in system pu flowing out
     current_i[1] += R_th * (V_I - voltage_i[1]) / Zmag - X_th * (V_R - voltage_r[1]) / Zmag #in system pu flowing out

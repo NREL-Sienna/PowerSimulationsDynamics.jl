@@ -10,7 +10,7 @@ function _get_frequency_state(d::DynamicWrapper{T}) where {T <: PSY.DynamicInver
 end
 
 function _get_frequency_state(d::DynamicWrapper{PSY.PeriodicVariableSource})
-    return -1
+    return 0
 end
 
 function get_frequency_reference!(
