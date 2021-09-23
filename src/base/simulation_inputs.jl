@@ -330,7 +330,7 @@ function _make_global_variable_index(
     static_injection_data::Vector,
     frequency_reference::Type{T},
 ) where {T <: Union{FixedFrequency, ReferenceBus}}
-    global_vars_dict = get_vars_ix()()
+    global_vars_dict = get_vars_ix()
     global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference(
         frequency_reference,
         wrapped_injectors,

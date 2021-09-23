@@ -1,4 +1,4 @@
-struct SystemModel{T <: SimulationModel, C <: Cache} <: Function
+struct SystemModel{T <: SimulationModel, C <: Cache}
     inputs::SimulationInputs
     cache::C
 end
