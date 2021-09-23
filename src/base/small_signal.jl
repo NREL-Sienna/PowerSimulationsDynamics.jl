@@ -1,5 +1,4 @@
 
-# TODO: Implement sparse methods when moving to large scale
 struct SmallSignalOutput
     reduced_jacobian::Matrix{Float64}
     eigenvalues::Vector{Complex{Float64}}
@@ -81,7 +80,6 @@ function _reduce_jacobian(
     gx = @view jacobian[alg_states, diff_states]
     M = @view mass_matrix[diff_states, diff_states]
     inv_diag_M = Vector(1.0 ./ LinearAlgebra.diag(M))
-    # TODO: Make operation using BLAS!
     inv_g = inv(Matrix(gy))
     reduced_jacobian = inv_diag_M .* (fx - fy * inv_g * gx)
     return reduced_jacobian

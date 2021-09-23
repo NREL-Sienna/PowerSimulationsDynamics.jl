@@ -152,8 +152,8 @@ function mdl_inner_ode!(
     Ii_filter = device_states[external_ix[2]]
     Ir_cnv = device_states[external_ix[3]]
     Ii_cnv = device_states[external_ix[4]]
-    Vr_filter = device_states[external_ix[5]] #TODO: Should be inner reference after initialization
-    Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
+    Vr_filter = device_states[external_ix[5]]
+    Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
     ω_oc = inner_vars[ω_oc_var]
@@ -268,8 +268,8 @@ function mdl_inner_ode!(
     # Ii_filter = device_states[external_ix[2]]
     Ir_cnv = device_states[external_ix[3]]
     Ii_cnv = device_states[external_ix[4]]
-    Vr_filter = device_states[external_ix[5]] #TODO: Should be inner reference after initialization
-    Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
+    Vr_filter = device_states[external_ix[5]]
+    Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
     ω_oc = inner_vars[ω_oc_var]
@@ -349,7 +349,7 @@ function mdl_inner_ode!(
 
     # TO DO: Voltage Dip Freeze logic
 
-    #Dispatch inner controller ODE calculation 
+    #Dispatch inner controller ODE calculation
     _mdl_ode_RE_inner_controller_B!(
         internal_ode,
         internal_states,

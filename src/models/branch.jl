@@ -22,7 +22,6 @@ function branch!(
         current_i_from,
         current_r_to,
         current_i_to,
-        # TODO: pass wrapper
         branch,
     )
 

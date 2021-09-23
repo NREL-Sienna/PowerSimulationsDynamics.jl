@@ -22,7 +22,6 @@ function mdl_avr_ode!(
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
-    #TODO Change EMF name for Vf in PowerSystems
     #Update Vf voltage on inner vars. In AVRFixed, Vf = V_ref
     inner_vars[Vf_var] = get_V_ref(dynamic_device)
 

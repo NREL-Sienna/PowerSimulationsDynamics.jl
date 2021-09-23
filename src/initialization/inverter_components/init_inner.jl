@@ -19,8 +19,8 @@ function initialize_inner!(
     Ii_filter = device_states[external_ix[2]]
     Ir_cnv = device_states[external_ix[3]]
     Ii_cnv = device_states[external_ix[4]]
-    Vr_filter = device_states[external_ix[5]] #TODO: Should be inner reference after initialization
-    Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
+    Vr_filter = device_states[external_ix[5]]
+    Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
     ω_oc = get_ω_ref(dynamic_device)
@@ -114,7 +114,6 @@ function initialize_inner!(
         outer_states = @view device_states[outer_ix]
         #Assumes that angle is in second position
         outer_states[2] = sol_x0[1]
-        #Update V_ref (#TODO)
         set_V_ref(dynamic_device, sol_x0[2])
         PSY.set_V_ref!(
             PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
@@ -154,12 +153,11 @@ function initialize_inner!(
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(dynamic_device, PSY.CurrentModeControl)
-    # Ir_filter = device_states[external_ix[1]]
-    # Ii_filter = device_states[external_ix[2]]
+
     Ir_cnv = device_states[external_ix[3]]
     Ii_cnv = device_states[external_ix[4]]
-    Vr_filter = device_states[external_ix[5]] #TODO: Should be inner reference after initialization
-    Vi_filter = device_states[external_ix[6]] #TODO: Should be inner reference after initialization
+    Vr_filter = device_states[external_ix[5]]
+    Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
     ω_oc = get_ω_ref(dynamic_device)
