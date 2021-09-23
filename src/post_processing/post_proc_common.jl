@@ -96,7 +96,7 @@ end
 
 function make_global_state_map(inputs::SimulationInputs)
     dic = MAPPING_DICT()
-    device_wrappers = get_dynamic_injectors_data(inputs)
+    device_wrappers = get_dynamic_injectors(inputs)
     branches_wrappers = get_dynamic_branches(inputs)
     buses_diffs = get_voltage_buses_ix(inputs)
     n_buses = get_bus_count(inputs)

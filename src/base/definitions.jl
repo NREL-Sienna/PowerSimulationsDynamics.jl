@@ -119,7 +119,7 @@ const SIMULATION_ACCEPTED_KWARGS = [
 ]
 # Location of the global vars in the Caches
 const GLOBAL_VAR_SYS_FREQ_INDEX = 1
-const GLOBAL_VARS_IX = () -> Dict{Int, Int}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
+get_vars_ix() = () -> Dict{Int, Int}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
 
 const SMALL_SIGNAL_ACCEPTED_KWARGS = [:reset_simulation!]
 const RELAXED_NL_SOLVE_TOLERANCE = :1e-6

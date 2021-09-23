@@ -15,7 +15,7 @@ function get_init_values_for_comparison(sim::Simulation)
     end
     results =
         Dict{String, Vector{Float64}}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
-    for device in PSID.get_dynamic_injectors_data(sim.inputs)
+    for device in PSID.get_dynamic_injectors(sim.inputs)
         states = PSY.get_states(device)
         name = PSY.get_name(device)
         global_index = PSID.get_global_index(device)

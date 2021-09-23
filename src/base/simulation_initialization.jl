@@ -22,7 +22,7 @@ end
 
 function _initialize_static_injection!(inputs::SimulationInputs)
     @debug "Updating Source internal voltage magnitude and angle"
-    static_injection_devices = get_static_injectors_data(inputs)
+    static_injection_devices = get_static_injectors(inputs)
     if !isempty(static_injection_devices)
         try
             for s in static_injection_devices
@@ -45,7 +45,7 @@ function _initialize_dynamic_injection!(
     @debug "Updating Dynamic Injection Component Initial Guess"
     initial_inner_vars = zeros(get_inner_vars_count(inputs))
     try
-        for dynamic_device in get_dynamic_injectors_data(inputs)
+        for dynamic_device in get_dynamic_injectors(inputs)
             static = PSY.get_component(
                 dynamic_device.static_type,
                 system,
@@ -97,7 +97,7 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
         end
     end
 
-    for device in get_dynamic_injectors_data(inputs)
+    for device in get_dynamic_injectors(inputs)
         device_initial_guess = initial_guess[get_ix_range(device)]
         device_index = get_global_index(device)
         if haskey(device_index, :ω)

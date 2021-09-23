@@ -56,7 +56,7 @@ function system_residual!(
     global_vars = get_global_vars(cache, V)
     inner_vars = get_inner_vars(cache, V)
 
-    for dynamic_device in get_dynamic_injectors_data(inputs)
+    for dynamic_device in get_dynamic_injectors(inputs)
         ix_range = get_ix_range(dynamic_device)
         device_ode_output = @view system_ode_output[get_ode_ouput_range(dynamic_device)]
         device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
@@ -79,7 +79,7 @@ function system_residual!(
         out[ix_range] .= device_ode_output .- M_ * dx[ix_range]
     end
 
-    for static_load in get_static_load_data(inputs)
+    for static_load in get_static_loads(inputs)
         bus_ix = get_bus_ix(static_load)
         device!(
             voltage_r[bus_ix],
@@ -93,7 +93,7 @@ function system_residual!(
         )
     end
 
-    for static_device in get_static_injectors_data(inputs)
+    for static_device in get_static_injectors(inputs)
         bus_ix = get_bus_ix(static_device)
         device!(
             voltage_r[bus_ix],
@@ -191,7 +191,7 @@ function system_mass_matrix!(
     global_vars = get_global_vars(cache, V)
     inner_vars = get_inner_vars(cache, V)
 
-    for dynamic_device in get_dynamic_injectors_data(inputs)
+    for dynamic_device in get_dynamic_injectors(inputs)
         ix_range = get_ix_range(dynamic_device)
         device_ode_output = @view system_ode_output[get_ode_ouput_range(dynamic_device)]
         device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
@@ -213,7 +213,7 @@ function system_mass_matrix!(
         dx[ix_range] .= device_ode_output
     end
 
-    for static_load in get_static_load_data(inputs)
+    for static_load in get_static_loads(inputs)
         bus_ix = get_bus_ix(static_load)
         device!(
             voltage_r[bus_ix],
@@ -227,7 +227,7 @@ function system_mass_matrix!(
         )
     end
 
-    for static_device in get_static_injectors_data(inputs)
+    for static_device in get_static_injectors(inputs)
         bus_ix = get_bus_ix(static_device)
         device!(
             voltage_r[bus_ix],

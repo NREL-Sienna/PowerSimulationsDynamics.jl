@@ -1,7 +1,7 @@
 struct SimulationInputs
-    dynamic_injectors_data::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
-    static_injectors_data::Vector
-    static_load_data::Vector
+    dynamic_injectors::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
+    static_injectors::Vector
+    static_loads::Vector
     dynamic_branches::Vector{BranchWrapper}
     injection_n_states::Int
     branches_n_states::Int
@@ -75,10 +75,10 @@ struct SimulationInputs
     end
 end
 
-get_dynamic_injectors_data(inputs::SimulationInputs) = inputs.dynamic_injectors_data
+get_dynamic_injectors(inputs::SimulationInputs) = inputs.dynamic_injectors
 get_dynamic_branches(inputs::SimulationInputs) = inputs.dynamic_branches
-get_static_injectors_data(inputs::SimulationInputs) = inputs.static_injectors_data
-get_static_load_data(inputs::SimulationInputs) = inputs.static_load_data
+get_static_injectors(inputs::SimulationInputs) = inputs.static_injectors
+get_static_loads(inputs::SimulationInputs) = inputs.static_loads
 get_ybus(inputs::SimulationInputs) = inputs.ybus_rectangular
 get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
 get_lookup(inputs::SimulationInputs) = inputs.lookup
@@ -207,7 +207,6 @@ end
 function _wrap_static_injectors(sys::PSY.System, lookup::Dict{Int, Int})
     static_injection_data = get_injection_without_dynamics(sys)
     container = Vector{StaticWrapper}(undef, length(static_injection_data))
-    isempty(static_injection_data) && return container
     for (ix, ld) in enumerate(static_injection_data)
         bus_n = PSY.get_number(PSY.get_bus(ld))
         bus_ix = lookup[bus_n]
@@ -218,10 +217,10 @@ end
 
 function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
     # This needs to change if we implement dynamic load models
-    static_load_data = PSY.get_components(PSY.ElectricLoad, sys)
-    container = Vector(undef, length(static_load_data))
-    isempty(static_load_data) && return container
-    for (ix, ld) in enumerate(static_load_data)
+    static_loads = PSY.get_components(PSY.ElectricLoad, sys)
+    container = Vector(undef, length(static_loads))
+    isempty(static_loads) && return container
+    for (ix, ld) in enumerate(static_loads)
         bus_n = PSY.get_number(PSY.get_bus(ld))
         bus_ix = lookup[bus_n]
         container[ix] = StaticWrapper(ld, bus_ix)
@@ -291,19 +290,15 @@ end
 
 function _make_total_shunts(wrapped_branches, n_buses::Int)
     shunts = SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2 * n_buses, 2 * n_buses))
-    if isempty(wrapped_branches)
-        return shunts
-    else
-        for br in wrapped_branches
-            bus_ix_from = get_bus_ix_from(br)
-            bus_ix_to = get_bus_ix_to(br)
-            b_from = PSY.get_b(br).from
-            b_to = PSY.get_b(br).to
-            shunts[bus_ix_from, bus_ix_from + n_buses] += b_from
-            shunts[bus_ix_to, bus_ix_to + n_buses] += b_to
-            shunts[bus_ix_from + n_buses, bus_ix_from] -= b_from
-            shunts[bus_ix_to + n_buses, bus_ix_to] -= b_to
-        end
+    for br in wrapped_branches
+        bus_ix_from = get_bus_ix_from(br)
+        bus_ix_to = get_bus_ix_to(br)
+        b_from = PSY.get_b(br).from
+        b_to = PSY.get_b(br).to
+        shunts[bus_ix_from, bus_ix_from + n_buses] += b_from
+        shunts[bus_ix_to, bus_ix_to + n_buses] += b_to
+        shunts[bus_ix_from + n_buses, bus_ix_from] -= b_from
+        shunts[bus_ix_to + n_buses, bus_ix_to] -= b_to
     end
     return shunts
 end
@@ -335,7 +330,7 @@ function _make_global_variable_index(
     static_injection_data::Vector,
     frequency_reference::Type{T},
 ) where {T <: Union{FixedFrequency, ReferenceBus}}
-    global_vars_dict = GLOBAL_VARS_IX()
+    global_vars_dict = get_vars_ix()()
     global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference(
         frequency_reference,
         wrapped_injectors,

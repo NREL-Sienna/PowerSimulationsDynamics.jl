@@ -193,7 +193,7 @@ function show_states_initial_value(sim::Simulation)
         println("====================")
     end
     println("====================")
-    for device in get_dynamic_injectors_data(inputs)
+    for device in get_dynamic_injectors(inputs)
         states = PSY.get_states(device)
         name = PSY.get_name(device)
         println("Differential States")
