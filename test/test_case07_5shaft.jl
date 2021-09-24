@@ -10,7 +10,7 @@ The fault disconnects a circuit between buses 1 and 2, doubling its impedance.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test07.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test07.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -18,47 +18,51 @@ include(joinpath(dirname(@__FILE__), "data_tests/test07.jl"))
 
 tspan = (0.0, 20.0);
 
-#Define Fault: Change of YBus
+# Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
 ) #New YBus
 
-@testset "Test 07 5-Mass-shaft model ImplicitModel" begin
+@testset "Test 07 5-Mass-shaft model ResidualModel" begin
     path = (joinpath(pwd(), "test-07"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             threebus_sys, #system,
             path,
             tspan, #time span
             Ybus_change, #Type of Fault
         ) #initial guess
 
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Solve problem
-        execute!(sim, IDA(), dtmax = 0.001)
-
-        #Obtain data for angles
-        series = get_state_series(sim, ("generator-103-1", :δ))
-        series2 = get_state_series(sim, ("generator-103-1", :δ_hp))
-        series3 = get_state_series(sim, ("generator-103-1", :δ_ip))
-        series4 = get_state_series(sim, ("generator-103-1", :δ_ex))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test07_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test07_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
 
+        @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test07_eigvals) < 1e-3
+
+        #Solve problem
+        @test execute!(sim, IDA(), dtmax = 0.001) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+
+        # Obtain data for angles
+        series = get_state_series(results, ("generator-103-1", :δ))
+        series2 = get_state_series(results, ("generator-103-1", :δ_hp))
+        series3 = get_state_series(results, ("generator-103-1", :δ_ip))
+        series4 = get_state_series(results, ("generator-103-1", :δ_ex))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -69,7 +73,7 @@ end
     path = (joinpath(pwd(), "test-07"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
             MassMatrixModel,
             threebus_sys, #system,
@@ -78,28 +82,32 @@ end
             Ybus_change, #Type of Fault
         ) #initial guess
 
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Solve problem
-        execute!(sim, Rodas5(), dtmax = 0.001)
-
-        #Obtain data for angles
-        series = get_state_series(sim, ("generator-103-1", :δ))
-        series2 = get_state_series(sim, ("generator-103-1", :δ_hp))
-        series3 = get_state_series(sim, ("generator-103-1", :δ_ip))
-        series4 = get_state_series(sim, ("generator-103-1", :δ_ex))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test07_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test07_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
 
+        @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test07_eigvals) < 1e-3
+
+        # Solve problem
+        @test execute!(sim, Rodas4(), dtmax = 0.001) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+
+        # Obtain data for angles
+        series = get_state_series(results, ("generator-103-1", :δ))
+        series2 = get_state_series(results, ("generator-103-1", :δ_hp))
+        series3 = get_state_series(results, ("generator-103-1", :δ_ip))
+        series4 = get_state_series(results, ("generator-103-1", :δ_ex))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

@@ -1,7 +1,8 @@
 function initialize_filter!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter}},
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -33,7 +34,7 @@ function initialize_filter!(
     #Set parameters
     Ir_filter = I_R
     Ii_filter = I_I
-    ω_sys = PSY.get_ω_ref(dynamic_device)
+    ω_sys = get_ω_ref(dynamic_device)
 
     #To solve Vr_cnv, Vi_cnv, Ir_cnv, Ii_cnv, Vr_filter, Vi_filter
     function f!(out, x)
@@ -64,14 +65,14 @@ function initialize_filter!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[Vr_inv_var] = V_R
-        get_inner_vars(dynamic_device)[Vi_inv_var] = V_I
+        inner_vars[Vr_inv_var] = V_R
+        inner_vars[Vi_inv_var] = V_I
         #Update Converter voltages
-        get_inner_vars(dynamic_device)[Vr_cnv_var] = sol_x0[1]
-        get_inner_vars(dynamic_device)[Vi_cnv_var] = sol_x0[2]
+        inner_vars[Vr_cnv_var] = sol_x0[1]
+        inner_vars[Vi_cnv_var] = sol_x0[2]
         #Update filter voltages
-        get_inner_vars(dynamic_device)[Vr_filter_var] = sol_x0[5]
-        get_inner_vars(dynamic_device)[Vi_filter_var] = sol_x0[6]
+        inner_vars[Vr_filter_var] = sol_x0[5]
+        inner_vars[Vi_filter_var] = sol_x0[6]
         #Update states
         filter_ix = get_local_state_ix(dynamic_device, PSY.LCLFilter)
         filter_states = @view device_states[filter_ix]
@@ -87,7 +88,8 @@ end
 function initialize_filter!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter}},
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -113,10 +115,10 @@ function initialize_filter!(
 
     # Update Control References
     PSY.set_Q_ref!(PSY.get_converter(dynamic_device), Q0)
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index] = Q0
+    set_Q_ref(dynamic_device, Q0)
     PSY.set_Q_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Q0)
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), P0)
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index] = P0
+    set_P_ref(dynamic_device, P0)
 
     #Get Parameters
     filt = PSY.get_filter(dynamic_device)
@@ -127,18 +129,18 @@ function initialize_filter!(
     X_source = PSY.get_X_source(converter)
 
     #Update terminal voltages
-    get_inner_vars(dynamic_device)[Vr_inv_var] = V_R
-    get_inner_vars(dynamic_device)[Vi_inv_var] = V_I
+    inner_vars[Vr_inv_var] = V_R
+    inner_vars[Vi_inv_var] = V_I
     #Update filter currents (output of converter)
-    get_inner_vars(dynamic_device)[Ir_inv_var] = I_R
-    get_inner_vars(dynamic_device)[Ii_inv_var] = I_I
+    inner_vars[Ir_inv_var] = I_R
+    inner_vars[Ii_inv_var] = I_I
     #Update converter currents
     V_cnv = V + (rf + lf * 1im) * I
     I_aux = V_cnv / (R_source + X_source * 1im)
     I_cnv = I + I_aux
 
-    get_inner_vars(dynamic_device)[Vr_cnv_var] = real(V_cnv)
-    get_inner_vars(dynamic_device)[Vi_cnv_var] = imag(V_cnv)
-    get_inner_vars(dynamic_device)[Ir_cnv_var] = real(I_cnv)
-    get_inner_vars(dynamic_device)[Ii_cnv_var] = imag(I_cnv)
+    inner_vars[Vr_cnv_var] = real(V_cnv)
+    inner_vars[Vi_cnv_var] = imag(V_cnv)
+    inner_vars[Ir_cnv_var] = real(I_cnv)
+    inner_vars[Ii_cnv_var] = imag(I_cnv)
 end

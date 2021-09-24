@@ -1,7 +1,7 @@
 function mass_matrix_outer_entries!(
     mass_matrix,
     outer_control::O,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {O <: PSY.OuterControl}
     @debug "Using default mass matrix entries $O"
 end
@@ -21,17 +21,20 @@ function _mdl_ode_RE_active_controller_AB!(
     Vt_filt,
     ::Type{Base.RefValue{1}},
     active_power_control::PSY.ActiveRenewableControllerAB,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
     },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -41,8 +44,8 @@ function _mdl_ode_RE_active_controller_AB!(
 }
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
-    ω_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.ω_ref_index]
+    p_ref = get_P_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
     # To do: Obtain proper frequency for a plant. For now using the system frequency.
     ω_plant = ω_sys
 
@@ -87,8 +90,7 @@ function _mdl_ode_RE_active_controller_AB!(
     active_controller_ode[4] = p_ord_binary * (1.0 / T_pord) * p_ord_in
 
     #Update Inner Vars: Ioc_pcmd
-    get_inner_vars(dynamic_device)[Id_oc_var] =
-        p_ord_sat / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[Id_oc_var] = p_ord_sat / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 #Freq_Flag = 0
@@ -100,17 +102,20 @@ function _mdl_ode_RE_active_controller_AB!(
     Vt_filt,
     ::Type{Base.RefValue{0}},
     active_power_control::PSY.ActiveRenewableControllerAB,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
     },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -120,7 +125,7 @@ function _mdl_ode_RE_active_controller_AB!(
 }
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
+    p_ref = get_P_ref(dynamic_device)
     #Obtain additional Active Power Controller parameters
     T_pord = PSY.get_T_pord(active_power_control)
 
@@ -131,8 +136,7 @@ function _mdl_ode_RE_active_controller_AB!(
     active_controller_ode[1] = (1.0 / T_pord) * (p_ref - p_ord)
 
     #Update Inner Vars: Ioc_pcmd
-    get_inner_vars(dynamic_device)[Id_oc_var] =
-        p_ord / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[Id_oc_var] = p_ord / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 ### Reactive Controllers ###
@@ -151,17 +155,20 @@ function _mdl_ode_RE_reactive_controller_AB!(
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{1}},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
     },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -171,7 +178,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
 }
 
     #Obtain external parameters
-    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+    q_ref = get_Q_ref(dynamic_device)
 
     # Get Reactive Controller parameters
     T_fltr = PSY.get_T_fltr(reactive_power_control)
@@ -216,9 +223,8 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode[4] = V_binary_logic * V_pi_in
 
     #Update Inner Vars
-    get_inner_vars(dynamic_device)[V_oc_var] = V_pi_sat - Vt_filt
-    get_inner_vars(dynamic_device)[Iq_oc_var] =
-        Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[V_oc_var] = V_pi_sat - Vt_filt
+    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 #VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
@@ -232,17 +238,20 @@ function _mdl_ode_RE_reactive_controller_AB!(
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
     },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -251,7 +260,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     F <: PSY.Filter,
 }
     #Obtain external parameters
-    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+    q_ref = get_Q_ref(dynamic_device)
 
     # Get Reactive Controller parameters
     T_fltr = PSY.get_T_fltr(reactive_power_control)
@@ -285,9 +294,8 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode[3] = (1.0 / T_fv) * (Q_pi_sat * (1.0 - T_ft / T_fv) - q_LL)
 
     #Update Inner Vars
-    get_inner_vars(dynamic_device)[V_oc_var] = Q_ext - Vt_filt
-    get_inner_vars(dynamic_device)[Iq_oc_var] =
-        Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[V_oc_var] = Q_ext - Vt_filt
+    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 ############################################
@@ -297,15 +305,17 @@ end
 function mdl_outer_ode!(
     device_states,
     output_ode,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
-        IC,
-        DC,
-        P,
-        F,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
+            IC,
+            DC,
+            P,
+            F,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -326,7 +336,7 @@ function mdl_outer_ode!(
     Ii_filter = device_states[external_ix[4]]
 
     #Obtain inner variables for component
-    ω_pll = get_inner_vars(dynamic_device)[ω_freq_estimator_var]
+    ω_pll = inner_vars[ω_freq_estimator_var]
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
@@ -334,6 +344,7 @@ function mdl_outer_ode!(
     Ta = PSY.get_Ta(active_power_control) #VSM Inertia constant
     kd = PSY.get_kd(active_power_control) #VSM damping constant
     kω = PSY.get_kω(active_power_control) #Frequency droop gain
+    f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
@@ -342,10 +353,10 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][P_ref_index]
-    ω_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][ω_ref_index]
-    V_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index]
-    q_ref = PSY.get_ext(dynamic_device)[CONTROL_REFS][Q_ref_index]
+    p_ref = get_P_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -370,23 +381,25 @@ function mdl_outer_ode!(
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc
-    get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
+    inner_vars[θ_oc_var] = θ_oc
+    inner_vars[ω_oc_var] = ω_oc
+    inner_vars[V_oc_var] = V_ref + kq * (q_ref - qm)
 end
 
 function mdl_outer_ode!(
     device_states,
     output_ode,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
-        IC,
-        DC,
-        P,
-        F,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
+            IC,
+            DC,
+            P,
+            F,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -407,14 +420,15 @@ function mdl_outer_ode!(
     Ii_filter = device_states[external_ix[4]]
 
     #Obtain inner variables for component
-    V_tR = get_inner_vars(dynamic_device)[Vr_inv_var]
-    V_tI = get_inner_vars(dynamic_device)[Vi_inv_var]
+    V_tR = inner_vars[Vr_inv_var]
+    V_tI = inner_vars[Vi_inv_var]
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power(outer_control)
     Rp = PSY.get_Rp(active_power_control) #Droop Gain
     ωz = PSY.get_ωz(active_power_control) #Frequency cutoff frequency
+    f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
@@ -423,10 +437,10 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
-    ω_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.ω_ref_index]
-    V_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.V_ref_index]
-    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+    p_ref = get_P_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -453,23 +467,25 @@ function mdl_outer_ode!(
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_oc
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_oc
-    get_inner_vars(dynamic_device)[V_oc_var] = V_ref + kq * (q_ref - qm)
+    inner_vars[θ_oc_var] = θ_oc
+    inner_vars[ω_oc_var] = ω_oc
+    inner_vars[V_oc_var] = V_ref + kq * (q_ref - qm)
 end
 
 function mdl_outer_ode!(
     device_states,
     output_ode,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
-        IC,
-        DC,
-        P,
-        F,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
+            IC,
+            DC,
+            P,
+            F,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -490,8 +506,8 @@ function mdl_outer_ode!(
     Ii_filter = device_states[external_ix[4]]
 
     #Obtain inner variables for component
-    θ_pll = get_inner_vars(dynamic_device)[θ_freq_estimator_var]
-    ω_pll = get_inner_vars(dynamic_device)[ω_freq_estimator_var]
+    θ_pll = inner_vars[θ_freq_estimator_var]
+    ω_pll = inner_vars[ω_freq_estimator_var]
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
@@ -507,8 +523,8 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    p_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.P_ref_index]
-    q_ref = PSY.get_ext(dynamic_device)[PSID.CONTROL_REFS][PSID.Q_ref_index]
+    p_ref = get_P_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -534,27 +550,29 @@ function mdl_outer_ode!(
     output_ode[local_ix[4]] = ωf * (q_elec_out - q_oc)
 
     #Update inner vars
-    get_inner_vars(dynamic_device)[θ_oc_var] = θ_pll
-    get_inner_vars(dynamic_device)[ω_oc_var] = ω_pll
-    get_inner_vars(dynamic_device)[Iq_oc_var] = Kp_p * (p_ref - p_oc) + Ki_p * σp_oc
-    get_inner_vars(dynamic_device)[Id_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
+    inner_vars[θ_oc_var] = θ_pll
+    inner_vars[ω_oc_var] = ω_pll
+    inner_vars[Iq_oc_var] = Kp_p * (p_ref - p_oc) + Ki_p * σp_oc
+    inner_vars[Id_oc_var] = Kp_q * (q_ref - q_oc) + Ki_q * σq_oc
 end
 
 function mdl_outer_ode!(
     device_states,
     output_ode,
-    f0,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicInverter{
-        C,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
         },
-        IC,
-        DC,
-        P,
-        F,
     },
 ) where {
     C <: PSY.Converter,
@@ -574,21 +592,23 @@ function mdl_outer_ode!(
     )
     Vt_filt = device_states[external_ix[1]]
 
-    function get_value_I(v::Float64)
-        return v
-    end
-    function get_value_I(v::Int)
-        return v
-    end
-    function get_value_I(v::ForwardDiff.Dual)
-        return v.value
-    end
+    #function get_value_I(v::Float64)
+    #    return v
+    #end
+    #function get_value_I(v::Int)
+    #    return v
+    #end
+    #function get_value_I(v::ForwardDiff.Dual)
+    #    return v.value
+    #end
 
     #Monitoring power from other branch not supported.
-    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
-    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
-    I_R = get_value_I(get_inner_vars(dynamic_device)[Ir_inv_var])
-    I_I = get_value_I(get_inner_vars(dynamic_device)[Ii_inv_var])
+    V_R = inner_vars[Vr_inv_var]
+    V_I = inner_vars[Vi_inv_var]
+    #I_R = get_value_I(inner_vars[Ir_inv_var])
+    #I_I = get_value_I(inner_vars[Ii_inv_var])
+    I_R = inner_vars[Ir_inv_var]
+    I_I = inner_vars[Ii_inv_var]
     p_elec_out = I_R * V_R + I_I * V_I
     q_elec_out = -I_I * V_R + I_R * V_I
 
@@ -635,6 +655,7 @@ function mdl_outer_ode!(
         Base.RefValue{Freq_Flag},
         active_power_control,
         dynamic_device,
+        inner_vars,
     )
 
     #Dispatch reactive power controller
@@ -649,5 +670,6 @@ function mdl_outer_ode!(
         Base.RefValue{V_Flag},
         reactive_power_control,
         dynamic_device,
+        inner_vars,
     )
 end

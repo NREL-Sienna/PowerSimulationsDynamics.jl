@@ -1,214 +1,273 @@
-function update_global_vars!(inputs::SimulationInputs, x::AbstractArray)
-    index = get_global_vars(inputs)[:ω_sys_index]
-    index == 0 && return
-    #TO DO: Make it general for cases when ω is not a state (droop)!
-    get_global_vars(inputs)[:ω_sys] = x[index]
+"""
+Instantiate an ResidualModel for ForwardDiff calculations
+"""
+function ResidualModel(
+    inputs::SimulationInputs,
+    x0_init::Vector{T},
+    ::Type{Ctype},
+) where {T <: Float64, Ctype <: JacobianCache}
+    U = ForwardDiff.Dual{
+        typeof(ForwardDiff.Tag(system_residual!, T)),
+        T,
+        ForwardDiff.pickchunksize(length(x0_init)),
+    }
+    return SystemModel{ResidualModel}(inputs, Ctype{U}(system_residual!, inputs))
+end
+
+"""
+Instantiate an ResidualModel for ODE inputs.
+"""
+function ResidualModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
+    return SystemModel{ResidualModel}(inputs, Ctype(system_residual!, inputs))
+end
+
+function (m::SystemModel{ResidualModel, C})(
+    out::AbstractArray{T},
+    du::AbstractArray{U},
+    u::AbstractArray{V},
+    p,
+    t,
+) where {C <: Cache, T <: Real, U <: Real, V <: Real}
+    system_residual!(out, du, u, m.inputs, m.cache, t)
     return
 end
 
-function system_implicit!(out::Vector{<:Real}, dx, x, inputs::SimulationInputs, t::Float64)
-    I_injections_r = get_aux_arrays(inputs)[1]
-    I_injections_i = get_aux_arrays(inputs)[2]
-    injection_ode = get_aux_arrays(inputs)[3]
-    branches_ode = get_aux_arrays(inputs)[4]
+function system_residual!(
+    out::AbstractVector{T},
+    dx::AbstractVector{U},
+    x::AbstractVector{V},
+    inputs::SimulationInputs,
+    cache::Cache,
+    t::Float64,
+) where {T <: Real, U <: Real, V <: Real}
+    update_global_vars!(cache, inputs, x)
     M = get_mass_matrix(inputs)
 
-    #Index Setup
-    bus_size = get_bus_count(inputs)
-    bus_vars_count = 2 * bus_size
-    bus_range = 1:bus_vars_count
-    injection_start = get_injection_pointer(inputs)
-    injection_count = 1
-    branches_start = get_branches_pointer(inputs)
-    branches_count = 1
-    update_global_vars!(inputs, x)
+    # Global quantities
+    system_ode_output = get_ode_output(cache, V)
+    current_balance = get_current_balance(cache, V)
+    fill!(current_balance, zero(V))
+    bus_counts = get_bus_count(inputs)
+    bus_range = get_bus_range(inputs)
+    voltage_r = @view x[1:bus_counts]
+    voltage_i = @view x[(bus_counts + 1):bus_range[end]]
+    current_r = @view current_balance[1:bus_counts]
+    current_i = @view current_balance[(bus_counts + 1):bus_range[end]]
+    global_vars = get_global_vars(cache, V)
+    inner_vars = get_inner_vars(cache, V)
 
-    #Network quantities
-    V_r = @view x[1:bus_size]
-    V_i = @view x[(bus_size + 1):bus_vars_count]
-    fill!(I_injections_r, 0.0)
-    fill!(I_injections_i, 0.0)
+    for dynamic_device in get_dynamic_injectors(inputs)
+        ix_range = get_ix_range(dynamic_device)
+        device_ode_output = @view system_ode_output[get_ode_ouput_range(dynamic_device)]
+        device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
+        device_states = @view x[ix_range]
+        bus_ix = get_bus_ix(dynamic_device)
 
-    for d in get_injectors_data(inputs)
-        dynamic_device = PSY.get_dynamic_injector(d)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = get_lookup(inputs)[bus_n]
-        n_states = PSY.get_n_states(dynamic_device)
-        ix_range = range(injection_start, length = n_states)
-        ode_range = range(injection_count, length = n_states)
-        injection_count = injection_count + n_states
-        injection_start = injection_start + n_states
         device!(
-            x,
-            injection_ode,
-            view(V_r, bus_ix),
-            view(V_i, bus_ix),
-            view(I_injections_r, bus_ix),
-            view(I_injections_i, bus_ix),
-            ix_range,
-            ode_range,
+            device_states,
+            device_ode_output,
+            voltage_r[bus_ix],
+            voltage_i[bus_ix],
+            view(current_r, bus_ix),
+            view(current_i, bus_ix),
+            global_vars,
+            device_inner_vars,
             dynamic_device,
-            inputs,
             t,
         )
         M_ = @view M[ix_range, ix_range]
-        out[ix_range] .= injection_ode[ode_range] .- M_ * dx[ix_range]
+        out[ix_range] .= device_ode_output .- M_ * dx[ix_range]
     end
 
-    for d in get_static_injections_data(inputs)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = get_lookup(inputs)[bus_n]
+    for static_load in get_static_loads(inputs)
+        bus_ix = get_bus_ix(static_load)
         device!(
-            view(V_r, bus_ix),
-            view(V_i, bus_ix),
-            view(I_injections_r, bus_ix),
-            view(I_injections_i, bus_ix),
-            d,
-            inputs,
+            voltage_r[bus_ix],
+            voltage_i[bus_ix],
+            view(current_r, bus_ix),
+            view(current_i, bus_ix),
+            global_vars,
+            inner_vars,
+            static_load,
+            t,
+        )
+    end
+
+    for static_device in get_static_injectors(inputs)
+        bus_ix = get_bus_ix(static_device)
+        device!(
+            voltage_r[bus_ix],
+            voltage_i[bus_ix],
+            view(current_r, bus_ix),
+            view(current_i, bus_ix),
+            global_vars,
+            inner_vars,
+            static_device,
             t,
         )
     end
 
     if has_dyn_lines(inputs)
-        for br in get_dynamic_branches(inputs)
-            arc = PSY.get_arc(br)
-            n_states = PSY.get_n_states(br)
-            from_bus_number = PSY.get_number(arc.from)
-            to_bus_number = PSY.get_number(arc.to)
-            bus_ix_from = get_lookup(inputs)[from_bus_number]
-            bus_ix_to = get_lookup(inputs)[to_bus_number]
-            ix_range = range(branches_start, length = n_states)
-            ode_range = range(branches_count, length = n_states)
-            branches_count = branches_count + n_states
-            branches_start += n_states
+        branches_ode = get_branches_ode(cache, T)
+        for dynamic_branch in get_dynamic_branches(inputs)
+            ix_range = get_ix_range(dynamic_branch)
+            branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
+            branch_states = @view x[ix_range]
+            bus_ix_from = get_bus_ix_from(dynamic_branch)
+            bus_ix_to = get_bus_ix_to(dynamic_branch)
             branch!(
-                x,
-                dx,
-                branches_ode,
+                branch_states,
+                branch_output_ode,
                 #Get Voltage data
-                view(V_r, bus_ix_from),
-                view(V_i, bus_ix_from),
-                view(V_r, bus_ix_to),
-                view(V_i, bus_ix_to),
+                voltage_r[bus_ix_from],
+                voltage_i[bus_ix_from],
+                voltage_r[bus_ix_to],
+                voltage_i[bus_ix_to],
                 #Get Current data
-                view(I_injections_r, bus_ix_from),
-                view(I_injections_i, bus_ix_from),
-                view(I_injections_r, bus_ix_to),
-                view(I_injections_i, bus_ix_to),
-                ix_range,
-                ode_range,
-                br,
-                inputs,
+                view(current_r, bus_ix_from),
+                view(current_i, bus_ix_from),
+                view(current_r, bus_ix_to),
+                view(current_i, bus_ix_to),
+                dynamic_branch,
             )
             M_ = @view M[ix_range, ix_range]
-            out[ix_range] .= branches_ode[ode_range] .- M_ * dx[ix_range]
+            out[ix_range] .= branch_output_ode .- M_ * dx[ix_range]
         end
     end
-
-    out[bus_range] .=
-        Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i) .-
-        M[bus_range, bus_range] * dx[bus_range]
+    voltages = @view x[bus_range]
+    M_ = @view M[bus_range, bus_range]
+    out[bus_range] .= network_model(inputs, current_balance, voltages) .- M_ * dx[bus_range]
+    return
 end
 
-function system_mass_matrix!(dx, x::AbstractArray{U}, inputs::SimulationInputs, t) where {U}
-    I_injections_r = get_aux_arrays(inputs)[1]
-    I_injections_i = get_aux_arrays(inputs)[2]
-    injection_ode = get_aux_arrays(inputs)[3]
-    branches_ode = get_aux_arrays(inputs)[4]
+"""
+Instantiate a MassMatrixModel for ODE inputs.
+"""
+function MassMatrixModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
+    return SystemModel{MassMatrixModel}(inputs, Ctype(system_mass_matrix!, inputs))
+end
 
-    #Index Setup
-    bus_size = get_bus_count(inputs)
-    bus_vars_count = 2 * bus_size
-    bus_range = 1:bus_vars_count
-    injection_start = get_injection_pointer(inputs)
-    injection_count = 1
-    branches_start = get_branches_pointer(inputs)
-    branches_count = 1
-    update_global_vars!(inputs, x)
+function MassMatrixModel(
+    inputs::SimulationInputs,
+    x0_init::Vector{T},
+    ::Type{Ctype},
+) where {T <: Float64, Ctype <: JacobianCache}
+    U = ForwardDiff.Dual{
+        typeof(ForwardDiff.Tag(system_mass_matrix!, T)),
+        T,
+        ForwardDiff.pickchunksize(length(x0_init)),
+    }
+    return SystemModel{MassMatrixModel}(inputs, Ctype{U}(system_mass_matrix!, inputs))
+end
 
-    #Network quantities
-    V_r = @view x[1:bus_size]
-    V_i = @view x[(bus_size + 1):bus_vars_count]
-    # I_injections_i = zeros(U, length(I_injections_i))
-    #I_injections_r = zeros(U, length(I_injections_r))
-    # injection_ode = zeros(U, length(get_aux_arrays(inputs)[3]))
-    # branches_ode = zeros(U, length(get_aux_arrays(inputs)[4]))
-    fill!(I_injections_r, 0.0)
-    fill!(I_injections_i, 0.0)
+function (m::SystemModel{MassMatrixModel, C})(
+    du::AbstractArray{T},
+    u::AbstractArray{U},
+    p,
+    t,
+) where {C <: Cache, U <: Real, T <: Real}
+    system_mass_matrix!(du, u, m.inputs, m.cache, t)
+end
 
-    for d in get_injectors_data(inputs)
-        dynamic_device = PSY.get_dynamic_injector(d)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = get_lookup(inputs)[bus_n]
-        n_states = PSY.get_n_states(dynamic_device)
-        ix_range = range(injection_start, length = n_states)
-        ode_range = range(injection_count, length = n_states)
-        injection_count = injection_count + n_states
-        injection_start = injection_start + n_states
+function system_mass_matrix!(
+    dx::Vector{T},
+    x::Vector{V},
+    inputs::SimulationInputs,
+    cache::Cache,
+    t,
+) where {T <: Real, V <: Real}
+    update_global_vars!(cache, inputs, x)
+
+    # Global quantities
+    system_ode_output = get_ode_output(cache, V)
+    current_balance = get_current_balance(cache, V)
+    fill!(current_balance, zero(V))
+    bus_counts = get_bus_count(inputs)
+    bus_range = get_bus_range(inputs)
+    voltage_r = @view x[1:bus_counts]
+    voltage_i = @view x[(bus_counts + 1):bus_range[end]]
+    current_r = @view current_balance[1:bus_counts]
+    current_i = @view current_balance[(bus_counts + 1):bus_range[end]]
+    global_vars = get_global_vars(cache, V)
+    inner_vars = get_inner_vars(cache, V)
+
+    for dynamic_device in get_dynamic_injectors(inputs)
+        ix_range = get_ix_range(dynamic_device)
+        device_ode_output = @view system_ode_output[get_ode_ouput_range(dynamic_device)]
+        device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
+        device_states = @view x[ix_range]
+        bus_ix = get_bus_ix(dynamic_device)
+
         device!(
-            x,
-            injection_ode,
-            view(V_r, bus_ix),
-            view(V_i, bus_ix),
-            view(I_injections_r, bus_ix),
-            view(I_injections_i, bus_ix),
-            ix_range,
-            ode_range,
+            device_states,
+            device_ode_output,
+            voltage_r[bus_ix],
+            voltage_i[bus_ix],
+            view(current_r, bus_ix),
+            view(current_i, bus_ix),
+            global_vars,
+            device_inner_vars,
             dynamic_device,
-            inputs,
             t,
         )
-        dx[ix_range] .= injection_ode[ode_range]
+        dx[ix_range] .= device_ode_output
     end
 
-    for d in get_static_injections_data(inputs)
-        bus_n = PSY.get_number(PSY.get_bus(d))
-        bus_ix = get_lookup(inputs)[bus_n]
+    for static_load in get_static_loads(inputs)
+        bus_ix = get_bus_ix(static_load)
         device!(
-            view(V_r, bus_ix),
-            view(V_i, bus_ix),
-            view(I_injections_r, bus_ix),
-            view(I_injections_i, bus_ix),
-            d,
-            inputs,
+            voltage_r[bus_ix],
+            voltage_i[bus_ix],
+            view(current_r, bus_ix),
+            view(current_i, bus_ix),
+            global_vars,
+            inner_vars,
+            static_load,
+            t,
+        )
+    end
+
+    for static_device in get_static_injectors(inputs)
+        bus_ix = get_bus_ix(static_device)
+        device!(
+            voltage_r[bus_ix],
+            voltage_i[bus_ix],
+            view(current_r, bus_ix),
+            view(current_i, bus_ix),
+            global_vars,
+            inner_vars,
+            static_device,
             t,
         )
     end
 
     if has_dyn_lines(inputs)
-        for br in get_dynamic_branches(inputs)
-            arc = PSY.get_arc(br)
-            n_states = PSY.get_n_states(br)
-            from_bus_number = PSY.get_number(arc.from)
-            to_bus_number = PSY.get_number(arc.to)
-            bus_ix_from = get_lookup(inputs)[from_bus_number]
-            bus_ix_to = get_lookup(inputs)[to_bus_number]
-            ix_range = range(branches_start, length = n_states)
-            ode_range = range(branches_count, length = n_states)
-            branches_count = branches_count + n_states
-            branches_start += n_states
+        branches_ode = get_branches_ode(cache, T)
+        for dynamic_branch in get_dynamic_branches(inputs)
+            ix_range = get_ix_range(dynamic_branch)
+            branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
+            branch_states = @view x[ix_range]
+            bus_ix_from = get_bus_ix_from(dynamic_branch)
+            bus_ix_to = get_bus_ix_to(dynamic_branch)
             branch!(
-                x,
-                dx,
-                branches_ode,
+                branch_states,
+                branch_output_ode,
                 #Get Voltage data
-                view(V_r, bus_ix_from),
-                view(V_i, bus_ix_from),
-                view(V_r, bus_ix_to),
-                view(V_i, bus_ix_to),
+                voltage_r[bus_ix_from],
+                voltage_i[bus_ix_from],
+                voltage_r[bus_ix_to],
+                voltage_i[bus_ix_to],
                 #Get Current data
-                view(I_injections_r, bus_ix_from),
-                view(I_injections_i, bus_ix_from),
-                view(I_injections_r, bus_ix_to),
-                view(I_injections_i, bus_ix_to),
-                ix_range,
-                ode_range,
-                br,
-                inputs,
+                view(current_r, bus_ix_from),
+                view(current_i, bus_ix_from),
+                view(current_r, bus_ix_to),
+                view(current_i, bus_ix_to),
+                dynamic_branch,
             )
-            dx[ix_range] .= branches_ode[ode_range]
+            dx[ix_range] .= branch_output_ode
         end
     end
-
-    dx[bus_range] .= Ybus_current_kirchoff(inputs, V_r, V_i, I_injections_r, I_injections_i)
+    voltages = @view x[bus_range]
+    dx[bus_range] .= network_model(inputs, current_balance, voltages)
+    return
 end

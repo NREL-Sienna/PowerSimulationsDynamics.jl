@@ -1,55 +1,63 @@
+struct FixedFrequency end
 struct ReferenceBus end
 
-function attach_frequency_reference!(inputs::SimulationInputs, d::PSY.DynamicGenerator)
-    inputs.global_vars[:ω_sys_index] = inputs.global_index[PSY.get_name(d)][:ω]
-    return
+function _get_frequency_state(d::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator}
+    return get_global_index(d)[:ω]
 end
 
-function attach_frequency_reference!(inputs::SimulationInputs, d::PSY.DynamicInverter)
-    inputs.global_vars[:ω_sys_index] = inputs.global_index[PSY.get_name(d)][:ω_oc]
-    return
+function _get_frequency_state(d::DynamicWrapper{T}) where {T <: PSY.DynamicInverter}
+    return get_global_index(d)[:ω_oc]
 end
 
-function attach_frequency_reference!(inputs::SimulationInputs, ::PSY.Source)
-    inputs.global_vars[:ω_sys_index] = 0
-    return
+function _get_frequency_state(d::DynamicWrapper{PSY.PeriodicVariableSource})
+    return 0
 end
 
-function attach_frequency_reference!(input::SimulationInputs, d::PSY.StaticInjection)
-    return attach_frequency_reference!(input, PSY.get_dynamic_injector(d))
-end
-
-function set_frequency_reference!(inputs::SimulationInputs, sys::PSY.System)
-    set_frequency_reference!(ReferenceBus, inputs, sys)
-end
-
-function set_frequency_reference!(
-    ::Type{ReferenceBus},
-    inputs::SimulationInputs,
-    sys::PSY.System,
+function get_frequency_reference!(
+    ::Type{FixedFrequency},
+    ::Vector,
+    static_injection_data::Vector,
 )
-    ref_devices = PSY.get_components(
-        PSY.StaticInjection,
-        sys,
-        x ->
-            PSY.get_bustype(PSY.get_bus(x)) == PSY.BusTypes.REF &&
-                !isa(x, PSY.ElectricLoad) &&
-                PSY.get_available(x),
-    )
-    if length(ref_devices) > 1
+    ref_devices = filter(x -> get_bus_category(x) == SLACKBus, static_injection_data)
+    if length(ref_devices) < 1
         throw(
             IS.ConflictingInputsError(
-                "More than one source or generator in the REF Bus is not supported in ReferenceBus model",
+                "InfiniteBus model requires at least one bus of type BusTypes.REF with a Source connected to it",
             ),
         )
-    elseif length(ref_devices) < 1
-        throw(
-            IS.ConflictingInputsError(
-                "ReferenceBus model requires at least one bus of type BusTypes.REF with a DynamicInjection or Source device connected to it",
-            ),
-        )
-    else
-        attach_frequency_reference!(inputs, first(ref_devices))
     end
-    return
+    return 0
+end
+
+function get_frequency_reference(
+    ::Type{ReferenceBus},
+    dynamic_injection_data::Vector,
+    static_injection_data::Vector,
+)
+    reference = -1
+    static_ref_devices = filter(x -> get_bus_category(x) == SLACKBus, static_injection_data)
+    if isempty(static_ref_devices)
+        ref_devices = filter(x -> get_bus_category(x) == SLACKBus, dynamic_injection_data)
+        if length(ref_devices) > 1
+            throw(
+                IS.ConflictingInputsError(
+                    "More than one source or generator in the REF Bus is not supported in ReferenceBus model",
+                ),
+            )
+        elseif length(ref_devices) < 1
+            throw(
+                IS.ConflictingInputsError(
+                    "ReferenceBus model requires at least one bus of type BusTypes.REF with a DynamicInjection or Source device connected to it",
+                ),
+            )
+        else
+            reference = _get_frequency_state(first(ref_devices))
+        end
+    else
+        @warn(
+            "The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency"
+        )
+        reference = 0
+    end
+    return reference
 end

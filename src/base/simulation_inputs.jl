@@ -1,193 +1,250 @@
 struct SimulationInputs
-    base_power::Float64
-    base_frequency::Float64
-    injectors_data::Vector{<:PSY.StaticInjection}
-    static_injection_data::Vector{<:PSY.StaticInjection}
-    dynamic_branches::Vector{PSY.DynamicBranch}
-    counts::Base.ImmutableDict{Symbol, Int}
-    Ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
+    dynamic_injectors::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
+    static_injectors::Vector
+    static_loads::Vector
+    dynamic_branches::Vector{BranchWrapper}
+    injection_n_states::Int
+    branches_n_states::Int
+    variable_count::Int
+    inner_vars_count::Int
+    bus_count::Int
+    ode_range::UnitRange{Int}
+    ybus_rectangular::SparseArrays.SparseMatrixCSC{Float64, Int}
     dyn_lines::Bool
-    voltage_buses_ix::Vector{Int}
-    current_buses_ix::Vector{Int}
-    global_index::Dict{String, Dict{Symbol, Int}}
-    total_shunts::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
-    global_vars::Dict{Symbol, Real}
+    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int}
     lookup::Dict{Int, Int}
     DAE_vector::Vector{Bool}
-    mass_matrix::SparseArrays.SparseMatrixCSC{Float64, Int}
-    aux_arrays::Dict{Int, Vector}
-    tspan::NTuple{2, Float64}
-end
+    mass_matrix::LinearAlgebra.Diagonal{Float64}
+    global_vars_update_pointers::Dict{Int, Int}
 
-function SimulationInputs(sys::PSY.System, tspan::NTuple{2, Float64} = (0.0, 0.0))
-    injector_data = PSY.get_components(
-        PSY.StaticInjection,
-        sys,
-        x -> PSY.get_dynamic_injector(x) !== nothing && PSY.get_available(x),
-    )
+    function SimulationInputs(sys::PSY.System, frequency_reference)
+        n_buses = get_n_buses(sys)
+        Ybus, lookup = _get_ybus(sys)
+        wrapped_branches = _wrap_dynamic_branches(sys, lookup)
+        has_dyn_lines = !isempty(wrapped_branches)
+        branch_state_counts = 2 * length(wrapped_branches)
+        injection_start = 2 * n_buses + branch_state_counts + 1
+        wrapped_injectors = _wrap_dynamic_injector_data(sys, lookup, injection_start)
+        var_count = wrapped_injectors[end].ix_range[end]
+        mass_matrix = _make_mass_matrix(wrapped_injectors, var_count, n_buses)
+        DAE_vector = _make_DAE_vector(mass_matrix, var_count, n_buses)
+        total_shunts = _make_total_shunts(wrapped_branches, n_buses)
+        wrapped_loads = _wrap_loads(sys, lookup)
+        wrapped_static_injectors = _wrap_static_injectors(sys, lookup)
+        _adjust_states!(
+            DAE_vector,
+            mass_matrix,
+            total_shunts,
+            n_buses,
+            PSY.get_frequency(sys),
+        )
 
-    if isempty(injector_data)
-        error("System doesn't contain any DynamicInjection devices")
+        global_vars = _make_global_variable_index(
+            wrapped_injectors,
+            wrapped_static_injectors,
+            frequency_reference,
+        )
+
+        inner_vars_count = 0
+        for i in length(wrapped_injectors):-1:1
+            if length(wrapped_injectors[i].inner_vars_index) > 0
+                inner_vars_count = wrapped_injectors[i].inner_vars_index[end]
+                break
+            end
+        end
+        IS.@assert_op inner_vars_count > 0
+        new(
+            wrapped_injectors,
+            wrapped_static_injectors,
+            wrapped_loads,
+            wrapped_branches,
+            var_count - 2 * n_buses - branch_state_counts,
+            branch_state_counts,
+            var_count,
+            inner_vars_count,
+            n_buses,
+            injection_start:var_count,
+            Ybus,
+            has_dyn_lines,
+            total_shunts,
+            lookup,
+            DAE_vector,
+            mass_matrix,
+            global_vars,
+        )
     end
-
-    Ybus, lookup = _get_Ybus(sys)
-    n_buses = length(PSY.get_bus_numbers(sys))
-
-    dynamic_branches =
-        collect(PSY.get_components(PSY.DynamicBranch, sys, x -> PSY.get_available(x)))
-
-    branch_state_counts = 2 * length(dynamic_branches)
-    injector_state_count = sum(PSY.get_n_states.(PSY.get_dynamic_injector.(injector_data)))
-    var_count = injector_state_count + 2 * n_buses + branch_state_counts
-
-    mass_matrix = SparseArrays.sparse(LinearAlgebra.I, var_count, var_count)
-    mass_matrix[1:(2 * n_buses), 1:(2 * n_buses)] .= 0.0
-
-    static_injection_data = PSY.get_components(
-        PSY.StaticInjection,
-        sys,
-        x -> PSY.get_dynamic_injector(x) === nothing && PSY.get_available(x),
-    )
-
-    counts = Base.ImmutableDict(
-        :injection_n_states => injector_state_count,
-        :branches_n_states => branch_state_counts,
-        :first_dyn_injection_pointer => 2 * n_buses + branch_state_counts + 1,
-        :first_dyn_branch_point => isempty(dynamic_branches) ? 0 : 2 * n_buses + 1,
-        :total_variables => var_count,
-        :bus_count => n_buses,
-    )
-
-    return SimulationInputs(
-        PSY.get_base_power(sys),
-        PSY.get_frequency(sys),
-        collect(injector_data),
-        collect(static_injection_data),
-        dynamic_branches,
-        counts,
-        Ybus,
-        !isempty(dynamic_branches),
-        Vector{Int}(),
-        collect(1:n_buses),
-        MAPPING_DICT(),
-        SparseArrays.spzeros(Complex{Float64}, n_buses, n_buses),
-        GLOBAL_VARS_IX(),
-        lookup,
-        _init_DAE_vector!(var_count, n_buses),
-        mass_matrix,
-        Dict{Int, Vector{Real}}(),
-        tspan,
-    )
 end
 
-get_base_power(inputs::SimulationInputs) = inputs.base_power
-get_base_frequency(inputs::SimulationInputs) = inputs.base_frequency
-get_injectors_data(inputs::SimulationInputs) = inputs.injectors_data
+get_dynamic_injectors(inputs::SimulationInputs) = inputs.dynamic_injectors
 get_dynamic_branches(inputs::SimulationInputs) = inputs.dynamic_branches
-get_static_injections_data(inputs::SimulationInputs) = inputs.static_injection_data
-get_counts(inputs::SimulationInputs) = inputs.counts
-get_voltage_buses_ix(inputs::SimulationInputs) = inputs.voltage_buses_ix
-get_current_buses_ix(inputs::SimulationInputs) = inputs.current_buses_ix
-get_global_index(inputs::SimulationInputs) = inputs.global_index
-get_Ybus(inputs::SimulationInputs) = inputs.Ybus
+get_static_injectors(inputs::SimulationInputs) = inputs.static_injectors
+get_static_loads(inputs::SimulationInputs) = inputs.static_loads
+get_ybus(inputs::SimulationInputs) = inputs.ybus_rectangular
 get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
-get_global_vars(inputs::SimulationInputs) = inputs.global_vars
 get_lookup(inputs::SimulationInputs) = inputs.lookup
 get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
 get_mass_matrix(inputs::SimulationInputs) = inputs.mass_matrix
-get_aux_arrays(inputs::SimulationInputs) = inputs.aux_arrays
-get_tspan(inputs::SimulationInputs) = inputs.tspan
 has_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
+get_global_vars_update_pointers(inputs::SimulationInputs) =
+    inputs.global_vars_update_pointers
 
-get_injection_pointer(inputs::SimulationInputs) =
-    get_counts(inputs)[:first_dyn_injection_pointer]
-get_branches_pointer(inputs::SimulationInputs) = get_counts(inputs)[:first_dyn_branch_point]
-get_n_injection_states(inputs::SimulationInputs) = get_counts(inputs)[:injection_n_states]
-get_n_branches_states(inputs::SimulationInputs) = get_counts(inputs)[:branches_n_states]
-get_variable_count(inputs::SimulationInputs) = get_counts(inputs)[:total_variables]
-get_device_index(inputs::SimulationInputs, device::D) where {D <: PSY.DynamicInjection} =
-    get_global_index(inputs)[device.name]
-get_bus_count(inputs::SimulationInputs) = get_counts(inputs)[:bus_count]
-get_ω_sys(inputs::SimulationInputs) = get_global_vars(inputs)[:ω_sys]
+get_injection_n_states(inputs::SimulationInputs) = inputs.injection_n_states
+get_branches_n_states(inputs::SimulationInputs) = inputs.branches_n_states
+get_variable_count(inputs::SimulationInputs) = inputs.variable_count
+get_inner_vars_count(inputs::SimulationInputs) = inputs.inner_vars_count
+get_ode_ouput_range(inputs::SimulationInputs) = inputs.ode_range
+get_bus_count(inputs::SimulationInputs) = inputs.bus_count
+get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
 
-function change_vector_type!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
-    for d in get_injectors_data(inputs)
-        attach_inner_vars!(PSY.get_dynamic_injector(d), T)
+# Utility function not to be used for performance sensitive operations
+function get_voltage_buses_ix(inputs::SimulationInputs)
+    n_buses = get_bus_count(inputs::SimulationInputs)
+    return findall(get_DAE_vector(inputs)[1:n_buses])
+end
+
+# Utility function not to be used for performance sensitive operations
+function get_current_buses_ix(inputs::SimulationInputs)
+    n_buses = get_bus_count(inputs::SimulationInputs)
+    return findall(.!get_DAE_vector(inputs)[1:n_buses])
+end
+
+"""
+SimulationInputs build function for MassMatrixModels
+"""
+function SimulationInputs(
+    ::Type{MassMatrixModel},
+    sys::PSY.System,
+    frequency_reference = ReferenceBus,
+)
+    return SimulationInputs(sys, frequency_reference)
+end
+
+"""
+SimulationInputs build function for ResidualModels
+"""
+function SimulationInputs(
+    ::Type{ResidualModel},
+    sys::PSY.System,
+    frequency_reference = ReferenceBus,
+)
+    return SimulationInputs(sys, frequency_reference)
+end
+
+function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::Int)
+    injector_data = get_injectors_with_dynamics(sys)
+    isempty(injector_data) && error("System doesn't contain any DynamicInjection devices")
+    # TODO: Needs a better container that isn't parametrized on an abstract type
+    wrapped_injector = Vector(undef, length(injector_data))
+    injection_count = 1
+    inner_vars_count = 1
+    sys_base_power = PSY.get_base_power(sys)
+    sys_base_freq = PSY.get_frequency(sys)
+    for (ix, device) in enumerate(injector_data)
+        @debug "Wrapping $(PSY.get_name(device))"
+        dynamic_device = PSY.get_dynamic_injector(device)
+        n_states = PSY.get_n_states(dynamic_device)
+        ix_range = range(injection_start, length = n_states)
+        ode_range = range(injection_count, length = n_states)
+        bus_n = PSY.get_number(PSY.get_bus(device))
+        bus_ix = lookup[bus_n]
+        inner_vars_range =
+            range(inner_vars_count, length = get_inner_vars_count(dynamic_device))
+        @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range"
+        wrapped_injector[ix] = DynamicWrapper(
+            device,
+            bus_ix,
+            ix_range,
+            ode_range,
+            inner_vars_range,
+            sys_base_power,
+            sys_base_freq,
+        )
+        injection_count += n_states
+        injection_start += n_states
+        inner_vars_count =
+            length(inner_vars_range) > 0 ? inner_vars_range[end] : inner_vars_count
     end
-    return
+    return wrapped_injector
 end
 
-function simulation_pre_step!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
-    add_aux_arrays!(inputs, T)
-    change_vector_type!(inputs, T)
-    return
+function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
+    branches_start = 2 * get_n_buses(sys) + 1
+    sys_base_power = PSY.get_base_power(sys)
+    sys_base_freq = PSY.get_frequency(sys)
+    dynamic_branches = get_dynamic_branches(sys)
+    wrapped_branches = Vector{BranchWrapper}(undef, length(dynamic_branches))
+    if !isempty(wrapped_branches)
+        branches_count = 1
+        for (ix, br) in enumerate(dynamic_branches)
+            @debug "Wrapping Branch $(PSY.get_name(br))"
+            arc = PSY.get_arc(br)
+            n_states = PSY.get_n_states(br)
+            from_bus_number = PSY.get_number(arc.from)
+            to_bus_number = PSY.get_number(arc.to)
+            bus_ix_from = lookup[from_bus_number]
+            bus_ix_to = lookup[to_bus_number]
+            ix_range = range(branches_start, length = n_states)
+            ode_range = range(branches_count, length = n_states)
+            @debug "ix_range=$ix_range ode_range=$ode_range"
+            wrapped_branches[ix] = BranchWrapper(
+                br,
+                bus_ix_from,
+                bus_ix_to,
+                ix_range,
+                ode_range,
+                sys_base_power,
+                sys_base_freq,
+            )
+            branches_count += n_states
+            branches_start += n_states
+        end
+    else
+        @debug("System doesn't contain Dynamic Branches")
+    end
+    return wrapped_branches
 end
 
-function add_aux_arrays!(inputs::SimulationInputs, ::Type{T}) where {T <: Real}
-    @debug "Auxiliary Arrays created with Type $(T)"
-    bus_count = get_bus_count(inputs)
-    get_aux_arrays(inputs)[1] = collect(zeros(T, bus_count))                       #I_injections_r
-    get_aux_arrays(inputs)[2] = collect(zeros(T, bus_count))                       #I_injections_i
-    get_aux_arrays(inputs)[3] = collect(zeros(T, get_n_injection_states(inputs)))  #injection_ode
-    get_aux_arrays(inputs)[4] = collect(zeros(T, get_n_branches_states(inputs)))   #branches_ode
-    get_aux_arrays(inputs)[5] = collect(zeros(Complex{T}, bus_count))              #I_bus
-    get_aux_arrays(inputs)[6] = collect(zeros(T, 2 * bus_count))                   #I_balance
-    return
+function _wrap_static_injectors(sys::PSY.System, lookup::Dict{Int, Int})
+    static_injection_data = get_injection_without_dynamics(sys)
+    container = Vector{StaticWrapper}(undef, length(static_injection_data))
+    for (ix, ld) in enumerate(static_injection_data)
+        bus_n = PSY.get_number(PSY.get_bus(ld))
+        bus_ix = lookup[bus_n]
+        container[ix] = StaticWrapper(ld, bus_ix)
+    end
+    return container
 end
 
-function _get_Ybus(sys::PSY.System)
+function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
+    # This needs to change if we implement dynamic load models
+    static_loads = PSY.get_components(PSY.ElectricLoad, sys)
+    container = Vector(undef, length(static_loads))
+    isempty(static_loads) && return container
+    for (ix, ld) in enumerate(static_loads)
+        bus_n = PSY.get_number(PSY.get_bus(ld))
+        bus_ix = lookup[bus_n]
+        container[ix] = StaticWrapper(ld, bus_ix)
+    end
+    return container
+end
+
+function _get_ybus(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     dyn_lines = PSY.get_components(PSY.DynamicBranch, sys)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
         Ybus_ = PSY.Ybus(sys)
-        Ybus = Ybus_[:, :]
+        ybus = Ybus_[:, :]
         lookup = Ybus_.lookup[1]
+        ybus_rectangular = transform_ybus_to_rectangular(ybus)
         for br in dyn_lines
-            ybus_update!(Ybus, br, lookup, -1.0)
+            ybus_update!(ybus_rectangular, br, lookup, -1.0)
         end
     else
-        Ybus = SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}(zeros(n_buses, n_buses))
+        ybus_rectangular =
+            SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2 * n_buses, 2 * n_buses))
         lookup = Dict{Int.Int}()
     end
-    return Ybus, lookup
-end
-
-function _init_DAE_vector!(n_vars::Int, n_buses::Int)
-    DAE_vector = trues(n_vars)
-    DAE_vector[1:(n_buses * 2)] .= false
-    return DAE_vector
-end
-
-function _dynamic_lines_inputs!(
-    inputs::SimulationInputs,
-    state_space_ix::Vector{Int},
-    n_buses::Int,
-)
-    static_bus_var_count = 2 * n_buses
-    branches_n_states = 0
-    if inputs.dyn_lines
-        global_state_index = inputs.global_index
-        for br in get_dynamic_branches(inputs)
-            index_dynamic_lines!(inputs, br, n_buses)
-            add_states_to_global!(global_state_index, state_space_ix, br)
-            branches_n_states += PSY.get_n_states(br)
-        end
-
-        for (ix, val) in enumerate(inputs.DAE_vector[1:n_buses])
-            if val
-                #This V_ix should be V_number.
-                global_state_index["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
-                static_bus_var_count -= 2
-                push!(inputs.voltage_buses_ix, ix)
-                @assert static_bus_var_count >= 0
-            end
-        end
-        unique!(inputs.voltage_buses_ix)
-        setdiff!(inputs.current_buses_ix, inputs.voltage_buses_ix)
-    else
-        @debug("System doesn't contain Dynamic Branches")
-    end
-    return branches_n_states, static_bus_var_count
+    return ybus_rectangular, lookup
 end
 
 function _static_injection_inputs!(inputs::SimulationInputs, ::Vector{Int}, sys::PSY.System)
@@ -200,45 +257,25 @@ function _static_injection_inputs!(inputs::SimulationInputs, ::Vector{Int}, sys:
     return
 end
 
-function _dynamic_injection_inputs!(inputs::SimulationInputs, state_space_ix::Vector{Int})
-    dynamic_injection_states = 0
-    for d in get_injectors_data(inputs)
-        @debug PSY.get_name(d)
-        _attach_control_refs!(d)
-        dynamic_injector = PSY.get_dynamic_injector(d)
-        dynamic_injection_states += PSY.get_n_states(dynamic_injector)
-        index_dynamic_injection(inputs, dynamic_injector, state_space_ix)
+function _make_mass_matrix(wrapped_injectors, var_count::Int, n_buses::Int)
+    mass_matrix = LinearAlgebra.Diagonal(ones(var_count))
+    mass_matrix[1:(2 * n_buses), 1:(2 * n_buses)] .= 0.0
+    for d in wrapped_injectors
+        device_mass_matrix_entries!(mass_matrix, d)
     end
-    return dynamic_injection_states
+    return mass_matrix
 end
 
-function _mass_matrix_inputs!(inputs::SimulationInputs)
-    for d in PSID.get_injectors_data(inputs)
-        dynamic_injector = PSY.get_dynamic_injector(d)
-        device_mass_matrix_entries!(inputs, dynamic_injector)
-    end
-    if has_dyn_lines(inputs)
-        mass_matrix = get_mass_matrix(inputs)
-        sys_f = get_base_frequency(inputs)
-        shunts = get_total_shunts(inputs)
-        n_buses = get_bus_count(inputs)
-        for i in 1:n_buses
-            val = imag(shunts[i, i])
-            if val > 0
-                mass_matrix[i, i] =
-                    mass_matrix[i + n_buses, i + n_buses] = val * (1 / (2.0 * π * sys_f))
-            end
-        end
-    end
+function _init_DAE_vector(var_count::Int, n_buses::Int)
+    DAE_vector = trues(var_count)
+    DAE_vector[1:(n_buses * 2)] .= false
+    return DAE_vector
 end
 
-function _dae_vector_update!(inputs::SimulationInputs)
-    mass_matrix = get_mass_matrix(inputs)
-    DAE_vector = get_DAE_vector(inputs)
-    bus_vars_count = 2 * get_bus_count(inputs)
-    bus_range = 1:bus_vars_count
-    injection_start = get_injection_pointer(inputs)
-    ode_range = injection_start:get_variable_count(inputs)
+function _make_DAE_vector(mass_matrix::AbstractArray, var_count::Int, n_buses::Int)
+    DAE_vector = _init_DAE_vector(var_count, n_buses)
+    bus_range = 1:(2 * n_buses)
+    ode_range = (2 * n_buses + 1):var_count
     mass_buses = @view mass_matrix[bus_range, bus_range]
     DAE_ode = @view DAE_vector[ode_range]
     mass_ode = @view mass_matrix[ode_range, ode_range]
@@ -248,51 +285,56 @@ function _dae_vector_update!(inputs::SimulationInputs)
     for i in eachindex(DAE_ode)
         DAE_ode[i] = (mass_ode[i, i] > 0.0)
     end
-    if has_dyn_lines(inputs)
-        branches_range =
-            range(get_branches_pointer(inputs), length = get_n_branches_states(inputs))
-        mass_branches = @view mass_matrix[branches_range, branches_range]
-        for i in eachindex(DAE_vector[branches_range])
-            IS.@assert_op DAE_vector[branches_range][i] == (mass_branches[i, i] > 0.0)
-        end
-    end
+    return DAE_vector
 end
 
-# Default implementation for both models. This implementation is to future proof if there is
-# a divergence between the required build methods
-function _build!(inputs::SimulationInputs, sys::PSY.System)
-    n_buses = get_bus_count(inputs)
-    state_space_ix = Int[n_buses * 2]
-    branches_n_states, static_bus_var_count =
-        _dynamic_lines_inputs!(inputs, state_space_ix, n_buses)
+function _make_total_shunts(wrapped_branches, n_buses::Int)
+    shunts = SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2 * n_buses, 2 * n_buses))
+    for br in wrapped_branches
+        bus_ix_from = get_bus_ix_from(br)
+        bus_ix_to = get_bus_ix_to(br)
+        b_from = PSY.get_b(br).from
+        b_to = PSY.get_b(br).to
+        shunts[bus_ix_from, bus_ix_from + n_buses] += b_from
+        shunts[bus_ix_to, bus_ix_to + n_buses] += b_to
+        shunts[bus_ix_from + n_buses, bus_ix_from] -= b_from
+        shunts[bus_ix_to + n_buses, bus_ix_to] -= b_to
+    end
+    return shunts
+end
 
-    _static_injection_inputs!(inputs, state_space_ix, sys)
-    injection_n_states = _dynamic_injection_inputs!(inputs, state_space_ix)
-
-    set_frequency_reference!(inputs, sys)
-    IS.@assert_op get_ω_sys(inputs) != -1
-
-    _mass_matrix_inputs!(inputs)
-    _dae_vector_update!(inputs)
-
-    IS.@assert_op injection_n_states == state_space_ix[1] - branches_n_states - n_buses * 2
-    IS.@assert_op n_buses * 2 - static_bus_var_count >= 0
-    IS.@assert_op length(inputs.DAE_vector) == state_space_ix[1]
-
-    @debug inputs.counts
+function _adjust_states!(
+    DAE_vector::BitVector,
+    mass_matrix::LinearAlgebra.Diagonal{Float64},
+    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int},
+    n_buses::Int,
+    sys_f::Float64,
+)
+    all(iszero.(total_shunts)) && return
+    line_constant = 1 / (2.0 * π * sys_f)
+    # Takes the upper quadrant of the rectangular shunts matrix
+    shunts = LinearAlgebra.diag(total_shunts[1:n_buses, (n_buses + 1):end])
+    for (ix, val) in enumerate(shunts)
+        if val > 0
+            @debug "Found shunt with value $val in bus index $ix"
+            mass_matrix[ix, ix] =
+                mass_matrix[ix + n_buses, ix + n_buses] = val * line_constant
+            DAE_vector[ix] = DAE_vector[ix + n_buses] = true
+        end
+    end
     return
 end
 
-"""
-SimulationInputs build function for MassMatrixModels
-"""
-function build!(inputs::SimulationInputs, ::Type{MassMatrixModel}, sys::PSY.System)
-    return _build!(inputs, sys)
-end
-
-"""
-SimulationInputs build function for ImplicitModels
-"""
-function build!(inputs::SimulationInputs, ::Type{ImplicitModel}, sys::PSY.System)
-    return _build!(inputs, sys)
+function _make_global_variable_index(
+    wrapped_injectors::Vector,
+    static_injection_data::Vector,
+    frequency_reference::Type{T},
+) where {T <: Union{FixedFrequency, ReferenceBus}}
+    global_vars_dict = get_vars_ix()
+    global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference(
+        frequency_reference,
+        wrapped_injectors,
+        static_injection_data,
+    )
+    return global_vars_dict
 end

@@ -5,7 +5,8 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P}},
+    inner_vars::AbstractVector,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     P0 = PSY.get_active_power(static)
@@ -48,19 +49,19 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        inner_vars[VR_gen_var] = V_R
+        inner_vars[VI_gen_var] = V_I
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        inner_vars[τe_var] = sol_x0[2]
+        inner_vars[τm_var] = sol_x0[2]
         #Not necessary to update Vf for AVR in Base Machine. Update eq_p:
         PSY.set_eq_p!(machine, sol_x0[3])
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        inner_vars[Vf_var] = sol_x0[3]
     end
 end
 
@@ -71,7 +72,8 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P}},
+    inner_vars::AbstractVector,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
     P0 = PSY.get_active_power(static)
@@ -123,18 +125,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        inner_vars[VR_gen_var] = V_R
+        inner_vars[VI_gen_var] = V_I
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        inner_vars[τe_var] = sol_x0[2]
+        inner_vars[τm_var] = sol_x0[2]
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        inner_vars[Vf_var] = sol_x0[3]
         #Update eq_p and ed_p for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.OneDOneQMachine)
         machine_states = @view device_states[machine_ix]
@@ -150,7 +152,8 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P}},
+    inner_vars::AbstractVector,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 
@@ -217,18 +220,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        inner_vars[VR_gen_var] = V_R
+        inner_vars[VI_gen_var] = V_I
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        inner_vars[τe_var] = sol_x0[2]
+        inner_vars[τm_var] = sol_x0[2]
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        inner_vars[Vf_var] = sol_x0[3]
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.MarconatoMachine)
         machine_states = @view device_states[machine_ix]
@@ -239,8 +242,8 @@ function initialize_mach_shaft!(
         machine_states[5] = sol_x0[8] #eq_pp
         machine_states[6] = sol_x0[9] #ed_pp
         #Update fluxes inner vars
-        get_inner_vars(dynamic_device)[ψq_var] = sol_x0[4]
-        get_inner_vars(dynamic_device)[ψd_var] = sol_x0[5]
+        inner_vars[ψq_var] = sol_x0[4]
+        inner_vars[ψd_var] = sol_x0[5]
     end
 end
 
@@ -251,7 +254,10 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
+    },
+    inner_vars::AbstractVector,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 
@@ -317,18 +323,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        inner_vars[VR_gen_var] = V_R
+        inner_vars[VI_gen_var] = V_I
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        inner_vars[τe_var] = sol_x0[2]
+        inner_vars[τm_var] = sol_x0[2]
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        inner_vars[Vf_var] = sol_x0[3]
         #Update eq_p and ed_p for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.SimpleMarconatoMachine)
         machine_states = @view device_states[machine_ix]
@@ -346,7 +352,10 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
+    },
+    inner_vars::AbstractVector,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 
@@ -409,18 +418,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        inner_vars[VR_gen_var] = V_R
+        inner_vars[VI_gen_var] = V_I
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        inner_vars[τe_var] = sol_x0[2]
+        inner_vars[τm_var] = sol_x0[2]
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        inner_vars[Vf_var] = sol_x0[3]
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.AndersonFouadMachine)
         machine_states = @view device_states[machine_ix]
@@ -431,8 +440,8 @@ function initialize_mach_shaft!(
         machine_states[5] = sol_x0[8] #eq_pp
         machine_states[6] = sol_x0[9] #ed_pp
         #Update fluxes inner vars
-        get_inner_vars(dynamic_device)[ψq_var] = sol_x0[4]
-        get_inner_vars(dynamic_device)[ψd_var] = sol_x0[5]
+        inner_vars[ψq_var] = sol_x0[4]
+        inner_vars[ψd_var] = sol_x0[5]
     end
 end
 
@@ -443,7 +452,8 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P}},
+    inner_vars::AbstractVector,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 
@@ -505,18 +515,18 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        inner_vars[VR_gen_var] = V_R
+        inner_vars[VI_gen_var] = V_I
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = ω0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        inner_vars[τe_var] = sol_x0[2]
+        inner_vars[τm_var] = sol_x0[2]
         #Update Vf for AVR in OneDOneQ Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        inner_vars[Vf_var] = sol_x0[3]
         #Update eq_p and ed_p for Machine
         machine_ix = get_local_state_ix(dynamic_device, PSY.SimpleAFMachine)
         machine_states = @view device_states[machine_ix]
@@ -530,7 +540,8 @@ end
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
+    inner_vars::AbstractVector,
 ) where {
     M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
     S <: PSY.Shaft,
@@ -654,20 +665,20 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        inner_vars[VR_gen_var] = V_R
+        inner_vars[VI_gen_var] = V_I
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = 1.0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        inner_vars[τe_var] = sol_x0[2]
+        inner_vars[τm_var] = sol_x0[2]
         #Update Vf for AVR in GENROU Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        inner_vars[Vf_var] = sol_x0[3]
         #Update Xad_Ifd for AVR in GENROU Machine
-        get_inner_vars(dynamic_device)[Xad_Ifd_var] = sol_x0[8]
+        inner_vars[Xad_Ifd_var] = sol_x0[8]
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, typeof(machine))
         machine_states = @view device_states[machine_ix]
@@ -681,7 +692,10 @@ end
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
+    },
+    inner_vars::AbstractVector,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #PowerFlow Data
@@ -773,20 +787,20 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        inner_vars[VR_gen_var] = V_R
+        inner_vars[VI_gen_var] = V_I
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = 1.0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        inner_vars[τe_var] = sol_x0[2]
+        inner_vars[τm_var] = sol_x0[2]
         #Update Vf for AVR in GENSAL Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        inner_vars[Vf_var] = sol_x0[3]
         #Update Xad_Ifd for AVR in GENSAL Machine
-        get_inner_vars(dynamic_device)[Xad_Ifd_var] = sol_x0[7]
+        inner_vars[Xad_Ifd_var] = sol_x0[7]
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, typeof(machine))
         machine_states = @view device_states[machine_ix]
@@ -799,7 +813,10 @@ end
 function initialize_mach_shaft!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
+    },
+    inner_vars::AbstractVector,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #PowerFlow Data
@@ -903,20 +920,20 @@ function initialize_mach_shaft!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        get_inner_vars(dynamic_device)[VR_gen_var] = V_R
-        get_inner_vars(dynamic_device)[VI_gen_var] = V_I
+        inner_vars[VR_gen_var] = V_R
+        inner_vars[VI_gen_var] = V_I
         #Update δ and ω of Shaft. Works for every Shaft.
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
         shaft_states[2] = 1.0 #ω
         #Update Mechanical and Electrical Torque on Generator
-        get_inner_vars(dynamic_device)[τe_var] = sol_x0[2]
-        get_inner_vars(dynamic_device)[τm_var] = sol_x0[2]
+        inner_vars[τe_var] = sol_x0[2]
+        inner_vars[τm_var] = sol_x0[2]
         #Update Vf for AVR in GENSAL Machine.
-        get_inner_vars(dynamic_device)[Vf_var] = sol_x0[3]
+        inner_vars[Vf_var] = sol_x0[3]
         #Update Xad_Ifd for AVR in GENSAL Machine
-        get_inner_vars(dynamic_device)[Xad_Ifd_var] = sol_x0[7]
+        inner_vars[Xad_Ifd_var] = sol_x0[7]
         #Update states for Machine
         machine_ix = get_local_state_ix(dynamic_device, typeof(machine))
         machine_states = @view device_states[machine_ix]
@@ -934,7 +951,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function initialize_mach_shaft!(
     device_states,
 static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P},
+    dynamic_device::PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #PowerFlow Data
 

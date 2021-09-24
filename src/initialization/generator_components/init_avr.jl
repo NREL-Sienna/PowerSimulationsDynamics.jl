@@ -1,52 +1,46 @@
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #In AVRFixed, V_ref is used as Vf
-    Vf = get_inner_vars(dynamic_device)[Vf_var]
-    PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vf)
-    PSY.set_Vf!(PSY.get_avr(dynamic_device), Vf)
+    Vf = inner_vars[Vf_var]
     #Update Control Refs
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = Vf
+    set_V_ref(dynamic_device, Vf)
 end
 
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #In AVRFixed, V_ref is used as Vf
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
-    )
-    #Solve V_ref
-    V_ref = Vm
+    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    #V_ref = Vm
     #Set Vf state equals to Vf0
     avr_ix = get_local_state_ix(dynamic_device, PSY.AVRSimple)
     avr_states = @view device_states[avr_ix]
     avr_states[1] = Vf0 #δ
     #Set V_ref
-    PSY.set_V_ref!(PSY.get_avr(dynamic_device), V_ref)
+    PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vm)
     #Update Control Refs
-    PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = V_ref
+    set_V_ref(dynamic_device, Vm)
 end
 
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
-    )
+    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -78,7 +72,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeI)
         avr_states = @view device_states[avr_ix]
@@ -92,15 +86,13 @@ end
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
-    )
+    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -136,7 +128,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeII)
         avr_states = @view device_states[avr_ix]
@@ -150,17 +142,15 @@ end
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain I_fd obtained from Machine:
-    Xad_Ifd0 = get_inner_vars(dynamic_device)[Xad_Ifd_var]
+    Xad_Ifd0 = inner_vars[Xad_Ifd_var]
     #Obtain measured terminal voltage
-    Vm0 = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
-    )
+    Vm0 = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -242,7 +232,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, typeof(avr))
         avr_states = @view device_states[avr_ix]
@@ -257,15 +247,13 @@ end
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
+    inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
-    Vf0 = get_inner_vars(dynamic_device)[Vf_var]
+    Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(
-        get_inner_vars(dynamic_device)[VR_gen_var]^2 +
-        get_inner_vars(dynamic_device)[VI_gen_var]^2,
-    )
+    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -292,7 +280,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        PSY.get_ext(dynamic_device)[CONTROL_REFS][V_ref_index] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
         avr_states = @view device_states[avr_ix]

@@ -11,44 +11,58 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test23.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test23.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#time span
+# time span
 tspan = (0.0, 4.0);
 
-#PSCAD benchmark data
-csv_file = joinpath(dirname(@__FILE__), "benchmarks/pscad/Test23/Test23_theta.csv")
+# PSCAD benchmark data
+csv_file = joinpath(TEST_FILES_DIR, "benchmarks/pscad/Test23/Test23_theta.csv")
 t_offset = 9.0
 
 #Define Fault using Callbacks
-Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
+Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
-@testset "Test 23 Droop Inverter ImplicitModel" begin
+@testset "Test 23 Droop Inverter ResidualModel" begin
     path = (joinpath(pwd(), "test-23"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             omib_sys, # system
             path,
             tspan,
             Pref_change,
         )
 
+        # Test Initial Condition
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test23_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
+
         #Solve problem
-        execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005)
+        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :θ_oc))
+        series = get_state_series(results, ("generator-102-1", :θ_oc))
         t = series[1]
         θ = series[2]
 
@@ -57,14 +71,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         t_pscad = M[:, 1] .- t_offset
         θ_pscad = M[:, 2]
 
-        diff = [0.0]
-        res = get_init_values_for_comparison(sim)
-        for (k, v) in test23_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
-        end
-        @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        # Test Transient Simulation Results
         @test LinearAlgebra.norm(θ - θ_pscad) <= 3e-2
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
@@ -78,7 +85,7 @@ end
     path = (joinpath(pwd(), "test-23"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
             MassMatrixModel,
             omib_sys, # system
@@ -87,15 +94,29 @@ end
             Pref_change,
         )
 
+        # Test Initial Condition
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test23_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
+
         #Solve problem
-        execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005)
+        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         #Obtain data for angles
-        series = get_state_series(sim, ("generator-102-1", :θ_oc))
+        series = get_state_series(results, ("generator-102-1", :θ_oc))
         t = series[1]
         θ = series[2]
 
@@ -104,14 +125,7 @@ end
         t_pscad = M[:, 1] .- t_offset
         θ_pscad = M[:, 2]
 
-        diff = [0.0]
-        res = get_init_values_for_comparison(sim)
-        for (k, v) in test23_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
-        end
-        @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+        # Test Transient Simulation Results
         @test LinearAlgebra.norm(θ - θ_pscad) <= 3e-2
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 

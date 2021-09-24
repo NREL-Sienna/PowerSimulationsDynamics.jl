@@ -1,5 +1,4 @@
 
-# TODO: Implement sparse methods when moving to large scale
 struct SmallSignalOutput
     reduced_jacobian::Matrix{Float64}
     eigenvalues::Vector{Complex{Float64}}
@@ -19,16 +18,16 @@ function _determine_stability(vals::Vector{Complex{Float64}})
 end
 
 function _calculate_forwardiff_jacobian(
-    sim::Simulation{ImplicitModel},
+    sim::Simulation{ResidualModel},
     x_eval::Vector{Float64},
 )
-    var_count = get_variable_count(sim.simulation_inputs)
+    var_count = get_variable_count(sim.inputs)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
     sysf! = (out, x) -> system_implicit!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
         x,              #states
-        sim.simulation_inputs,     #Parameters
+        sim.inputs,     #Parameters
         0.0,            #time equals to zero.
     )
     out = zeros(var_count) #Define a vector of zeros for the output
@@ -40,11 +39,11 @@ function _calculate_forwardiff_jacobian(
     sim::Simulation{MassMatrixModel},
     x_eval::Vector{Float64},
 )
-    var_count = get_variable_count(sim.simulation_inputs)
+    var_count = get_variable_count(sim.inputs)
     sysf! = (dx, x) -> system_mass_matrix!(
         dx,            #derivatives equal to zero
         x,              #states
-        sim.simulation_inputs,     #Parameters
+        sim.inputs,     #Parameters
         0.0,            #time equals to zero.
     )
     dx = zeros(var_count) #Define a vector of zeros for the output
@@ -70,9 +69,9 @@ function _make_reduced_jacobian_index(global_index, diff_states)
 end
 
 function _reduce_jacobian(
-    jacobian::Matrix{Float64},
+    jacobian::SparseArrays.SparseMatrixCSC{Float64, Int},
     diff_states::Vector{Bool},
-    mass_matrix::SparseArrays.SparseMatrixCSC{Float64, Int},
+    mass_matrix::LinearAlgebra.Diagonal{Float64, Vector{Float64}},
 )
     alg_states = .!diff_states
     fx = @view jacobian[diff_states, diff_states]
@@ -81,8 +80,8 @@ function _reduce_jacobian(
     gx = @view jacobian[alg_states, diff_states]
     M = @view mass_matrix[diff_states, diff_states]
     inv_diag_M = Vector(1.0 ./ LinearAlgebra.diag(M))
-    # TODO: Make operation using BLAS!
-    reduced_jacobian = inv_diag_M .* (fx - fy * inv(gy) * gx)
+    inv_g = inv(Matrix(gy))
+    reduced_jacobian = inv_diag_M .* (fx - fy * inv_g * gx)
     return reduced_jacobian
 end
 
@@ -136,14 +135,16 @@ function _get_participation_factors(
 end
 
 function small_signal_analysis(sim::Simulation; kwargs...)
-    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
-    sim.status = CONVERTED_FOR_SMALL_SIGNAL
+    #simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
+    #sim.status = CONVERTED_FOR_SMALL_SIGNAL
     inputs = get_simulation_inputs(sim)
     mass_matrix = get_mass_matrix(inputs)
     x_eval = get(kwargs, :operating_point, sim.x0_init)
-    jacobian = _calculate_forwardiff_jacobian(sim, x_eval)
+    jacwrapper = _get_jacobian(sim)
+    jacwrapper(x_eval)
+    jacobian = jacwrapper.Jv
     diff_states = get_DAE_vector(inputs)
-    jac_index = _make_reduced_jacobian_index(get_global_index(inputs), diff_states)
+    jac_index = _make_reduced_jacobian_index(make_global_state_map(inputs), diff_states)
     reduced_jacobian = _reduce_jacobian(jacobian, diff_states, mass_matrix)
     eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, sim.multimachine)
     damping = _get_damping(eigen_vals, jac_index)

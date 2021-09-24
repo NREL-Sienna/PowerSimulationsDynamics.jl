@@ -1,7 +1,7 @@
 function mass_matrix_converter_entries!(
     mass_matrix,
     converter::C,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {C <: PSY.Converter}
     @debug "Using default mass matrix entries $C"
 end
@@ -9,7 +9,10 @@ end
 function mdl_converter_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
+    inner_vars,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
+    },
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -19,29 +22,25 @@ function mdl_converter_ode!(
 }
 
     #Obtain inner variables for component
-    md = get_inner_vars(dynamic_device)[md_var]
-    mq = get_inner_vars(dynamic_device)[mq_var]
-    Vdc = get_inner_vars(dynamic_device)[Vdc_var]
-    θ_oc = get_inner_vars(dynamic_device)[θ_oc_var]
+    md = inner_vars[md_var]
+    mq = inner_vars[mq_var]
+    Vdc = inner_vars[Vdc_var]
+    θ_oc = inner_vars[θ_oc_var]
 
     #Transform reference frame to grid reference frame
     m_ri = dq_ri(θ_oc + pi / 2) * [md; mq]
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Vr_cnv_var] = m_ri[R] * Vdc
-    get_inner_vars(dynamic_device)[Vi_cnv_var] = m_ri[I] * Vdc
+    inner_vars[Vr_cnv_var] = m_ri[R] * Vdc
+    inner_vars[Vi_cnv_var] = m_ri[I] * Vdc
 end
 
 function mdl_converter_ode!(
     device_states,
     output_ode,
-    dynamic_device::PSY.DynamicInverter{
-        PSY.RenewableEnergyConverterTypeA,
-        O,
-        IC,
-        DC,
-        P,
-        PSY.RLFilter,
+    inner_vars,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
     },
 ) where {
     O <: PSY.OuterControl,
@@ -49,24 +48,13 @@ function mdl_converter_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
 }
-    #Define auxiliary functions
-    function get_value_I(v::Float64)
-        return v
-    end
-    function get_value_I(v::Int)
-        return v
-    end
-    function get_value_I(v::ForwardDiff.Dual)
-        return v.value
-    end
-
     #Obtain inner variables for component
-    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
-    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    V_R = inner_vars[Vr_inv_var]
+    V_I = inner_vars[Vi_inv_var]
     V_t = sqrt(V_R^2 + V_I^2)
     θ = atan(V_I / V_R)
-    Ip_cmd = get_inner_vars(dynamic_device)[Id_ic_var]
-    Iq_cmd = get_inner_vars(dynamic_device)[Iq_ic_var]
+    Ip_cmd = inner_vars[Id_ic_var]
+    Iq_cmd = inner_vars[Iq_ic_var]
 
     #Get Converter parameters
     converter = PSY.get_converter(dynamic_device)
@@ -81,7 +69,6 @@ function mdl_converter_ode!(
     T_fltr = PSY.get_T_fltr(converter)
     K_hv = PSY.get_K_hv(converter)
     Iqr_min, Iqr_max = PSY.get_Iqr_lims(converter)
-    #Accel = PSY.get_Accel(converter)
     Lvpl_sw = PSY.get_Lvpl_sw(converter)
     Q_ref = PSY.get_Q_ref(converter)
     R_source = PSY.get_R_source(converter)
@@ -130,21 +117,33 @@ function mdl_converter_ode!(
     rf = PSY.get_rf(filt)
     lf = PSY.get_lf(filt)
 
-    #Compute output currents 
-    Zf = rf + lf * 1im
-    Z_source = R_source + X_source * 1im
-
     function V_cnv_calc(Ir_cnv, Ii_cnv, Vr_inv, Vi_inv)
-        I_cnv = Ir_cnv + 1im * Ii_cnv
-        V_inv = Vr_inv + 1im * Vi_inv
         if lf != 0.0 || rf != 0.0
-            V_cnv = (I_cnv + V_inv / Zf) / (1.0 / Z_source + 1.0 / Zf)
+            Z_source_mag_sq = R_source^2 + X_source^2
+            Zf_mag_sq = rf^2 + lf^2
+            r_total_ratio = rf / Zf_mag_sq + R_source / Z_source_mag_sq
+            l_total_ratio = lf / Zf_mag_sq + X_source / Z_source_mag_sq
+            denom = 1.0 / (r_total_ratio^2 + l_total_ratio^2)
+            rf_ratio = rf / Zf_mag_sq
+            lf_ratio = lf / Zf_mag_sq
+            Vr_cnv =
+                denom * (
+                    (Ir_cnv + Vi_inv * lf_ratio + Vr_inv * rf_ratio) * r_total_ratio -
+                    (Ii_cnv + Vi_inv * rf_ratio - Vr_inv * lf_ratio) * l_total_ratio
+                )
+            Vi_cnv =
+                denom * (
+                    (Ir_cnv + Vi_inv * lf_ratio + Vr_inv * rf_ratio) * l_total_ratio +
+                    (Ii_cnv + Vi_inv * rf_ratio - Vr_inv * lf_ratio) * r_total_ratio
+                )
         else
-            V_cnv = V_inv
+            Vr_cnv = Vr_inv
+            Vi_cnv = Vi_inv
         end
-        return real(V_cnv), imag(V_cnv)
+        return Vr_cnv, Vi_cnv
     end
 
+    #Compute converter voltage
     Vr_cnv, Vi_cnv = V_cnv_calc(Ir_cnv, Ii_cnv, V_R, V_I)
 
     #Update ODEs
@@ -153,8 +152,8 @@ function mdl_converter_ode!(
     output_ode[local_ix[3]] = (1.0 / T_fltr) * (V_t - Vmeas)
 
     #Update inner_vars
-    get_inner_vars(dynamic_device)[Ir_cnv_var] = Ir_cnv
-    get_inner_vars(dynamic_device)[Ii_cnv_var] = Ii_cnv
-    get_inner_vars(dynamic_device)[Vr_cnv_var] = Vr_cnv
-    get_inner_vars(dynamic_device)[Vi_cnv_var] = Vi_cnv
+    inner_vars[Ir_cnv_var] = Ir_cnv
+    inner_vars[Ii_cnv_var] = Ii_cnv
+    inner_vars[Vr_cnv_var] = Vr_cnv
+    inner_vars[Vi_cnv_var] = Vi_cnv
 end

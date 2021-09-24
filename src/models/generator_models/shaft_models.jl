@@ -1,7 +1,7 @@
 function mass_matrix_shaft_entries!(
     mass_matrix,
     shaft::S,
-    global_index::Dict{Symbol, Int64},
+    global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {S <: PSY.Shaft}
     @debug "Using default mass matrix entries $S"
 end
@@ -9,11 +9,11 @@ end
 function mdl_shaft_ode!(
     device_states,
     output_ode,
-    f0::Float64,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-
+    f0 = get_system_base_frequency(dynamic_device)
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.SingleMass)
 
@@ -22,8 +22,8 @@ function mdl_shaft_ode!(
     ω = internal_states[2]
 
     #Obtain inner variables for component
-    τe = get_inner_vars(dynamic_device)[τe_var]
-    τm = get_inner_vars(dynamic_device)[τm_var]
+    τe = inner_vars[τe_var]
+    τm = inner_vars[τm_var]
 
     #Get parameters
     shaft = PSY.get_shaft(dynamic_device)
@@ -40,10 +40,11 @@ end
 function mdl_shaft_ode!(
     device_states,
     output_ode,
-    f0::Float64,
+    inner_vars,
     ω_sys,
-    dynamic_device::PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    f0 = get_system_base_frequency(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.FiveMassShaft)
@@ -62,8 +63,8 @@ function mdl_shaft_ode!(
     ω_ex = internal_states[10]
 
     #Obtain inner variables for component
-    τe = get_inner_vars(dynamic_device)[τe_var]
-    τm = get_inner_vars(dynamic_device)[τm_var]
+    τe = inner_vars[τe_var]
+    τm = inner_vars[τm_var]
 
     #Get parameters
     shaft = PSY.get_shaft(dynamic_device)

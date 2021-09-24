@@ -4,14 +4,14 @@ the dynamic device and bus voltage. It is dispatched for device type to compute 
 
 """
 function compute_output_current(
-    sim::Simulation,
+    res::SimulationResults,
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
 ) where {G <: PSY.DynamicInverter}
 
     #Obtain Data
-    sys = get_system(sim)
+    sys = get_system(res)
 
     #Get machine
     filt = PSY.get_filter(dynamic_device)
@@ -26,7 +26,7 @@ function compute_output_current(
         V_R,
         V_I,
         base_power_ratio,
-        sim,
+        res,
         dynamic_device,
     )
 end
@@ -42,11 +42,11 @@ function _output_current(
     ::Vector{Float64},
     ::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    res::SimulationResults,
     dynamic_device::G,
 ) where {C <: PSY.Converter, G <: PSY.DynamicInverter}
-    ir_filter = post_proc_state_series(sim, (name, :ir_filter))
-    ii_filter = post_proc_state_series(sim, (name, :ii_filter))
+    ir_filter = post_proc_state_series(res, (name, :ir_filter))
+    ii_filter = post_proc_state_series(res, (name, :ii_filter))
 
     return base_power_ratio * ir_filter, base_power_ratio * ii_filter
 end
@@ -62,7 +62,7 @@ function _output_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    res::SimulationResults,
     dynamic_device::G,
 ) where {G <: PSY.DynamicInverter}
 
@@ -86,9 +86,9 @@ function _output_current(
     Iq_extra = max.(K_hv * (V_t .- Vo_lim), 0.0)
 
     #Compute current
-    Ip = post_proc_state_series(sim, (name, :Ip))
-    Iq = post_proc_state_series(sim, (name, :Iq))
-    Vmeas = post_proc_state_series(sim, (name, :Vmeas))
+    Ip = post_proc_state_series(res, (name, :Ip))
+    Iq = post_proc_state_series(res, (name, :Iq))
+    Vmeas = post_proc_state_series(res, (name, :Vmeas))
     Ip_sat = Ip
     if Lvpl_sw == 1
         LVPL = get_LVPL_gain.(Vmeas, Zerox, Brkpt, Lvpl1)

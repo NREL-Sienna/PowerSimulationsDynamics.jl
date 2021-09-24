@@ -1,7 +1,10 @@
 function initialize_converter!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
+    },
+    inner_vars::AbstractVector,
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -13,7 +16,10 @@ function initialize_converter!(
 function initialize_converter!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, F},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, F},
+    },
+    inner_vars::AbstractVector,
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -22,12 +28,12 @@ function initialize_converter!(
     F <: PSY.Filter,
 }
     #Get inner vars
-    V_R = get_inner_vars(dynamic_device)[Vr_inv_var]
-    V_I = get_inner_vars(dynamic_device)[Vi_inv_var]
+    V_R = inner_vars[Vr_inv_var]
+    V_I = inner_vars[Vi_inv_var]
     θ = atan(V_I / V_R)
     V_t = sqrt(V_R^2 + V_I^2)
-    Iq_external = get_inner_vars(dynamic_device)[Ii_cnv_var]
-    Ip_external = get_inner_vars(dynamic_device)[Ir_cnv_var]
+    Iq_external = inner_vars[Ii_cnv_var]
+    Ip_external = inner_vars[Ir_cnv_var]
     #Reference Transformation
     Ip = Ip_external * cos(-θ) - Iq_external * sin(-θ)
     Iq = Ip_external * sin(-θ) + Iq_external * cos(-θ)
@@ -50,7 +56,7 @@ function initialize_converter!(
     converter_states[3] = V_t #Vmeas
 
     #Update entry to converter currents (inner currents)
-    get_inner_vars(dynamic_device)[Id_ic_var] = Ip
+    inner_vars[Id_ic_var] = Ip
     # Multiplied by -1 because PSS/e doesn't do a conjugate.
-    get_inner_vars(dynamic_device)[Iq_ic_var] = -Iq
+    inner_vars[Iq_ic_var] = -Iq
 end

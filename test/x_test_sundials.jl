@@ -9,7 +9,7 @@ The objective of the test is to assess if the model can exploit Sundials' multip
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test11.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test11.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -41,7 +41,7 @@ function test_sundials(solver)
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             path,
             threebus_sys, #system
             tspan, #time span
@@ -55,14 +55,14 @@ function test_sundials(solver)
         @info "$(solver)" @time execute!(sim, IDA(linear_solver = solver);)
 
         #Obtain data for voltages
-        series = get_voltage_magnitude_series(sim, 102)
+        series = get_voltage_magnitude_series(results, 102)
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test10_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
         @test (diff[1] < 1e-3)
-        @test sim.solution.retcode == :Success
+        @test res.solution.retcode == :Success
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

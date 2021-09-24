@@ -11,44 +11,58 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test24.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test24.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#time span
+# time span
 tspan = (0.0, 2.0);
 
-#PSCAD benchmark data
-csv_file = joinpath(dirname(@__FILE__), "benchmarks/pscad/Test24/Test24_p.csv")
+# PSCAD benchmark data
+csv_file = joinpath(TEST_FILES_DIR, "benchmarks/pscad/Test24/Test24_p.csv")
 t_offset = 9.0
 
 #Define Fault using Callbacks
-Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
+Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
-@testset "Test 24 Grid Following Inverter ImplicitModel" begin
+@testset "Test 24 Grid Following Inverter ResidualModel" begin
     path = (joinpath(pwd(), "test-24"))
     !isdir(path) && mkdir(path)
     try
-        #Define Simulation Problem
+        # Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             omib_sys, # system
             path,
             tspan,
             Pref_change,
         )
 
+        # Test Initial Condition
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test24_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
+
         #Solve problem in equilibrium
-        execute!(sim, Sundials.IDA(), dtmax = 0.001, saveat = 0.005)
+        @test execute!(sim, Sundials.IDA(), dtmax = 0.001, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         #Obtain frequency data
-        series = get_state_series(sim, ("generator-102-1", :p_oc))
+        series = get_state_series(results, ("generator-102-1", :p_oc))
         t = series[1]
         p = series[2]
 
@@ -57,19 +71,10 @@ Pref_change = ControlReferenceChange(1.0, case_inv, PSID.P_ref_index, 0.7)
         t_pscad = M[:, 1] .- t_offset
         p_pscad = M[:, 2]
 
-        diff = [0.0]
-        res = get_init_values_for_comparison(sim)
-        for (k, v) in test24_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
-        end
-        @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
-
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
-        ir = PSID.get_real_current_series(sim, "generator-102-1")
-        ii = PSID.get_imaginary_current_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(results, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(results, "generator-102-1")
+        ir = PSID.get_real_current_series(results, "generator-102-1")
+        ii = PSID.get_imaginary_current_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})
@@ -96,15 +101,29 @@ end
             Pref_change,
         )
 
+        # Test Initial Condition
+        diff = [0.0]
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test24_x0_init
+            diff[1] += LinearAlgebra.norm(res[k] - v)
+        end
+        @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
+        # Test Eigenvalues
+        @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
+
         #Solve problem in equilibrium
-        execute!(sim, Rodas5(), dtmax = 0.001, saveat = 0.005)
+        @test execute!(sim, Rodas4(), dtmax = 0.001, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
 
         #Obtain frequency data
-        series = get_state_series(sim, ("generator-102-1", :p_oc))
+        series = get_state_series(results, ("generator-102-1", :p_oc))
         t = series[1]
         p = series[2]
 
@@ -113,19 +132,10 @@ end
         t_pscad = M[:, 1] .- t_offset
         p_pscad = M[:, 2]
 
-        diff = [0.0]
-        res = get_init_values_for_comparison(sim)
-        for (k, v) in test24_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
-        end
-        @test (diff[1] < 1e-3)
-        @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
-
-        power = PSID.get_activepower_series(sim, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(sim, "generator-102-1")
-        ir = PSID.get_real_current_series(sim, "generator-102-1")
-        ii = PSID.get_imaginary_current_series(sim, "generator-102-1")
+        power = PSID.get_activepower_series(results, "generator-102-1")
+        rpower = PSID.get_reactivepower_series(results, "generator-102-1")
+        ir = PSID.get_real_current_series(results, "generator-102-1")
+        ii = PSID.get_imaginary_current_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})

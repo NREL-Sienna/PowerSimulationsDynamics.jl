@@ -4,25 +4,31 @@ module PowerSimulationsDynamics
 ####################################### Structs Exports ####################################
 
 # Base Exports
+export ResidualModel
+export MassMatrixModel
+
 export Simulation
 export Simulation!
+export SimulationResults
+
 export execute!
+export read_results
+
+# export perturbations
 export NetworkSwitch
 export ControlReferenceChange
 export BranchTrip
+export BranchImpedanceChange
 export SourceBusVoltageChange
 # export BusTrip
-
-export ImplicitModel
-export MassMatrixModel
 
 # Export for routines
 export small_signal_analysis
 export get_state_series
 export get_voltage_magnitude_series
 export get_voltage_angle_series
-export print_device_states
-export get_initial_conditions
+export show_states_initial_value
+export read_initial_conditions
 export get_real_current_series
 export get_imaginary_current_series
 export get_activepower_series
@@ -32,12 +38,14 @@ export get_reactivepower_series
 import Logging
 import InfrastructureSystems
 import SciMLBase
+import Random
 import DiffEqBase
 import ForwardDiff
 import SparseArrays
 import LinearAlgebra
 import Base.to_index
 import NLsolve
+import PrettyTables
 import Base.ImmutableDict
 import PowerSystems
 const PSY = PowerSystems
@@ -54,22 +62,31 @@ using DocStringExtensions
 #Structs for General Devices and System
 include("base/definitions.jl")
 include("base/ports.jl")
-include("base/perturbations.jl")
+include("base/bus_categories.jl")
+include("base/load_categories.jl")
+include("base/device_wrapper.jl")
+include("base/branch_wrapper.jl")
+include("base/frequency_reference.jl")
 include("base/file_system.jl")
 include("base/simulation_model.jl")
 include("base/simulation_inputs.jl")
-include("base/device_indexing.jl")
+include("base/perturbations.jl")
+include("base/caches.jl")
+include("base/system_model.jl")
+include("base/jacobian.jl")
 include("base/mass_matrix.jl")
-include("base/frequency_reference.jl")
+include("base/simulation_results.jl")
 include("base/simulation.jl")
+include("base/global_variables.jl")
 include("base/supplemental_accesors.jl")
+include("base/nlsolve_wrapper.jl")
 include("base/simulation_initialization.jl")
 include("base/small_signal.jl")
 
 #Common Models
 include("models/branch.jl")
 include("models/device.jl")
-include("models/kirchoff_laws.jl")
+include("models/network_model.jl")
 include("models/dynline_model.jl")
 include("models/ref_transformations.jl")
 
@@ -120,9 +137,10 @@ include("models/system.jl")
 include("post_processing/post_proc_common.jl")
 include("post_processing/post_proc_generator.jl")
 include("post_processing/post_proc_inverter.jl")
+include("post_processing/post_proc_results.jl")
 
 #Utils
-include("utils/plot_utils.jl")
+include("utils/psy_utils.jl")
 include("utils/immutable_dicts.jl")
 include("utils/print.jl")
 include("utils/kwargs_check.jl")

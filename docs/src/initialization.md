@@ -30,7 +30,7 @@ it is possible to provide an initial guess for the initial conditions to speed u
 
 ```julia
 Simulation(
-        ImplicitModel,
+        ResidualModel,
         sys,
         pwd(),
         (0.0, 20.0);
@@ -44,7 +44,7 @@ result in a valid initial condition for the simulation.
 
 ```julia
 Simulation(
-        ImplicitModel,
+        ResidualModel,
         sys,
         pwd(),
         (0.0, 20.0);
@@ -57,7 +57,7 @@ and provide the initial condition manually you can use the following flag combin
 
 ```julia
 Simulation(
-        ImplicitModel,
+        ResidualModel,
         sys,
         pwd(),
         (0.0, 20.0);

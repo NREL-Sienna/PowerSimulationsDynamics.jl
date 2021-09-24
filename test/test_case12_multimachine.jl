@@ -9,54 +9,59 @@ The perturbation trips four (out of 5) circuits of line between buses 1 and 2, m
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test12.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test12.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#Time span
+# Time span
 tspan = (0.0, 5.0)
 
-#Define Fault: Change of YBus
+# Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
 ) #New YBus
 
-@testset "Test 12 Multi Machine ImplicitModel" begin
+@testset "Test 12 Multi Machine ResidualModel" begin
     path = (joinpath(pwd(), "test-12"))
     !isdir(path) && mkdir(path)
     try
-        sim = Simulation!(
-            ImplicitModel,
+        # Define Simulation Problem
+        sim = Simulation(
+            ResidualModel,
             threebus_sys, #system,
             path,
             tspan, #time span
             Ybus_change, #Type of Fault
         )
 
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Run simulation
-        execute!(
-            sim, #simulation structure
-            IDA(),#Sundials DAE Solver
-            dtmax = 0.02, #keywords arguments
-        )
-
-        series = get_state_series(sim, ("generator-102-1", :ω))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test12_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
+
         @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test12_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+
+        # Run simulation
+        @test execute!(
+            sim, #simulation structure
+            IDA(),#Sundials DAE Solver
+            dtmax = 0.02, #keywords arguments
+        ) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+        series = get_state_series(results, ("generator-102-1", :ω))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -67,7 +72,8 @@ end
     path = (joinpath(pwd(), "test-12"))
     !isdir(path) && mkdir(path)
     try
-        sim = Simulation!(
+        # Define Simulation Problem
+        sim = Simulation(
             MassMatrixModel,
             threebus_sys, #system,
             path,
@@ -75,27 +81,31 @@ end
             Ybus_change, #Type of Fault
         )
 
-        small_sig = small_signal_analysis(sim)
-        eigs = small_sig.eigenvalues
-        @test small_sig.stable
-
-        #Run simulation
-        execute!(
-            sim, #simulation structure
-            Rodas5(),#Sundials DAE Solver
-            dtmax = 0.02, #keywords arguments
-        )
-
-        series = get_state_series(sim, ("generator-102-1", :ω))
-
+        # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test12_x0_init
             diff[1] += LinearAlgebra.norm(res[k] - v)
         end
+
         @test (diff[1] < 1e-3)
+
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        eigs = small_sig.eigenvalues
+        @test small_sig.stable
+
+        # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test12_eigvals) < 1e-3
-        @test sim.solution.retcode == :Success
+
+        # Run simulation
+        @test execute!(
+            sim, #simulation structure
+            Rodas4(),#Sundials DAE Solver
+            dtmax = 0.02, #keywords arguments
+        ) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
+        series = get_state_series(results, ("generator-102-1", :ω))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

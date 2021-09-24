@@ -1,7 +1,8 @@
 function initialize_frequency_estimator!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F}},
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -9,8 +10,8 @@ function initialize_frequency_estimator!(
     DC <: PSY.DCSource,
     F <: PSY.Filter,
 }
-    Vr_filter = get_inner_vars(dynamic_device)[Vr_filter_var]
-    Vi_filter = get_inner_vars(dynamic_device)[Vi_filter_var]
+    Vr_filter = inner_vars[Vr_filter_var]
+    Vi_filter = inner_vars[Vi_filter_var]
 
     #Get parameters
     pll_control = PSY.get_freq_estimator(dynamic_device)
@@ -55,15 +56,18 @@ function initialize_frequency_estimator!(
         pll_states[4] = sol_x0[4]
 
         #Update guess of frequency estimator
-        get_inner_vars(dynamic_device)[ω_freq_estimator_var] = PSY.get_ω_ref(dynamic_device)
-        get_inner_vars(dynamic_device)[θ_freq_estimator_var] = sol_x0[4]
+        inner_vars[ω_freq_estimator_var] = get_ω_ref(dynamic_device)
+        inner_vars[θ_freq_estimator_var] = sol_x0[4]
     end
 end
 
 function initialize_frequency_estimator!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F},
+    },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -71,8 +75,8 @@ function initialize_frequency_estimator!(
     DC <: PSY.DCSource,
     F <: PSY.Filter,
 }
-    Vr_filter = get_inner_vars(dynamic_device)[Vr_filter_var]
-    Vi_filter = get_inner_vars(dynamic_device)[Vi_filter_var]
+    Vr_filter = inner_vars[Vr_filter_var]
+    Vi_filter = inner_vars[Vi_filter_var]
 
     #Get parameters
     pll_control = PSY.get_freq_estimator(dynamic_device)
@@ -113,15 +117,18 @@ function initialize_frequency_estimator!(
         pll_states[3] = sol_x0[3]
 
         #Update guess of frequency estimator
-        get_inner_vars(dynamic_device)[ω_freq_estimator_var] = PSY.get_ω_ref(dynamic_device)
-        get_inner_vars(dynamic_device)[θ_freq_estimator_var] = sol_x0[3]
+        inner_vars[ω_freq_estimator_var] = get_ω_ref(dynamic_device)
+        inner_vars[θ_freq_estimator_var] = sol_x0[3]
     end
 end
 
 function initialize_frequency_estimator!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F},
+    },
+    inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -134,5 +141,5 @@ function initialize_frequency_estimator!(
     frequency = PSY.get_frequency(pll_control)
 
     #Update guess of frequency estimator
-    get_inner_vars(dynamic_device)[ω_freq_estimator_var] = frequency
+    inner_vars[ω_freq_estimator_var] = frequency
 end

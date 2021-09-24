@@ -8,7 +8,7 @@ There is no fault, however, the system is not in steady state due to the changin
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(dirname(@__FILE__), "data_tests/test28.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test28.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -18,20 +18,21 @@ tspan = (0.0, 1.0);
 step = 1e-1
 tsteps = tspan[1]:step:tspan[2]
 
-@testset "Test 28 Periodic Variable Source ImplicitModel" begin
+@testset "Test 28 Periodic Variable Source ResidualModel" begin
     path = (joinpath(pwd(), "test-28"))
     !isdir(path) && mkdir(path)
     try
         #Define Simulation Problem
         sim = Simulation!(
-            ImplicitModel,
+            ResidualModel,
             sys, # system
             path,
             tspan,
         )
 
         #Solve problem
-        execute!(sim, IDA(), saveat = tsteps)
+        @test execute!(sim, IDA(), saveat = tsteps) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
         pvs = collect(get_components(PeriodicVariableSource, sys))[1]
 
         #get time domain results from PVS data
@@ -47,10 +48,9 @@ tsteps = tspan[1]:step:tspan[2]
         end
 
         #Obtain simulation data
-        Vt_sim = get_state_series(sim, ("InfBus", :Vt))
-        θt_sim = get_state_series(sim, ("InfBus", :θt))
+        Vt_sim = get_state_series(results, ("InfBus", :Vt))
+        θt_sim = get_state_series(results, ("InfBus", :θt))
 
-        @test sim.solution.retcode == :Success
         @test LinearAlgebra.norm(Vt .- Vt_sim[2]) <= 5e-3
         @test LinearAlgebra.norm(θt .- θt_sim[2]) <= 5e-3
     finally
@@ -72,7 +72,8 @@ end
         )
 
         #Solve problem
-        execute!(sim, Rodas5(), saveat = tsteps)
+        @test execute!(sim, Rodas4(), saveat = tsteps) == PSID.SIMULATION_FINALIZED
+        results = read_results(sim)
         pvs = collect(get_components(PeriodicVariableSource, sys))[1]
 
         #get time domain results from PVS data
@@ -88,10 +89,9 @@ end
         end
 
         #Obtain simulation data
-        Vt_sim = get_state_series(sim, ("InfBus", :Vt))
-        θt_sim = get_state_series(sim, ("InfBus", :θt))
+        Vt_sim = get_state_series(results, ("InfBus", :Vt))
+        θt_sim = get_state_series(results, ("InfBus", :θt))
 
-        @test sim.solution.retcode == :Success
         @test LinearAlgebra.norm(Vt .- Vt_sim[2]) <= 5e-3
         @test LinearAlgebra.norm(θt .- θt_sim[2]) <= 5e-3
     finally

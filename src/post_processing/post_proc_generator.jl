@@ -4,14 +4,14 @@ the dynamic device and bus voltage. It is dispatched for device type to compute 
 
 """
 function compute_output_current(
-    sim::Simulation,
+    res::SimulationResults,
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
 ) where {G <: PSY.DynamicGenerator}
 
     #Obtain Data
-    sys = get_system(sim)
+    sys = get_system(res)
 
     #Get machine
     machine = PSY.get_machine(dynamic_device)
@@ -24,7 +24,7 @@ function compute_output_current(
         V_R,
         V_I,
         base_power_ratio,
-        sim,
+        res,
     )
 end
 
@@ -38,9 +38,9 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    res::SimulationResults,
 )
-    δ = post_proc_state_series(sim, (name, :δ))
+    δ = post_proc_state_series(res, (name, :δ))
 
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
@@ -71,11 +71,11 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    res::SimulationResults,
 )
-    δ = post_proc_state_series(sim, (name, :δ))
-    eq_p = post_proc_state_series(sim, (name, :eq_p))
-    ed_p = post_proc_state_series(sim, (name, :ed_p))
+    δ = post_proc_state_series(res, (name, :δ))
+    eq_p = post_proc_state_series(res, (name, :eq_p))
+    ed_p = post_proc_state_series(res, (name, :ed_p))
 
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
@@ -108,11 +108,11 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    res::SimulationResults,
 )
-    δ = post_proc_state_series(sim, (name, :δ))
-    eq_pp = post_proc_state_series(sim, (name, :eq_pp))
-    ed_pp = post_proc_state_series(sim, (name, :ed_pp))
+    δ = post_proc_state_series(res, (name, :δ))
+    eq_pp = post_proc_state_series(res, (name, :eq_pp))
+    ed_pp = post_proc_state_series(res, (name, :ed_pp))
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -148,13 +148,13 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    res::SimulationResults,
 )
-    δ = post_proc_state_series(sim, (name, :δ))
-    eq_pp = post_proc_state_series(sim, (name, :eq_pp))
-    ed_pp = post_proc_state_series(sim, (name, :ed_pp))
-    ψd = post_proc_state_series(sim, (name, :ψd))
-    ψq = post_proc_state_series(sim, (name, :ψq))
+    δ = post_proc_state_series(res, (name, :δ))
+    eq_pp = post_proc_state_series(res, (name, :eq_pp))
+    ed_pp = post_proc_state_series(res, (name, :ed_pp))
+    ψd = post_proc_state_series(res, (name, :ψd))
+    ψq = post_proc_state_series(res, (name, :ψq))
 
     #Get parameters
     Xd_pp = PSY.get_Xd_pp(machine)
@@ -185,13 +185,13 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    res::SimulationResults,
 )
-    δ = post_proc_state_series(sim, (name, :δ))
-    eq_p = post_proc_state_series(sim, (name, :eq_p))
-    ed_p = post_proc_state_series(sim, (name, :ed_p))
-    ψ_kd = post_proc_state_series(sim, (name, :ψ_kd))
-    ψ_kq = post_proc_state_series(sim, (name, :ψ_kq))
+    δ = post_proc_state_series(res, (name, :δ))
+    eq_p = post_proc_state_series(res, (name, :eq_p))
+    ed_p = post_proc_state_series(res, (name, :ed_p))
+    ψ_kd = post_proc_state_series(res, (name, :ψ_kd))
+    ψ_kq = post_proc_state_series(res, (name, :ψ_kq))
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -236,12 +236,12 @@ function _machine_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     base_power_ratio::Float64,
-    sim::Simulation,
+    res::SimulationResults,
 )
-    δ = post_proc_state_series(sim, (name, :δ))
-    eq_p = post_proc_state_series(sim, (name, :eq_p))
-    ψ_kd = post_proc_state_series(sim, (name, :ψ_kd))
-    ψq_pp = post_proc_state_series(sim, (name, :ψq_pp))
+    δ = post_proc_state_series(res, (name, :δ))
+    eq_p = post_proc_state_series(res, (name, :eq_p))
+    ψ_kd = post_proc_state_series(res, (name, :ψ_kd))
+    ψq_pp = post_proc_state_series(res, (name, :ψq_pp))
 
     #Get parameters
     R = PSY.get_R(machine)

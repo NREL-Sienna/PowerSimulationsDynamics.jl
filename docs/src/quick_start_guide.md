@@ -25,13 +25,13 @@ section of the documentation in `PowerSystems.jl`.
 ```@repl quick_start_guide
 time_span = (0.0, 30.0)
 perturbation_trip = BranchTrip(1.0, "BUS 1-BUS 2-i_1")
-sim = Simulation!(ImplicitModel, omib_sys, pwd(), time_span, perturbation_trip)
+sim = Simulation!(ResidualModel, omib_sys, pwd(), time_span, perturbation_trip)
 ```
 
 ## Explore initial conditions for the simulation
 
 ```@repl quick_start_guide
-x0_init = get_initial_conditions(sim)
+x0_init = read_initial_conditions(sim)
 ```
 
 ## Obtain small signal results for initial conditions
@@ -49,7 +49,7 @@ x0_init = get_initial_conditions(sim)
 ## Make a plot of the results
 
 ```@repl quick_start_guide
-angle = get_state_series(sim, ("generator-102-1", :δ));
+angle = get_state_series(results, ("generator-102-1", :δ));
 plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "gen-102-1");
 ```
 

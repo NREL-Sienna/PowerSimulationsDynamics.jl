@@ -9,22 +9,20 @@ function _power_flow_solution!(
         return BUILD_FAILED
     end
     bus_size = length(PSY.get_bus_numbers(sys))
-    @debug "Updating Voltage guess"
+    @debug "Updating bus voltage magnitude and angle to match power flow result"
     for bus in PSY.get_components(PSY.Bus, sys)
-        @debug PSY.get_name(bus)
-        @debug "V_r" PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
-        @debug "V_i" PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
         bus_n = PSY.get_number(bus)
         bus_ix = get_lookup(inputs)[bus_n]
         initial_guess[bus_ix] = PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
         initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
+        @debug "$(PSY.get_name(bus)) V_r = $(initial_guess[bus_ix]), V_i = $(initial_guess[bus_ix + bus_size])"
     end
     return BUILD_INCOMPLETE
 end
 
 function _initialize_static_injection!(inputs::SimulationInputs)
-    @debug "Updating Source internal voltages"
-    static_injection_devices = get_static_injections_data(inputs)
+    @debug "Updating Source internal voltage magnitude and angle"
+    static_injection_devices = get_static_injectors(inputs)
     if !isempty(static_injection_devices)
         try
             for s in static_injection_devices
@@ -42,18 +40,23 @@ end
 function _initialize_dynamic_injection!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
+    system::PSY.System,
 )
     @debug "Updating Dynamic Injection Component Initial Guess"
-    injection_start = get_injection_pointer(inputs)
+    initial_inner_vars = zeros(get_inner_vars_count(inputs))
     try
-        for d in get_injectors_data(inputs)
-            dynamic_device = PSY.get_dynamic_injector(d)
-            @debug PSY.get_name(d) typeof(d) typeof(dynamic_device)
+        for dynamic_device in get_dynamic_injectors(inputs)
+            static = PSY.get_component(
+                dynamic_device.static_type,
+                system,
+                PSY.get_name(dynamic_device),
+            )
+            @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
             n_states = PSY.get_n_states(dynamic_device)
-            ix_range = range(injection_start, length = n_states)
-            injection_start = injection_start + n_states
-            x0_device = initialize_dynamic_device!(dynamic_device, d)
+            _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
+            x0_device = initialize_dynamic_device!(dynamic_device, static, _inner_vars)
             @assert length(x0_device) == n_states
+            ix_range = get_ix_range(dynamic_device)
             initial_guess[ix_range] = x0_device
         end
     catch e
@@ -68,16 +71,14 @@ function _initialize_dynamic_branches!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
 )
-    @debug "Updating Component Initial Guess"
-    branches_start = get_branches_pointer(inputs)
     try
+        @debug "Initializing Dynamic Branches"
         for br in get_dynamic_branches(inputs)
-            @debug PSY.get_name(br) typeof(br)
+            @debug "$(PSY.get_name(br)) -  $(typeof(br))"
             n_states = PSY.get_n_states(br)
-            ix_range = range(branches_start, length = n_states)
-            branches_start = branches_start + n_states
             x0_branch = initialize_dynamic_device!(br)
             @assert length(x0_branch) == n_states
+            ix_range = get_ix_range(br)
             initial_guess[ix_range] = x0_branch
         end
     catch e
@@ -88,140 +89,68 @@ function _initialize_dynamic_branches!(
     return BUILD_INCOMPLETE
 end
 
-function _check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationInputs)
-    if any(!isfinite, initial_guess)
-        i = findall(!isfinite, initial_guess)
-        invalid_initial_guess = String[]
-        for (device, states) in get_global_index(inputs)
-            for state in states
-                if state.second ∈ i
-                    push!(invalid_initial_guess, "$device - $(p.first)")
-                end
+function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationInputs)
+    invalid_initial_guess = String[]
+    for i in get_bus_range(inputs)
+        if initial_guess[i] > 1.3 || initial_guess[i] < -1.3
+            push!(invalid_initial_guess, "Voltage entry $i")
+        end
+    end
+
+    for device in get_dynamic_injectors(inputs)
+        device_initial_guess = initial_guess[get_ix_range(device)]
+        device_index = get_global_index(device)
+        if haskey(device_index, :ω)
+            dev_freq = initial_guess[device_index[:ω]]
+            if dev_freq > 1.2 || dev_freq < 0.8
+                push!(invalid_initial_guess, "$(PSY.get_name(device)) - :ω")
             end
         end
-        @error("Invalid initial guess values $invalid_initial_guess")
+        all(isfinite, initial_guess) && continue
+        invalid_set = findall(!isfinite, device_initial_guess)
+        for state in get_global_index(device)
+            if state.second ∈ i
+                push!(invalid_initial_guess, "$device - $(p.first)")
+            end
+        end
+    end
+
+    if !isempty(invalid_initial_guess)
+        @error("Invalid initial condition values $invalid_initial_guess")
         return BUILD_FAILED
     end
-    return BUILD_FAILED
-end
-
-struct NLsolveWrapper
-    zero::Vector{Float64}
-    converged::Bool
-    failed::Bool
-end
-
-NLsolveWrapper() = NLsolveWrapper(Vector{Float64}(), false, true)
-converged(sol::NLsolveWrapper) = sol.converged
-failed(sol::NLsolveWrapper) = sol.failed
-
-function _nlsolve_call(
-    initial_guess,
-    inputs::SimulationInputs,
-    tolerance::Float64,
-    solver::Symbol,
-)
-    dx0 = zeros(length(initial_guess)) #Define a vector of zeros for the derivative
-    inif! = (out, x) -> system_implicit!(
-        out,    #output of the function
-        dx0,    #derivatives equal to zero
-        x,      #states
-        inputs,    #Parameters
-        -99.0,    #time val not relevant
-    )
-    return try
-        sys_solve = NLsolve.nlsolve(
-            inif!,
-            initial_guess,
-            xtol = tolerance,
-            ftol = tolerance,
-            method = solver,
-            autodiff = :forward,
-        ) #Solve using initial guess x0
-        NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
-    catch e
-        bt = catch_backtrace()
-        @error "NLsolve failed to solve" exception = e, bt
-        NLsolveWrapper()
-    end
-end
-
-function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbol)
-    if converged(sys_solve)
-        @info(
-            "Initialization succeeded with a tolerance of $(tol) using solver $(solv). Saving solution."
-        )
-    else
-        @warn(
-            "Initialization convergence failed, initial conditions do not meet conditions for an stable equilibrium.\nTrying to solve again reducing numeric tolerance or using another solver"
-        )
-    end
-    return converged(sys_solve)
-end
-
-function _refine_initial_condition!(
-    initial_guess::Vector{Float64},
-    inputs::SimulationInputs,
-)
-    @debug "Start NLSolve System Run"
-    @debug initial_guess
-    converged = false
-    for tol in [STRICT_NL_SOLVE_TOLERANCE, RELAXED_NL_SOLVE_TOLERANCE]
-        if converged
-            break
-        end
-        for solv in [:trust_region, :newton]
-            sys_solve = _nlsolve_call(initial_guess, inputs, tol, solv)
-            failed(sys_solve) && return BUILD_FAILED
-            converged = _convergence_check(sys_solve, tol, solv)
-            @debug "Write result to initial guess vector under condition converged = $(converged)"
-            initial_guess .= sys_solve.zero
-            if converged
-                break
-            end
-        end
-    end
-    if !converged
-        @warn(
-            "Initialization never converged to desired tolerances. Initial conditions do not meet conditions for an stable equilibrium. Simulation might diverge"
-        )
-    end
-    return converged ? SIMULATION_INITIALIZED : _check_valid_values(initial_guess, inputs)
+    return BUILD_IN_PROGRESS
 end
 
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-function _calculate_initial_conditions!(sim::Simulation)
+function _calculate_initial_guess!(sim::Simulation)
     inputs = get_simulation_inputs(sim)
-    simulation_pre_step!(inputs, Real)
-    @debug "Start state intialization routine"
+    @assert sim.status == BUILD_INCOMPLETE
     while sim.status == BUILD_INCOMPLETE
+        @debug "Start state intialization routine"
         sim.status = _power_flow_solution!(sim.x0_init, get_system(sim), inputs)
         sim.status = _initialize_static_injection!(inputs)
-        sim.status = _initialize_dynamic_injection!(sim.x0_init, inputs)
+        sim.status = _initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
         if has_dyn_lines(inputs)
             sim.status = _initialize_dynamic_branches!(sim.x0_init, inputs)
         else
             @debug "No Dynamic Branches in the system"
         end
-        sim.status = _check_valid_values(sim.x0_init, inputs)
-        sim.status = _refine_initial_condition!(sim.x0_init, inputs)
+        sim.status = check_valid_values(sim.x0_init, inputs)
     end
+    return
+end
+
+function precalculate_initial_conditions!(sim::Simulation)
+    _calculate_initial_guess!(sim)
     return sim.status != BUILD_FAILED
-end
-
-function calculate_initial_conditions!(sim::Simulation{ImplicitModel})
-    return _calculate_initial_conditions!(sim)
-end
-
-function calculate_initial_conditions!(sim::Simulation{MassMatrixModel})
-    return _calculate_initial_conditions!(sim)
 end
 
 """
 Returns a Dictionary with the resulting initial conditions of the simulation
 """
-function get_initial_conditions(sim::Simulation)
+function read_initial_conditions(sim::Simulation)
     system = get_system(sim)
     simulation_inputs = get_simulation_inputs(sim)
     bus_size = get_bus_count(simulation_inputs)

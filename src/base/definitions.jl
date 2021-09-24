@@ -90,6 +90,7 @@ Base.to_index(ix::inverter_inner_vars) = Int(ix)
     d = 1
     q = 2
 end
+
 @enum RI_ref begin
     R = 1
     I = 2
@@ -98,27 +99,12 @@ end
 Base.to_index(ix::dq_ref) = Int(ix)
 Base.to_index(ix::RI_ref) = Int(ix)
 
-const V_ref_index = 1
-const ω_ref_index = 2
-const P_ref_index = 3
-const Q_ref_index = 4
-
 const V_source_index = 1
 const θ_source_index = 2
 
 const MAPPING_DICT = Dict{String, Dict{Symbol, Int}}
-const DEVICE_INTERNAL_MAPPING = Dict{Type{<:PSY.DynamicComponent}, Vector{Int}}
+const DEVICE_INTERNAL_MAPPING = Base.ImmutableDict{Int, Vector{Int}}
 
-const GLOBAL_VARS_IX = () -> Dict{Symbol, Number}(
-    :ω_sys => 1.0,
-    :ω_sys_index => -1, #To define 0 if infinite source, bus_number otherwise,
-)
-
-const LOCAL_STATE_MAPPING = "local_state_mapping"
-const INPUT_PORT_MAPPING = "input_port_mapping"
-const PORTS = "ports"
-const INNER_VARS = "inner_vars"
-const CONTROL_REFS = "control_refs"
 const GEN_INNER_VARS_SIZE = 9
 const INV_INNER_VARS_SIZE = 23
 const PVS_INNER_VARS_SIZE = 0
@@ -131,6 +117,10 @@ const SIMULATION_ACCEPTED_KWARGS = [
     :file_level,
     :console_level,
 ]
+# Location of the global vars in the Caches
+const GLOBAL_VAR_SYS_FREQ_INDEX = 1
+get_vars_ix() = Dict{Int, Int}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
+
 const SMALL_SIGNAL_ACCEPTED_KWARGS = [:reset_simulation!]
 const RELAXED_NL_SOLVE_TOLERANCE = :1e-6
 const STRICT_NL_SOLVE_TOLERANCE = :1e-9
@@ -138,16 +128,18 @@ const MINIMAL_ACCEPTABLE_NL_SOLVE_TOLERANCE = :1e-3
 
 const SIMULATION_LOG_FILENAME = "power-simulations-dynamics.log"
 
+const ACCEPTED_CONTROL_REFS = [:V_ref, :ω_ref, :P_ref, :Q_ref]
 """
 Defines the status of the simulation object
 """
 @enum BUILD_STATUS begin
     BUILT = 0
-    BUILD_INCOMPLETE = 1
-    BUILD_FAILED = 2
-    SIMULATION_INITIALIZED = 3
-    SIMULATION_STARTED = 4
-    SIMULATION_FINALIZED = 5
-    SIMULATION_FAILED = 6
-    CONVERTED_FOR_SMALL_SIGNAL = 7
+    BUILD_IN_PROGRESS = 1
+    BUILD_INCOMPLETE = 2
+    BUILD_FAILED = 3
+    SIMULATION_INITIALIZED = 4
+    SIMULATION_STARTED = 5
+    SIMULATION_FINALIZED = 6
+    SIMULATION_FAILED = 7
+    CONVERTED_FOR_SMALL_SIGNAL = 8
 end

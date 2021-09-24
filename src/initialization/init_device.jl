@@ -1,55 +1,70 @@
 function initialize_dynamic_device!(
-    dynamic_device::PSY.DynamicGenerator,
+    dynamic_device::DynamicWrapper{DynG},
     static::PSY.StaticInjection,
-)
+    initial_inner_vars::AbstractVector,
+) where {DynG <: PSY.DynamicGenerator}
     #Obtain States
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
     #Initialize Machine and Shaft: δ and ω
-    initialize_mach_shaft!(device_states, static, dynamic_device)
+    initialize_mach_shaft!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize extra Shaft states
-    initialize_shaft!(device_states, static, dynamic_device)
+    initialize_shaft!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize AVR
-    initialize_avr!(device_states, static, dynamic_device)
+    initialize_avr!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize TG
-    initialize_tg!(device_states, static, dynamic_device)
+    initialize_tg!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize PSS
-    initialize_pss!(device_states, static, dynamic_device)
+    initialize_pss!(device_states, static, dynamic_device, initial_inner_vars)
 
     return device_states
 end
 
 function initialize_dynamic_device!(
-    dynamic_device::PSY.DynamicInverter,
+    dynamic_device::DynamicWrapper{DynI},
     static::PSY.StaticInjection,
-)
+    initial_inner_vars::AbstractVector,
+) where {DynI <: PSY.DynamicInverter}
     #Obtain States
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
     #Initialize Machine and Shaft: V and I
-    initialize_filter!(device_states, static, dynamic_device)
+    initialize_filter!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize Converter
-    initialize_converter!(device_states, static, dynamic_device)
+    initialize_converter!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize freq estimator
-    initialize_frequency_estimator!(device_states, static, dynamic_device)
+    initialize_frequency_estimator!(
+        device_states,
+        static,
+        dynamic_device,
+        initial_inner_vars,
+    )
     #Initialize OuterLoop
-    initialize_outer!(device_states, static, dynamic_device)
+    initialize_outer!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize DCside
-    initialize_DCside!(device_states, static, dynamic_device)
+    initialize_DCside!(device_states, static, dynamic_device, initial_inner_vars)
+    #Initialize Converter
+    initialize_converter!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize InnerLoop
-    initialize_inner!(device_states, static, dynamic_device)
+    initialize_inner!(device_states, static, dynamic_device, initial_inner_vars)
     return device_states
 end
 
-function initialize_static_device!(::PSY.PowerLoad)
+function initialize_static_device!(
+    ::StaticWrapper{PSY.PowerLoad, T},
+) where {T <: LoadCategory}
     return
 end
 
-function initialize_static_device!(::PSY.FixedAdmittance)
+function initialize_static_device!(
+    ::StaticWrapper{PSY.FixedAdmittance, T},
+) where {T <: LoadCategory}
     return
 end
 
-function initialize_static_device!(device::PSY.Source)
+function initialize_static_device!(
+    device::StaticWrapper{PSY.Source, T},
+) where {T <: BusCategory}
     #PowerFlow Data
     P0 = PSY.get_active_power(device)
     Q0 = PSY.get_reactive_power(device)
@@ -62,8 +77,8 @@ function initialize_static_device!(device::PSY.Source)
     I = conj(S0 / V)
     I_R = real(I)
     I_I = imag(I)
-    R_th = PSY.get_R_th(device)
-    X_th = PSY.get_X_th(device)
+    R_th = PSY.get_R_th(device.device)
+    X_th = PSY.get_X_th(device.device)
     Zmag = R_th^2 + X_th^2
 
     function f!(out, x)
@@ -84,20 +99,19 @@ function initialize_static_device!(device::PSY.Source)
         #Update terminal voltages
         V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
         θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
-        PSY.set_internal_voltage!(device, V_internal)
-        PSY.set_internal_angle!(device, θ_internal)
-        device.ext[CONTROL_REFS] .=
-            [PSY.get_internal_voltage(device), PSY.get_internal_angle(device)]
+        PSY.set_internal_voltage!(device.device, V_internal)
+        PSY.set_internal_angle!(device.device, θ_internal)
+        set_V_ref(device, PSY.get_internal_voltage(device.device))
+        set_θ_ref(device, PSY.get_internal_angle(device.device))
     end
+    return
 end
 
 function initialize_dynamic_device!(
-    dynamic_device::PSY.PeriodicVariableSource,
+    dynamic_device::DynamicWrapper{PSY.PeriodicVariableSource},
     source::PSY.Source,
+    ::AbstractVector,
 )
-    @assert PSY.get_X_th(dynamic_device) == PSY.get_X_th(source)
-    @assert PSY.get_R_th(dynamic_device) == PSY.get_R_th(source)
-
     device_states = zeros(PSY.get_n_states(dynamic_device))
 
     #PowerFlow Data
@@ -135,15 +149,15 @@ function initialize_dynamic_device!(
         θ_internal = angle(sol_x0[1] + sol_x0[2] * 1im)
 
         V_internal_freqs = 0.0
-        V_freqs = PSY.get_internal_voltage_frequencies(dynamic_device)
-        V_coeff = PSY.get_internal_voltage_coefficients(dynamic_device)
+        V_freqs = PSY.get_internal_voltage_frequencies(get_device(dynamic_device))
+        V_coeff = PSY.get_internal_voltage_coefficients(get_device(dynamic_device))
         for (ix, ω) in enumerate(V_freqs)
             V_internal_freqs += V_coeff[ix][2]     #sin(0) = 0; cos(0)=1
         end
 
         θ_internal_freqs = 0.0
-        θ_freqs = PSY.get_internal_angle_frequencies(dynamic_device)
-        θ_coeff = PSY.get_internal_angle_coefficients(dynamic_device)
+        θ_freqs = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
+        θ_coeff = PSY.get_internal_angle_coefficients(get_device(dynamic_device))
         for (ix, ω) in enumerate(θ_freqs)
             θ_internal_freqs += θ_coeff[ix][2]     #sin(0) = 0; cos(0)=1
         end
@@ -152,13 +166,13 @@ function initialize_dynamic_device!(
 
         device_states[1] = V_internal
         device_states[2] = θ_internal
-        PSY.set_internal_voltage_bias!(dynamic_device, V_internal_bias)
-        PSY.set_internal_angle_bias!(dynamic_device, θ_internal_bias)
+        PSY.set_internal_voltage_bias!(get_device(dynamic_device), V_internal_bias)
+        PSY.set_internal_angle_bias!(get_device(dynamic_device), θ_internal_bias)
     end
     return device_states
 end
 
-function initialize_dynamic_device!(branch::PSY.DynamicBranch)
+function initialize_dynamic_device!(branch::BranchWrapper)
     device_states = zeros(PSY.get_n_states(branch))
     #PowerFlow Data
     arc = PSY.get_arc(branch)
