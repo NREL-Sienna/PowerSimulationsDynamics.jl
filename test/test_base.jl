@@ -29,7 +29,7 @@ Ybus_change = NetworkSwitch(
         )
         @test sim.status == PSID.BUILT
         # Test accessor functions
-        dyn_wrapper = get_dynamic_wrapper(sim, "generator-102-1")
+        dyn_wrapper = PowerSimulationsDynamics.get_dynamic_wrapper(sim, "generator-102-1")
         @test isa(dyn_wrapper, PowerSimulationsDynamics.DynamicWrapper)
         dic_init_conds = read_initial_conditions(sim)
         @test isa(dic_init_conds, Dict)
