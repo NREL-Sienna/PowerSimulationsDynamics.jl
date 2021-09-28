@@ -55,7 +55,12 @@ function rectifier_function(I::T) where {T <: Real}
     end
 end
 
-function output_pss_limiter(V_ss::X, V_ct::Y, V_cl::Float64, V_cu::Float64) where {X,Y <: Real}
+function output_pss_limiter(
+    V_ss::X,
+    V_ct::Y,
+    V_cl::Float64,
+    V_cu::Float64,
+) where {X, Y <: Real}
     if V_cl == 0.0 || V_cu == 0.0
         return V_ss
     end

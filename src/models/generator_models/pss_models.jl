@@ -90,7 +90,9 @@ function get_pss_input_signal(
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    error("Derivative of voltage input in PSS at $(PSY.get_name(dynamic_device)) not supported")
+    error(
+        "Derivative of voltage input in PSS at $(PSY.get_name(dynamic_device)) not supported",
+    )
 end
 
 ############################################
@@ -125,7 +127,13 @@ function mdl_pss_ode!(
     #Remote bus control not supported
 
     #Get Input Signal
-    u = get_pss_input_signal(Base.RefValue{input_code}, device_states, inner_vars, ω_sys, dynamic_device)
+    u = get_pss_input_signal(
+        Base.RefValue{input_code},
+        device_states,
+        inner_vars,
+        ω_sys,
+        dynamic_device,
+    )
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.IEEEST)
@@ -165,7 +173,7 @@ function mdl_pss_ode!(
 
     #Compute output of the filter
     y_f = A6_A2 * x_p2 + (A5 - A1 * A6_A2) * x_p3 + (1.0 - A6_A2) * x_p4
-    
+
     #Define Output of Lead-Lag blocks
     y_LL1 = x_p5 + T1_T2 * y_f
     y_LL2 = x_p6 + T3_T4 * y_LL1
@@ -180,7 +188,7 @@ function mdl_pss_ode!(
     output_ode[local_ix[4]] = x_p3 # dx_p4/dt
     output_ode[local_ix[5]] = y_f * (1.0 - T1_T2) - x_p5 # dx_p5/dt
     output_ode[local_ix[6]] = y_LL1 * (1.0 - T3_T4) - x_p6 # dx_p6/dt
-    output_ode[local_ix[7]] = - KsT5_T6 * y_LL2 - x_p7 # dx_p7/dt
+    output_ode[local_ix[7]] = -KsT5_T6 * y_LL2 - x_p7 # dx_p7/dt
 
     #Compute and update output signal
     V_ss = clamp(y_out, Ls_min, Ls_max)
