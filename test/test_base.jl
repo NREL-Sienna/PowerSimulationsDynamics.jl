@@ -28,6 +28,14 @@ Ybus_change = NetworkSwitch(
             system_to_file = true,
         )
         @test sim.status == PSID.BUILT
+        # Test accessor functions
+        dyn_wrapper = get_dynamic_wrapper(sim, "generator-102-1")
+        @test isa(dyn_wrapper, PowerSimulationsDynamics.DynamicWrapper)
+        dic_init_conds = read_initial_conditions(sim)
+        @test isa(dic_init_conds, Dict)
+        dic_control_refs = get_control_references(sim)
+        @test isa(dic_control_refs, Dict)
+
         o_system = System(joinpath(path1, "input_system.json"))
         for b in get_components(Bus, o_system)
             b_sys = get_component(Bus, omib_sys, get_name(b))
