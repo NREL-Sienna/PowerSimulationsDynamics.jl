@@ -19,13 +19,13 @@ end
 
 function _nlsolve_call(
     initial_guess::Vector{Float64},
-    model::SystemModel,
+    f_eval::Function,
     jacobian::JacobianFunctionWrapper,
     tolerance::Float64,
     solver::Symbol,
 )
     df = NLsolve.OnceDifferentiable(
-        _get_model_closure(model, initial_guess),
+        f_eval,
         jacobian,
         initial_guess,
         similar(initial_guess),
@@ -37,23 +37,23 @@ function _nlsolve_call(
         xtol = tolerance,
         ftol = tolerance,
         method = solver,
-    ) #Solve using initial guess x0
+    ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
 end
 
 function _nlsolve_call(
     initial_guess::Vector{Float64},
-    model::SystemModel,
+    f_eval::Function,
     tolerance::Float64,
     solver::Symbol,
 )
     sys_solve = NLsolve.nlsolve(
-        _get_model_closure(model, initial_guess),
+        f_eval,
         initial_guess;
         xtol = tolerance,
         ftol = tolerance,
         method = solver,
-    ) #Solve using initial guess x0
+    ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
 end
 
@@ -86,13 +86,21 @@ function refine_initial_condition!(
     converged = false
     initial_guess = get_initial_conditions(sim)
     @debug "NLsolve initial guess $initial_guess"
+    f! = _get_model_closure(model, initial_guess)
+    ini_res = similar(initial_guess)
+    f!(ini_res, initial_guess)
+    @debug "NLsolve initial residual $ini_res"
+    if maximum(ini_res) > MAX_INIT_RESIDUAL
+        val, ix = findmax(ini_res)
+        @warn "The initial residual in $ix of the NLsolve function is has a value of $val. NLsolve might not converge."
+    end
     for tol in [STRICT_NL_SOLVE_TOLERANCE, RELAXED_NL_SOLVE_TOLERANCE]
         if converged
             break
         end
         for solv in [:trust_region, :newton]
-            sys_solve = _nlsolve_call(initial_guess, model, jacobian, tol, solv)
-            #sys_solve = _nlsolve_call(initial_guess, model, tol, solv)
+            sys_solve = _nlsolve_call(initial_guess, f!, jacobian, tol, solv)
+            # sys_solve = _nlsolve_call(initial_guess, f!, tol, solv)
             failed(sys_solve) && return BUILD_FAILED
             converged = _convergence_check(sys_solve, tol, solv)
             @debug "Write initial guess vector using $solv with tol = $tol convergence = $converged"
