@@ -19,7 +19,7 @@ function initialize_frequency_estimator!(
     ki_pll = PSY.get_ki_pll(pll_control)
 
     #Get initial guess
-    θ0_pll = angle(Vr_filter + Vi_filter * 1im)
+    θ0_pll = atan(Vi_filter / Vr_filter)
     Vpll_d0 = Vr_filter
     Vpll_q0 = 0.0
     ϵ_pll0 = 0.0
@@ -84,7 +84,7 @@ function initialize_frequency_estimator!(
     ki_pll = PSY.get_ki_pll(pll_control)
 
     #Get initial guess
-    θ0_pll = angle(Vr_filter + Vi_filter * 1im)
+    θ0_pll = atan(Vi_filter / Vr_filter)
     Vpll_q0 = 0.0
     ϵ_pll0 = 0.0
 

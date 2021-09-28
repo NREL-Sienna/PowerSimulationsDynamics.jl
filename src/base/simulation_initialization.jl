@@ -164,7 +164,7 @@ function read_initial_conditions(sim::Simulation)
         V_R[bus_n] = sim.x0_init[bus_ix]
         V_I[bus_n] = sim.x0_init[bus_ix + bus_size]
         Vm[bus_n] = sqrt(sim.x0_init[bus_ix]^2 + sim.x0_init[bus_ix + bus_size]^2)
-        θ[bus_n] = angle(sim.x0_init[bus_ix] + sim.x0_init[bus_ix + bus_size] * 1im)
+        θ[bus_n] = atan(sim.x0_init[bus_ix + bus_size] / sim.x0_init[bus_ix])
     end
     results = Dict{String, Any}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
     for device in PSY.get_components(PSY.DynamicInjection, system)
