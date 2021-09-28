@@ -398,3 +398,11 @@ end
 function read_results(sim::Simulation)
     return sim.results
 end
+
+function get_dynamic_wrapper(sim::Simulation, name::AbstractString)
+    return get_dynamic_wrapper(get_simulation_inputs(sim), name)
+end
+
+function get_control_references(sim::Simulation)
+    return get_control_references(get_simulation_inputs(sim))
+end
