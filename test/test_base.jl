@@ -33,7 +33,7 @@ Ybus_change = NetworkSwitch(
         @test isa(dyn_wrapper, PowerSimulationsDynamics.DynamicWrapper)
         dic_init_conds = read_initial_conditions(sim)
         @test isa(dic_init_conds, Dict)
-        dic_control_refs = get_control_references(sim)
+        dic_control_refs = get_setpoints(sim)
         @test isa(dic_control_refs, Dict)
 
         o_system = System(joinpath(path1, "input_system.json"))

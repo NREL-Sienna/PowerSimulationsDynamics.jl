@@ -33,8 +33,7 @@ export get_real_current_series
 export get_imaginary_current_series
 export get_activepower_series
 export get_reactivepower_series
-export get_dynamic_wrapper
-export get_control_references
+export get_setpoints
 
 ####################################### Package Imports ####################################
 import Logging

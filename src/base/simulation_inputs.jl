@@ -349,7 +349,7 @@ function get_dynamic_wrapper(inputs::SimulationInputs, name::AbstractString)
     return nothing
 end
 
-function get_control_references(inputs::SimulationInputs)
+function get_setpoints(inputs::SimulationInputs)
     dic = Dict{String, Dict{String, Float64}}()
     for w in get_dynamic_injectors(inputs)
         dic_w = Dict{String, Float64}()

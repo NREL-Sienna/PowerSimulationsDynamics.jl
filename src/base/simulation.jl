@@ -403,6 +403,6 @@ function get_dynamic_wrapper(sim::Simulation, name::AbstractString)
     return get_dynamic_wrapper(get_simulation_inputs(sim), name)
 end
 
-function get_control_references(sim::Simulation)
-    return get_control_references(get_simulation_inputs(sim))
+function get_setpoints(sim::Simulation)
+    return get_setpoints(get_simulation_inputs(sim))
 end
