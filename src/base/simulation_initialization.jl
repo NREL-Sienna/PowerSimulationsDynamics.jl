@@ -167,22 +167,22 @@ function read_initial_conditions(sim::Simulation)
         θ[bus_n] = angle(sim.x0_init[bus_ix] + sim.x0_init[bus_ix + bus_size] * 1im)
     end
     results = Dict{String, Any}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
-    for device in PSY.get_components(PSY.DynamicInjection, system)
+    for device in get_dynamic_injectors(simulation_inputs)
         states = PSY.get_states(device)
         name = PSY.get_name(device)
-        global_index = get_global_index(simulation_inputs)[name]
+        global_index = get_global_index(device)
         x0_device = Dict{Symbol, Float64}()
         for s in states
             x0_device[s] = sim.x0_init[global_index[s]]
         end
         results[name] = x0_device
     end
-    dyn_branches = PSY.get_components(PSY.DynamicBranch, system)
+    dyn_branches = get_dynamic_branches(simulation_inputs)
     if !isempty(dyn_branches)
         for br in dyn_branches
             states = PSY.get_states(br)
             name = PSY.get_name(br)
-            global_index = get_global_index(simulation_inputs)[name]
+            global_index = get_global_index(br)
             x0_br = Dict{Symbol, Float64}()
             for s in states
                 x0_br[s] = sim.x0_init[global_index[s]]
