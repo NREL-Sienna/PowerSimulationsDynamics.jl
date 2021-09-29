@@ -338,3 +338,26 @@ function _make_global_variable_index(
     )
     return global_vars_dict
 end
+
+function get_dynamic_wrapper(inputs::SimulationInputs, name::AbstractString)
+    for w in get_dynamic_injectors(inputs)
+        if PSY.get_name(w) == name
+            return w
+        end
+    end
+    println("DynamicWrapper with name $(name) was not found.")
+    return nothing
+end
+
+function get_setpoints(inputs::SimulationInputs)
+    dic = Dict{String, Dict{String, Float64}}()
+    for w in get_dynamic_injectors(inputs)
+        dic_w = Dict{String, Float64}()
+        dic_w["P_ref"] = get_P_ref(w)
+        dic_w["Q_ref"] = get_Q_ref(w)
+        dic_w["ω_ref"] = get_ω_ref(w)
+        dic_w["V_ref"] = get_V_ref(w)
+        dic[PSY.get_name(w)] = dic_w
+    end
+    return dic
+end

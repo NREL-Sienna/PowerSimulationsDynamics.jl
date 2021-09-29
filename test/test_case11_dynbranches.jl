@@ -35,6 +35,8 @@ Ybus_change = NetworkSwitch(
             tspan, #time span
             Ybus_change, #Type of Fault
         )
+        # Get dictionary of initial conditions
+        init_conds = read_initial_conditions(sim)
 
         # Test Initial Condition
         diff = [0.0]
