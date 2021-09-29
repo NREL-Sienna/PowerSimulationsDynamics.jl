@@ -24,7 +24,7 @@ section of the documentation in `PowerSystems.jl`.
 
 ```@repl quick_start_guide
 time_span = (0.0, 30.0)
-perturbation_trip = BranchTrip(1.0, "BUS 1-BUS 2-i_1")
+perturbation_trip = BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
 sim = Simulation!(ResidualModel, omib_sys, pwd(), time_span, perturbation_trip)
 ```
 
@@ -49,6 +49,7 @@ x0_init = read_initial_conditions(sim)
 ## Make a plot of the results
 
 ```@repl quick_start_guide
+results = read_results(sim)
 angle = get_state_series(results, ("generator-102-1", :δ));
 plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "gen-102-1");
 ```
