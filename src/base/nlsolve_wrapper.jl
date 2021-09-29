@@ -85,6 +85,9 @@ function refine_initial_condition!(
     @debug "Start NLSolve System Run"
     converged = false
     initial_guess = get_initial_conditions(sim)
+    inputs = get_simulation_inputs(sim)
+    bus_range = get_bus_range(inputs)
+    powerflow_solution = deepcopy(initial_guess[bus_range])
     @debug "NLsolve initial guess $initial_guess"
     f! = _get_model_closure(model, initial_guess)
     ini_res = similar(initial_guess)
@@ -110,10 +113,16 @@ function refine_initial_condition!(
             end
         end
     end
-    sim.status = check_valid_values(initial_guess, get_simulation_inputs(sim))
+    sim.status = check_valid_values(initial_guess, inputs)
     if sim.status == BUILD_FAILED
         error("Initial conditions refinement failed to find a valid initial condition")
     end
+
+    pf_diff = abs.(powerflow_solution .- initial_guess[bus_range])
+    if maximum(pf_diff) > MINIMAL_ACCEPTABLE_NL_SOLVE_TOLERANCE
+        @warn "The resulting voltages in the initial conditions differ from the power flow results"
+    end
+
     if !converged
         @warn("Initialization didn't converged to desired tolerances.\\
               Initial conditions do not meet conditions for an stable equilibrium. \\
