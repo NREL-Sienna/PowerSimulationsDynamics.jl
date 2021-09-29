@@ -32,7 +32,7 @@ function initialize_outer!(
 
     Vr_cnv = inner_vars[Vr_cnv_var]
     Vi_cnv = inner_vars[Vi_cnv_var]
-    θ0_oc = antan(Vi_cnv / Vr_cnv)
+    θ0_oc = atan(Vi_cnv / Vr_cnv)
 
     #Obtain additional expressions
     p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
