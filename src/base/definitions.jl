@@ -102,7 +102,7 @@ Base.to_index(ix::RI_ref) = Int(ix)
 const V_source_index = 1
 const θ_source_index = 2
 
-const MAPPING_DICT = Dict{String, Dict{Symbol, Int}}
+const MAPPING_DICT = Dict{String, OrderedDict{Symbol, Int}}
 const DEVICE_INTERNAL_MAPPING = Base.ImmutableDict{Int, Vector{Int}}
 
 const GEN_INNER_VARS_SIZE = 9

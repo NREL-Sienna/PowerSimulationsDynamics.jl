@@ -75,7 +75,9 @@ function DynamicWrapper(
         ix_range,
         ode_range,
         bus_ix,
-        Base.ImmutableDict(Dict(device_states .=> ix_range)...),
+        Base.ImmutableDict(
+            sort!(device_states .=> ix_range, by = x -> x.second, rev = true)...,
+        ),
         Base.ImmutableDict(component_state_mapping...),
         Base.ImmutableDict(input_port_mapping...),
     )
