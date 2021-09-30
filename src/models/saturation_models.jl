@@ -61,6 +61,7 @@ function output_pss_limiter(
     V_cl::Float64,
     V_cu::Float64,
 ) where {X, Y <: Real}
+    # Bypass limiter block if one limiter parameter is set to zero.
     if V_cl == 0.0 || V_cu == 0.0
         return V_ss
     end
