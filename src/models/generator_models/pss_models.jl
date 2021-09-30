@@ -198,12 +198,8 @@ function mdl_pss_ode!(
     #To do: Figure out how to compensate terminal voltage
     V_ct = sqrt(V_R^2 + V_I^2)
 
-    #Compute PSS output signal
-    V_pss = output_pss_limiter(V_ss, V_ct, V_cl, V_cu)
-
-    #Update Inner Vars
-    inner_vars[V_pss_var] = V_pss
-
+    #Compute PSS output signal and update inner vars
+    inner_vars[V_pss_var] = output_pss_limiter(V_ss, V_ct, V_cl, V_cu)
     return
 end
 
