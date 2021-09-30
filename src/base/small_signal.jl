@@ -72,6 +72,7 @@ function _reduce_jacobian(
     jacobian::SparseArrays.SparseMatrixCSC{Float64, Int},
     diff_states::Vector{Bool},
     mass_matrix::LinearAlgebra.Diagonal{Float64, Vector{Float64}},
+    global_index::MAPPING_DICT,
 )
     alg_states = .!diff_states
     fx = @view jacobian[diff_states, diff_states]
@@ -89,7 +90,10 @@ function _reduce_jacobian(
     if !all(alg_changes)
         # Update algebraic states
         alg_states[alg_ix] .= alg_changes
-        @info "Algebraic states with global indices $(alg_ix[.!alg_changes]) were removed from the reduced jacobian due to having only zeros in both rows and columns."
+        for b in alg_ix[.!alg_changes]
+            name, state = get_state_from_ix(global_index, b)
+            @info "Algebraic state $(state) in device $(name) was removed from the reduced jacobian due to having only zeros in both rows and columns."
+        end
     end
     gy = jacobian[alg_states, alg_states]
     fy = @view jacobian[diff_states, alg_states]
@@ -160,8 +164,9 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     jacwrapper(x_eval)
     jacobian = jacwrapper.Jv
     diff_states = get_DAE_vector(inputs)
-    jac_index = _make_reduced_jacobian_index(make_global_state_map(inputs), diff_states)
-    reduced_jacobian = _reduce_jacobian(jacobian, diff_states, mass_matrix)
+    global_index = make_global_state_map(inputs)
+    jac_index = _make_reduced_jacobian_index(global_index, diff_states)
+    reduced_jacobian = _reduce_jacobian(jacobian, diff_states, mass_matrix, global_index)
     eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, sim.multimachine)
     damping = _get_damping(eigen_vals, jac_index)
     stable = _determine_stability(eigen_vals)
