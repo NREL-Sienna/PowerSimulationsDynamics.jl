@@ -4,6 +4,7 @@ authors = ["Jose Daniel Lara, Rodrigo Henriquez"]
 version = "0.7.0"
 
 [deps]
+DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
@@ -21,6 +22,7 @@ SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
 DiffEqBase = "6"
+DataStructures = "~0.18"
 DocStringExtensions = "~0.8.2"
 ForwardDiff = "~v0.10"
 InfrastructureSystems = "^1.12"
