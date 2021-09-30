@@ -115,3 +115,14 @@ function make_global_state_map(inputs::SimulationInputs)
     end
     return dic
 end
+
+function get_state_from_ix(global_index::MAPPING_DICT, idx::Int)
+    for (name, device_ix) in global_index
+        if idx ∈ values(device_ix)
+            state = [state for (state, number) in device_ix if number == idx]
+            IS.@assert_op length(state) == 1
+            return name, state[1]
+        end
+    end
+    error("State with index $(idx) not found in the global index")
+end
