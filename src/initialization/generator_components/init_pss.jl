@@ -86,8 +86,8 @@ function initialize_pss!(
     y_LL1 = x_p5 + T1_T2 * y_f
     x_p6 = y_LL1 * (1.0 - T3_T4)
     y_LL2 = x_p6 + T3_T4 * y_LL1
-    x_p7 = -KsT5_T6 * y_LL2
-    y_out = x_p7 + KsT5_T6 * y_LL2
+    x_p7 = y_LL2
+    y_out = KsT5_T6 * (y_LL2 - x_p7)
 
     #Compute and update output signal
     V_ss = clamp(y_out, Ls_min, Ls_max)

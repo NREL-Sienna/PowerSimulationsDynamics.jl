@@ -179,7 +179,7 @@ function mdl_pss_ode!(
     y_LL2 = x_p6 + T3_T4 * y_LL1
 
     #Define Output of Feedback block
-    y_out = x_p7 + KsT5_T6 * y_LL2
+    y_out = KsT5_T6 * (y_LL2 - x_p7)
 
     #Compute 7 states PSS ODE
     output_ode[local_ix[1]] = u - A3 * x_p1 - x_p2  # dx_p1/dt
@@ -188,7 +188,7 @@ function mdl_pss_ode!(
     output_ode[local_ix[4]] = x_p3 # dx_p4/dt
     output_ode[local_ix[5]] = y_f * (1.0 - T1_T2) - x_p5 # dx_p5/dt
     output_ode[local_ix[6]] = y_LL1 * (1.0 - T3_T4) - x_p6 # dx_p6/dt
-    output_ode[local_ix[7]] = -KsT5_T6 * y_LL2 - x_p7 # dx_p7/dt
+    output_ode[local_ix[7]] = y_LL2 - x_p7 # dx_p7/dt
 
     #Compute and update output signal
     V_ss = clamp(y_out, Ls_min, Ls_max)
@@ -199,7 +199,8 @@ function mdl_pss_ode!(
     V_ct = sqrt(V_R^2 + V_I^2)
 
     #Compute PSS output signal and update inner vars
-    inner_vars[V_pss_var] = output_pss_limiter(V_ss, V_ct, V_cl, V_cu)
+    #inner_vars[V_pss_var] = output_pss_limiter(V_ss, V_ct, V_cl, V_cu)
+    inner_vars[V_pss_var] = y_out
     return
 end
 
