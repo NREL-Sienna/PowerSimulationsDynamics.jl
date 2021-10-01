@@ -44,7 +44,7 @@ function get_pss_input_signal(
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    @debug("Frequency Input for PSS not properly supported yet")
+    # TODO: Frequency Input for PSS not properly supported yet"
     return ω_sys - 1.0
 end
 
@@ -123,12 +123,11 @@ function mdl_pss_ode!(
 
     #Get Signal Input Integer
     pss = PSY.get_pss(dynamic_device)
-    input_code = PSY.get_input_code(pss)
     #Remote bus control not supported
 
     #Get Input Signal
     u = get_pss_input_signal(
-        Base.RefValue{input_code},
+        Base.RefValue{PSY.get_input_code(pss)},
         device_states,
         inner_vars,
         ω_sys,
@@ -199,8 +198,7 @@ function mdl_pss_ode!(
     V_ct = sqrt(V_R^2 + V_I^2)
 
     #Compute PSS output signal and update inner vars
-    #inner_vars[V_pss_var] = output_pss_limiter(V_ss, V_ct, V_cl, V_cu)
-    inner_vars[V_pss_var] = y_out
+    inner_vars[V_pss_var] = output_pss_limiter(V_ss, V_ct, V_cl, V_cu)
     return
 end
 
