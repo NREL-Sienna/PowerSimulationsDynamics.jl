@@ -55,6 +55,27 @@ function rectifier_function(I::T) where {T <: Real}
     end
 end
 
+function output_pss_limiter(
+    V_ss::X,
+    V_ct::Y,
+    V_cl::Float64,
+    V_cu::Float64,
+) where {X <: Real, Y <: Real}
+    # Bypass limiter block if one limiter parameter is set to zero.
+    if V_cl == 0.0 || V_cu == 0.0
+        return V_ss
+    end
+    if V_cl <= V_ct <= V_cl
+        return V_ss
+    elseif V_ct < V_cl
+        return zero(X)
+    elseif V_ct > V_cu
+        return zero(X)
+    else
+        error("Logic error in PSS")
+    end
+end
+
 function deadband_function(x::T, db_low::Float64, db_high::Float64) where {T <: Real}
     if x > db_high
         return x - db_high

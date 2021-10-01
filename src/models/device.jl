@@ -38,7 +38,7 @@ function device!(
     #Obtain ODEs and Mechanical Power for Turbine Governor
     mdl_tg_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
 
-    #Obtain ODEs for AVR
+    #Obtain ODEs for PSS
     mdl_pss_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
 
     #Obtain ODEs for AVR

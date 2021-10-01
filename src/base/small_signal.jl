@@ -1,6 +1,6 @@
 
 struct SmallSignalOutput
-    reduced_jacobian::Matrix{Float64}
+    reduced_jacobian::AbstractArray{Float64}
     eigenvalues::Vector{Complex{Float64}}
     eigenvectors::Matrix{Complex{Float64}}
     index::Dict
@@ -72,21 +72,41 @@ function _reduce_jacobian(
     jacobian::SparseArrays.SparseMatrixCSC{Float64, Int},
     diff_states::Vector{Bool},
     mass_matrix::LinearAlgebra.Diagonal{Float64, Vector{Float64}},
+    global_index::MAPPING_DICT,
 )
     alg_states = .!diff_states
     fx = @view jacobian[diff_states, diff_states]
+    gy_temp = jacobian[alg_states, alg_states]
+    ixs = range(1, length = length(alg_states))
+    # Locate indices where the algebraic variables are
+    alg_ix = ixs[alg_states]
+    # Update alg_changes to false if all elements on both row and columns are zeros
+    alg_changes = trues(length(alg_ix))
+    for (ix, row) in enumerate(eachrow(gy_temp))
+        row_changes = !all(x -> x == 0.0, row)
+        col_changes = !all(x -> x == 0.0, gy_temp[:, ix])
+        alg_changes[ix] = col_changes | row_changes
+    end
+    if !all(alg_changes)
+        # Update algebraic states
+        alg_states[alg_ix] .= alg_changes
+        for b in alg_ix[.!alg_changes]
+            name, state = get_state_from_ix(global_index, b)
+            @info "Algebraic state $(state) in device $(name) was removed from the reduced jacobian due to having only zeros in both rows and columns."
+        end
+    end
     gy = jacobian[alg_states, alg_states]
     fy = @view jacobian[diff_states, alg_states]
     gx = @view jacobian[alg_states, diff_states]
     M = @view mass_matrix[diff_states, diff_states]
-    inv_diag_M = Vector(1.0 ./ LinearAlgebra.diag(M))
+    inv_diag_M = 1.0 ./ LinearAlgebra.diag(M)
     inv_g = inv(Matrix(gy))
     reduced_jacobian = inv_diag_M .* (fx - fy * inv_g * gx)
     return reduced_jacobian
 end
 
-function _get_eigenvalues(reduced_jacobian::Matrix{Float64}, multimachine::Bool)
-    eigen_vals, R_eigen_vect = LinearAlgebra.eigen(reduced_jacobian)
+function _get_eigenvalues(reduced_jacobian::AbstractArray{Float64}, multimachine::Bool)
+    eigen_vals, R_eigen_vect = LinearAlgebra.eigen(Matrix(reduced_jacobian))
     if multimachine
         @warn(
             "No Infinite Bus found. Confirm stability directly checking eigenvalues.\nIf all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable."
@@ -144,8 +164,9 @@ function small_signal_analysis(sim::Simulation; kwargs...)
     jacwrapper(x_eval)
     jacobian = jacwrapper.Jv
     diff_states = get_DAE_vector(inputs)
-    jac_index = _make_reduced_jacobian_index(make_global_state_map(inputs), diff_states)
-    reduced_jacobian = _reduce_jacobian(jacobian, diff_states, mass_matrix)
+    global_index = make_global_state_map(inputs)
+    jac_index = _make_reduced_jacobian_index(global_index, diff_states)
+    reduced_jacobian = _reduce_jacobian(jacobian, diff_states, mass_matrix, global_index)
     eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, sim.multimachine)
     damping = _get_damping(eigen_vals, jac_index)
     stable = _determine_stability(eigen_vals)

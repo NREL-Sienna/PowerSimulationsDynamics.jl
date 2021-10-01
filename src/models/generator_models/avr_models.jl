@@ -233,7 +233,7 @@ function mdl_avr_ode!(
     I_N = Kc * Xad_Ifd / Ve
     V_FE = Kd * Xad_Ifd + Ke * Ve + Se * Ve
     V_F = Vr3 + (Kf / Tf) * V_FE
-    V_in = V_ref - Vm - V_F
+    V_in = V_ref + Vs - Vm - V_F
     V_out = Vr1 + (Tc_Tb_ratio) * V_in
     Vf = Ve * rectifier_function(I_N)
     V_R = Vr2

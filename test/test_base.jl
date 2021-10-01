@@ -313,3 +313,37 @@ end
         @test cb1.ybus_rectangular[i, j + 3] == imag(complex_ybus)
     end
 end
+
+@testset "Global Index" begin
+    three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
+    threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
+    add_source_to_ref(threebus_sys_dyns)
+
+    dyn_branch12 =
+        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 1-BUS 2-i_2"))
+    dyn_branch23 =
+        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 2-BUS 3-i_3"))
+
+    add_component!(threebus_sys_dyns, dyn_branch12)
+    add_component!(threebus_sys_dyns, dyn_branch23)
+
+    # Attach dyn devices
+    for g in get_components(Generator, threebus_sys_dyns)
+        if get_number(get_bus(g)) == 102
+            case_gen = dyn_gen_second_order(g)
+            add_component!(threebus_sys_dyns, case_gen, g)
+        elseif get_number(get_bus(g)) == 103
+            case_inv = inv_case78(g)
+            add_component!(threebus_sys_dyns, case_inv, g)
+        end
+    end
+
+    # Tests for all Dynamic Lines
+    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir(), (0.0, 10.0))
+    global_index = PSID.make_global_state_map(sim.inputs)
+    @test_throws ErrorException PSID.get_state_from_ix(global_index, 40)
+    @test ("V_2", :R) == PSID.get_state_from_ix(global_index, 2)
+    @test ("BUS 2-BUS 3-i_3", :Il_I) == PSID.get_state_from_ix(global_index, 10)
+    @test ("generator-102-1", :Vr1) == PSID.get_state_from_ix(global_index, 16)
+    @test ("generator-103-1", :ε_pll) == PSID.get_state_from_ix(global_index, 30)
+end
