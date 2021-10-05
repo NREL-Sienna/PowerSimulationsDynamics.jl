@@ -6,6 +6,15 @@ function mass_matrix_tg_entries!(
     @debug "Using default mass matrix entries $TG"
 end
 
+function mass_matrix_avr_entries!(
+    mass_matrix,
+    tg::PSY.HydroTurbineGov,
+    global_index::Base.ImmutableDict{Symbol, Int64},
+)
+    mass_matrix[global_index[:x_g1], global_index[:x_g1]] = PSY.get_Tf(avr)
+    mass_matrix[global_index[:x_g3], global_index[:x_g3]] = PSY.get_Tg(avr)
+end
+
 function mdl_tg_ode!(
     device_states,
     output_ode,
@@ -223,5 +232,61 @@ function mdl_tg_ode!(
     #Update mechanical torque
     inner_vars[τm_var] = τ_m
 
+    return
+end
+
+function mdl_tg_ode!(
+    device_states,
+    output_ode,
+    inner_vars,
+    ω_sys,
+    device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.HydroTurbineGov, P}},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+
+    #Obtain references
+    P_ref = get_P_ref(device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(device, PSY.HydroTurbineGov)
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    x_g1 = internal_states[1]
+    x_g2 = internal_states[2]
+    x_g3 = internal_states[3]
+    x_g4 = internal_states[4]
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(device, PSY.HydroTurbineGov)
+    ω = @view device_states[external_ix]
+
+    #Get Parameters
+    tg = PSY.get_prime_mover(device)
+    R = PSY.get_R(tg)
+    r = PSY.get_r(tg)
+    Tr = PSY.get_Tr(tg)
+    #Gate velocity limits not implemented
+    #VELM = PSY.get_VELM(tg)
+    G_min, G_max = PSY.get_gate_position_limits(tg)
+    Tw = PSY.get_Tw(tg)
+    At = PSY.get_At(tg)
+    D_T = PSY.get_D_T(tg)
+    q_nl = PSY.get_q_nl(tg)
+
+    #Compute auxiliary parameters
+    P_in = P_ref - (ω[1] - 1.0) - R * x_g2
+    c_no_sat = (1.0 / r) * x_g1 + (1.0 / (r * Tr)) * x_g2
+    c = clamp(c_no_sat, G_min, G_max)
+    limit_binary = G_min < c_no_sat < G_max ? 1.0 : 0.0
+    h = (x_g4 / x_g3)^2
+
+    #Compute 4 States TG ODE:
+    output_ode[local_ix[1]] = P_in - x_g1
+    output_ode[local_ix[2]] = x_g1 * limit_binary
+    output_ode[local_ix[3]] = c - x_g3
+    output_ode[local_ix[4]] = (1.0 - h) / Tw
+
+    #Update mechanical torque
+    inner_vars[τm_var] = (x_g4 - q_nl) * h * At - D_T * (ω[1] - 1.0) * x_g3
     return
 end
