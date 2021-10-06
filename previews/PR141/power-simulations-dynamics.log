@@ -1,84 +1,84 @@
-┌ Info: 2021-10-06T01:59:40.410 [2751:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2021-10-06T21:11:51.679 [2797:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/a9ndT/src/utils/network_calculations/ybus_calculations.jl:296
-┌ Info: 2021-10-06T01:59:40.693 [2751:1]: The System has no islands
+┌ Info: 2021-10-06T21:11:51.966 [2797:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/a9ndT/src/utils/network_calculations/ybus_calculations.jl:242
-┌ Debug: 2021-10-06T01:59:40.694 [2751:1]: System doesn't contain Dynamic Branches
+┌ Debug: 2021-10-06T21:11:51.966 [2797:1]: System doesn't contain Dynamic Branches
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:202
-┌ Debug: 2021-10-06T01:59:40.929 [2751:1]: Wrapping generator-102-1
+┌ Debug: 2021-10-06T21:11:52.165 [2797:1]: Wrapping generator-102-1
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:143
-┌ Debug: 2021-10-06T01:59:40.983 [2751:1]: ix_range=5:6 ode_range=1:2 inner_vars_range= 1:9
+┌ Debug: 2021-10-06T21:11:52.220 [2797:1]: ix_range=5:6 ode_range=1:2 inner_vars_range= 1:9
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:152
-┌ Debug: 2021-10-06T01:59:43.356 [2751:1]: Using default mass matrix entries TGFixed
+┌ Debug: 2021-10-06T21:11:54.584 [2797:1]: Using default mass matrix entries TGFixed
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/tg_models.jl:6
-┌ Debug: 2021-10-06T01:59:43.356 [2751:1]: Using default mass matrix entries PSSFixed
+┌ Debug: 2021-10-06T21:11:54.584 [2797:1]: Using default mass matrix entries PSSFixed
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/pss_models.jl:6
-┌ Debug: 2021-10-06T01:59:43.356 [2751:1]: Using default mass matrix entries AVRFixed
+┌ Debug: 2021-10-06T21:11:54.584 [2797:1]: Using default mass matrix entries AVRFixed
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/avr_models.jl:6
-┌ Debug: 2021-10-06T01:59:43.356 [2751:1]: Using default mass matrix entries BaseMachine
+┌ Debug: 2021-10-06T21:11:54.584 [2797:1]: Using default mass matrix entries BaseMachine
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/machine_models.jl:6
-┌ Debug: 2021-10-06T01:59:43.356 [2751:1]: Using default mass matrix entries SingleMass
+┌ Debug: 2021-10-06T21:11:54.584 [2797:1]: Using default mass matrix entries SingleMass
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/shaft_models.jl:6
-┌ Warning: 2021-10-06T01:59:43.650 [2751:1]: The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency
+┌ Warning: 2021-10-06T21:11:54.883 [2797:1]: The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:57
-┌ Debug: 2021-10-06T01:59:43.664 [2751:1]: Simulation Inputs Created
+┌ Debug: 2021-10-06T21:11:54.898 [2797:1]: Simulation Inputs Created
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:180
-┌ Info: 2021-10-06T01:59:43.665 [2751:1]: Pre-Initializing Simulation States
+┌ Info: 2021-10-06T21:11:54.898 [2797:1]: Pre-Initializing Simulation States
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:222
-┌ Debug: 2021-10-06T01:59:43.665 [2751:1]: Start state intialization routine
+┌ Debug: 2021-10-06T21:11:54.898 [2797:1]: Start state intialization routine
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:131
-┌ Info: 2021-10-06T01:59:43.665 [2751:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+┌ Info: 2021-10-06T21:11:54.898 [2797:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/a9ndT/src/base.jl:339
-┌ Info: 2021-10-06T01:59:43.665 [2751:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2021-10-06T21:11:54.898 [2797:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/a9ndT/src/utils/network_calculations/ybus_calculations.jl:296
-┌ Info: 2021-10-06T01:59:43.665 [2751:1]: The System has no islands
+┌ Info: 2021-10-06T21:11:54.898 [2797:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/a9ndT/src/utils/network_calculations/ybus_calculations.jl:242
-┌ Info: 2021-10-06T01:59:45.615 [2751:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2021-10-06T21:11:56.960 [2797:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/a9ndT/src/utils/power_flow.jl:312
-┌ Info: 2021-10-06T01:59:45.615 [2751:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Info: 2021-10-06T21:11:56.960 [2797:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/a9ndT/src/base.jl:345
-┌ Debug: 2021-10-06T01:59:45.615 [2751:1]: Updating bus voltage magnitude and angle to match power flow result
+┌ Debug: 2021-10-06T21:11:56.960 [2797:1]: Updating bus voltage magnitude and angle to match power flow result
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:12
-┌ Debug: 2021-10-06T01:59:45.615 [2751:1]: BUS 1 V_r = 1.05, V_i = 0.0
+┌ Debug: 2021-10-06T21:11:56.960 [2797:1]: BUS 1 V_r = 1.05, V_i = 0.0
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:18
-┌ Debug: 2021-10-06T01:59:45.615 [2751:1]: BUS 2 V_r = 1.039727418725999, V_i = 0.023809551641536846
+┌ Debug: 2021-10-06T21:11:56.960 [2797:1]: BUS 2 V_r = 1.039727418725999, V_i = 0.023809551641536846
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:18
-┌ Debug: 2021-10-06T01:59:45.615 [2751:1]: Updating Source internal voltage magnitude and angle
+┌ Debug: 2021-10-06T21:11:56.960 [2797:1]: Updating Source internal voltage magnitude and angle
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:24
-┌ Debug: 2021-10-06T01:59:48.789 [2751:1]: Updating Dynamic Injection Component Initial Guess
+┌ Debug: 2021-10-06T21:12:00.171 [2797:1]: Updating Dynamic Injection Component Initial Guess
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:45
-┌ Debug: 2021-10-06T01:59:48.801 [2751:1]: Initializing generator-102-1 - DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}
+┌ Debug: 2021-10-06T21:12:00.183 [2797:1]: Initializing generator-102-1 - DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:54
-┌ Debug: 2021-10-06T01:59:49.334 [2751:1]: No Dynamic Branches in the system
+┌ Debug: 2021-10-06T21:12:00.719 [2797:1]: No Dynamic Branches in the system
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:138
-┌ Debug: 2021-10-06T01:59:49.552 [2751:1]: injection ode size = 2 branches ode size = 0
+┌ Debug: 2021-10-06T21:12:00.943 [2797:1]: injection ode size = 2 branches ode size = 0
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/caches.jl:25
-┌ Debug: 2021-10-06T01:59:56.498 [2751:1]: Evaluating Jacobian Function
+┌ Debug: 2021-10-06T21:12:07.772 [2797:1]: Evaluating Jacobian Function
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:47
-┌ Debug: 2021-10-06T01:59:57.577 [2751:1]: Evaluating Jacobian Function
+┌ Debug: 2021-10-06T21:12:08.924 [2797:1]: Evaluating Jacobian Function
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:47
-┌ Debug: 2021-10-06T01:59:57.577 [2751:1]: Evaluating Jacobian Function
+┌ Debug: 2021-10-06T21:12:08.925 [2797:1]: Evaluating Jacobian Function
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:47
-┌ Debug: 2021-10-06T01:59:58.062 [2751:1]: Evaluating Jacobian Function
+┌ Debug: 2021-10-06T21:12:09.367 [2797:1]: Evaluating Jacobian Function
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:47
-┌ Debug: 2021-10-06T01:59:58.225 [2751:1]: injection ode size = 2 branches ode size = 0
+┌ Debug: 2021-10-06T21:12:09.536 [2797:1]: injection ode size = 2 branches ode size = 0
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/caches.jl:83
-┌ Debug: 2021-10-06T01:59:59.999 [2751:1]: Start NLSolve System Run
+┌ Debug: 2021-10-06T21:12:11.436 [2797:1]: Start NLSolve System Run
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:85
-┌ Debug: 2021-10-06T02:00:00.119 [2751:1]: NLsolve initial guess [1.05, 1.039727418725999, 0.0, 0.023809551641536846, 0.539920981973487, 1.0]
+┌ Debug: 2021-10-06T21:12:11.554 [2797:1]: NLsolve initial guess [1.05, 1.039727418725999, 0.0, 0.023809551641536846, 0.539920981973487, 1.0]
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:91
-┌ Debug: 2021-10-06T02:00:00.363 [2751:1]: NLsolve initial residual [5.566417952129754e-7, -5.619941829682062e-7, 6.432003374357009e-9, -6.373557681627062e-9, 0.0, 3.795671951247855e-14]
+┌ Debug: 2021-10-06T21:12:11.803 [2797:1]: NLsolve initial residual [5.566417952129754e-7, -5.619941829682062e-7, 6.432003374357009e-9, -6.373557681627062e-9, 0.0, 3.795671951247855e-14]
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:95
-┌ Debug: 2021-10-06T02:00:00.396 [2751:1]: Evaluating Jacobian Function
+┌ Debug: 2021-10-06T21:12:11.836 [2797:1]: Evaluating Jacobian Function
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:47
-┌ Debug: 2021-10-06T02:00:00.400 [2751:1]: Evaluating Jacobian Function
+┌ Debug: 2021-10-06T21:12:11.841 [2797:1]: Evaluating Jacobian Function
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:47
-┌ Info: 2021-10-06T02:00:00.400 [2751:1]: Initialization succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+┌ Info: 2021-10-06T21:12:11.841 [2797:1]: Initialization succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:62
-┌ Debug: 2021-10-06T02:00:00.400 [2751:1]: Write initial guess vector using trust_region with tol = 1.0e-9 convergence = true
+┌ Debug: 2021-10-06T21:12:11.841 [2797:1]: Write initial guess vector using trust_region with tol = 1.0e-9 convergence = true
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:109
-┌ Info: 2021-10-06T02:00:00.400 [2751:1]: Attaching Perturbations
+┌ Info: 2021-10-06T21:12:11.841 [2797:1]: Attaching Perturbations
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:245
-┌ Debug: 2021-10-06T02:00:00.578 [2751:1]: BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
+┌ Debug: 2021-10-06T21:12:12.021 [2797:1]: BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:256
-┌ Info: 2021-10-06T02:00:01.380 [2751:1]: Simulations status = BUILT
+┌ Info: 2021-10-06T21:12:12.808 [2797:1]: Simulations status = BUILT
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:328
