@@ -1,18 +1,19 @@
 # Quick Start Guide
 
 You can access example data in the [Power Systems Test Data Repository](https://github.com/NREL-SIIP/PowerSystemsTestData),
-the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`.
+the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`. Some systems are already provided in PowerSystemCaseBuilder.
 
 ## Loading data
 
 Data can be loaded from a pss/e raw file and a pss/e dyr file.
 
 ```@repl quick_start_guide
-using PowerSystems, PowerSimulationsDynamics, Sundials, Plots, Logging
+using PowerSystems, PowerSimulationsDynamics, PowerSystemCaseBuilder, Sundials, Plots, Logging
 logger = configure_logging(console_level = Logging.Error, file_level = Logging.Info)
-omib_sys = System(joinpath(dirname(@__FILE__), "assets/OMIB.raw"),
-                     joinpath(dirname(@__FILE__), "assets/OMIB.dyr");
-                     time_series_in_memory = true)
+omib_sys = PowerSystemCaseBuilder.build_system(
+                PowerSystemCaseBuilder.PSSETestSystems,
+                "psse_OMIB_sys",
+                )
 ```
 
 For more details about loading data and adding more dynamic components check the
