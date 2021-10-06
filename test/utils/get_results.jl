@@ -51,6 +51,7 @@ function get_csv_delta(str::AbstractString)
 end
 
 function get_csv_data(str::AbstractString)
-    M = readdlm(str, ',')
-    return M
+    M_ = readdlm(str, ',')
+    idx = unique(i -> M_[i, 1], 1:length(M_[:,1]))
+    return M_[idx,:]
 end
