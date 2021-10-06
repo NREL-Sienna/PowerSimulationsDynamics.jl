@@ -89,3 +89,27 @@ x_{g1}^\text{sat} &= \left\{ \begin{array}{cl}
 \tau_m &= x_{g2}  - D_T(\omega - 1.0) \tag{4f}
 \end{align}
 ```
+
+## HYGOV ```[HydroTurbineGov]```
+
+This represents a classical hydro governor, known as HYGOV.
+
+```math
+\begin{align}
+T_f\dot{x}_{g1} &= P_{in} - x_{g1} \tag{5a} \\
+\dot{x}_{g2} &= x_{g1} \tag{5b}\\
+T_g \dot{x}_{g3} &= c - x_{g3} \tag{5c}\\
+\dot{x}_{g4} &= \frac{1 - h}{T_w} \tag{5d}
+\end{align}
+```
+
+with
+
+```math
+\begin{align}
+P_{in} &= P_{ref} - \Delta \omega - R x_{g2} \tag{5e} \\
+c &= \frac{x_{g1}}{r} + \frac{x_{g2}}{rT_r} \tag{5f} \\
+h &= \left(\frac{x_{g4}}{x_{g3}}\right)^2 \tag{5g}\\
+\tau_m &= h\cdot A_t(x_{g4} - q_{NL}) - D_{turb} \Delta\omega \cdot x_{g3} \tag{5h}
+\end{align}
+``` 
