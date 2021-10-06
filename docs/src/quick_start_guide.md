@@ -1,7 +1,7 @@
 # Quick Start Guide
 
 You can access example data in the [Power Systems Test Data Repository](https://github.com/NREL-SIIP/PowerSystemsTestData),
-the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`. Some systems are already provided in PowerSystemCaseBuilder.
+the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`. Some systems are already provided in [PowerSystemCaseBuilder](https://github.com/NREL-SIIP/PowerSystemCaseBuilder.jl).
 
 ## Loading data
 
