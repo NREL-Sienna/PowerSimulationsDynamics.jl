@@ -210,3 +210,69 @@ function initialize_tg!(
         tg_states[2] = sol_x0[3]
     end
 end
+
+function initialize_tg!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.HydroTurbineGov, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+
+    #Get mechanical torque to SyncMach
+    τm0 = inner_vars[τm_var]
+    Δω = 0.0
+    #Get parameters
+    tg = PSY.get_prime_mover(dynamic_device)
+    R = PSY.get_R(tg)
+    r = PSY.get_r(tg)
+    Tr = PSY.get_Tr(tg)
+    #Gate velocity limits not implemented
+    #VELM = PSY.get_VELM(tg)
+    G_min, G_max = PSY.get_gate_position_limits(tg)
+    Tw = PSY.get_Tw(tg)
+    At = PSY.get_At(tg)
+    D_T = PSY.get_D_T(tg)
+    q_nl = PSY.get_q_nl(tg)
+
+    function f!(out, x)
+        P_ref = x[1]
+        x_g1 = x[2]
+        x_g2 = x[3]
+        x_g3 = x[4]
+        x_g4 = x[5]
+
+        P_in = P_ref - Δω - R * x_g2
+        c = (1.0 / r) * x_g1 + (1.0 / (r * Tr)) * x_g2
+        h = (x_g4 / x_g3)^2
+
+        out[1] = (P_in - x_g1) #dx_g1/dt
+        out[2] = x_g1
+        out[3] = c - x_g3
+        out[4] = (1.0 - h) / Tw
+        out[5] = (x_g4 - q_nl) * h * At - D_T * Δω * x_g3 - τm0
+    end
+    P0 = PSY.get_active_power(static)
+    x0 = [P0, 0.0, P0 / R, P0 / (R * r * Tr), τm0]
+    sol = NLsolve.nlsolve(f!, x0)
+    if !NLsolve.converged(sol)
+        @warn("Initialization in Synch. Machine failed")
+    else
+        sol_x0 = sol.zero
+        #Error if x_g3 is outside PI limits
+        if sol_x0[4] > G_max || sol_x0[4] < G_min
+            error(
+                "Hydro Turbine Governor of device $(PSY.get_name(static)) is outside its gate limits. Check parameters or Power Flow",
+            )
+        end
+        #Update Control Refs
+        PSY.set_P_ref!(tg, sol_x0[1])
+        set_P_ref(dynamic_device, sol_x0[1])
+        #Update states
+        tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
+        tg_states = @view device_states[tg_ix]
+        tg_states[1] = sol_x0[2]
+        tg_states[2] = sol_x0[3]
+        tg_states[3] = sol_x0[4]
+        tg_states[4] = sol_x0[5]
+    end
+end
