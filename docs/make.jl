@@ -6,7 +6,7 @@ makedocs(
     sitename = "PowerSimulationsDynamics.jl",
     pages = Any[
         "Welcome Page" => "index.md",
-        #"Quick Start Guide" => "quick_start_guide.md",
+        "Quick Start Guide" => "quick_start_guide.md",
         "Tutorials" => "tutorials_page.md",
         "Models" => "models.md",
         "Initialization" => "initialization.md",

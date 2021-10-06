@@ -10,9 +10,8 @@ Data can be loaded from a pss/e raw file and a pss/e dyr file.
 ```@repl quick_start_guide
 using PowerSystems, PowerSimulationsDynamics, Sundials, Plots, Logging
 logger = configure_logging(console_level = Logging.Error, file_level = Logging.Info)
-DATA_DIR = download(PowerSystems.UtilsData.TestData, folder = pwd())
-omib_sys = System(joinpath(DATA_DIR, "psse_raw/OMIB.raw"),
-                     joinpath(DATA_DIR, "psse_dyr/OMIB.dyr");
+omib_sys = System(joinpath(dirname(@__FILE__), "assets/OMIB.raw"),
+                     joinpath(dirname(@__FILE__), "assets/OMIB.dyr");
                      time_series_in_memory = true)
 ```
 
@@ -34,16 +33,37 @@ sim = Simulation!(ResidualModel, omib_sys, pwd(), time_span, perturbation_trip)
 x0_init = read_initial_conditions(sim)
 ```
 
+```@repl quick_start_guide
+show_states_initial_value(sim)
+```
+
 ## Obtain small signal results for initial conditions
 
 ```@repl quick_start_guide
     small_sig = small_signal_analysis(sim)
 ```
 
+Show eigenvalues for operating point
+```@repl quick_start_guide
+    small_sig.eigenvalues
+```
+
+Show reduced jacobian for operating point
+```@repl quick_start_guide
+    small_sig.reduced_jacobian
+```
+
+Explore participation factors. In this case for state ω
+```@repl quick_start_guide
+    part_factors = small_sig.participation_factors
+    part_factors["generator-102-1"][:ω]
+```
+This means that the state ω of the generator at bus 102, participates 50% in eigenvalue 1 and 50% in eigenvalue 2.
+
 ## Execute the simulation
 
 ```@repl quick_start_guide
-    execute!(sim, IDA())
+    execute!(sim, IDA(), dtmax = 0.02, saveat = 0.02)
 ```
 
 ## Make a plot of the results
