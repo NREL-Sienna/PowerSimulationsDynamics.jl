@@ -245,6 +245,7 @@ function mdl_tg_ode!(
 
     #Obtain references
     P_ref = get_P_ref(device)
+    ω_ref = get_ω_ref(device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.HydroTurbineGov)
@@ -258,7 +259,8 @@ function mdl_tg_ode!(
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.HydroTurbineGov)
-    ω = @view device_states[external_ix]
+    ω = device_states[external_ix][1]
+    Δω = ω - ω_ref
 
     #Get Parameters
     tg = PSY.get_prime_mover(device)
@@ -274,7 +276,7 @@ function mdl_tg_ode!(
     q_nl = PSY.get_q_nl(tg)
 
     #Compute auxiliary parameters
-    P_in = P_ref - (ω[1] - 1.0) - R * x_g2
+    P_in = P_ref - Δω - R * x_g2
     c_no_sat = (1.0 / r) * x_g1 + (1.0 / (r * Tr)) * x_g2
     c = clamp(c_no_sat, G_min, G_max)
     limit_binary = G_min < c_no_sat < G_max ? 1.0 : 0.0
@@ -287,6 +289,6 @@ function mdl_tg_ode!(
     output_ode[local_ix[4]] = (1.0 - h) / Tw
 
     #Update mechanical torque
-    inner_vars[τm_var] = (x_g4 - q_nl) * h * At - D_T * (ω[1] - 1.0) * x_g3
+    inner_vars[τm_var] = (x_g4 - q_nl) * h * At - D_T * Δω * x_g3
     return
 end
