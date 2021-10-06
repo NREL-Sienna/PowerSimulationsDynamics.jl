@@ -52,18 +52,21 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
         # Obtain data for angles
         t, δ = get_state_series(results, ("generator-102-1", :δ))
         _, Vt = get_voltage_magnitude_series(results, 102)
+        _, ω = get_state_series(results, ("generator-102-1", :ω))
 
         # Obtain PSSE results
         M = get_csv_data(csv_file)
         t_psse = M[:, 1]
         Vt_psse = M[:, 2]
         δ_psse = M[:, 3]
+        ω_psse = M[:, 4] .+ 1.0
 
         # Test Transient Simulation Results
         # PSSE results are in Degrees
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
         @test LinearAlgebra.norm(Vt - Vt_psse, Inf) <= 1e-3
+        @test LinearAlgebra.norm(ω - ω_psse, Inf) <= 1e-3
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
