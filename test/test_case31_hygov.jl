@@ -10,7 +10,7 @@ The fault drop the line connecting the infinite bus and GENROU
 
 raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/ThreeBusMulti.raw")
 dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/ThreeBus_HYGOV.dyr")
-#csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_TEST.csv")
+csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
 
 @testset "Test 31 HYGOV ResidualModel" begin
     path = (joinpath(pwd(), "test-psse-gast"))
@@ -50,17 +50,20 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/ThreeBus_HYGOV.dyr")
         results = read_results(sim)
 
         # Obtain data for angles
-        series = get_state_series(results, ("generator-102-1", :δ))
-        t = series[1]
-        δ = series[2]
+        t, δ = get_state_series(results, ("generator-102-1", :δ))
+        _, Vt = get_voltage_magnitude_series(results, 102)
 
         # Obtain PSSE results
-        #t_psse, δ_psse = get_csv_delta(csv_file)
+        M = get_csv_data(csv_file)
+        t_psse = M[:, 1]
+        Vt_psse = M[:, 2]
+        δ_psse = M[:, 3]
 
         # Test Transient Simulation Results
         # PSSE results are in Degrees
-        #@test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
-        #@test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
+        @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
+        @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
+        @test LinearAlgebra.norm(Vt - Vt_psse, Inf) <= 1e-3
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
