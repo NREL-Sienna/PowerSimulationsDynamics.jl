@@ -27,6 +27,12 @@ function device!(
     dynamic_device::DynamicWrapper{DynG},
     t,
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
+
+    if get_connection_status(dynamic_device) < 1
+        output_ode .== 0
+        return
+    end
+
     inner_vars[VR_gen_var] = voltage_r
     inner_vars[VI_gen_var] = voltage_i
 
@@ -134,6 +140,12 @@ function device!(
     dynamic_device::DynamicWrapper{DynI},
     t,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
+
+    if get_connection_status(dynamic_device) < 1
+        output_ode .== 0
+        return
+    end
+
     #Obtain global vars
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
