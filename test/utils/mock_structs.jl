@@ -1,0 +1,3 @@
+struct MockIntegrator
+    p
+end
