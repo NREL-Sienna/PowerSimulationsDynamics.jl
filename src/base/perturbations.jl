@@ -403,10 +403,7 @@ mutable struct GeneratorTrip <: Perturbation
     time::Float64
     device::PSY.DynamicInjection
 
-    function GeneratorTrip(
-        time::Float64,
-        device::PSY.DynamicInjection,
-    )
+    function GeneratorTrip(time::Float64, device::PSY.DynamicInjection)
         new(time, device)
     end
 end
@@ -415,6 +412,8 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::GeneratorTrip)
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_dynamic_injectors(integrator.p)[wrapped_device_ix]
+        integrator.du[get_ix_range(wrapped_device)] .= 0.0
+        integrator.u[get_ix_range(wrapped_device)] .= 0.0
         set_connection_status(wrapped_device, 0)
     end
 end
