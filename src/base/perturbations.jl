@@ -255,32 +255,6 @@ function ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
     return
 end
 
-# Pending implementation
-#=
-mutable struct BusTrip <: Perturbation
-    time::Float64
-    bus::PSY.Bus
-end
-
-function get_affect(::PSY.System, pert::BusTrip)
-    return (integrator) -> begin
-        0.0
-    end
-end
-
-mutable struct ThreePhaseFault <: Perturbation
-    time::Float64
-    bus::PSY.Bus
-    impedance::Complex
-end
-
-function get_affect(::PSY.System, pert::ThreePhaseFault)
-    return (integrator) -> begin
-        0.0
-    end
-end
-=#
-
 """
 Use to model a change in the network by switching the underlying Ybus in the simulation
 """
@@ -419,5 +393,28 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVolta
     return (integrator) -> begin
         wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
         return set_V_ref(wrapped_device, pert.ref_value)
+    end
+end
+
+"""
+Use to model the trip of an AC Branch in in the system. Accepts any ACBranch
+"""
+mutable struct GeneratorTrip <: Perturbation
+    time::Float64
+    device::PSY.DynamicInjection
+
+    function GeneratorTrip(
+        time::Float64,
+        device::PSY.DynamicInjection,
+    )
+        new(time, device)
+    end
+end
+
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::GeneratorTrip)
+    wrapped_device_ix = _find_device_index(inputs, pert.device)
+    return (integrator) -> begin
+        wrapped_device = get_dynamic_injectors(integrator.p)[wrapped_device_ix]
+        set_connection_status(wrapped_device, 0)
     end
 end

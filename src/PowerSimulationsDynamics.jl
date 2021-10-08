@@ -20,6 +20,7 @@ export ControlReferenceChange
 export BranchTrip
 export BranchImpedanceChange
 export SourceBusVoltageChange
+export GeneratorTrip
 # export BusTrip
 
 # Export for routines
