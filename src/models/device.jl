@@ -27,7 +27,6 @@ function device!(
     dynamic_device::DynamicWrapper{DynG},
     t,
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
-
     if get_connection_status(dynamic_device) < 1
         output_ode .== 0
         return
@@ -140,7 +139,6 @@ function device!(
     dynamic_device::DynamicWrapper{DynI},
     t,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
-
     if get_connection_status(dynamic_device) < 1
         output_ode .== 0
         return

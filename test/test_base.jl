@@ -347,7 +347,6 @@ end
     @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
     @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
 
-
     inputs = PSID.SimulationInputs(ResidualModel, threebus_sys)
     integrator_for_test = MockIntegrator(inputs)
 
@@ -362,7 +361,6 @@ end
 
     @test PSID.get_connection_status(inputs.dynamic_injectors[1]) == 0.0
     @test PSID.get_connection_status(inputs.dynamic_injectors[2]) == 0.0
-
 end
 
 @testset "Global Index" begin
