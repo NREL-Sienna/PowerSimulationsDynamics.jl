@@ -15,16 +15,19 @@ end
 
 function get_frequency_reference!(
     ::Type{FixedFrequency},
-    ::Vector,
+    dynamic_injection_data::Vector,
     static_injection_data::Vector,
 )
     ref_devices = filter(x -> get_bus_category(x) == SLACKBus, static_injection_data)
     if length(ref_devices) < 1
-        throw(
-            IS.ConflictingInputsError(
-                "InfiniteBus model requires at least one bus of type BusTypes.REF with a Source connected to it",
-            ),
-        )
+        dyn_devices = filter(x -> get_bus_category(x) == SLACKBus, dynamic_injection_data)
+        if length(dyn_devices) < 1
+            throw(
+                IS.ConflictingInputsError(
+                    "FixedFrequency model requires at least one generation unit at the Bus BusTypes.REF",
+                ),
+            )
+        end
     end
     return 0
 end

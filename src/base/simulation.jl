@@ -174,9 +174,12 @@ function configure_logging(sim::Simulation, file_mode)
     )
 end
 
-function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
+function _build_inputs!(
+    sim::Simulation{T},
+    frequency_reference,
+) where {T <: SimulationModel}
     simulation_system = get_system(sim)
-    sim.inputs = SimulationInputs(T, simulation_system)
+    sim.inputs = SimulationInputs(T, simulation_system, frequency_reference)
     @debug "Simulation Inputs Created"
     return
 end
@@ -315,7 +318,7 @@ end
 
 function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
-    _build_inputs!(sim)
+    _build_inputs!(sim, get(kwargs, :frequency_reference, ReferenceBus))
     _pre_initialize_simulation!(sim)
     if sim.status != BUILD_FAILED
         simulation_inputs = get_simulation_inputs(sim)

@@ -14,6 +14,10 @@ export SimulationResults
 export execute!
 export read_results
 
+# Frequency reference options
+export ReferenceBus
+export FixedFrequency
+
 # export perturbations
 export NetworkSwitch
 export ControlReferenceChange

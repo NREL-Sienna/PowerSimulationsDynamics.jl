@@ -17,7 +17,10 @@ struct SimulationInputs
     mass_matrix::LinearAlgebra.Diagonal{Float64}
     global_vars_update_pointers::Dict{Int, Int}
 
-    function SimulationInputs(sys::PSY.System, frequency_reference)
+    function SimulationInputs(
+        sys::PSY.System,
+        ::Type{T},
+    ) where {T <: Union{FixedFrequency, ReferenceBus}}
         n_buses = get_n_buses(sys)
         Ybus, lookup = _get_ybus(sys)
         wrapped_branches = _wrap_dynamic_branches(sys, lookup)
@@ -39,11 +42,8 @@ struct SimulationInputs
             PSY.get_frequency(sys),
         )
 
-        global_vars = _make_global_variable_index(
-            wrapped_injectors,
-            wrapped_static_injectors,
-            frequency_reference,
-        )
+        global_vars =
+            _make_global_variable_index(wrapped_injectors, wrapped_static_injectors, T)
 
         inner_vars_count = 0
         for i in length(wrapped_injectors):-1:1
@@ -111,22 +111,14 @@ end
 """
 SimulationInputs build function for MassMatrixModels
 """
-function SimulationInputs(
-    ::Type{MassMatrixModel},
-    sys::PSY.System,
-    frequency_reference = ReferenceBus,
-)
+function SimulationInputs(::Type{MassMatrixModel}, sys::PSY.System, frequency_reference)
     return SimulationInputs(sys, frequency_reference)
 end
 
 """
 SimulationInputs build function for ResidualModels
 """
-function SimulationInputs(
-    ::Type{ResidualModel},
-    sys::PSY.System,
-    frequency_reference = ReferenceBus,
-)
+function SimulationInputs(::Type{ResidualModel}, sys::PSY.System, frequency_reference)
     return SimulationInputs(sys, frequency_reference)
 end
 
@@ -217,7 +209,8 @@ end
 
 function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
     # This needs to change if we implement dynamic load models
-    static_loads = PSY.get_components(PSY.ElectricLoad, sys, x -> !isa(x, PSY.FixedAdmittance))
+    static_loads =
+        PSY.get_components(PSY.ElectricLoad, sys, x -> !isa(x, PSY.FixedAdmittance))
     container = Vector(undef, length(static_loads))
     for (ix, ld) in enumerate(static_loads)
         bus_n = PSY.get_number(PSY.get_bus(ld))

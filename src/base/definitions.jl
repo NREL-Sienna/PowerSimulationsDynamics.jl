@@ -116,6 +116,7 @@ const SIMULATION_ACCEPTED_KWARGS = [
     :system_to_file,
     :file_level,
     :console_level,
+    :frequency_reference,
 ]
 # Location of the global vars in the Caches
 const GLOBAL_VAR_SYS_FREQ_INDEX = 1
