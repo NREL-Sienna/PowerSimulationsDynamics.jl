@@ -29,7 +29,7 @@ function get_frequency_reference!(
     return 0
 end
 
-function get_frequency_reference(
+function get_frequency_reference!(
     ::Type{ReferenceBus},
     dynamic_injection_data::Vector,
     static_injection_data::Vector,
@@ -39,11 +39,20 @@ function get_frequency_reference(
     if isempty(static_ref_devices)
         ref_devices = filter(x -> get_bus_category(x) == SLACKBus, dynamic_injection_data)
         if length(ref_devices) > 1
-            throw(
-                IS.ConflictingInputsError(
-                    "More than one source or generator in the REF Bus is not supported in ReferenceBus model",
+            ref_devices = filter(
+                x -> (
+                    haskey(get_global_index(x), :ω_oc) || haskey(get_global_index(x), :ω)
                 ),
+                ref_devices,
             )
+            if isempty(ref_devices)
+                throw(
+                    IS.ConflictingInputsError(
+                        "ReferenceBus model requires at least one generator with frequency controls.",
+                    ),
+                )
+            end
+            ref_devices = sort(ref_devices, by = x -> PSY.get_base_power(x))
         elseif length(ref_devices) < 1
             throw(
                 IS.ConflictingInputsError(
@@ -51,8 +60,9 @@ function get_frequency_reference(
                 ),
             )
         else
-            reference = _get_frequency_state(first(ref_devices))
+            @assert false
         end
+        reference = _get_frequency_state(first(ref_devices))
     else
         @warn(
             "The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency"
