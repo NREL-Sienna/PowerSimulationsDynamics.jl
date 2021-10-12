@@ -16,7 +16,7 @@ export read_results
 
 # Frequency reference options
 export ReferenceBus
-export FixedFrequency
+export ConstantFrequency
 
 # export perturbations
 export NetworkSwitch

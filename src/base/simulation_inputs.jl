@@ -20,7 +20,7 @@ struct SimulationInputs
     function SimulationInputs(
         sys::PSY.System,
         ::Type{T},
-    ) where {T <: Union{FixedFrequency, ReferenceBus}}
+    ) where {T <: Union{ConstantFrequency, ReferenceBus}}
         n_buses = get_n_buses(sys)
         Ybus, lookup = _get_ybus(sys)
         wrapped_branches = _wrap_dynamic_branches(sys, lookup)
@@ -321,7 +321,7 @@ function _make_global_variable_index(
     wrapped_injectors::Vector,
     static_injection_data::Vector,
     frequency_reference::Type{T},
-) where {T <: Union{FixedFrequency, ReferenceBus}}
+) where {T <: Union{ConstantFrequency, ReferenceBus}}
     global_vars_dict = get_vars_ix()
     global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference!(
         frequency_reference,

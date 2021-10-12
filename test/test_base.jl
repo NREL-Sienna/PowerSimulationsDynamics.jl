@@ -241,7 +241,7 @@ end
     V_i = voltages[3:end]
     ybus_ = PSY.Ybus(omib_sys).data
     I_balance_ybus = -1 * ybus_ * (V_r + V_i .* 1im)
-    inputs = PSID.SimulationInputs(ResidualModel, omib_sys, FixedFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, omib_sys, ConstantFrequency)
     I_balance_sim = zeros(4)
     PSID.network_model(inputs, I_balance_sim, voltages)
     for i in 1:2
@@ -267,7 +267,7 @@ end
 
     ybus_original = PSY.Ybus(threebus_sys)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, FixedFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
 
     for i in 1:3, j in 1:3
         complex_ybus = ybus_original.data[i, j]

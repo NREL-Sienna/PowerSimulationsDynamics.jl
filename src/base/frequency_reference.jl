@@ -1,4 +1,4 @@
-struct FixedFrequency end
+struct ConstantFrequency end
 struct ReferenceBus end
 
 function _get_frequency_state(d::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator}
@@ -14,7 +14,7 @@ function _get_frequency_state(d::DynamicWrapper{PSY.PeriodicVariableSource})
 end
 
 function get_frequency_reference!(
-    ::Type{FixedFrequency},
+    ::Type{ConstantFrequency},
     dynamic_injection_data::Vector,
     static_injection_data::Vector,
 )
@@ -24,7 +24,7 @@ function get_frequency_reference!(
         if length(dyn_devices) < 1
             throw(
                 IS.ConflictingInputsError(
-                    "FixedFrequency model requires at least one generation unit at the Bus BusTypes.REF",
+                    "ConstantFrequency model requires at least one generation unit at the Bus BusTypes.REF",
                 ),
             )
         end
@@ -67,7 +67,7 @@ function get_frequency_reference!(
         end
         reference = _get_frequency_state(first(ref_devices))
     else
-        @info "The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency"
+        @info "The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency"
         reference = 0
     end
     return reference
