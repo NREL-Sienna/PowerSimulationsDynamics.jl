@@ -217,9 +217,8 @@ end
 
 function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
     # This needs to change if we implement dynamic load models
-    static_loads = PSY.get_components(PSY.ElectricLoad, sys)
+    static_loads = PSY.get_components(PSY.ElectricLoad, sys, x -> !isa(x, PSY.FixedAdmittance))
     container = Vector(undef, length(static_loads))
-    isempty(static_loads) && return container
     for (ix, ld) in enumerate(static_loads)
         bus_n = PSY.get_number(PSY.get_bus(ld))
         bus_ix = lookup[bus_n]
@@ -331,7 +330,7 @@ function _make_global_variable_index(
     frequency_reference::Type{T},
 ) where {T <: Union{FixedFrequency, ReferenceBus}}
     global_vars_dict = get_vars_ix()
-    global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference(
+    global_vars_dict[GLOBAL_VAR_SYS_FREQ_INDEX] = get_frequency_reference!(
         frequency_reference,
         wrapped_injectors,
         static_injection_data,
