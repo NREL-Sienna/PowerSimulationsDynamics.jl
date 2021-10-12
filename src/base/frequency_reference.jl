@@ -67,9 +67,7 @@ function get_frequency_reference!(
         end
         reference = _get_frequency_state(first(ref_devices))
     else
-        @warn(
-            "The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency"
-        )
+        @info "The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency"
         reference = 0
     end
     return reference
