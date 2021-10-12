@@ -62,7 +62,7 @@ function get_frequency_reference!(
                     "ReferenceBus model requires at least one bus of type BusTypes.REF with a DynamicInjection or Source device connected to it",
                 ),
             )
-        else
+        elseif length(ref_devices) != 1
             @assert false
         end
         reference = _get_frequency_state(first(ref_devices))
