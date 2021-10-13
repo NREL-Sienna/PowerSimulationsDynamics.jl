@@ -431,23 +431,23 @@ mutable struct LoadChange <: Perturbation
     signal::Symbol
     ref_value::Float64
 
-    function ControlReferenceChange(
+    function LoadChange(
         time::Float64,
-        device::PSY.DynamicInjection,
+        device::PSY.ElectricLoad,
         signal::Symbol,
         ref_value::Float64,
     )
-        if signal ∉ ACCEPTED_CONTROL_REFS
-            error("Signal $signal not accepted as a control reference change")
+        if signal ∉ [:P_ref, :Q_ref]
+            error("Signal $signal not accepted as a control reference change in Loads")
         end
         new(time, device, signal, ref_value)
     end
 end
 
-function get_affect(inputs::SimulationInputs, ::PSY.System, pert::ControlReferenceChange)
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
-        wrapped_device = get_dynamic_injectors(integrator.p)[wrapped_device_ix]
+        wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
         return getfield(wrapped_device, pert.signal)[] = pert.ref_value
     end
 end
