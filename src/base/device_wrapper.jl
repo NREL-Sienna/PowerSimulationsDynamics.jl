@@ -160,6 +160,7 @@ get_P_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::DynamicWrapper) = wrapper.Q_ref[]
 get_V_ref(wrapper::DynamicWrapper) = wrapper.V_ref[]
 get_ω_ref(wrapper::DynamicWrapper) = wrapper.ω_ref[]
+get_connection_status(wrapper::DynamicWrapper) = wrapper.connection_status[]
 
 set_P_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.P_ref[] = val
 set_Q_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.Q_ref[] = val
@@ -294,3 +295,14 @@ PSY.get_active_power(wrapper::StaticWrapper) = PSY.get_active_power(wrapper.devi
 PSY.get_reactive_power(wrapper::StaticWrapper) = PSY.get_reactive_power(wrapper.device)
 PSY.get_name(wrapper::StaticWrapper) = PSY.get_name(wrapper.device)
 PSY.get_ext(wrapper::StaticWrapper) = PSY.get_ext(wrapper.device)
+
+function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, val::Int)
+    if val == 0
+        @debug "Generator $(PSY.get_name(wrapper)) status set to off"
+    elseif val == 1
+        @debug "Generator $(PSY.get_name(wrapper)) status set to on"
+    else
+        error("Invalid status $val. It can only take values 1 or 0")
+    end
+    wrapper.connection_status[] = Float64(val)
+end

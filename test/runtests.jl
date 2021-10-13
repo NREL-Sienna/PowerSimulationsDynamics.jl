@@ -93,6 +93,7 @@ function run_tests()
     file_level = get_logging_level("SYS_LOG_LEVEL", "Info")
 
     include("utils/get_results.jl")
+    include("utils/mock_structs.jl")
     include("./data_tests/dynamic_test_data.jl")
     include("./results/results_initial_conditions.jl")
     include("./results/results_eigenvalues.jl")

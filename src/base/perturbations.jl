@@ -55,6 +55,7 @@ function get_affect(::SimulationInputs, sys::PSY.System, pert::BranchImpedanceCh
     end
 
     return (integrator) -> begin
+        @debug "Changing impedance line $(PSY.get_name(branch)) by a factor of $(pert.multiplier)"
         ybus_update!(integrator.p, branch, mult)
     end
 
@@ -64,6 +65,7 @@ end
 function get_affect(::SimulationInputs, sys::PSY.System, pert::BranchTrip)
     branch = _get_branch_for_perturbation(sys, pert)
     return (integrator) -> begin
+        @debug "Tripping line $(PSY.get_name(branch))"
         ybus_update!(integrator.p, branch, -1.0)
     end
     return
@@ -255,32 +257,6 @@ function ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
     return
 end
 
-# Pending implementation
-#=
-mutable struct BusTrip <: Perturbation
-    time::Float64
-    bus::PSY.Bus
-end
-
-function get_affect(::PSY.System, pert::BusTrip)
-    return (integrator) -> begin
-        0.0
-    end
-end
-
-mutable struct ThreePhaseFault <: Perturbation
-    time::Float64
-    bus::PSY.Bus
-    impedance::Complex
-end
-
-function get_affect(::PSY.System, pert::ThreePhaseFault)
-    return (integrator) -> begin
-        0.0
-    end
-end
-=#
-
 """
 Use to model a change in the network by switching the underlying Ybus in the simulation
 """
@@ -316,6 +292,7 @@ function get_affect(::SimulationInputs, ::PSY.System, pert::NetworkSwitch)
     return (integrator) -> begin
         # TODO: This code can be more performant using SparseMatrix methods
         for (i, v) in enumerate(pert.ybus_rectangular)
+            @debug "Changing Ybus network"
             integrator.p.ybus_rectangular[i] = v
         end
     end
@@ -399,6 +376,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::ControlReferen
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_dynamic_injectors(integrator.p)[wrapped_device_ix]
+        @debug "Changing $(PSY.get_name(wrapped_device)) $(pert.signal) to $(pert.ref_value)"
         return getfield(wrapped_device, pert.signal)[] = pert.ref_value
     end
 end
@@ -419,5 +397,28 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVolta
     return (integrator) -> begin
         wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
         return set_V_ref(wrapped_device, pert.ref_value)
+    end
+end
+
+"""
+Use to model the trip of an AC Branch in in the system. Accepts any ACBranch
+"""
+mutable struct GeneratorTrip <: Perturbation
+    time::Float64
+    device::PSY.DynamicInjection
+end
+
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::GeneratorTrip)
+    wrapped_device_ix = _find_device_index(inputs, pert.device)
+    return (integrator) -> begin
+        wrapped_device = get_dynamic_injectors(integrator.p)[wrapped_device_ix]
+        ix_range = get_ix_range(wrapped_device)
+        @debug "Changing connection status $(PSY.get_name(wrapped_device)), setting states $ix_range to 0.0"
+        if integrator.du !== nothing
+            @debug "setting du $ix_range to 0.0"
+            integrator.du[ix_range] .= 0.0
+        end
+        integrator.u[ix_range] .= 0.0
+        set_connection_status(wrapped_device, 0)
     end
 end

@@ -314,6 +314,55 @@ end
     end
 end
 
+@testset "Test Generation perturbations callback affects" begin
+    three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
+    threebus_sys = System(three_bus_file_dir, runchecks = false)
+    add_source_to_ref(threebus_sys)
+    # Attach dyn devices
+    for g in get_components(Generator, threebus_sys)
+        if get_number(get_bus(g)) == 102
+            case_gen = dyn_gen_second_order(g)
+            add_component!(threebus_sys, case_gen, g)
+        elseif get_number(get_bus(g)) == 103
+            case_inv = inv_case78(g)
+            add_component!(threebus_sys, case_inv, g)
+        end
+    end
+
+    mach = get_component(DynamicGenerator, threebus_sys, "generator-102-1")
+    inv = get_component(DynamicInverter, threebus_sys, "generator-103-1")
+
+    cref = ControlReferenceChange(1.0, mach, :P_ref, 10.0)
+    ωref = ControlReferenceChange(1.0, inv, :ω_ref, 0.9)
+
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    integrator_for_test = MockIntegrator(inputs)
+
+    cref_affect_f = PSID.get_affect(inputs, threebus_sys, cref)
+    ωref_affect_f = PSID.get_affect(inputs, threebus_sys, ωref)
+
+    cref_affect_f(integrator_for_test)
+    ωref_affect_f(integrator_for_test)
+
+    @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
+    @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
+
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    integrator_for_test = MockIntegrator(inputs)
+
+    mach_trip = PSID.GeneratorTrip(1.0, mach)
+    inv_trip = PSID.GeneratorTrip(1.0, inv)
+
+    mtrip_affect_f = PSID.get_affect(inputs, threebus_sys, mach_trip)
+    itrip_affect_f = PSID.get_affect(inputs, threebus_sys, inv_trip)
+
+    mtrip_affect_f(integrator_for_test)
+    itrip_affect_f(integrator_for_test)
+
+    @test PSID.get_connection_status(inputs.dynamic_injectors[1]) == 0.0
+    @test PSID.get_connection_status(inputs.dynamic_injectors[2]) == 0.0
+end
+
 @testset "Global Index" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)

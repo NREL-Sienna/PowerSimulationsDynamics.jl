@@ -14,24 +14,25 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-#time span
-tspan = (0.0, 20.0);
-case_inv = collect(PSY.get_components(PSY.DynamicInverter, threebus_sys))[1]
-
-#Define Fault using Callbacks
-Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 1.2)
-
 @testset "Test 09 VSM Inverter and OneDoneQ ResidualModel" begin
     path = (joinpath(pwd(), "test-09"))
     !isdir(path) && mkdir(path)
+    #time span
+    tspan = (0.0, 20.0)
+    case_inv = collect(PSY.get_components(PSY.DynamicInverter, threebus_sys))[1]
+    case_gen = collect(PSY.get_components(PSY.DynamicGenerator, threebus_sys))[1]
+
+    #Define Fault using Callbacks
+    Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 1.2)
+    gen_trip = GeneratorTrip(1.5, case_gen)
     try
         #Define Simulation Problem
-        sim = Simulation!(
+        sim = Simulation(
             ResidualModel,
             threebus_sys, # system
             path,
             tspan,
-            Pref_change,
+            [Pref_change, gen_trip],
         )
 
         # Test Initial Conditions
@@ -55,7 +56,10 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 1.2)
         results = read_results(sim)
 
         #Obtain data for angles
-        series = get_state_series(results, ("generator-103-1", :θ_oc))
+        t, θ_oc = get_state_series(results, ("generator-103-1", :θ_oc))
+        @test length(t) == length(θ_oc)
+        t, ω_oc = get_state_series(results, ("generator-103-1", :ω_oc))
+        @test length(t) == length(ω_oc)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -65,14 +69,22 @@ end
 @testset "Test 09 VSM Inverter and OneDoneQ MassMatrixModel" begin
     path = (joinpath(pwd(), "test-09"))
     !isdir(path) && mkdir(path)
+    #time span
+    tspan = (0.0, 20.0)
+    case_inv = collect(PSY.get_components(PSY.DynamicInverter, threebus_sys))[1]
+    case_gen = collect(PSY.get_components(PSY.DynamicGenerator, threebus_sys))[1]
+
+    #Define Fault using Callbacks
+    Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 1.2)
+    gen_trip = GeneratorTrip(1.5, case_gen)
     try
         #Define Simulation Problem
-        sim = Simulation!(
+        sim = Simulation(
             MassMatrixModel,
             threebus_sys, # system
             path,
             tspan,
-            Pref_change,
+            [Pref_change, gen_trip],
         )
 
         # Test Initial Conditions
@@ -96,13 +108,13 @@ end
         results = read_results(sim)
 
         #Obtain data for angles
-        series = get_state_series(results, ("generator-103-1", :θ_oc))
+        t, θ_oc = get_state_series(results, ("generator-103-1", :θ_oc))
+        @test length(t) == length(θ_oc)
+        t, ω_oc = get_state_series(results, ("generator-103-1", :ω_oc))
+        @test length(t) == length(ω_oc)
 
-        #Obtain data for angles
-        series = get_state_series(results, ("generator-103-1", :θ_oc))
-
-        power = PSID.get_activepower_series(results, "generator-102-1")
-        rpower = PSID.get_reactivepower_series(results, "generator-102-1")
+        power = PSID.get_activepower_series(results, "generator-103-1")
+        rpower = PSID.get_reactivepower_series(results, "generator-103-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
 
