@@ -420,5 +420,30 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::GeneratorTrip)
         end
         integrator.u[ix_range] .= 0.0
         set_connection_status(wrapped_device, 0)
+
+mutable struct LoadChange <: Perturbation
+    time::Float64
+    device::PSY.DynamicInjection
+    signal::Symbol
+    ref_value::Float64
+
+    function ControlReferenceChange(
+        time::Float64,
+        device::PSY.DynamicInjection,
+        signal::Symbol,
+        ref_value::Float64,
+    )
+        if signal ∉ ACCEPTED_CONTROL_REFS
+            error("Signal $signal not accepted as a control reference change")
+        end
+        new(time, device, signal, ref_value)
+    end
+end
+
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::ControlReferenceChange)
+    wrapped_device_ix = _find_device_index(inputs, pert.device)
+    return (integrator) -> begin
+        wrapped_device = get_dynamic_injectors(integrator.p)[wrapped_device_ix]
+        return getfield(wrapped_device, pert.signal)[] = pert.ref_value
     end
 end
