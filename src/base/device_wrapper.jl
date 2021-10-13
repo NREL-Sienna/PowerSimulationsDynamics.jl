@@ -160,7 +160,6 @@ get_P_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::DynamicWrapper) = wrapper.Q_ref[]
 get_V_ref(wrapper::DynamicWrapper) = wrapper.V_ref[]
 get_ω_ref(wrapper::DynamicWrapper) = wrapper.ω_ref[]
-get_connection_status(wrapper::DynamicWrapper) = wrapper.connection_status[]
 
 set_P_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.P_ref[] = val
 set_Q_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.Q_ref[] = val
@@ -306,3 +305,5 @@ function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, va
     end
     wrapper.connection_status[] = Float64(val)
 end
+
+get_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}) = wrapper.connection_status[]
