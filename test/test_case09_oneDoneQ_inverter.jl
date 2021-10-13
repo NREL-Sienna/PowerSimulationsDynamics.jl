@@ -17,9 +17,11 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
 #time span
 tspan = (0.0, 20.0);
 case_inv = collect(PSY.get_components(PSY.DynamicInverter, threebus_sys))[1]
+case_gen = collect(PSY.get_components(PSY.DynamicGenerator, threebus_sys))[1]
 
 #Define Fault using Callbacks
 Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 1.2)
+gen_trip = PSID.GeneratorTrip(1.5, case_gen)
 
 @testset "Test 09 VSM Inverter and OneDoneQ ResidualModel" begin
     path = (joinpath(pwd(), "test-09"))
@@ -31,7 +33,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 1.2)
             threebus_sys, # system
             path,
             tspan,
-            Pref_change,
+            [Pref_change, gen_trip],
         )
 
         # Test Initial Conditions
@@ -55,7 +57,8 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 1.2)
         results = read_results(sim)
 
         #Obtain data for angles
-        series = get_state_series(results, ("generator-103-1", :θ_oc))
+        t, θ_oc = get_state_series(results, ("generator-103-1", :θ_oc))
+        t, ω_oc = get_state_series(results, ("generator-103-1", :ω_oc))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -72,7 +75,7 @@ end
             threebus_sys, # system
             path,
             tspan,
-            Pref_change,
+            [Pref_change, gen_trip],
         )
 
         # Test Initial Conditions
