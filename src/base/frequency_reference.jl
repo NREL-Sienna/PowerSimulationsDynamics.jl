@@ -1,4 +1,4 @@
-struct FixedFrequency end
+struct ConstantFrequency end
 struct ReferenceBus end
 
 function _get_frequency_state(d::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator}
@@ -14,7 +14,7 @@ function _get_frequency_state(d::DynamicWrapper{PSY.PeriodicVariableSource})
 end
 
 function get_frequency_reference!(
-    ::Type{FixedFrequency},
+    ::Type{ConstantFrequency},
     ::Vector,
     static_injection_data::Vector,
 )
@@ -55,7 +55,7 @@ function get_frequency_reference(
         end
     else
         @warn(
-            "The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency"
+            "The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency"
         )
         reference = 0
     end
