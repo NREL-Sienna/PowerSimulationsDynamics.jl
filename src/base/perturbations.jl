@@ -406,10 +406,6 @@ Use to model the trip of an AC Branch in in the system. Accepts any ACBranch
 mutable struct GeneratorTrip <: Perturbation
     time::Float64
     device::PSY.DynamicInjection
-
-    function GeneratorTrip(time::Float64, device::PSY.DynamicInjection)
-        new(time, device)
-    end
 end
 
 function get_affect(inputs::SimulationInputs, ::PSY.System, pert::GeneratorTrip)
