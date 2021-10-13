@@ -378,7 +378,7 @@ function simulation_pre_step!(sim::Simulation, reset_sim::Bool, ::Type{T}) where
     return
 end
 
-function execute!(sim::Simulation, solver; kwargs...)
+function _execute!(sim::Simulation, solver; kwargs...)
     @debug "status before execute" sim.status
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Float64)
     sim.status = SIMULATION_STARTED
@@ -391,6 +391,8 @@ function execute!(sim::Simulation, solver; kwargs...)
         solver;
         callback = sim.callbacks,
         tstops = sim.tstops,
+        progress = get(kwargs, :enable_progress_bar, _PROGRESS_METER_ENABLED),
+        progress_steps = 1,
         kwargs...,
     )
     if solution.retcode == :Success
@@ -405,8 +407,19 @@ function execute!(sim::Simulation, solver; kwargs...)
         @error("The simulation failed with return code $(solution.retcode)")
         sim.status = SIMULATION_FAILED
     end
-    return sim.status
 end
+
+function execute!(sim::Simulation, solver; kwargs...)
+    logger = TerminalLogger(stderr, Logging.Debug)
+    try
+        Logging.with_logger(logger) do
+            _execute!(sim, solver; kwargs...)
+        end
+    finally
+        return sim.status
+    end
+end
+
 
 function read_results(sim::Simulation)
     return sim.results

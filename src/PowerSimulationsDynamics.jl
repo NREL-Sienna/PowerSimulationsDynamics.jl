@@ -41,6 +41,7 @@ export get_setpoints
 
 ####################################### Package Imports ####################################
 import Logging
+import TerminalLoggers: TerminalLogger
 import InfrastructureSystems
 import SciMLBase
 import DataStructures: OrderedDict
