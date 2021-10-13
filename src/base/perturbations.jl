@@ -421,3 +421,33 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVolta
         return set_V_ref(wrapped_device, pert.ref_value)
     end
 end
+
+"""
+Use to model control reference changes in devices of the model
+"""
+mutable struct LoadChange <: Perturbation
+    time::Float64
+    device::PSY.DynamicInjection
+    signal::Symbol
+    ref_value::Float64
+
+    function ControlReferenceChange(
+        time::Float64,
+        device::PSY.DynamicInjection,
+        signal::Symbol,
+        ref_value::Float64,
+    )
+        if signal ∉ ACCEPTED_CONTROL_REFS
+            error("Signal $signal not accepted as a control reference change")
+        end
+        new(time, device, signal, ref_value)
+    end
+end
+
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::ControlReferenceChange)
+    wrapped_device_ix = _find_device_index(inputs, pert.device)
+    return (integrator) -> begin
+        wrapped_device = get_dynamic_injectors(integrator.p)[wrapped_device_ix]
+        return getfield(wrapped_device, pert.signal)[] = pert.ref_value
+    end
+end
