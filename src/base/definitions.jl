@@ -119,7 +119,7 @@ const SIMULATION_ACCEPTED_KWARGS = [
     :frequency_reference,
     :all_lines_dynamic,
     :all_branches_dynamic,
-    :disable_timer_outputs
+    :disable_timer_outputs,
 ]
 # Location of the global vars in the Caches
 const GLOBAL_VAR_SYS_FREQ_INDEX = 1
