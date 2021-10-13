@@ -1,4 +1,4 @@
-struct FixedFrequency end
+struct ConstantFrequency end
 struct ReferenceBus end
 
 function _get_frequency_state(d::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator}
@@ -14,22 +14,25 @@ function _get_frequency_state(d::DynamicWrapper{PSY.PeriodicVariableSource})
 end
 
 function get_frequency_reference!(
-    ::Type{FixedFrequency},
-    ::Vector,
+    ::Type{ConstantFrequency},
+    dynamic_injection_data::Vector,
     static_injection_data::Vector,
 )
     ref_devices = filter(x -> get_bus_category(x) == SLACKBus, static_injection_data)
     if length(ref_devices) < 1
-        throw(
-            IS.ConflictingInputsError(
-                "InfiniteBus model requires at least one bus of type BusTypes.REF with a Source connected to it",
-            ),
-        )
+        dyn_devices = filter(x -> get_bus_category(x) == SLACKBus, dynamic_injection_data)
+        if length(dyn_devices) < 1
+            throw(
+                IS.ConflictingInputsError(
+                    "ConstantFrequency model requires at least one generation unit at the Bus BusTypes.REF",
+                ),
+            )
+        end
     end
     return 0
 end
 
-function get_frequency_reference(
+function get_frequency_reference!(
     ::Type{ReferenceBus},
     dynamic_injection_data::Vector,
     static_injection_data::Vector,
@@ -39,24 +42,32 @@ function get_frequency_reference(
     if isempty(static_ref_devices)
         ref_devices = filter(x -> get_bus_category(x) == SLACKBus, dynamic_injection_data)
         if length(ref_devices) > 1
-            throw(
-                IS.ConflictingInputsError(
-                    "More than one source or generator in the REF Bus is not supported in ReferenceBus model",
+            ref_devices = filter(
+                x -> (
+                    haskey(get_global_index(x), :ω_oc) || haskey(get_global_index(x), :ω)
                 ),
+                ref_devices,
             )
+            if isempty(ref_devices)
+                throw(
+                    IS.ConflictingInputsError(
+                        "ReferenceBus model requires at least one generator with frequency controls.",
+                    ),
+                )
+            end
+            ref_devices = sort(ref_devices, by = x -> PSY.get_base_power(x))
         elseif length(ref_devices) < 1
             throw(
                 IS.ConflictingInputsError(
                     "ReferenceBus model requires at least one bus of type BusTypes.REF with a DynamicInjection or Source device connected to it",
                 ),
             )
-        else
-            reference = _get_frequency_state(first(ref_devices))
+        elseif length(ref_devices) != 1
+            @assert false
         end
+        reference = _get_frequency_state(first(ref_devices))
     else
-        @warn(
-            "The reference Bus has a Source connected to it. The frequency reference model will change to FixedFrequency"
-        )
+        @info "The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency"
         reference = 0
     end
     return reference
