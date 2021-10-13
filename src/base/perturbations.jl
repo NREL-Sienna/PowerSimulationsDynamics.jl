@@ -446,7 +446,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
-        return getfield(wrapped_device, pert.signal)[] = pert.ref_value
+        return set_connection_status(wrapped_device, 0)
     end
 end
 
