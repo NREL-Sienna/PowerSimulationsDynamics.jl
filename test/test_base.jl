@@ -410,6 +410,18 @@ end
     @test !isempty(PSID.get_dynamic_branches(inputs))
     @test sum(PSID.get_ybus(inputs)) == 0.0
 
+    sim = Simulation(
+        ResidualModel,
+        omib_sys_copy, #system
+        mktempdir(),
+        (0.0, 30.0); #time span
+        all_branches_dynamic = true,
+    )
+    @test sim.status == PSID.BUILT
+    inputs = PSID.get_simulation_inputs(sim)
+    @test !isempty(PSID.get_dynamic_branches(inputs))
+    @test sum(PSID.get_ybus(inputs)) == 0.0
+
     sim = Simulation!(
         ResidualModel,
         omib_sys_copy, #system

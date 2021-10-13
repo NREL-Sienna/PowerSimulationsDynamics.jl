@@ -322,7 +322,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     if get(kwargs, :all_lines_dynamic, false)
         sys = get_system(sim)
         transform_lines_to_dynamic(sys, PSY.Line)
-    elseif get(kwargs, :all_lines_dynamic, false)
+    elseif get(kwargs, :all_branches_dynamic, false)
         sys = get_system(sim)
         transform_branches_to_dynamic(sys, PSY.ACBranch)
     end
