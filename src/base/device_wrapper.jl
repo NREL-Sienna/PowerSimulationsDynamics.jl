@@ -167,18 +167,6 @@ set_Q_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.Q_ref[] = val
 set_V_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.V_ref[] = val
 set_ω_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.ω_ref[] = val
 
-function set_connection_status(wrapper::DynamicWrapper, val::Int)
-    if val == 0
-        @debug "Generator status set to off"
-        wrapper.connection_status[] = Float64(val)
-    elseif val == 1
-        @debug "Generator status set to on"
-        wrapper.connection_status[] = Float64(val)
-    else
-        error("Invalid status $val. It can only take values 1 or 0")
-    end
-end
-
 # PSY overloads for the wrapper
 PSY.get_name(wrapper::DynamicWrapper) = PSY.get_name(wrapper.device)
 PSY.get_ext(wrapper::DynamicWrapper) = PSY.get_ext(wrapper.device)
@@ -302,20 +290,19 @@ set_Q_ref(wrapper::StaticWrapper, val::Float64) = wrapper.Q_ref[] = val
 set_V_ref(wrapper::StaticWrapper, val::Float64) = wrapper.V_ref[] = val
 set_θ_ref(wrapper::StaticWrapper, val::Float64) = wrapper.θ_ref[] = val
 
-function set_connection_status(wrapper::StaticWrapper, val::Int)
-    if val == 0
-        @debug "Generator status set to off"
-        wrapper.connection_status[] = Float64(val)
-    elseif val == 1
-        @debug "Generator status set to on"
-        wrapper.connection_status[] = Float64(val)
-    else
-        error("Invalid status $val. It can only take values 1 or 0")
-    end
-end
-
 PSY.get_bus(wrapper::StaticWrapper) = PSY.get_bus(wrapper.device)
 PSY.get_active_power(wrapper::StaticWrapper) = PSY.get_active_power(wrapper.device)
 PSY.get_reactive_power(wrapper::StaticWrapper) = PSY.get_reactive_power(wrapper.device)
 PSY.get_name(wrapper::StaticWrapper) = PSY.get_name(wrapper.device)
 PSY.get_ext(wrapper::StaticWrapper) = PSY.get_ext(wrapper.device)
+
+function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, val::Int)
+    if val == 0
+        @debug "Generator $(PSY.get_name(wrapper)) status set to off"
+    elseif val == 1
+        @debug "Generator $(PSY.get_name(wrapper)) status set to on"
+    else
+        error("Invalid status $val. It can only take values 1 or 0")
+    end
+    wrapper.connection_status[] = Float64(val)
+end
