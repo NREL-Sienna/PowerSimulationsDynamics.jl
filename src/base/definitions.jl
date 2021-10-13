@@ -150,3 +150,5 @@ end
 
 const _PROGRESS_METER_ENABLED =
     !(isa(stderr, Base.TTY) == false || (get(ENV, "CI", nothing) == "true"))
+
+const BUILD_TIMER = TimerOutputs.TimerOutput()

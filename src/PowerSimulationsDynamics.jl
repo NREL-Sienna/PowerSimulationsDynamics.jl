@@ -55,6 +55,7 @@ import NLsolve
 import PrettyTables
 import Base.ImmutableDict
 import PowerSystems
+import TimerOutputs
 const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics

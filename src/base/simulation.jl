@@ -321,31 +321,56 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     # Branches are a super set of Lines. Passing both kwargs will
     # be redundant.
-    if get(kwargs, :all_branches_dynamic, false)
-        sys = get_system(sim)
-        transform_branches_to_dynamic(sys, PSY.ACBranch)
-    elseif get(kwargs, :all_lines_dynamic, false)
-        sys = get_system(sim)
-        transform_branches_to_dynamic(sys, PSY.Line)
+    TimerOutputs.reset_timer!(BUILD_TIMER)
+    if get(kwargs, :disable_timer_outputs, false)
+        TimerOutputs.disable_timer!(BUILD_PROBLEMS_TIMER)
     end
-    _build_inputs!(sim, get(kwargs, :frequency_reference, ReferenceBus))
-    _pre_initialize_simulation!(sim)
-    if sim.status != BUILD_FAILED
-        simulation_inputs = get_simulation_inputs(sim)
-        try
-            jacobian = _get_jacobian(sim)
-            model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
-            refine_initial_condition!(sim, model, jacobian)
-            _build_perturbations!(sim)
-            _get_diffeq_problem(sim, model, jacobian)
-            @info "Simulations status = $(sim.status)"
-        catch e
-            bt = catch_backtrace()
-            @error "$T failed to build" exception = e, bt
-            sim.status = BUILD_FAILED
+
+    TimerOutputs.@timeit BUILD_TIMER "Build Simulation" begin
+        if get(kwargs, :all_branches_dynamic, false)
+            TimerOutputs.@timeit BUILD_TIMER "AC Branch Transform to Dynamic" begin
+                sys = get_system(sim)
+                transform_branches_to_dynamic(sys, PSY.ACBranch)
+            end
+        elseif get(kwargs, :all_lines_dynamic, false)
+            TimerOutputs.@timeit BUILD_TIMER "Line Transform to Dynamic" begin
+                sys = get_system(sim)
+                transform_branches_to_dynamic(sys, PSY.Line)
+            end
         end
-    else
-        @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
+        TimerOutputs.@timeit BUILD_TIMER "Build Simulation Inputs" begin
+            _build_inputs!(sim, get(kwargs, :frequency_reference, ReferenceBus))
+        end
+        TimerOutputs.@timeit BUILD_TIMER "Pre-initialization" begin
+            _pre_initialize_simulation!(sim)
+        end
+        if sim.status != BUILD_FAILED
+            simulation_inputs = get_simulation_inputs(sim)
+            try
+                TimerOutputs.@timeit BUILD_TIMER "Calculate Jacobian" begin
+                    jacobian = _get_jacobian(sim)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Make Model Function" begin
+                    model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Initial Condition NLsolve refinement" begin
+                    refine_initial_condition!(sim, model, jacobian)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Build Perturbations" begin
+                    _build_perturbations!(sim)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Make DiffEq Problem" begin
+                    _get_diffeq_problem(sim, model, jacobian)
+                end
+                @info "Simulations status = $(sim.status)"
+            catch e
+                bt = catch_backtrace()
+                @error "$T failed to build" exception = e, bt
+                sim.status = BUILD_FAILED
+            end
+        else
+            @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
+        end
     end
     return
 end
@@ -357,6 +382,14 @@ function build!(sim; kwargs...)
             _build!(sim; kwargs...)
         end
     finally
+        string_buffer = IOBuffer()
+        TimerOutputs.print_timer(
+            string_buffer,
+            BUILD_TIMER,
+            sortby = :firstexec,
+            compact = true,
+        )
+        @info "\n$(String(take!(string_buffer)))\n"
         close(logger)
     end
     return
@@ -419,7 +452,6 @@ function execute!(sim::Simulation, solver; kwargs...)
         return sim.status
     end
 end
-
 
 function read_results(sim::Simulation)
     return sim.results
