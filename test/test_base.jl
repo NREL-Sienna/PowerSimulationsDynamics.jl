@@ -335,7 +335,7 @@ end
     cref = ControlReferenceChange(1.0, mach, :P_ref, 10.0)
     ωref = ControlReferenceChange(1.0, inv, :ω_ref, 0.9)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
     integrator_for_test = MockIntegrator(inputs)
 
     cref_affect_f = PSID.get_affect(inputs, threebus_sys, cref)
@@ -347,7 +347,7 @@ end
     @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
     @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
     integrator_for_test = MockIntegrator(inputs)
 
     mach_trip = PSID.GeneratorTrip(1.0, mach)
