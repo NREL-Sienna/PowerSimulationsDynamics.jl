@@ -420,6 +420,8 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::GeneratorTrip)
         end
         integrator.u[ix_range] .= 0.0
         set_connection_status(wrapped_device, 0)
+    end
+end
 
 mutable struct LoadChange <: Perturbation
     time::Float64
@@ -456,7 +458,7 @@ mutable struct LoadTrip <: Perturbation
     device::PSY.DynamicInjection
 end
 
-function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
