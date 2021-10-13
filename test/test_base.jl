@@ -347,3 +347,50 @@ end
     @test ("generator-102-1", :Vr1) == PSID.get_state_from_ix(global_index, 16)
     @test ("generator-103-1", :ε_pll) == PSID.get_state_from_ix(global_index, 30)
 end
+
+@testset "Frequency Reference" begin
+    sys = System(
+        joinpath(TEST_FILES_DIR, "data_tests/240busWECC_2018_PSS32_fixed_shunts.raw"),
+        joinpath(TEST_FILES_DIR, "data_tests/240busWECC_2018_PSS.dyr"),
+        bus_name_formatter = x -> string(strip(x["name"])) * "-" * string(x["index"]),
+    )
+    sim = Simulation(
+        ResidualModel,
+        sys, #system
+        mktempdir(),
+        (0.0, 20.0), #time span
+        # Not initialized to speed up the test
+        initialize_simulation = false,
+    )
+
+    @test PSID.get_global_vars_update_pointers(sim.inputs)[1] != 0
+
+    sim = Simulation(
+        ResidualModel,
+        sys, #system
+        mktempdir(),
+        (0.0, 20.0),
+        # Not initialized to speed up the test
+        initialize_simulation = false,
+        frequency_reference = ConstantFrequency, #time span
+    )
+
+    @test PSID.get_global_vars_update_pointers(sim.inputs)[1] == 0
+
+    ref_bus = get_component(Bus, sys, "TESLA-3933")
+    devs_in_ref = get_components(StaticInjection, sys, x -> get_bus(x) == ref_bus)
+    for d in devs_in_ref
+        remove_component!(sys, get_dynamic_injector(d))
+        remove_component!(sys, d)
+    end
+
+    @test_throws IS.ConflictingInputsError Simulation(
+        ResidualModel,
+        sys, #system
+        mktempdir(),
+        (0.0, 20.0),
+        # Not initialized to speed up the test
+        initialize_simulation = false,
+        frequency_reference = ConstantFrequency, #time span
+    )
+end
