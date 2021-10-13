@@ -28,7 +28,7 @@ function device!(
     t,
 ) where {DynG <: PSY.DynamicGenerator, T <: Real}
     if get_connection_status(dynamic_device) < 1.0
-        output_ode .== 0
+        output_ode .= zero(T)
         return
     end
 
@@ -140,7 +140,7 @@ function device!(
     t,
 ) where {DynI <: PSY.DynamicInverter, T <: Real}
     if get_connection_status(dynamic_device) < 1.0
-        output_ode .== 0
+        output_ode .= zero(T)
         return
     end
 
