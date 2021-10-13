@@ -443,7 +443,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
 end
 
 function execute!(sim::Simulation, solver; kwargs...)
-    logger = TerminalLogger(stderr, Logging.Debug)
+    logger = TerminalLogger(stderr, get(kwargs, :console_level, Logging.Info))
     try
         Logging.with_logger(logger) do
             _execute!(sim, solver; kwargs...)
