@@ -319,12 +319,14 @@ end
 
 function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
-    if get(kwargs, :all_lines_dynamic, false)
-        sys = get_system(sim)
-        transform_branches_to_dynamic(sys, PSY.Line)
-    elseif get(kwargs, :all_branches_dynamic, false)
+    # Branches are a super set of Lines. Passing both kwargs will
+    # be redundant.
+    if get(kwargs, :all_branches_dynamic, false)
         sys = get_system(sim)
         transform_branches_to_dynamic(sys, PSY.ACBranch)
+    elseif get(kwargs, :all_lines_dynamic, false)
+        sys = get_system(sim)
+        transform_branches_to_dynamic(sys, PSY.Line)
     end
     _build_inputs!(sim, get(kwargs, :frequency_reference, ReferenceBus))
     _pre_initialize_simulation!(sim)
