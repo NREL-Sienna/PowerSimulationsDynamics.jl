@@ -339,7 +339,9 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
             end
         end
         TimerOutputs.@timeit BUILD_TIMER "Build Simulation Inputs" begin
-            _build_inputs!(sim, get(kwargs, :frequency_reference, ReferenceBus))
+            f_ref = get(kwargs, :frequency_reference, ReferenceBus)
+            _build_inputs!(sim, f_ref)
+            sim.multimachine = f_ref != ConstantFrequency
         end
         TimerOutputs.@timeit BUILD_TIMER "Pre-initialization" begin
             _pre_initialize_simulation!(sim)
