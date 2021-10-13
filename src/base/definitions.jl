@@ -147,3 +147,6 @@ Defines the status of the simulation object
     SIMULATION_FAILED = 7
     CONVERTED_FOR_SMALL_SIGNAL = 8
 end
+
+const _PROGRESS_METER_ENABLED =
+    !(isa(stderr, Base.TTY) == false || (get(ENV, "CI", nothing) == "true"))
