@@ -394,3 +394,33 @@ end
         frequency_reference = ConstantFrequency, #time span
     )
 end
+
+@testset "Line and Branch transformation" begin
+    #Define Simulation Problem
+    omib_sys_copy = deepcopy(omib_sys)
+    sim = Simulation(
+        ResidualModel,
+        omib_sys_copy, #system
+        mktempdir(),
+        (0.0, 30.0); #time span
+        all_lines_dynamic = true,
+    )
+    @test sim.status == PSID.BUILT
+    inputs = PSID.get_simulation_inputs(sim)
+    @test !isempty(PSID.get_dynamic_branches(inputs))
+    @test sum(PSID.get_ybus(inputs)) == 0.0
+
+    sim = Simulation!(
+        ResidualModel,
+        omib_sys_copy, #system
+        mktempdir(),
+        (0.0, 30.0); #time span
+        all_lines_dynamic = true,
+    )
+    @test sim.status == PSID.BUILT
+    inputs = PSID.get_simulation_inputs(sim)
+    @test !isempty(PSID.get_dynamic_branches(inputs))
+    @test sum(PSID.get_ybus(inputs)) == 0.0
+    @test !isempty(PSY.get_components(PSY.DynamicBranch, omib_sys_copy))
+    @test isempty(PSY.get_components(PSY.Line, omib_sys_copy))
+end
