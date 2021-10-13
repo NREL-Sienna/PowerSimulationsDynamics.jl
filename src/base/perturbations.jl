@@ -447,3 +447,19 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
         return getfield(wrapped_device, pert.signal)[] = pert.ref_value
     end
 end
+
+"""
+Use to model control reference changes in devices of the model
+"""
+mutable struct LoadTrip <: Perturbation
+    time::Float64
+    device::PSY.DynamicInjection
+end
+
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
+    wrapped_device_ix = _find_device_index(inputs, pert.device)
+    return (integrator) -> begin
+        wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
+        return getfield(wrapped_device, pert.signal)[] = pert.ref_value
+    end
+end
