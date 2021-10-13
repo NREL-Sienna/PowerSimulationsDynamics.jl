@@ -106,6 +106,7 @@ function Simulation!(
         console_level = get(kwargs, :console_level, Logging.Warn),
         file_level = get(kwargs, :file_level, Logging.Debug),
     )
+
     build!(sim; kwargs...)
     if get(kwargs, :system_to_file, false)
         PSY.to_json(system, joinpath(simulation_folder, "initialized_system.json"))
@@ -318,6 +319,15 @@ end
 
 function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
+    # Branches are a super set of Lines. Passing both kwargs will
+    # be redundant.
+    if get(kwargs, :all_branches_dynamic, false)
+        sys = get_system(sim)
+        transform_branches_to_dynamic(sys, PSY.ACBranch)
+    elseif get(kwargs, :all_lines_dynamic, false)
+        sys = get_system(sim)
+        transform_branches_to_dynamic(sys, PSY.Line)
+    end
     _build_inputs!(sim, get(kwargs, :frequency_reference, ReferenceBus))
     _pre_initialize_simulation!(sim)
     if sim.status != BUILD_FAILED

@@ -38,3 +38,11 @@ function transform_ybus_to_rectangular(
     # TODO: Improve performance here
     return hcat(vcat(real(ybus), -imag(ybus)), vcat(imag(ybus), real(ybus)))
 end
+
+function transform_branches_to_dynamic(sys::PSY.System, ::Type{T}) where {T <: PSY.ACBranch}
+    for b in PSY.get_components(T, sys)
+        dyn_branch = PSY.DynamicBranch(b)
+        PSY.add_component!(sys, dyn_branch)
+    end
+    return
+end
