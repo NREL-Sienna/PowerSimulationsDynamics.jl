@@ -331,7 +331,7 @@ end
 
     load = first(get_components(ElectricLoad, threebus_sys))
 
-    load_step = LoadChange(1.0, load :P_ref, 10.0)
+    load_step = LoadChange(1.0, load:P_ref, 10.0)
     inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
     integrator_for_test = MockIntegrator(inputs)
 
