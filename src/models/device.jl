@@ -84,7 +84,12 @@ function device!(
     t,
 ) where {T <: Real, U <: LoadCategory}
     # For now model all loads as constant impedance
-    mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device.device)
+    if get_connection_status(device) < 1.0
+        current_r .= zero(T)
+        current_i .= zero(T)
+    else
+        mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device.device)
+    end
     return
 end
 
