@@ -149,7 +149,6 @@ Defines the status of the simulation object
     CONVERTED_FOR_SMALL_SIGNAL = 8
 end
 
-const _PROGRESS_METER_ENABLED =
-    !(isa(stderr, Base.TTY) == false || (get(ENV, "CI", nothing) == "true"))
+const _PROG_METER_ENABLED = !isa(stderr, Base.TTY) || (get(ENV, "CI", nothing) == "true")
 
 const BUILD_TIMER = TimerOutputs.TimerOutput()

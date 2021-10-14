@@ -429,7 +429,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
         solver;
         callback = sim.callbacks,
         tstops = sim.tstops,
-        progress = get(kwargs, :enable_progress_bar, _PROGRESS_METER_ENABLED),
+        progress = get(kwargs, :enable_progress_bar, _PROG_METER_ENABLED),
         progress_steps = 1,
         kwargs...,
     )
