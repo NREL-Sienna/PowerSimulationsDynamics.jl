@@ -161,14 +161,14 @@ function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     return
 end
 
-function configure_logging(sim::Simulation, file_mode)
+function configure_logging(sim::Simulation, file_mode; kwargs...)
     return IS.configure_logging(
         console = true,
         console_stream = stderr,
-        console_level = sim.console_level,
+        console_level = get(kwargs, :console_level, sim.console_level),
         file = true,
         filename = joinpath(sim.simulation_folder, SIMULATION_LOG_FILENAME),
-        file_level = sim.file_level,
+        file_level = get(kwargs, :file_level, sim.file_level),
         file_mode = file_mode,
         tracker = nothing,
         set_global = false,
@@ -383,6 +383,9 @@ function build!(sim; kwargs...)
         Logging.with_logger(logger) do
             _build!(sim; kwargs...)
         end
+    catch e
+        @error "Build failed" exception = (e, catch_backtrace())
+        return sim.status
     finally
         string_buffer = IOBuffer()
         TimerOutputs.print_timer(
@@ -397,7 +400,7 @@ function build!(sim; kwargs...)
     return
 end
 
-function simulation_pre_step!(sim::Simulation, reset_sim::Bool, ::Type{T}) where {T <: Real}
+function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
     reset_sim = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_sim
     if sim.status == BUILD_FAILED
         error(
@@ -415,7 +418,7 @@ end
 
 function _execute!(sim::Simulation, solver; kwargs...)
     @debug "status before execute" sim.status
-    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Float64)
+    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false))
     sim.status = SIMULATION_STARTED
     time_log = Dict{Symbol, Any}()
     solution,
@@ -445,12 +448,16 @@ function _execute!(sim::Simulation, solver; kwargs...)
 end
 
 function execute!(sim::Simulation, solver; kwargs...)
-    logger = TerminalLogger(stderr, get(kwargs, :console_level, Logging.Info))
+    logger = configure_logging(sim, "w"; kwargs...)
     try
         Logging.with_logger(logger) do
             _execute!(sim, solver; kwargs...)
         end
+    catch e
+        @error "Execution failed" exception = (e, catch_backtrace())
+        return sim.status = SIMULATION_FAILED
     finally
+        close(logger)
         return sim.status
     end
 end
