@@ -23,17 +23,30 @@ struct SimulationInputs
     ) where {T <: Union{ConstantFrequency, ReferenceBus}}
         n_buses = get_n_buses(sys)
         Ybus, lookup = _get_ybus(sys)
-        wrapped_branches = _wrap_dynamic_branches(sys, lookup)
-        has_dyn_lines = !isempty(wrapped_branches)
-        branch_state_counts = 2 * length(wrapped_branches)
-        injection_start = 2 * n_buses + branch_state_counts + 1
-        wrapped_injectors = _wrap_dynamic_injector_data(sys, lookup, injection_start)
-        var_count = wrapped_injectors[end].ix_range[end]
-        mass_matrix = _make_mass_matrix(wrapped_injectors, var_count, n_buses)
-        DAE_vector = _make_DAE_vector(mass_matrix, var_count, n_buses)
-        total_shunts = _make_total_shunts(wrapped_branches, n_buses)
-        wrapped_loads = _wrap_loads(sys, lookup)
-        wrapped_static_injectors = _wrap_static_injectors(sys, lookup)
+
+        TimerOutputs.@timeit BUILD_TIMER "Wrap Branches" begin
+            wrapped_branches = _wrap_dynamic_branches(sys, lookup)
+            has_dyn_lines = !isempty(wrapped_branches)
+            branch_state_counts = 2 * length(wrapped_branches)
+            injection_start = 2 * n_buses + branch_state_counts + 1
+        end
+
+        TimerOutputs.@timeit BUILD_TIMER "Wrap Dynamic Injectors" begin
+            wrapped_injectors = _wrap_dynamic_injector_data(sys, lookup, injection_start)
+            var_count = wrapped_injectors[end].ix_range[end]
+        end
+
+        TimerOutputs.@timeit BUILD_TIMER "Calculate MM, DAE_vector, Total Shunts" begin
+            mass_matrix = _make_mass_matrix(wrapped_injectors, var_count, n_buses)
+            DAE_vector = _make_DAE_vector(mass_matrix, var_count, n_buses)
+            total_shunts = _make_total_shunts(wrapped_branches, n_buses)
+        end
+
+        TimerOutputs.@timeit BUILD_TIMER "Wrap Static Injectors" begin
+            wrapped_loads = _wrap_loads(sys, lookup)
+            wrapped_static_injectors = _wrap_static_injectors(sys, lookup)
+        end
+
         _adjust_states!(
             DAE_vector,
             mass_matrix,

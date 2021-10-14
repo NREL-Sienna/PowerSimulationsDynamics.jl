@@ -161,14 +161,14 @@ function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     return
 end
 
-function configure_logging(sim::Simulation, file_mode)
+function configure_logging(sim::Simulation, file_mode; kwargs...)
     return IS.configure_logging(
         console = true,
         console_stream = stderr,
-        console_level = sim.console_level,
+        console_level = get(kwargs, :console_level, sim.console_level),
         file = true,
         filename = joinpath(sim.simulation_folder, SIMULATION_LOG_FILENAME),
-        file_level = sim.file_level,
+        file_level = get(kwargs, :file_level, sim.file_level),
         file_mode = file_mode,
         tracker = nothing,
         set_global = false,
@@ -321,31 +321,58 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     # Branches are a super set of Lines. Passing both kwargs will
     # be redundant.
-    if get(kwargs, :all_branches_dynamic, false)
-        sys = get_system(sim)
-        transform_branches_to_dynamic(sys, PSY.ACBranch)
-    elseif get(kwargs, :all_lines_dynamic, false)
-        sys = get_system(sim)
-        transform_branches_to_dynamic(sys, PSY.Line)
+    TimerOutputs.reset_timer!(BUILD_TIMER)
+    if get(kwargs, :disable_timer_outputs, false)
+        TimerOutputs.disable_timer!(BUILD_PROBLEMS_TIMER)
     end
-    _build_inputs!(sim, get(kwargs, :frequency_reference, ReferenceBus))
-    _pre_initialize_simulation!(sim)
-    if sim.status != BUILD_FAILED
-        simulation_inputs = get_simulation_inputs(sim)
-        try
-            jacobian = _get_jacobian(sim)
-            model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
-            refine_initial_condition!(sim, model, jacobian)
-            _build_perturbations!(sim)
-            _get_diffeq_problem(sim, model, jacobian)
-            @info "Simulations status = $(sim.status)"
-        catch e
-            bt = catch_backtrace()
-            @error "$T failed to build" exception = e, bt
-            sim.status = BUILD_FAILED
+
+    TimerOutputs.@timeit BUILD_TIMER "Build Simulation" begin
+        if get(kwargs, :all_branches_dynamic, false)
+            TimerOutputs.@timeit BUILD_TIMER "AC Branch Transform to Dynamic" begin
+                sys = get_system(sim)
+                transform_branches_to_dynamic(sys, PSY.ACBranch)
+            end
+        elseif get(kwargs, :all_lines_dynamic, false)
+            TimerOutputs.@timeit BUILD_TIMER "Line Transform to Dynamic" begin
+                sys = get_system(sim)
+                transform_branches_to_dynamic(sys, PSY.Line)
+            end
         end
-    else
-        @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
+        TimerOutputs.@timeit BUILD_TIMER "Build Simulation Inputs" begin
+            f_ref = get(kwargs, :frequency_reference, ReferenceBus)
+            _build_inputs!(sim, f_ref)
+            sim.multimachine = f_ref != ConstantFrequency
+        end
+        TimerOutputs.@timeit BUILD_TIMER "Pre-initialization" begin
+            _pre_initialize_simulation!(sim)
+        end
+        if sim.status != BUILD_FAILED
+            simulation_inputs = get_simulation_inputs(sim)
+            try
+                TimerOutputs.@timeit BUILD_TIMER "Calculate Jacobian" begin
+                    jacobian = _get_jacobian(sim)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Make Model Function" begin
+                    model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Initial Condition NLsolve refinement" begin
+                    refine_initial_condition!(sim, model, jacobian)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Build Perturbations" begin
+                    _build_perturbations!(sim)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Make DiffEq Problem" begin
+                    _get_diffeq_problem(sim, model, jacobian)
+                end
+                @info "Simulations status = $(sim.status)"
+            catch e
+                bt = catch_backtrace()
+                @error "$T failed to build" exception = e, bt
+                sim.status = BUILD_FAILED
+            end
+        else
+            @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
+        end
     end
     return
 end
@@ -356,13 +383,24 @@ function build!(sim; kwargs...)
         Logging.with_logger(logger) do
             _build!(sim; kwargs...)
         end
+    catch e
+        @error "Build failed" exception = (e, catch_backtrace())
+        return sim.status
     finally
+        string_buffer = IOBuffer()
+        TimerOutputs.print_timer(
+            string_buffer,
+            BUILD_TIMER,
+            sortby = :firstexec,
+            compact = true,
+        )
+        @info "\n$(String(take!(string_buffer)))\n"
         close(logger)
     end
     return
 end
 
-function simulation_pre_step!(sim::Simulation, reset_sim::Bool, ::Type{T}) where {T <: Real}
+function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
     reset_sim = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_sim
     if sim.status == BUILD_FAILED
         error(
@@ -378,9 +416,9 @@ function simulation_pre_step!(sim::Simulation, reset_sim::Bool, ::Type{T}) where
     return
 end
 
-function execute!(sim::Simulation, solver; kwargs...)
+function _execute!(sim::Simulation, solver; kwargs...)
     @debug "status before execute" sim.status
-    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Float64)
+    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false))
     sim.status = SIMULATION_STARTED
     time_log = Dict{Symbol, Any}()
     solution,
@@ -391,6 +429,8 @@ function execute!(sim::Simulation, solver; kwargs...)
         solver;
         callback = sim.callbacks,
         tstops = sim.tstops,
+        progress = get(kwargs, :enable_progress_bar, _PROG_METER_ENABLED),
+        progress_steps = 1,
         kwargs...,
     )
     if solution.retcode == :Success
@@ -405,7 +445,21 @@ function execute!(sim::Simulation, solver; kwargs...)
         @error("The simulation failed with return code $(solution.retcode)")
         sim.status = SIMULATION_FAILED
     end
-    return sim.status
+end
+
+function execute!(sim::Simulation, solver; kwargs...)
+    logger = configure_logging(sim, "a"; kwargs...)
+    try
+        Logging.with_logger(logger) do
+            _execute!(sim, solver; kwargs...)
+        end
+    catch e
+        @error "Execution failed" exception = (e, catch_backtrace())
+        return sim.status = SIMULATION_FAILED
+    finally
+        close(logger)
+        return sim.status
+    end
 end
 
 function read_results(sim::Simulation)

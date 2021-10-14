@@ -129,11 +129,20 @@ function _calculate_initial_guess!(sim::Simulation)
     @assert sim.status == BUILD_INCOMPLETE
     while sim.status == BUILD_INCOMPLETE
         @debug "Start state intialization routine"
-        sim.status = _power_flow_solution!(sim.x0_init, get_system(sim), inputs)
-        sim.status = _initialize_static_injection!(inputs)
-        sim.status = _initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
+        TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
+            sim.status = _power_flow_solution!(sim.x0_init, get_system(sim), inputs)
+        end
+        TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
+            sim.status = _initialize_static_injection!(inputs)
+        end
+        TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
+            sim.status =
+                _initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
+        end
         if has_dyn_lines(inputs)
-            sim.status = _initialize_dynamic_branches!(sim.x0_init, inputs)
+            TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
+                sim.status = _initialize_dynamic_branches!(sim.x0_init, inputs)
+            end
         else
             @debug "No Dynamic Branches in the system"
         end
