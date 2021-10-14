@@ -378,7 +378,22 @@ end
         end
     end
 
-    load_1 = get_components(ElectricLoad, threebus_sys)
+    load_1 = get_component(ElectricLoad, threebus_sys, "load1011")
+    load_2 = get_component(ElectricLoad, threebus_sys, "load1021")
+
+    load_val = LoadChange(1.0, load_1, :P_ref, 10.0)
+    load_trip = LoadTrip(1.0, load_2)
+
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    integrator_for_test = MockIntegrator(inputs)
+
+    lref_affect_f = PSID.get_affect(inputs, threebus_sys, load_val)
+    ltrip_affect_f = PSID.get_affect(inputs, threebus_sys, load_trip)
+
+    lref_affect_f(integrator_for_test)
+    @test PSID.get_P_ref(inputs.static_loads[1]) == 10.0
+    ltrip_affect_f(integrator_for_test)
+    @test PSID.get_connection_status(inputs.static_loads[3]) == 0.0
 end
 
 @testset "Global Index" begin
