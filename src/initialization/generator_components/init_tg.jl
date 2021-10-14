@@ -154,6 +154,8 @@ function initialize_tg!(
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
         tg_states[1] = sol_x0[2]
+        tg_states[2] = sol_x0[3]
+        tg_states[3] = sol_x0[4]
     end
 end
 
