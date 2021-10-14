@@ -306,4 +306,5 @@ function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, va
     wrapper.connection_status[] = Float64(val)
 end
 
-get_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}) = wrapper.connection_status[]
+get_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}) =
+    wrapper.connection_status[]

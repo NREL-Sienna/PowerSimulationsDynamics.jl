@@ -295,6 +295,7 @@ function get_affect(::SimulationInputs, ::PSY.System, pert::NetworkSwitch)
             @debug "Changing Ybus network"
             integrator.p.ybus_rectangular[i] = v
         end
+        return
     end
 end
 
@@ -377,7 +378,8 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::ControlReferen
     return (integrator) -> begin
         wrapped_device = get_dynamic_injectors(integrator.p)[wrapped_device_ix]
         @debug "Changing $(PSY.get_name(wrapped_device)) $(pert.signal) to $(pert.ref_value)"
-        return getfield(wrapped_device, pert.signal)[] = pert.ref_value
+        getfield(wrapped_device, pert.signal)[] = pert.ref_value
+        return
     end
 end
 
@@ -396,7 +398,8 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVolta
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
-        return set_V_ref(wrapped_device, pert.ref_value)
+        set_V_ref(wrapped_device, pert.ref_value)
+        return
     end
 end
 
@@ -425,7 +428,7 @@ end
 
 mutable struct LoadChange <: Perturbation
     time::Float64
-    device::PSY.DynamicInjection
+    device::PSY.ElectricLoad
     signal::Symbol
     ref_value::Float64
 
@@ -442,11 +445,24 @@ mutable struct LoadChange <: Perturbation
     end
 end
 
+function _find_device_index(inputs::SimulationInputs, device::PSY.ElectricLoad)
+    wrapped_devices = get_static_loads(inputs)
+    wrapped_device_ixs = findall(x -> _is_same_device(x, device), wrapped_devices)
+    if isempty(wrapped_device_ixs)
+        error(
+            "Device $(typeof(device))-$(PSY.get_name(device)) not found in the simulation inputs",
+        )
+    end
+    return wrapped_device_ixs[1]
+end
+
 function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
-        wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
-        return set_connection_status(wrapped_device, 0)
+        wrapped_device = get_static_loads(integrator.p)[wrapped_device_ix]
+        @debug "Changing $(PSY.get_name(wrapped_device)) $(pert.signal) to $(pert.ref_value)"
+        getfield(wrapped_device, pert.signal)[] = pert.ref_value
+        return
     end
 end
 
@@ -455,13 +471,15 @@ Use to model control reference changes in devices of the model
 """
 mutable struct LoadTrip <: Perturbation
     time::Float64
-    device::PSY.DynamicInjection
+    device::PSY.ElectricLoad
 end
 
 function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
-        wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
-        return getfield(wrapped_device, pert.signal)[] = pert.ref_value
+        wrapped_device = get_static_loads(integrator.p)[wrapped_device_ix]
+        @info "Changing connection status $(PSY.get_name(wrapped_device))"
+        set_connection_status(wrapped_device, 0)
+        return
     end
 end
