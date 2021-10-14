@@ -448,7 +448,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
 end
 
 function execute!(sim::Simulation, solver; kwargs...)
-    logger = configure_logging(sim, "w"; kwargs...)
+    logger = configure_logging(sim, "a"; kwargs...)
     try
         Logging.with_logger(logger) do
             _execute!(sim, solver; kwargs...)
