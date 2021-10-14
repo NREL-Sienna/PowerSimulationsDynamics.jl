@@ -156,9 +156,9 @@ end
 @testset "Test initial conditions externally" begin
     #Create system with 2 GENROU generators
     threebus_file_dir =
-        joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBusMulti_LessLoad.raw")
+        joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBusMulti_LessLoad.raw")
     dyr_file_dir =
-        joinpath(dirname(@__FILE__), "benchmarks/psse/GENROU/ThreeBus_GENROU_SEXS.dyr")
+        joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBus_GENROU_SEXS.dyr")
     sys = System(threebus_file_dir, dyr_file_dir)
     x0_test = zeros(23)
     x0_test[1:6] .= 1.0
@@ -214,7 +214,7 @@ end
     @test LinearAlgebra.norm(sim_ignore_init.x0_init - sim_normal_no_gen.x0_init) <= 1e-6
     #Pass wrong vector size
     x0_wrong = zeros(20)
-    @test_throws IS.ConflictingInputsError Simulation(
+    @test_logs (:error, "Build failed") match_mode = :any Simulation(
         ResidualModel,
         sys,
         pwd(),
@@ -384,7 +384,7 @@ end
         remove_component!(sys, d)
     end
 
-    @test_throws IS.ConflictingInputsError Simulation(
+    @test_logs (:error, "Build failed") match_mode = :any Simulation(
         ResidualModel,
         sys, #system
         mktempdir(),
