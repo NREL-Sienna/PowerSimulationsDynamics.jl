@@ -25,6 +25,8 @@ export BranchTrip
 export BranchImpedanceChange
 export SourceBusVoltageChange
 export GeneratorTrip
+export LoadTrip
+export LoadChange
 # export BusTrip
 
 # Export for routines

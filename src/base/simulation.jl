@@ -416,6 +416,10 @@ function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
     return
 end
 
+function _prog_meter_enabled()
+    return isa(stderr, Base.TTY) || (get(ENV, "CI", nothing) == "true")
+end
+
 function _execute!(sim::Simulation, solver; kwargs...)
     @debug "status before execute" sim.status
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false))
@@ -429,7 +433,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
         solver;
         callback = sim.callbacks,
         tstops = sim.tstops,
-        progress = get(kwargs, :enable_progress_bar, _PROG_METER_ENABLED),
+        progress = get(kwargs, :enable_progress_bar, _prog_meter_enabled()),
         progress_steps = 1,
         kwargs...,
     )

@@ -363,6 +363,39 @@ end
     @test PSID.get_connection_status(inputs.dynamic_injectors[2]) == 0.0
 end
 
+@testset "Test Load perturbations callback affects" begin
+    three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
+    threebus_sys = System(three_bus_file_dir, runchecks = false)
+    add_source_to_ref(threebus_sys)
+    # Attach dyn devices
+    for g in get_components(Generator, threebus_sys)
+        if get_number(get_bus(g)) == 102
+            case_gen = dyn_gen_second_order(g)
+            add_component!(threebus_sys, case_gen, g)
+        elseif get_number(get_bus(g)) == 103
+            case_inv = inv_case78(g)
+            add_component!(threebus_sys, case_inv, g)
+        end
+    end
+
+    load_1 = get_component(ElectricLoad, threebus_sys, "load1011")
+    load_2 = get_component(ElectricLoad, threebus_sys, "load1021")
+
+    load_val = LoadChange(1.0, load_1, :P_ref, 10.0)
+    load_trip = LoadTrip(1.0, load_2)
+
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    integrator_for_test = MockIntegrator(inputs)
+
+    lref_affect_f = PSID.get_affect(inputs, threebus_sys, load_val)
+    ltrip_affect_f = PSID.get_affect(inputs, threebus_sys, load_trip)
+
+    lref_affect_f(integrator_for_test)
+    @test PSID.get_P_ref(inputs.static_loads[1]) == 10.0
+    ltrip_affect_f(integrator_for_test)
+    @test PSID.get_connection_status(inputs.static_loads[3]) == 0.0
+end
+
 @testset "Global Index" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
