@@ -142,15 +142,16 @@ end
 ### Reactive Controllers ###
 
 # Order of Flags are:
-# VC_Flag, Ref_Flag, PF_Flag, V_Flag
+# Ref_Flag, PF_Flag, V_Flag
 
-#VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
+#VC_Flag == N/A && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
+#Named: Fixed Plant Q: Not compliant if Q_Flag = 0 from Inner Control
+#Named: Plant Q and Local Q/V if Q_Flag = 1.
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{1}},
@@ -227,13 +228,13 @@ function _mdl_ode_RE_reactive_controller_AB!(
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
-#VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
+#VC_Flag == N/A && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
+#Fixed Plant Q if Q_Flag = 0 from Inner Control (not Compliant from CAISO requirements)
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
@@ -621,7 +622,6 @@ function mdl_outer_ode!(
     #Get Reactive Power Controller parameters
     reactive_power_control = PSY.get_reactive_power(outer_control)
     #Note: Monitoring power from other branch not supported.
-    VC_Flag = PSY.get_VC_Flag(reactive_power_control)
     Ref_Flag = PSY.get_Ref_Flag(reactive_power_control)
     PF_Flag = PSY.get_PF_Flag(reactive_power_control)
     V_Flag = PSY.get_V_Flag(reactive_power_control)
@@ -664,7 +664,6 @@ function mdl_outer_ode!(
         reactive_states,
         q_elec_out,
         Vt_filt,
-        Base.RefValue{VC_Flag},
         Base.RefValue{Ref_Flag},
         Base.RefValue{PF_Flag},
         Base.RefValue{V_Flag},
