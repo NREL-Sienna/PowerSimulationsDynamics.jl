@@ -312,9 +312,10 @@ function initialize_outer!(
         K_i = PSY.get_K_i(reactive_power_control)
         K_qi = PSY.get_K_qi(reactive_power_control)
         K_c = PSY.get_K_c(reactive_power_control)
-        R_c = get_R_c(reactive_power_control)
-        X_c = get_R_c(reactive_power_control)
-        VC_Flag = get_VC_Flag(reactive_power_control)
+        R_c = PSY.get_R_c(reactive_power_control)
+        X_c = PSY.get_R_c(reactive_power_control)
+        VC_Flag = PSY.get_VC_Flag(reactive_power_control)
+        V_reg = sqrt(V_R^2 + V_I^2)
         #Compute input to the compensated voltage filter
         if VC_Flag == 0
             V_flt_input = V_reg + K_c * q_elec_out
