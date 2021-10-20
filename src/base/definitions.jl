@@ -149,5 +149,4 @@ Defines the status of the simulation object
     CONVERTED_FOR_SMALL_SIGNAL = 8
 end
 
-
 const BUILD_TIMER = TimerOutputs.TimerOutput()
