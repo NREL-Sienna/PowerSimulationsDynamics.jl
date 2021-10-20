@@ -119,6 +119,8 @@ function initialize_filter!(
     PSY.set_Q_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Q0)
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), P0)
     set_P_ref(dynamic_device, P0)
+    PSY.set_V_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Vm)
+    set_V_ref(dynamic_device, Vm)
 
     #Get Parameters
     filt = PSY.get_filter(dynamic_device)
