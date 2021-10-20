@@ -308,6 +308,25 @@ function initialize_outer!(
         #Update Inner Vars
         inner_vars[V_oc_var] = q_ref - V_t
         inner_vars[Iq_oc_var] = q_ref / max(V_t, 0.01)
+    elseif Ref_Flag == 1 && PF_Flag == 0 && V_Flag == 1
+        K_i = PSY.get_K_i(reactive_power_control)
+        K_qi = PSY.get_K_qi(reactive_power_control)
+        K_c = PSY.get_K_c(reactive_power_control)
+        R_c = get_R_c(reactive_power_control)
+        X_c = get_R_c(reactive_power_control)
+        VC_Flag = get_VC_Flag(reactive_power_control)
+        #Compute input to the compensated voltage filter
+        if VC_Flag == 0
+            V_flt_input = V_reg + K_c * q_elec_out
+        else
+            #V_flt_input = | V_reg - (R_c + jX_c)(I_r + jI_i) |
+            V_flt_input = sqrt(V_reg^2  + 2 * V_reg * (I_I * X_c - I_R * R_c) + (I_I^2 + I_R^2) * (R_c^2 + X_c^2))
+        end
+        #Update states
+        internal_states[state_ct] = V_flt_input #Vc_flt
+        internal_states[state_ct + 1] = q_elec_out / K_i
+        internal_states[state_ct + 2] = q_elec_out
+        internal_states[state_ct + 3] = V_t / K_qi
     else
         error("Flags for Generic Renewable Model not supported yet")
     end
