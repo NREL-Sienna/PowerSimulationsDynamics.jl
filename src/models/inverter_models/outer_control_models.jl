@@ -346,9 +346,9 @@ function _mdl_ode_RE_reactive_controller_AB!(
     T_fltr = PSY.get_T_fltr(reactive_power_control)
     K_p = PSY.get_K_p(reactive_power_control)
     K_c = PSY.get_K_c(reactive_power_control)
-    R_c = get_R_c(reactive_power_control)
-    X_c = get_R_c(reactive_power_control)
-    VC_Flag = get_VC_Flag(reactive_power_control)
+    R_c = PSY.get_R_c(reactive_power_control)
+    X_c = PSY.get_R_c(reactive_power_control)
+    VC_Flag = PSY.get_VC_Flag(reactive_power_control)
     K_i = PSY.get_K_i(reactive_power_control)
     T_ft = PSY.get_T_ft(reactive_power_control)
     T_fv = PSY.get_T_fv(reactive_power_control)
@@ -357,6 +357,10 @@ function _mdl_ode_RE_reactive_controller_AB!(
     e_min, e_max = PSY.get_e_lim(reactive_power_control)
     dbd1, dbd2 = PSY.get_dbd_pnts(reactive_power_control)
     Q_min, Q_max = PSY.get_Q_lim(reactive_power_control)
+    Q_min_inner, Q_max_inner = PSY.get_Q_lim_inner(reactive_power_control)
+    V_min, V_max = PSY.get_V_lim(reactive_power_control)
+    K_qp = PSY.get_K_qp(reactive_power_control)
+    K_qi = PSY.get_K_qi(reactive_power_control)
 
     #Define internal states for Reactive Control
     V_cflt = reactive_controller_states[1]
