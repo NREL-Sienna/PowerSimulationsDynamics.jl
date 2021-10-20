@@ -285,7 +285,7 @@ function initialize_outer!(
     PF_Flag = PSY.get_PF_Flag(reactive_power_control)
     V_Flag = PSY.get_V_Flag(reactive_power_control)
     # Update references
-    if VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
+    if Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
         #Get Reactive Controller Parameters
         K_i = PSY.get_K_i(reactive_power_control)
         K_qi = PSY.get_K_qi(reactive_power_control)
@@ -298,7 +298,7 @@ function initialize_outer!(
         #Update Inner Vars
         inner_vars[V_oc_var] = 0.0
         inner_vars[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
-    elseif VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
+    elseif Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
         K_i = PSY.get_K_i(reactive_power_control)
         #Update states
         internal_states[state_ct] = q_ref
