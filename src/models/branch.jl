@@ -10,7 +10,7 @@ function branch!(
     current_r_to::AbstractArray{T},
     current_i_to::AbstractArray{T},
     branch::BranchWrapper,
-) where {T <: Real}
+) where {T <: ACCEPTED_REAL_TYPES}
     mdl_line_ode!(
         device_states,
         output_ode,

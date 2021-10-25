@@ -7,9 +7,9 @@ function mass_matrix_shaft_entries!(
 end
 
 function mdl_shaft_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
@@ -38,9 +38,9 @@ function mdl_shaft_ode!(
 end
 
 function mdl_shaft_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
 ) where {M <: PSY.Machine, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}

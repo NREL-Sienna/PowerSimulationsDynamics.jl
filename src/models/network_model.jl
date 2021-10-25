@@ -2,7 +2,7 @@ function network_model(
     inputs::SimulationInputs,
     I_balance::AbstractArray{T},
     voltages::AbstractArray{T},
-) where {T <: Real}
+) where {T <: ACCEPTED_REAL_TYPES}
     # This operation might need improvement, when the total shunts aren't added the
     # function is not allocating
     ybus = get_ybus(inputs) .+ get_total_shunts(inputs)

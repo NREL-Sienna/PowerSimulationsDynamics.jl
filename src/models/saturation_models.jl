@@ -4,7 +4,7 @@
 """
 function saturation_function(
     machine::Union{PSY.RoundRotorQuadratic, PSY.SalientPoleQuadratic},
-    x::Real,
+    x::ACCEPTED_REAL_TYPES,
 )
     Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
     return Sat_B * (x - Sat_A)^2 / x
@@ -16,7 +16,7 @@ end
 """
 function saturation_function(
     machine::Union{PSY.RoundRotorExponential, PSY.SalientPoleExponential},
-    x::Real,
+    x::ACCEPTED_REAL_TYPES,
 )
     Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
     return Sat_B * x^Sat_A
@@ -36,12 +36,12 @@ function rectifier_function(I::Float64)
     end
 end
 
-function saturation_function(avr::PSY.ESAC1A, x::Real)
+function saturation_function(avr::PSY.ESAC1A, x::ACCEPTED_REAL_TYPES)
     Sat_A, Sat_B = PSY.get_saturation_coeffs(avr)
     return Sat_B * (x - Sat_A)^2 / x
 end
 
-function rectifier_function(I::T) where {T <: Real}
+function rectifier_function(I::T) where {T <: ACCEPTED_REAL_TYPES}
     if I <= 0.0
         return one(T)
     elseif I <= 0.433
@@ -60,7 +60,7 @@ function output_pss_limiter(
     V_ct::Y,
     V_cl::Float64,
     V_cu::Float64,
-) where {X <: Real, Y <: Real}
+) where {X <: ACCEPTED_REAL_TYPES, Y <: ACCEPTED_REAL_TYPES}
     # Bypass limiter block if one limiter parameter is set to zero.
     if V_cl == 0.0 || V_cu == 0.0
         return V_ss
@@ -76,7 +76,7 @@ function output_pss_limiter(
     end
 end
 
-function deadband_function(x::T, db_low::Float64, db_high::Float64) where {T <: Real}
+function deadband_function(x::T, db_low::Float64, db_high::Float64) where {T <: ACCEPTED_REAL_TYPES}
     if x > db_high
         return x - db_high
     elseif x < db_low
@@ -92,7 +92,7 @@ function current_limit_logic(
     Vt_filt::X,
     Ip_cmd::Y,
     Iq_cmd::Z,
-) where {X, Y, Z <: Real}
+) where {X, Y, Z <: ACCEPTED_REAL_TYPES}
     # X,Y,Z should be the same. Future work: Correct bug to work always with Float64 or Dual.
     I_max = PSY.get_I_max(inner_control)
     Iq_max = I_max
@@ -118,7 +118,7 @@ function current_limit_logic(
     Vt_filt::X,
     Ip_cmd::Y,
     Iq_cmd::Z,
-) where {X, Y, Z <: Real}
+) where {X, Y, Z <: ACCEPTED_REAL_TYPES}
     # X,Y,Z should be the same. Future work: Correct bug to work always with Float64 or Dual.
     I_max = PSY.get_I_max(inner_control)
     Ip_max = I_max
@@ -143,7 +143,7 @@ function get_LVPL_gain(
     Zerox::Float64,
     Brkpt::Float64,
     Lvpl1::Float64,
-) where {T <: Real}
+) where {T <: ACCEPTED_REAL_TYPES}
     if Vmeas < Zerox
         return zero(T)
     elseif Vmeas > Brkpt
@@ -153,7 +153,7 @@ function get_LVPL_gain(
     end
 end
 
-function get_LV_current_gain(V_t::T, Lv_pnt0::Float64, Lv_pnt1::Float64) where {T <: Real}
+function get_LV_current_gain(V_t::T, Lv_pnt0::Float64, Lv_pnt1::Float64) where {T <: ACCEPTED_REAL_TYPES}
     if V_t < Lv_pnt0
         return zero(T)
     elseif V_t > Lv_pnt1
