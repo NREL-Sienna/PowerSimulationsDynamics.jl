@@ -7,11 +7,11 @@ function mass_matrix_filter_entries!(
 end
 
 function mdl_filter_ode!(
-    device_states,
-    output_ode,
-    current_r,
-    current_i,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    current_r::AbstractArray{<:Real},
+    current_i::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter}},
 ) where {
@@ -101,11 +101,11 @@ function mdl_filter_ode!(
 end
 
 function mdl_filter_ode!(
-    device_states,
-    output_ode,
-    current_r,
-    current_i,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    current_r::AbstractArray{<:Real},
+    current_i::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter}},
 ) where {

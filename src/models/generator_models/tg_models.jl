@@ -16,9 +16,9 @@ function mass_matrix_avr_entries!(
 end
 
 function mdl_tg_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    ::AbstractArray{<:Real},
+    ::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -31,9 +31,9 @@ function mdl_tg_ode!(
 end
 
 function mdl_tg_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -87,9 +87,9 @@ function mdl_tg_ode!(
 end
 
 function mdl_tg_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -135,9 +135,9 @@ function mdl_tg_ode!(
 end
 
 function mdl_tg_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -185,9 +185,9 @@ function mdl_tg_ode!(
 end
 
 function mdl_tg_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -236,9 +236,9 @@ function mdl_tg_ode!(
 end
 
 function mdl_tg_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.HydroTurbineGov, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}

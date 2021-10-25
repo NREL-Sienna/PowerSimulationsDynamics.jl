@@ -27,8 +27,8 @@ end
 
 #Q_Flag = 0
 function _mdl_ode_RE_inner_controller_B!(
-    inner_controller_ode,
-    inner_controller_states,
+    inner_controller_ode::AbstractArray{<:Real},
+    inner_controller_states::AbstractArray{<:Real},
     ::Type{Base.RefValue{0}},
     inner_control::PSY.RECurrentControlB,
     dynamic_device::DynamicWrapper{
@@ -78,8 +78,8 @@ end
 
 #Q_Flag = 1
 function _mdl_ode_RE_inner_controller_B!(
-    inner_controller_ode,
-    inner_controller_states,
+    inner_controller_ode::AbstractArray{<:Real},
+    inner_controller_states::AbstractArray{<:Real},
     ::Type{Base.RefValue{1}},
     inner_control::PSY.RECurrentControlB,
     dynamic_device::DynamicWrapper{
@@ -132,9 +132,9 @@ end
 ############################################
 
 function mdl_inner_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F},
     },
@@ -248,9 +248,9 @@ function mdl_inner_ode!(
 end
 
 function mdl_inner_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F},
     },
@@ -324,9 +324,9 @@ function mdl_inner_ode!(
 end
 
 function mdl_inner_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
     },
@@ -347,7 +347,7 @@ function mdl_inner_ode!(
     internal_states = @view device_states[local_ix]
     internal_ode = @view output_ode[local_ix]
 
-    # TO DO: Voltage Dip Freeze logic
+    # TODO: Voltage Dip Freeze logic
 
     #Dispatch inner controller ODE calculation
     _mdl_ode_RE_inner_controller_B!(
