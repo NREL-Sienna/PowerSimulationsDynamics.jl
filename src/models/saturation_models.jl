@@ -76,7 +76,11 @@ function output_pss_limiter(
     end
 end
 
-function deadband_function(x::T, db_low::Float64, db_high::Float64) where {T <: ACCEPTED_REAL_TYPES}
+function deadband_function(
+    x::T,
+    db_low::Float64,
+    db_high::Float64,
+) where {T <: ACCEPTED_REAL_TYPES}
     if x > db_high
         return x - db_high
     elseif x < db_low
@@ -153,7 +157,11 @@ function get_LVPL_gain(
     end
 end
 
-function get_LV_current_gain(V_t::T, Lv_pnt0::Float64, Lv_pnt1::Float64) where {T <: ACCEPTED_REAL_TYPES}
+function get_LV_current_gain(
+    V_t::T,
+    Lv_pnt0::Float64,
+    Lv_pnt1::Float64,
+) where {T <: ACCEPTED_REAL_TYPES}
     if V_t < Lv_pnt0
         return zero(T)
     elseif V_t > Lv_pnt1
