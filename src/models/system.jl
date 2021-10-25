@@ -27,7 +27,12 @@ function (m::SystemModel{ResidualModel, C})(
     u::AbstractArray{V},
     p,
     t,
-) where {C <: Cache, T <: ACCEPTED_REAL_TYPES, U <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
+) where {
+    C <: Cache,
+    T <: ACCEPTED_REAL_TYPES,
+    U <: ACCEPTED_REAL_TYPES,
+    V <: ACCEPTED_REAL_TYPES,
+}
     system_residual!(out, du, u, m.inputs, m.cache, t)
     return
 end
