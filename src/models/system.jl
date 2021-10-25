@@ -27,7 +27,7 @@ function (m::SystemModel{ResidualModel, C})(
     u::AbstractArray{V},
     p,
     t,
-) where {C <: Cache, T <: Real, U <: Real, V <: Real}
+) where {C <: Cache, T <: ACCEPTED_REAL_TYPES, U <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
     system_residual!(out, du, u, m.inputs, m.cache, t)
     return
 end
@@ -39,7 +39,7 @@ function system_residual!(
     inputs::SimulationInputs,
     cache::Cache,
     t::Float64,
-) where {T <: Real, U <: Real, V <: Real}
+) where {T <: ACCEPTED_REAL_TYPES, U <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
     update_global_vars!(cache, inputs, x)
     M = get_mass_matrix(inputs)
 
@@ -165,7 +165,7 @@ function (m::SystemModel{MassMatrixModel, C})(
     u::AbstractArray{U},
     p,
     t,
-) where {C <: Cache, U <: Real, T <: Real}
+) where {C <: Cache, U <: ACCEPTED_REAL_TYPES, T <: ACCEPTED_REAL_TYPES}
     system_mass_matrix!(du, u, m.inputs, m.cache, t)
 end
 
@@ -175,7 +175,7 @@ function system_mass_matrix!(
     inputs::SimulationInputs,
     cache::Cache,
     t,
-) where {T <: Real, V <: Real}
+) where {T <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
     update_global_vars!(cache, inputs, x)
 
     # Global quantities

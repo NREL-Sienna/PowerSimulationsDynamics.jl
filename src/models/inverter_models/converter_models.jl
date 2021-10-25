@@ -7,9 +7,9 @@ function mass_matrix_converter_entries!(
 end
 
 function mdl_converter_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
     },
@@ -36,9 +36,9 @@ function mdl_converter_ode!(
 end
 
 function mdl_converter_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
     },

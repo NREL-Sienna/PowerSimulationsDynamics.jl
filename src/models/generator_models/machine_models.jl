@@ -11,11 +11,11 @@ Model of 0-state synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function mdl_machine_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
-    current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
@@ -60,11 +60,11 @@ Model of 2-state (One d- and One q-) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function mdl_machine_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
-    current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
@@ -127,11 +127,11 @@ Model of 6-state (MarconatoMachine) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function mdl_machine_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
-    current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
@@ -213,11 +213,11 @@ Model of 4-state (SimpleMarconatoMachine) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function mdl_machine_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
-    current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
     },
@@ -298,11 +298,11 @@ Model of 6-state (AndersonFouadMachine) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function mdl_machine_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
-    current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
     },
@@ -381,11 +381,11 @@ Model of 4-state (SimpleAFMachine) synchronous machine in Julia.
 Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function mdl_machine_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
-    current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
@@ -456,11 +456,11 @@ function mdl_machine_ode!(
 end
 
 function mdl_machine_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
-    current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {
     M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
@@ -552,11 +552,11 @@ function mdl_machine_ode!(
 end
 
 function mdl_machine_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
-    current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
     },
@@ -633,11 +633,11 @@ function mdl_machine_ode!(
 end
 
 function mdl_machine_ode!(
-    device_states::AbstractArray{<:Real},
-    output_ode::AbstractArray{<:Real},
-    inner_vars::AbstractArray{<:Real},
-    current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
     },
@@ -728,8 +728,8 @@ function mdl_machine_ode!(
     device_states,
     output_ode,
 inner_vars,
-current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
@@ -810,8 +810,8 @@ function mdl_machine_ode!(
     device_states,
     output_ode,
 inner_vars,
-current_r::AbstractArray{<:Real},
-    current_i::AbstractArray{<:Real},
+current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleFullMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 

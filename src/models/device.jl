@@ -26,7 +26,7 @@ function device!(
     inner_vars::AbstractArray{T},
     dynamic_device::DynamicWrapper{DynG},
     t,
-) where {DynG <: PSY.DynamicGenerator, T <: Real}
+) where {DynG <: PSY.DynamicGenerator, T <: ACCEPTED_REAL_TYPES}
     if get_connection_status(dynamic_device) < 1.0
         output_ode .= zero(T)
         return
@@ -73,7 +73,7 @@ function device!(
     ::AbstractArray{T},
     device::StaticWrapper{PSY.Source, U},
     t,
-) where {T <: Real, U <: BusCategory}
+) where {T <: ACCEPTED_REAL_TYPES, U <: BusCategory}
     mdl_source!(voltage_r, voltage_i, current_r, current_i, device)
     return
 end
@@ -87,7 +87,7 @@ function device!(
     ::AbstractArray{T},
     device::StaticWrapper{PSY.PowerLoad, U},
     t,
-) where {T <: Real, U <: LoadCategory}
+) where {T <: ACCEPTED_REAL_TYPES, U <: LoadCategory}
     # For now model all loads as constant impedance
     if get_connection_status(device) < 1.0
         current_r .= zero(T)
@@ -143,7 +143,7 @@ function device!(
     inner_vars::AbstractArray{T},
     dynamic_device::DynamicWrapper{DynI},
     t,
-) where {DynI <: PSY.DynamicInverter, T <: Real}
+) where {DynI <: PSY.DynamicInverter, T <: ACCEPTED_REAL_TYPES}
     if get_connection_status(dynamic_device) < 1.0
         output_ode .= zero(T)
         return
@@ -220,7 +220,7 @@ function device!(
     ::AbstractArray{T},
     dynamic_device::DynamicWrapper{PSY.PeriodicVariableSource},
     t,
-) where {T <: Real}
+) where {T <: ACCEPTED_REAL_TYPES}
     ω_θ = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
     ω_V = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
 

@@ -10,7 +10,7 @@ function mdl_line_ode!(
     current_r_to::AbstractArray{T},
     current_i_to::AbstractArray{T},
     branch::BranchWrapper,
-) where {T <: Real}
+) where {T <: ACCEPTED_REAL_TYPES}
     L = PSY.get_x(branch)
     R = PSY.get_r(branch)
     ω_b = get_system_base_frequency(branch) * 2 * π
