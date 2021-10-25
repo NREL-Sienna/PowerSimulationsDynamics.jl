@@ -7,9 +7,9 @@ function mass_matrix_freq_estimator_entries!(
 end
 
 function mdl_freq_estimator_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F}},
 ) where {
@@ -67,9 +67,9 @@ function mdl_freq_estimator_ode!(
 end
 
 function mdl_freq_estimator_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F},
@@ -124,9 +124,9 @@ function mdl_freq_estimator_ode!(
 end
 
 function mdl_freq_estimator_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    ::AbstractArray{<:Real},
+    ::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F},

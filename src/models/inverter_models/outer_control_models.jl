@@ -14,8 +14,8 @@ end
 
 #Freq_Flag = 1
 function _mdl_ode_RE_active_controller_AB!(
-    active_controller_ode,
-    active_controller_states,
+    active_controller_ode::AbstractArray{<:Real},
+    active_controller_states::AbstractArray{<:Real},
     p_elec_out,
     ω_sys,
     Vt_filt,
@@ -95,8 +95,8 @@ end
 
 #Freq_Flag = 0
 function _mdl_ode_RE_active_controller_AB!(
-    active_controller_ode,
-    active_controller_states,
+    active_controller_ode::AbstractArray{<:Real},
+    active_controller_states::AbstractArray{<:Real},
     p_elec_out,
     ω_sys,
     Vt_filt,
@@ -146,8 +146,8 @@ end
 
 #VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
 function _mdl_ode_RE_reactive_controller_AB!(
-    reactive_controller_ode,
-    reactive_controller_states,
+    reactive_controller_ode::AbstractArray{<:Real},
+    reactive_controller_states::AbstractArray{<:Real},
     q_elec_out,
     Vt_filt,
     ::Type{Base.RefValue{0}},
@@ -229,8 +229,8 @@ end
 
 #VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
 function _mdl_ode_RE_reactive_controller_AB!(
-    reactive_controller_ode,
-    reactive_controller_states,
+    reactive_controller_ode::AbstractArray{<:Real},
+    reactive_controller_states::AbstractArray{<:Real},
     q_elec_out,
     Vt_filt,
     ::Type{Base.RefValue{0}},
@@ -303,9 +303,9 @@ end
 ############################################
 
 function mdl_outer_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -387,9 +387,9 @@ function mdl_outer_ode!(
 end
 
 function mdl_outer_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -473,9 +473,9 @@ function mdl_outer_ode!(
 end
 
 function mdl_outer_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -557,9 +557,9 @@ function mdl_outer_ode!(
 end
 
 function mdl_outer_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{

@@ -1,6 +1,6 @@
 function mass_matrix_pss_entries!(
-    mass_matrix,
-    pss::P,
+    _,
+    ::P,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {P <: PSY.PSS}
     @debug "Using default mass matrix entries $P"
@@ -24,8 +24,8 @@ end
 
 function get_pss_input_signal(
     ::Type{Base.RefValue{1}},
-    device_states,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
@@ -39,8 +39,8 @@ end
 
 function get_pss_input_signal(
     ::Type{Base.RefValue{2}},
-    device_states,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
@@ -50,8 +50,8 @@ end
 
 function get_pss_input_signal(
     ::Type{Base.RefValue{3}},
-    device_states,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
@@ -62,8 +62,8 @@ end
 
 function get_pss_input_signal(
     ::Type{Base.RefValue{4}},
-    device_states,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
@@ -73,8 +73,8 @@ end
 
 function get_pss_input_signal(
     ::Type{Base.RefValue{5}},
-    device_states,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
@@ -85,8 +85,8 @@ end
 
 function get_pss_input_signal(
     ::Type{Base.RefValue{6}},
-    device_states,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
@@ -100,9 +100,9 @@ end
 ############################################
 
 function mdl_pss_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    ::AbstractArray{<:Real},
+    ::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
@@ -114,9 +114,9 @@ function mdl_pss_ode!(
 end
 
 function mdl_pss_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
+    device_states::AbstractArray{<:Real},
+    output_ode::AbstractArray{<:Real},
+    inner_vars::AbstractArray{<:Real},
     ω_sys,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.IEEEST}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
