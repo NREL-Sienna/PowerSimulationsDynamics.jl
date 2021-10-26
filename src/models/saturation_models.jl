@@ -57,10 +57,10 @@ end
 
 function output_pss_limiter(
     V_ss::X,
-    V_ct::Y,
+    V_ct::X,
     V_cl::Float64,
     V_cu::Float64,
-) where {X <: ACCEPTED_REAL_TYPES, Y <: ACCEPTED_REAL_TYPES}
+) where {X <: ACCEPTED_REAL_TYPES}
     # Bypass limiter block if one limiter parameter is set to zero.
     if V_cl == 0.0 || V_cu == 0.0
         return V_ss
@@ -94,10 +94,9 @@ function current_limit_logic(
     inner_control::PSY.RECurrentControlB,
     ::Type{Base.RefValue{0}}, #PQ_Flag = 0: Q Priority
     Vt_filt::X,
-    Ip_cmd::Y,
-    Iq_cmd::Z,
-) where {X, Y, Z <: ACCEPTED_REAL_TYPES}
-    # X,Y,Z should be the same. Future work: Correct bug to work always with Float64 or Dual.
+    Ip_cmd::X,
+    Iq_cmd::X,
+) where {X <: ACCEPTED_REAL_TYPES}
     I_max = PSY.get_I_max(inner_control)
     Iq_max = I_max
     Iq_min = -Iq_max
@@ -120,10 +119,9 @@ function current_limit_logic(
     inner_control::PSY.RECurrentControlB,
     ::Type{Base.RefValue{1}}, #PQ_Flag = 1: P Priority
     Vt_filt::X,
-    Ip_cmd::Y,
-    Iq_cmd::Z,
-) where {X, Y, Z <: ACCEPTED_REAL_TYPES}
-    # X,Y,Z should be the same. Future work: Correct bug to work always with Float64 or Dual.
+    Ip_cmd::X,
+    Iq_cmd::X,
+) where {X <: ACCEPTED_REAL_TYPES}
     I_max = PSY.get_I_max(inner_control)
     Ip_max = I_max
     Ip_min = 0.0
