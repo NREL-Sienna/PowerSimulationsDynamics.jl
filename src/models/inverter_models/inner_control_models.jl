@@ -62,8 +62,13 @@ function _mdl_ode_RE_inner_controller_B!(
     V_err = deadband_function(V_ref0 - Vt_filt::ACCEPTED_REAL_TYPES, dbd1, dbd2)
     Iq_inj = clamp(K_qv * V_err, I_ql1, I_qh1)
     Iq_cmd = I_icv + Iq_inj
-    Ip_min, Ip_max, Iq_min, Iq_max =
-        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, Vt_filt::ACCEPTED_REAL_TYPES, Ip_oc, Iq_cmd)
+    Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(
+        inner_control,
+        Base.RefValue{PQ_Flag},
+        Vt_filt::ACCEPTED_REAL_TYPES,
+        Ip_oc,
+        Iq_cmd,
+    )
     Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
     Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
 
@@ -113,8 +118,13 @@ function _mdl_ode_RE_inner_controller_B!(
     #To do: Limits on PI non-windup
     I_icv = K_vp * V_oc + K_vi * ξ_icv
     Iq_cmd = I_icv + Iq_inj
-    Ip_min, Ip_max, Iq_min, Iq_max =
-        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, Vt_filt::ACCEPTED_REAL_TYPES, Ip_oc, Iq_cmd)
+    Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(
+        inner_control,
+        Base.RefValue{PQ_Flag},
+        Vt_filt::ACCEPTED_REAL_TYPES,
+        Ip_oc,
+        Iq_cmd,
+    )
     Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
     Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
 
