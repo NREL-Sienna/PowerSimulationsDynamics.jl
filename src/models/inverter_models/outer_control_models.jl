@@ -90,8 +90,7 @@ function _mdl_ode_RE_active_controller_AB!(
     active_controller_ode[4] = p_ord_binary * (1.0 / T_pord) * p_ord_in
 
     #Update Inner Vars: Ioc_pcmd
-    inner_vars[Id_oc_var] =
-        p_ord_sat / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[Id_oc_var] = p_ord_sat / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 #Freq_Flag = 0
@@ -225,8 +224,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
 
     #Update Inner Vars
     inner_vars[V_oc_var] = V_pi_sat - Vt_filt
-    inner_vars[Iq_oc_var] =
-        Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 #VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
@@ -297,8 +295,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
 
     #Update Inner Vars
     inner_vars[V_oc_var] = Q_ext - Vt_filt
-    inner_vars[Iq_oc_var] =
-        Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 ############################################
