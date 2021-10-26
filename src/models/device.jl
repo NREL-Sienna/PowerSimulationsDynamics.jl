@@ -257,7 +257,7 @@ end
 function _update_inner_vars!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ω_sys::ACCEPTED_REAL_TYPES,
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
@@ -267,7 +267,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {
@@ -329,7 +329,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
@@ -383,7 +383,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
@@ -439,7 +439,7 @@ end
 function _update_inner_vars!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ω_sys::ACCEPTED_REAL_TYPES,
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, F}},
 ) where {
@@ -456,7 +456,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
