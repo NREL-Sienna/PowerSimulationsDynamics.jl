@@ -255,20 +255,20 @@ function device!(
 end
 
 function _update_inner_vars!(
-    device_states,
-    output_ode,
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys,
-    inner_vars,
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    #do nothing
+    return
 end
 
 function _update_inner_vars!(
-    device_states,
-    output_ode,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys,
-    inner_vars,
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
 ) where {
     M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
@@ -323,13 +323,14 @@ function _update_inner_vars!(
 
     #Update Xad_Ifd
     inner_vars[Xad_Ifd_var] = Xad_Ifd
+    return
 end
 
 function _update_inner_vars!(
-    device_states,
-    output_ode,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys,
-    inner_vars,
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
     },
@@ -376,13 +377,14 @@ function _update_inner_vars!(
 
     #Update Xad_Ifd
     inner_vars[Xad_Ifd_var] = Xad_Ifd
+    return
 end
 
 function _update_inner_vars!(
-    device_states,
-    output_ode,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys,
-    inner_vars,
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
     },
@@ -431,13 +433,14 @@ function _update_inner_vars!(
 
     #Update Xad_Ifd
     inner_vars[Xad_Ifd_var] = Xad_Ifd
+    return
 end
 
 function _update_inner_vars!(
-    device_states,
-    output_ode,
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys,
-    inner_vars,
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, F}},
 ) where {
     C <: PSY.Converter,
@@ -447,14 +450,14 @@ function _update_inner_vars!(
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
 }
-    #do nothing
+    return
 end
 
 function _update_inner_vars!(
-    device_states,
-    output_ode,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys,
-    inner_vars,
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
     },
@@ -552,4 +555,5 @@ function _update_inner_vars!(
     inner_vars[Vi_cnv_var] = Vi_cnv
     inner_vars[Ir_inv_var] = Ir_filt
     inner_vars[Ii_inv_var] = Ii_filt
+    return
 end
