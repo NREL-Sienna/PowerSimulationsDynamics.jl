@@ -7,10 +7,10 @@ function mass_matrix_DCside_entries!(
 end
 
 function mdl_DCside_ode!(
-    device_states,
-    output_ode,
-    ω_sys,
-    inner_vars,
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, PSY.FixedDCSource, P, F}},
 ) where {
     C <: PSY.Converter,

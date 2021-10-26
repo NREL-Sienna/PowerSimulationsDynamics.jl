@@ -16,9 +16,9 @@ end
 function _mdl_ode_RE_active_controller_AB!(
     active_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     active_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    p_elec_out,
-    ω_sys,
-    Vt_filt,
+    p_elec_out::ACCEPTED_REAL_TYPES,
+    ω_sys::ACCEPTED_REAL_TYPES,
+    Vt_filt::ACCEPTED_REAL_TYPES,
     ::Type{Base.RefValue{1}},
     active_power_control::PSY.ActiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
@@ -90,16 +90,16 @@ function _mdl_ode_RE_active_controller_AB!(
     active_controller_ode[4] = p_ord_binary * (1.0 / T_pord) * p_ord_in
 
     #Update Inner Vars: Ioc_pcmd
-    inner_vars[Id_oc_var] = p_ord_sat / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[Id_oc_var] = p_ord_sat / max(Vt_filt::ACCEPTED_REAL_TYPES, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 #Freq_Flag = 0
 function _mdl_ode_RE_active_controller_AB!(
     active_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     active_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    p_elec_out,
-    ω_sys,
-    Vt_filt,
+    p_elec_out::ACCEPTED_REAL_TYPES,
+    ω_sys::ACCEPTED_REAL_TYPES,
+    Vt_filt::ACCEPTED_REAL_TYPES,
     ::Type{Base.RefValue{0}},
     active_power_control::PSY.ActiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
@@ -148,8 +148,8 @@ end
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    q_elec_out,
-    Vt_filt,
+    q_elec_out::ACCEPTED_REAL_TYPES,
+    Vt_filt::ACCEPTED_REAL_TYPES,
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
@@ -224,15 +224,15 @@ function _mdl_ode_RE_reactive_controller_AB!(
 
     #Update Inner Vars
     inner_vars[V_oc_var] = V_pi_sat - Vt_filt
-    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt::ACCEPTED_REAL_TYPES, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 #VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    q_elec_out,
-    Vt_filt,
+    q_elec_out::ACCEPTED_REAL_TYPES,
+    Vt_filt::ACCEPTED_REAL_TYPES,
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
@@ -295,7 +295,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
 
     #Update Inner Vars
     inner_vars[V_oc_var] = Q_ext - Vt_filt
-    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt::ACCEPTED_REAL_TYPES, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
 ############################################
@@ -306,7 +306,7 @@ function mdl_outer_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
             C,
@@ -390,7 +390,7 @@ function mdl_outer_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
             C,
@@ -476,7 +476,7 @@ function mdl_outer_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
             C,
@@ -560,7 +560,7 @@ function mdl_outer_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ω_sys,
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
             C,
