@@ -12,13 +12,7 @@ open("precompile_time.txt", "a") do io
     write(io, "| $(ARGS[1]) | $(precompile.time) |\n")
 end
 
-raw_file_dir = "test/data_tests/240busWECC_2018_PSS32_fixed_shunts.raw"
-dyr_file = "test/data_tests/240busWECC_2018_PSS.dyr"
-sys = System(
-    raw_file_dir,
-    dyr_file;
-    bus_name_formatter = x -> string(x["name"]) * "-" * string(x["index"]),
-)
+sys = System("test/data_tests/WECC_240_dynamic.json")
 
 # First runs
 try
