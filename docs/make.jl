@@ -8,6 +8,7 @@ makedocs(
         "Welcome Page" => "index.md",
         "Quick Start Guide" => "quick_start_guide.md",
         "Simulation" => "simulation.md",
+        "Simulation Execution" => "execute.md",
         "Tutorials" => "tutorials_page.md",
         "Models" => "models.md",
         "Initialization" => "initialization.md",
