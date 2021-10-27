@@ -7,11 +7,13 @@ makedocs(
     pages = Any[
         "Welcome Page" => "index.md",
         "Quick Start Guide" => "quick_start_guide.md",
+        "Simulation" => "simulation.md",
         "Tutorials" => "tutorials_page.md",
         "Models" => "models.md",
         "Initialization" => "initialization.md",
         "Small Signal" => "small.md",
         "Reference Frames" => "reference_frames.md",
+        "Perturbations" => "perturbations.md",
         "Renewable Models" => "generic.md",
         "Generator Component Library" => Any[
             "Machine" => "component_models/machines.md",
