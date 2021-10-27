@@ -6,6 +6,7 @@ using Sundials
 using PowerSystems
 const PSY = PowerSystems
 using OrdinaryDiffEq
+using Logging
 
 open("precompile_time.txt", "a") do io
     write(io, "| $(ARGS[1]) | $(precompile.time) |\n")
@@ -17,10 +18,23 @@ sys = System(
     raw_file_dir,
     dyr_file;
     bus_name_formatter = x -> string(x["name"]) * "-" * string(x["index"]),
-);
+)
+
+# First runs
+
+for m in [ResidualModel, MassMatrixModel]
+    Simulation(
+        m,
+        sys,
+        pwd(),
+        (0.0, 20.0), #time span
+        BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
+        console_level = Logging.Error,
+    )
+end
 
 try
-    sim_ida, time_build_ida = @timed Simulation(
+    sim_ida, time_build_ida, _, _ = @timed Simulation(
         ResidualModel,
         sys,
         pwd(),
@@ -28,17 +42,18 @@ try
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
         console_level = Logging.Error,
     )
-    time = time_build_ida.time
-catch
-    time = "FAILED TO BUILD"
-finally
     open("execute_time.txt", "a") do io
-        write(io, "| $(ARGS[1])-Build ResidualModel | $time |\n")
+        write(io, "| $(ARGS[1])-Build ResidualModel | $(time_build_ida) |\n")
+    end
+catch e
+    @error exception = (e, catch_backtrace())
+    open("execute_time.txt", "a") do io
+        write(io, "| $(ARGS[1])-Build ResidualModel | FAILED TO BUILD |\n")
     end
 end
 
 try
-    sim_rodas, time_build_rodas = @timed Simulation(
+    sim_rodas, time_build_rodas, _, _ = @timed Simulation(
         MassMatrixModel,
         sys, #system
         pwd(),
@@ -46,12 +61,13 @@ try
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
         console_level = Logging.Error,
     ) #Type of Fault
-    time = time_build_rodas.time
-catch
-    time = "FAILED TO BUILD"
-finally
     open("execute_time.txt", "a") do io
-        write(io, "| $(ARGS[1])-Build MassMatrixModel | $time |\n")
+        write(io, "| $(ARGS[1])-Build MassMatrixModel | $(time_build_rodas) |\n")
+    end
+catch e
+    @error exception = (e, catch_backtrace())
+    open("execute_time.txt", "a") do io
+        write(io, "| $(ARGS[1])-Build MassMatrixModel | FAILED TO BUILD |\n")
     end
 end
 
