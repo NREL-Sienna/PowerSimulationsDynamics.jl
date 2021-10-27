@@ -25,6 +25,8 @@ const DISABLED_TEST_FILES = []
 test_file_dir = isempty(dirname(@__FILE__)) ? "test" : dirname(@__FILE__)
 const TEST_FILES_DIR = test_file_dir
 
+PSI.GLOBAL_PROGRESS_BAR_ENABLED = false
+
 """
 Copied @includetests from https://github.com/ssfrr/TestSetExtensions.jl.
 Ideally, we could import and use TestSetExtensions.  Its functionality was broken by changes
