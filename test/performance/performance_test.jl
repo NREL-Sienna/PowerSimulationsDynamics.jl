@@ -24,7 +24,7 @@ sim_ida, time_build_ida = @timed Simulation(
     sys,
     pwd(),
     (0.0, 20.0), #time span
-    BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");,
+    BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10"),
 )
 
 open("execute_time.txt", "a") do io
