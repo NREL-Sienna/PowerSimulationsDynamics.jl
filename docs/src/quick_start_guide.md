@@ -64,7 +64,7 @@ This means that the state ω of the generator at bus 102, participates 50% in ei
 ## Execute the simulation
 
 ```@repl quick_start_guide
-    execute!(sim, IDA(), dtmax = 0.02, saveat = 0.02)
+    execute!(sim, IDA(), dtmax = 0.02, saveat = 0.02, enable_progress_bar = false)
 ```
 
 ## Make a plot of the results
