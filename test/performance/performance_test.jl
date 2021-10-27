@@ -26,7 +26,7 @@ try
         pwd(),
         (0.0, 20.0), #time span
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
-        console_level = Logging.Error
+        console_level = Logging.Error,
     )
 catch
     time = "FAILED TO BUILD"
@@ -44,7 +44,7 @@ try
         pwd(),
         (0.0, 20.0), #time span
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
-        console_level = Logging.Error
+        console_level = Logging.Error,
     ) #Type of Fault
 catch
     time = "FAILED TO BUILD"
