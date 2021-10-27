@@ -26,7 +26,7 @@ In `PowerSimulationDynamics` there are two types of models depending on which So
 
 ## System
 
-The data system constructed using `PowerSystems.jl`.
+The data system constructed using `PowerSystems.jl`. At least one dynamic device must be included in the system to construct a Simulation.
 
 ## Folder Directory
 
@@ -53,14 +53,34 @@ Default: `true`. Runs the initialization routine. If set to `false`, it will use
 
 Default: `Vector{Float64}()`. Allows the user to pass a vector with the initial condition values desired in the simulation. If `initialize_simulation = true`, these values are used as a first guess and overwritten.
 
+### `frequency_reference`
+
+Default: `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available:
+- `ConstantFrequency` assumes that the network frequency is 1.0 per unit at all times.
+- `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used.
+
+Future implementations will include a `CenterOfInertia` frequency model, and a `FrequencyDivider` model.
+
+### `all_lines_dynamic::Bool`
+
+Default: `false`. If `true` transforms all lines models (admittance matrix) into dynamic lines. See the [Network](component_models/network.md) page for more details.
+
+### `all_branches_dynamic::Bool`
+
+Default: `false`. If `true` transforms all branches (lines + transformers) into dynamic branches. See the [Network](component_models/network.md) page for more details.
+
 ### `system_to_file::Bool`
 
 Default: `false`. Serializes the initialized system in the Folder Directory.
 
 ### `console_level::Logging`
 
-Default: `Logging.Warn`. Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug.
+Default: `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`.
 
 ### `file_level::Logging`
 
-Default: `Logging.Debug`. Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
+Default: `Logging.Debug`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
+
+### `disable_timer_output::Bool`
+
+Default: `false`. Allows the user to display timer information about the construction and initilization of the Simulation. If `true` disables the timer information.
