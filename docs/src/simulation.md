@@ -19,9 +19,9 @@ We will go through each argument that must be included:
 
 ## Type of Simulation Model
 
-In `PowerSimulationDynamics` there are two types of models depending on which Solver will be used to execute the Simulation. More details are discussed in [Models](models.md) subsection:
+In `PowerSimulationDynamics` there are two types of models depending on which Solver will be used to execute the Simulation. More details are discussed in the [Models Section](models.md):
 
-- The **ResidualModel** is used when a residual model of the type ``res = f(x) - M\cdot dx`` is constructed. This allows to use pure DAE solvers, such as Sundials IDA.
+- The **ResidualModel** is used when a residual model of the type ``\text{res} = f(x) - M\cdot dx`` is constructed. This allows to use pure DAE solvers, such as Sundials IDA.
 - The **MassMatrixModel** is used when a mass matrix model of the type ``M \cdot dx = f(x)`` is constructed. This allows to use mass matrix ODE solvers, such as Rodas4 or Rodas5.
 
 ## System
@@ -38,11 +38,11 @@ A tuple of `Float` must be used to define the time span (in seconds) for the Sim
 
 ## Optional: Perturbations
 
-A perturbation structure must be defined that will alter the system from its steady state operation. More details on the available perturbations in their respective [Section](perturbations.md).
+A perturbation structure must be defined that will alter the system from its steady state operation. More details on the available perturbations in the respective [Perturbations Section](perturbations.md).
 
 ## Optional: Keyword Arguments
 
-Different keyword arguments can be included in the Simulation for different purposes
+Different keyword arguments can be included in the Simulation for different purposes:
 
 
 ### `initialize_simulation::Bool`
