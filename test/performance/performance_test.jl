@@ -54,18 +54,26 @@ finally
     end
 end
 
-open("execute_time.txt", "a") do io
-    write(io, "| $(ARGS[1]) | 999 |\n")
-end
-
+#=
 try
     status = execute!(sim_rodas, Rodas4(), dtmax = 0.01)
     res_rodas = read_results(sim_rodas)
 catch
+    time = "EXECUTE FAILED"
+finally
+    open("execute_time.txt", "a") do io
+    write(io, "| $(ARGS[1]) | 999 |\n")
+    end
 end
 
 try
     status = execute!(sim_ida, IDA(), dtmax = 0.01)
     res_ida = read_results(sim_ida)
 catch
+    time = "EXECUTE FAILED"
+finally
+    open("execute_time.txt", "a") do io
+    write(io, "| $(ARGS[1]) | 999 |\n")
+    end
 end
+=#
