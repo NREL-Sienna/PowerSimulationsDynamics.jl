@@ -172,6 +172,7 @@ function configure_logging(sim::Simulation, file_mode; kwargs...)
         file_mode = file_mode,
         tracker = nothing,
         set_global = false,
+        progress = GLOBAL_PROGRESS_BAR_ENABLED
     )
 end
 
