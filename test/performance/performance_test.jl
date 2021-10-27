@@ -19,32 +19,53 @@ sys = System(
     bus_name_formatter = x -> string(x["name"]) * "-" * string(x["index"]),
 );
 
-sim_ida, time_build_ida = @timed Simulation(
-    ResidualModel,
-    sys,
-    pwd(),
-    (0.0, 20.0), #time span
-    BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10"),
-)
+
+try
+    sim_ida, time_build_ida = @timed Simulation(
+        ResidualModel,
+        sys,
+        pwd(),
+        (0.0, 20.0), #time span
+        BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10"),
+    )
+catch
+    time = "FAILED TO BUILD"
+finally
+    time = time_build_ida.time
+    open("execute_time.txt", "a") do io
+    write(io, "| $(ARGS[1])-Build ResidualModel | $time |\n")
+    end
+end
+
+try
+    sim_rodas, time_build_rodas = @timed Simulation(
+        MassMatrixModel,
+        sys, #system
+        pwd(),
+        (0.0, 20.0), #time span
+        BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10"),
+    ) #Type of Fault
+catch
+    time = "FAILED TO BUILD"
+finally
+    time = time_build_ida.time
+    open("execute_time.txt", "a") do io
+    write(io, "| $(ARGS[1])-Build MassMatrixModel| $time |\n")
+    end
+end
 
 open("execute_time.txt", "a") do io
     write(io, "| $(ARGS[1]) | 999 |\n")
 end
 
-sim_rodas, time_build_rodas = @timed Simulation(
-    MassMatrixModel,
-    sys, #system
-    pwd(),
-    (0.0, 20.0), #time span
-    BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10"),
-) #Type of Fault
-
-open("execute_time.txt", "a") do io
-    write(io, "| $(ARGS[1]) | 999 |\n")
+try
+    status = execute!(sim_rodas, Rodas4(), dtmax = 0.01)
+    res_rodas = read_results(sim_rodas)
+catch
 end
 
-status = execute!(sim_rodas, Rodas4(), dtmax = 0.01)
-res_rodas = read_results(sim_rodas)
-
-status = execute!(sim_ida, IDA(), dtmax = 0.01)
-res_ida = read_results(sim_ida)
+try
+    status = execute!(sim_ida, IDA(), dtmax = 0.01)
+    res_ida = read_results(sim_ida)
+catch
+end
