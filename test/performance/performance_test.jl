@@ -28,10 +28,10 @@ try
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
         console_level = Logging.Error,
     )
+    time = time_build_ida.time
 catch
     time = "FAILED TO BUILD"
 finally
-    time = time_build_ida.time
     open("execute_time.txt", "a") do io
         write(io, "| $(ARGS[1])-Build ResidualModel | $time |\n")
     end
@@ -46,12 +46,12 @@ try
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
         console_level = Logging.Error,
     ) #Type of Fault
+    time = time_build_rodas.time
 catch
     time = "FAILED TO BUILD"
 finally
-    time = time_build_ida.time
     open("execute_time.txt", "a") do io
-        write(io, "| $(ARGS[1])-Build MassMatrixModel| $time |\n")
+        write(io, "| $(ARGS[1])-Build MassMatrixModel | $time |\n")
     end
 end
 
