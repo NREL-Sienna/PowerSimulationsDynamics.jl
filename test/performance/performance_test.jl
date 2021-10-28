@@ -39,7 +39,7 @@ try
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
         console_level = Logging.Error,
     )
-    status = execute!(sim_ida, IDA(), dtmax = 0.01)
+    status = execute!(sim_ida, IDA(), dtmax = 0.01, enable_progress_bar = false)
     if status == PSID.SIMULATION_FINALIZED
         res_ida = read_results(sim_ida)
         solve_time = res_ida.time_log[:timed_solve_time]
@@ -66,9 +66,9 @@ try
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
         console_level = Logging.Error,
     ) #Type of Fault
-    status = execute!(sim_rodas, Rodas4(), dtmax = 0.01)
+    status = execute!(sim_rodas, Rodas4(), dtmax = 0.01, enable_progress_bar = false)
     if status == PSID.SIMULATION_FINALIZED
-        res_rodas = read_results(sim_ida)
+        res_rodas = read_results(sim_rodas)
         solve_time = res_rodas.time_log[:timed_solve_time]
         open("execute_time.txt", "a") do io
             write(io, "| $(ARGS[1])-Build MassMatrixModel | $(time_build_rodas) |\n")

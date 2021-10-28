@@ -9,14 +9,14 @@ jobs:
     steps:
       - uses: julia-actions/setup-julia@latest
       - uses: actions/checkout@v1
-      - name: Run Perfomance Test current Tag
+      - name: Run Perfomance Test Current Tag
         run: |
           julia --project=test -e 'using Pkg; Pkg.instantiate()'
-          julia --project=test test/performance/performance_test.jl "current_tag"
+          julia --project=test test/performance/performance_test.jl "Current Tag"
       - name: Run Perfomance Test Master
         run: |
           julia --project=test -e 'using Pkg; Pkg.add(PackageSpec(name="PowerSimulationsDynamics", rev="master")); Pkg.instantiate()'
-          julia --project=test test/performance/performance_test.jl "master"
+          julia --project=test test/performance/performance_test.jl "Master"
       - name: Run Perfomance Test Branch
         run: |
           julia --project=test -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
@@ -55,7 +55,7 @@ jobs:
             | :---        |    :----:   |
             ${{ steps.precompile_results.outputs.body }}
 
-            | Version      | Execute Time |
+            | Version      | Run Time |
             | :---        |    :----:   |
             ${{ steps.execute_results.outputs.body }}
       - name: Update comment
