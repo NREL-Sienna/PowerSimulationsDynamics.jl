@@ -243,8 +243,8 @@ function initialize_tg!(
         x_g3 = x[4]
         x_g4 = x[5]
 
-        P_in = P_ref - Δω - R * x_g2
         c = (1.0 / r) * x_g1 + (1.0 / (r * Tr)) * x_g2
+        P_in = P_ref - Δω - R * c
         h = (x_g4 / x_g3)^2
 
         out[1] = (P_in - x_g1) #dx_g1/dt

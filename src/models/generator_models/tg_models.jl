@@ -252,10 +252,10 @@ function mdl_tg_ode!(
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
-    x_g1 = internal_states[1]
-    x_g2 = internal_states[2]
-    x_g3 = internal_states[3]
-    x_g4 = internal_states[4]
+    x_g1 = internal_states[1] # Filter
+    x_g2 = internal_states[2] # PI State
+    x_g3 = internal_states[3] # Gate
+    x_g4 = internal_states[4] # Flow
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(device, PSY.HydroTurbineGov)
@@ -276,9 +276,9 @@ function mdl_tg_ode!(
     q_nl = PSY.get_q_nl(tg)
 
     #Compute auxiliary parameters
-    P_in = P_ref - Δω - R * x_g2
     c_no_sat = (1.0 / r) * x_g1 + (1.0 / (r * Tr)) * x_g2
     c = clamp(c_no_sat, G_min, G_max)
+    P_in = P_ref - Δω - R * c
     limit_binary = G_min < c_no_sat < G_max ? 1.0 : 0.0
     h = (x_g4 / x_g3)^2
 
