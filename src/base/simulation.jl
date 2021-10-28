@@ -76,11 +76,27 @@ function Simulation(
 end
 
 """
+    function Simulation!
+        ::SimulationModel
+        system::PowerSystems.System
+        simulation_folder::String
+        tspan::NTuple{2, Float64},
+        perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
+        kwargs...,
+    end
+
 Builds the simulation object and conducts the indexing process. The initial conditions are stored in the system.
 
+# Arguments
+- `::SimulationModel` : Type of Simulation Model. ResidualModel or MassMatrixModel
+- `system::PowerSystems.System` : System data
+- `simulation_folder::String` : Folder directory
+- `tspan::NTuple{2, Float64}` : Time span for simulation
+- `perturbations::Vector{<:Perturbation}` : Vector of Perturbations for the Simulation. Default: No Perturbations
+
 # Accepted Key Words
-- `initialize_simulation::Bool : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
-- `initial_conditions::Vector{Float64} : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
+- `initialize_simulation::Bool` : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
+- `initial_conditions::Vector{Float64}` : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
 - `system_to_file::Bool`: Serializes the initialized system
 - `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 - `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
@@ -115,13 +131,29 @@ function Simulation!(
 end
 
 """
-Initializes the simulations and builds the indexing. The input system is not modified during the initialization
+    function Simulation
+        ::SimulationModel
+        system::PowerSystems.System
+        simulation_folder::String
+        tspan::NTuple{2, Float64},
+        perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
+        kwargs...,
+    end
+
+Builds the simulation object and conducts the indexing process. The initial conditions are stored in the system.
+
+# Arguments
+- `::SimulationModel` : Type of Simulation Model. ResidualModel or MassMatrixModel
+- `system::PowerSystems.System` : System data
+- `simulation_folder::String` : Folder directory
+- `tspan::NTuple{2, Float64}` : Time span for simulation
+- `perturbations::Vector{<:Perturbation}` : Vector of Perturbations for the Simulation. Default: No Perturbations
 
 # Accepted Key Words
 - `initialize_simulation::Bool : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
-- `initial_conditions::Vector{Float64} : Initial conditions provided by the user. Must be used with initialize_simulation = false to not be override.`
-- `system_to_file::Bool`: Serializes the original input system
-- `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debugg
+- `initial_conditions::Vector{Float64}` : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
+- `system_to_file::Bool`: Serializes the initialized system
+- `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 - `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
 """
 function Simulation(
