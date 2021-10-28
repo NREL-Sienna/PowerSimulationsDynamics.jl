@@ -44,14 +44,14 @@ end
 function _nlsolve_call(
     initial_guess::Vector{Float64},
     f_eval::Function,
-    tolerance::Float64,
+    f_tolerance::Float64,
     solver::Symbol,
 )
     sys_solve = NLsolve.nlsolve(
         f_eval,
         initial_guess;
-        xtol = tolerance,
-        ftol = tolerance,
+        xtol = NLSOLVE_X_TOLERANCE,
+        ftol = f_tolerance,
         method = solver,
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
