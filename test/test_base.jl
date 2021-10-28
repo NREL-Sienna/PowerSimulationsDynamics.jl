@@ -14,6 +14,10 @@ Ybus_change = NetworkSwitch(
     Ybus_fault,
 ) #New YBus
 
+@testset "Prog meter enabling" begin
+    @test !PSID._prog_meter_enabled()
+end
+
 @testset "Make Simulation" begin
     path1 = (joinpath(pwd(), "test-Base-1"))
     !isdir(path1) && mkdir(path1)

@@ -152,5 +152,3 @@ end
 const BUILD_TIMER = TimerOutputs.TimerOutput()
 
 const ACCEPTED_REAL_TYPES = Union{Float64, ForwardDiff.Dual}
-
-GLOBAL_PROGRESS_BAR_ENABLED = true
