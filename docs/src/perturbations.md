@@ -8,14 +8,14 @@ A `NetworkSwitch` allows to modify directly the admittance matrix, `Ybus`, used 
 
 The constructor is given by:
 
-```raw
-ns = NetworkSwitch(
-    Time of Ocurrence,
-    New Ybus
-)
+```julia
+mutable struct NetworkSwitch <: Perturbations
+    time::Float64
+    ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
+end
 ```
 
-The time of ocurrence, defined as `Float64`, defines when the Network Switch will happen. This time should be inside the time span considered in the Simulation. The New Ybus, defined as a `Matrix{Float64}`, provides the new Ybus.
+The `time` defines when the Network Switch will happen. This time should be inside the time span considered in the Simulation. `ybus` provides the new Ybus.
 
 ### Example 1: Circuit Disconnection
 
@@ -77,15 +77,15 @@ that can be passed as a perturbation argument in the Simulation construction.
 
 A `BranchTrip` completely disconnects a branch from the system. Currently there is only support for static branches disconnection. Future releases will provide support for a Dynamic Line disconnection. The constructor is as follows:
 
-```raw
-ns = BranchTrip(
-    Time of Ocurrence,
-    Type of Line,
-    Name of Line,
-)
+```julia
+mutable struct BranchTrip <: Perturbation
+    time::Float64
+    branch_type::Type{<:PowerSystems.ACBranch}
+    branch_name::String
+end
 ```
 
-The time of ocurrence, defined as `Float64`, defines when the Branch Trip will happen. The supported type of branches can be `Line` and `Transformer2W`. `DynamicLine` is currently not supported. The Name of Line, defined as `String`, determines which branch will be disconnected
+The `time` defines when the Branch Trip will happen. The `branch_type` can be `Line` and `Transformer2W`. `DynamicLine` is currently not supported. The `branch_name` determines which branch will be disconnected.
 
 ### Example
 
@@ -137,18 +137,18 @@ b_trip = BranchTrip(1.0, Line, "Circuit2")
 
 A `GeneratorTrip` allows to disconnect a Dynamic Generation unit from the system at a specified time. The constructor is the following
 
-```raw
-g_trip = GeneratorTrip(
-    Time of Ocurrence,
-    Dynamic Device,
-)
+```julia
+mutable struct GeneratorTrip <: Perturbation
+    time::Float64
+    device::PSY.DynamicInjection
+end
 ```
 
-The time of ocurrence, defined as `Float64`, defines when the Generator Trip will happen. This time should be inside the time span considered in the Simulation. The Dynamic Device, defined as `DynamicInjection`, must be taken from the system to identify which device will be disconnected from the system.
+The `time` defines when the Generator Trip will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which device will be disconnected from the system.
 
 ### Example
 
-onsider that you have a generator at bus 102, named `"generator-102-1"` in your system called `sys`. The constructor to trip it from the system is:
+Consider that you have a generator at bus 102, named `"generator-102-1"` in your system called `sys`. The constructor to trip it from the system is:
 
 ```julia
 g = get_component(DynamicGenerator, sys, "generator-102-1")
@@ -159,22 +159,22 @@ g_trip = GeneratorTrip(1.0, g)
 
 A `ControlReferenceChange` allows to change the reference setpoint provided by a generator/inverter. The constructor is the following:
 
-```raw
-crc = ControlReferenceChange(
-    Time of Ocurrence,
-    Dynamic Device,
-    Signal,
-    New Reference Value
-)
+```julia
+mutable struct ControlReferenceChange <: Perturbation
+    time::Float64
+    device::PSY.DynamicInjection
+    signal::Symbol
+    ref_value::Float64
+end
 ```
 
-The time of ocurrence, defined as `Float64`, defines when the Control Reference Change will happen. This time should be inside the time span considered in the Simulation. The Dynamic Device, defined as `DynamicInjection`, must be taken from the system to identify which device will modify its setpoint. The Signal, defined as `Symbol`, determines which reference setpoint will be modified. The accepted signals are:
+The `time` defines when the Control Reference Change will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which device will modify its setpoint. The `signal`, determines which reference setpoint will be modified. The accepted signals are:
 - `:P_ref`: Modifies the active power reference setpoint.
 - `:V_ref`: Modifies the voltage magnitude reference setpoint.
 - `:Q_ref`: Modifies the reactive power reference setpoint (if used).
 - `:ω_ref`: Modifies the frequency setpoint.
 
-The New Reference Value, defined as `Float64`, updates the setpoint.
+The `ref_value` updates the setpoint.
 
 ### Example
 
@@ -189,20 +189,20 @@ crc = ControlReferenceChange(1.0, g, :P_ref, 0.5)
 
 A `LoadChange` allows to change the active or reactive power setpoint from a load. The constructor is the following:
 
-```raw
-l_change = LoadChange(
-    Time of Ocurrence,
-    Load Device,
-    Signal,
-    New Reference Value
-)
+```julia
+mutable struct LoadChange <: Perturbation
+    time::Float64
+    device::PSY.ElectricLoad
+    signal::Symbol
+    ref_value::Float64
+end
 ```
 
-The time of ocurrence, defined as `Float64`, defines when the Load Change will happen. This time should be inside the time span considered in the Simulation. The Load Device, defined as `ElectricLoad`, must be taken from the system to identify which load will modify its setpoint. The Signal, defined as `Symbol`, determines which reference setpoint will be modified. The accepted signals are:
+The `time` defines when the Load Change will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which load will modify its setpoint. The `signal` determines which reference setpoint will be modified. The accepted signals are:
 - `:P_ref`: Modifies the active power reference setpoint.
 - `:Q_ref`: Modifies the reactive power reference setpoint. 
 
-The New Reference Value, defined as `Float64`, updates the setpoint.
+The `ref_value` updates the setpoint.
 
 ### Example
 
@@ -217,14 +217,14 @@ l_change = LoadChange(1.0, l_device, :P_ref, 0.8)
 
 A `LoadTrip` allows the user to disconnect a load from the system. The constructor is the following:
 
-```raw
-l_trip = LoadTrip(
-    Time of Ocurrence,
-    Load Device,
-)
+```julia
+mutable struct LoadTrip <: Perturbation
+    time::Float64
+    device::PSY.ElectricLoad
+end
 ```
 
-The time of ocurrence, defined as `Float64`, defines when the Load Change will happen. This time should be inside the time span considered in the Simulation. The Load Device, defined as `ElectricLoad`, must be taken from the system to identify which load will be disconnected from the system.
+The `time` defines when the Load Change will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which load will be disconnected from the system.
 
 ### Example
 
@@ -239,20 +239,20 @@ l_trip = LoadTrip(1.0, l_device)
 
 A `SourceBusVoltageChange` allows to change the reference setpoint provided by a voltage source. The constructor is the following:
 
-```raw
-sbvc = SourceBusVoltageChange(
-    Time of Ocurrence,
-    Source Device,
-    Signal Index,
-    New Reference Value
-)
+```julia
+mutable struct SourceBusVoltageChange <: Perturbation
+    time::Float64
+    device::PSY.Source
+    signal_index::Int
+    ref_value::Float64
+end
 ```
 
-The time of ocurrence, defined as `Float64`, defines when the Source Voltage Change will happen. This time should be inside the time span considered in the Simulation. The Source Device, defined as `Source`, must be taken from the system to identify which load will modify its setpoint. The Signal Index, defined as `Int`, determines which reference setpoint will be modified. The accepted signals are:
+The `time` defines when the Source Voltage Change will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which load will modify its setpoint. The `signal_index` determines which reference setpoint will be modified. The accepted signals are:
 - `1`: Modifies the internal voltage magnitude reference setpoint.
 - `2`: Modifies the internal voltage angle reference setpoint.
 
-The New Reference Value, defined as `Float64`, updates the setpoint.
+The `ref_value` updates the setpoint.
 
 ### Example
 

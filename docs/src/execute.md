@@ -2,12 +2,12 @@
 
 Once a Simulation is constructed and properly initialized, the `execute!` command is used to run the Simulation. If no perturbation was included, then a steady state simulation will be run over the time span defined. The constructor is the following:
 
-```raw
-execute!(
-    Simulation Structure,
-    Solver,
-    Optional: Keyword Arguments
-)
+```julia
+function execute!
+    sim::Simulation
+    solver;
+    kwargs...
+end
 ```
 
 ## Solvers
