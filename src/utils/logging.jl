@@ -37,6 +37,6 @@ function configure_logging(;
         file_mode = "w+",
         tracker = nothing,
         set_global = true,
-        progress =  _prog_meter_enabled(),
+        progress = _prog_meter_enabled(),
     )
 end

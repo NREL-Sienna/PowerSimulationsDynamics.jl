@@ -418,7 +418,9 @@ function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
 end
 
 function _prog_meter_enabled()
-    return isa(stderr, Base.TTY) && (get(ENV, "CI", nothing) != "true") && (get(ENV, "RUNNING_PSID_TESTS", nothing) != "true")
+    return isa(stderr, Base.TTY) &&
+           (get(ENV, "CI", nothing) != "true") &&
+           (get(ENV, "RUNNING_PSID_TESTS", nothing) != "true")
 end
 
 function _execute!(sim::Simulation, solver; kwargs...)
