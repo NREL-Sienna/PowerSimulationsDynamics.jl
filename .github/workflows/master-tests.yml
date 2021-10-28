@@ -23,6 +23,7 @@ jobs:
           version: ${{ matrix.julia-version }}
           arch: ${{ matrix.julia-arch }}
       - uses: julia-actions/julia-buildpkg@latest
+        continue-on-error: ${{ matrix.julia-version == 'nightly' }}
         env:
           PYTHON: ""
       - uses: julia-actions/julia-runtest@latest
