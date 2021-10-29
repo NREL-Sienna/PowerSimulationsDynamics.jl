@@ -28,7 +28,7 @@ r(t) = \frac{dx(t)}{dt} - f(x(t))
 
 At this stage we have not conducted extensive tests with all the solvers in [DifferentialEquations](https://diffeq.sciml.ai/) if you are solving a larger system use `IDA()`.
 
-### The dynamic systen model in PowerSimulationsDynamics
+### The dynamic system model in PowerSimulationsDynamics
 
 In order to support both formulations, the default implementation of the ResidualModel solves the following problem:
 

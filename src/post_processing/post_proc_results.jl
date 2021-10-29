@@ -1,8 +1,17 @@
 
 """
-Function to obtain series of states out of DAE Solution. It receives the solution, the dynamical system
-and a tuple containing the string name of the Dynamic Injection device and the symbol of the state.
+    get_state_series(
+        res::SimulationResults,
+        ref::Tuple{String, Symbol}
+    )
+    end
 
+Function to obtain series of states out of DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `ref:Tuple{String, Symbol}` : Tuple used to identify the dynamic device, via its name, as a `String`, and the associated state as a `Symbol`.
 """
 function get_state_series(res::SimulationResults, ref::Tuple{String, Symbol})
     if allunique(res.solution.t)
@@ -16,8 +25,17 @@ function get_state_series(res::SimulationResults, ref::Tuple{String, Symbol})
 end
 
 """
-Function to obtain the voltage magnitude series out of the DAE Solution. It receives the solution, the dynamical system and the bus number.
+    get_voltage_magnitude_series(
+        res::SimulationResults,
+        bus_number::Int
+    )
 
+Function to obtain the voltage magnitude series out of the DAE Solution.
+
+# Arguments:
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `bus_number::Int` : Bus number identifier
 """
 function get_voltage_magnitude_series(res::SimulationResults, bus_number::Int)
     n_buses = get_bus_count(res)
@@ -33,8 +51,17 @@ function get_voltage_magnitude_series(res::SimulationResults, bus_number::Int)
 end
 
 """
-Function to obtain the voltage angle series out of the DAE Solution. It receives the solution, the dynamical system and the bus number.
+    get_voltage_angle_series(
+        res::SimulationResults,
+        bus_number::Int
+    )
 
+Function to obtain the voltage angle series out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `bus_number::Int` : Bus number identifier
 """
 function get_voltage_angle_series(res::SimulationResults, bus_number::Int)
     n_buses = get_bus_count(res)
@@ -50,9 +77,17 @@ function get_voltage_angle_series(res::SimulationResults, bus_number::Int)
 end
 
 """
-Function to obtain the real current time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
-string name of the Dynamic Injection device.
+    get_real_current_series(
+            res::SimulationResults,
+            name::String,
+    )
 
+Function to obtain the real current time series of a Dynamic Injection series out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
 """
 function get_real_current_series(res::SimulationResults, name::String)
     if allunique(res.solution.t)
@@ -63,10 +98,19 @@ function get_real_current_series(res::SimulationResults, name::String)
         return res.solution.t[ix], post_proc_real_current_series(res, name)[ix]
     end
 end
-"""
-Function to obtain the imaginary current time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
-string name of the Dynamic Injection device.
 
+"""
+    get_imaginary_current_series(
+            res::SimulationResults,
+            name::String,
+    )
+
+Function to obtain the imaginary current time series of a Dynamic Injection series out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
 """
 function get_imaginary_current_series(res::SimulationResults, name::String)
     if allunique(res.solution.t)
@@ -79,9 +123,17 @@ function get_imaginary_current_series(res::SimulationResults, name::String)
 end
 
 """
-Function to obtain the active power output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
-string name of the Dynamic Injection device.
+    get_activepower_series(
+            res::SimulationResults,
+            name::String,
+    )
 
+Function to obtain the active power output time series of a Dynamic Injection series out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
 """
 function get_activepower_series(res::SimulationResults, name::String)
     if allunique(res.solution.t)
@@ -94,9 +146,17 @@ function get_activepower_series(res::SimulationResults, name::String)
 end
 
 """
-Function to obtain the reactive power output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
-string name of the Dynamic Injection device.
+    get_reactivepower_series(
+            res::SimulationResults,
+            name::String,
+    )
 
+Function to obtain the reactive power output time series of a Dynamic Injection series out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
 """
 function get_reactivepower_series(res::SimulationResults, name::String)
     if allunique(res.solution.t)
@@ -109,7 +169,13 @@ function get_reactivepower_series(res::SimulationResults, name::String)
 end
 
 """
-Function to print initial states. It receives the vector of initial states and the dynamical system.
+    show_states_initial_value(res::SimulationResults)
+
+Function to print initial states. 
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
 """
 function show_states_initial_value(res::SimulationResults)
     bus_size = get_bus_count(res)
@@ -167,7 +233,13 @@ function show_states_initial_value(res::SimulationResults)
 end
 
 """
-Function to print initial states. It receives the vector of initial states and the dynamical system.
+    show_states_initial_value(sim::Simulation)
+
+Function to print initial states. 
+
+# Arguments
+
+- `sim::Simulation` : Simulation object that contains the initial condition
 """
 function show_states_initial_value(sim::Simulation)
     inputs = sim.inputs

@@ -24,7 +24,7 @@ TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
 [compat]
 DataStructures = "~0.18"
 DiffEqBase = "6"
-DocStringExtensions = "~0.8.2"
+DocStringExtensions = "~0.8.6"
 ForwardDiff = "~v0.10"
 InfrastructureSystems = "^1.14"
 LogExpFunctions = "0.3"

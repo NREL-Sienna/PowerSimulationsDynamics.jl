@@ -1,7 +1,21 @@
 abstract type Perturbation end
 
 """
-Use to model the trip of an AC Branch in in the system. Accepts any ACBranch
+    mutable struct BranchTrip <: Perturbation
+        time::Float64
+        branch_type::Type{<:PowerSystems.ACBranch}
+        branch_name::String
+    end
+
+A BranchTrip completely disconnects a branch from the system. Currently there is only support for static branches disconnection, `PowerSystems.Line` and `PowerSystems.Transformer2W`.
+Future releases will provide support for a Dynamic Line disconnection.
+**Note:** Islanding is currently not supported in `PowerSimulationsDynamics.jl`. If a `BranchTrip` isolates a generation unit, the system may diverge due to the isolated generator.
+
+# Arguments:
+
+- `time::Float64` : Defines when the Branch Trip will happen. This time should be inside the time span considered in the Simulation
+- `branch_tipe::Type{<:PowerSystems.ACBranch}` : Type of branch disconnected
+- `branch_name::String` : User defined name for identifying the branch
 """
 mutable struct BranchTrip <: Perturbation
     time::Float64
@@ -10,7 +24,22 @@ mutable struct BranchTrip <: Perturbation
 end
 
 """
-Use to model changes in the network as sudden impedance changes. Mostly used for small system analysis.
+    mutable struct BranchImpedanceChange <: Perturbation
+        time::Float64
+        branch_type::Type{<:PSY.ACBranch}
+        branch_name::String
+        multiplier::Float64
+    end
+
+A BranchImpedanceChange change the impedance of a branch by a user defined multiplier. Currently there is only support for static branches disconnection, `PowerSystems.Line` and `PowerSystems.Transformer2W`.
+Future releases will provide support for a Dynamic Line disconnection.
+
+# Arguments:
+
+- `time::Float64` : Defines when the Branch Impedance Change will happen. This time should be inside the time span considered in the Simulation
+- `branch_tipe::Type{<:PowerSystems.ACBranch}` : Type of branch modified
+- `branch_name::String` : User defined name for identifying the branch
+- `multiplier::Float64` : User defined value for impedance multiplier.
 """
 mutable struct BranchImpedanceChange <: Perturbation
     time::Float64
@@ -258,7 +287,18 @@ function ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
 end
 
 """
-Use to model a change in the network by switching the underlying Ybus in the simulation
+    function NetworkSwitch(
+        time::Float64,
+        ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int},
+    )
+
+Allows to modify directly the admittance matrix, Ybus, used in the Simulation.
+This allows the user to perform branch modifications, three phase faults (with impedance larger than zero) or branch trips, as long as the new Ybus provided captures that perturbation.
+
+# Arguments:
+
+- `time::Float64` : Defines when the Network Switch will happen. This time should be inside the time span considered in the Simulation
+- `ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}` : Complex admittance matrix 
 """
 mutable struct NetworkSwitch <: Perturbation
     time::Float64
@@ -300,7 +340,25 @@ function get_affect(::SimulationInputs, ::PSY.System, pert::NetworkSwitch)
 end
 
 """
-Use to model control reference changes in devices of the model
+    mutable struct ControlReferenceChange <: Perturbation
+        time::Float64
+        device::PowerSystems.DynamicInjection
+        signal::Symbol
+        ref_value::Float64
+    end
+
+A ControlReferenceChange allows to change the reference setpoint provided by a generator/inverter.
+
+# Arguments:
+
+- `time::Float64` : Defines when the Control Reference Change will happen. This time should be inside the time span considered in the Simulation
+- `device::Type{<:PowerSystems.DynamicInjection}` : Dynamic device modified
+- `signal::Symbol` : determines which reference setpoint will be modified. The accepted signals are:
+    - `:P_ref`: Modifies the active power reference setpoint.
+    - `:V_ref`: Modifies the voltage magnitude reference setpoint (if used).
+    - `:Q_ref`: Modifies the reactive power reference setpoint (if used).
+    - `:ω_ref`: Modifies the frequency setpoint.
+- `ref_value::Float64` : User defined value for setpoint reference.
 """
 mutable struct ControlReferenceChange <: Perturbation
     time::Float64
@@ -384,9 +442,24 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::ControlReferen
 end
 
 """
-Use to model a change in the voltage magnitude of the infinite bus
-"""
+    mutable struct SourceBusVoltageChange <: Perturbation
+        time::Float64
+        device::PSY.Source
+        signal_index::Int
+        ref_value::Float64
+    end
 
+A `SourceBusVoltageChange` allows to change the reference setpoint provided by a voltage source.
+
+# Arguments:
+
+- `time::Float64` : Defines when the Control Reference Change will happen. This time should be inside the time span considered in the Simulation
+- `device::Type{<:PowerSystems.Source}` : Device modified
+- `signal::Int` : determines which reference setpoint will be modified. The accepted signals are:
+    - `1`: Modifies the internal voltage magnitude reference setpoint.
+    - `2`: Modifies the internal voltage angle reference setpoint.
+- `ref_value::Float64` : User defined value for setpoint reference.
+"""
 mutable struct SourceBusVoltageChange <: Perturbation
     time::Float64
     device::PSY.Source
@@ -404,7 +477,17 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVolta
 end
 
 """
-Use to model the trip of an AC Branch in in the system. Accepts any ACBranch
+    mutable struct GeneratorTrip <: Perturbation
+        time::Float64
+        device::PowerSystems.DynamicInjection
+    end
+
+A `GeneratorTrip` allows to disconnect a Dynamic Generation unit from the system at a specified time. 
+
+# Arguments:
+
+- `time::Float64` : Defines when the Generator Trip will happen. This time should be inside the time span considered in the Simulation
+- `device::Type{<:PowerSystems.DynamicInjection}` : Device to be disconnected
 """
 mutable struct GeneratorTrip <: Perturbation
     time::Float64
@@ -426,6 +509,25 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::GeneratorTrip)
     end
 end
 
+"""
+    mutable struct LoadChange <: Perturbation
+        time::Float64
+        device::PowerSystems.ElectricLoad
+        signal::Symbol
+        ref_value::Float64
+    end
+
+A LoadChange allows to change the active or reactive power setpoint from a load.
+
+# Arguments:
+
+- `time::Float64` : Defines when the Load Change will happen. This time should be inside the time span considered in the Simulation
+- `device::Type{<:PowerSystems.ElectricLoad}` : Dynamic device modified
+- `signal::Symbol` : determines which reference setpoint will be modified. The accepted signals are:
+    - `:P_ref`: Modifies the active power reference setpoint.
+    - `:Q_ref`: Modifies the reactive power reference setpoint.
+- `ref_value::Float64` : User defined value for setpoint reference.
+"""
 mutable struct LoadChange <: Perturbation
     time::Float64
     device::PSY.ElectricLoad
@@ -467,7 +569,17 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
 end
 
 """
-Use to model control reference changes in devices of the model
+    mutable struct LoadTrip <: Perturbation
+        time::Float64
+        device::PowerSystems.ElectricLoad
+    end
+
+A `LoadTrip` allows the user to disconnect a load from the system. 
+
+# Arguments:
+
+- `time::Float64` : Defines when the Generator Trip will happen. This time should be inside the time span considered in the Simulation
+- `device::Type{<:PowerSystems.ElectricLoad}` : Device to be disconnected
 """
 mutable struct LoadTrip <: Perturbation
     time::Float64
