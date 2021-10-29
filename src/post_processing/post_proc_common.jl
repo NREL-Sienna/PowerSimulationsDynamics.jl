@@ -101,16 +101,16 @@ function make_global_state_map(inputs::SimulationInputs)
     buses_diffs = get_voltage_buses_ix(inputs)
     n_buses = get_bus_count(inputs)
     for d in device_wrappers
-        dic[PSY.get_name(d)] = get_global_index(d)
+        dic[PSY.get_name(d)] = OrderedDict{Symbol, Int}(get_global_index(d)...)
     end
     if !isempty(branches_wrappers)
         for br in branches_wrappers
-            dic[PSY.get_name(br)] = get_global_index(br)
+            dic[PSY.get_name(br)] = OrderedDict{Symbol, Int}(get_global_index(br)...)
         end
     end
     if !isempty(buses_diffs)
         for ix in buses_diffs
-            dic["V_$(ix)"] = Dict(:R => ix, :I => ix + n_buses)
+            dic["V_$(ix)"] = OrderedDict{Symbol, Int}(:R => ix, :I => ix + n_buses)
         end
     end
     return dic
