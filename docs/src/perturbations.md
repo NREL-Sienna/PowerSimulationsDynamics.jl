@@ -120,7 +120,10 @@ b_trip = BranchTrip(1.0, Line, "Circuit2")
 
 ### Example 4: `BranchImpedanceChange`
 
-bla
+Following the same example as before, it is possible to amplify the impedance of a single circuit by 2.0 (that would represent that this Circuit is actually composed by 2 circuits) using the following perturbation:
+```julia
+b_change = BranchImpedanceChange(1.0, Line, "Circuit2", 2.0)
+```
 
 ### Example 5: `GeneratorTrip`
 
