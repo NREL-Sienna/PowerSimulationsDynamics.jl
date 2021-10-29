@@ -59,25 +59,25 @@ Dynamic Components
 │  ─────────────────────────────────────────────────────────────────────────────
 │                                                     Time         Allocations  
 │                                                ──────────────   ──────────────
-│                 Total measured:                     19.2s          1.74GiB    
+│                 Total measured:                     24.6s          1.74GiB    
 │ 
 │  Section                               ncalls     time   %tot     alloc   %tot
 │  ─────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    19.0s   100%   1.72GiB  100% 
-│    Make DiffEq Problem                      1   80.2ms  0.42%   3.89MiB  0.22%
-│    Build Perturbations                      1    677ms  3.57%    119MiB  6.76%
-│    Initial Condition NLsolve refine...      1    1.86s  9.83%   46.8MiB  2.65%
-│    Make Model Function                      1   95.6ms  0.50%   15.6MiB  0.88%
-│    Calculate Jacobian                       1    6.63s  34.9%   0.95GiB  55.3%
-│    Pre-initialization                       1    4.71s  24.8%    234MiB  13.2%
-│      Initialize Dynamic Injectors           1    449ms  2.37%   53.4MiB  3.03%
-│      Initialize Static Injectors            1    2.59s  13.7%   87.3MiB  4.95%
-│      Power Flow solution                    1    1.66s  8.77%   92.8MiB  5.26%
-│    Build Simulation Inputs                  1    4.91s  25.9%    369MiB  20.9%
-│      Wrap Static Injectors                  1    301ms  1.59%   6.70MiB  0.38%
-│      Calculate MM, DAE_vector, Tota...      1    121ms  0.64%   24.8MiB  1.41%
-│      Wrap Dynamic Injectors                 1    2.15s  11.3%    257MiB  14.5%
-│      Wrap Branches                          1   24.0μs  0.00%   3.88KiB  0.00%
+│  Build Simulation                           1    24.3s   100%   1.72GiB  100% 
+│    Make DiffEq Problem                      1   94.0ms  0.39%   3.92MiB  0.22%
+│    Build Perturbations                      1    1.04s  4.27%    120MiB  6.79%
+│    Initial Condition NLsolve refine...      1    2.34s  9.61%   46.8MiB  2.65%
+│    Make Model Function                      1    127ms  0.52%   15.6MiB  0.89%
+│    Calculate Jacobian                       1    8.55s  35.1%   0.95GiB  55.3%
+│    Pre-initialization                       1    6.13s  25.2%    233MiB  13.2%
+│      Initialize Dynamic Injectors           1    592ms  2.43%   53.4MiB  3.03%
+│      Initialize Static Injectors            1    3.28s  13.5%   86.8MiB  4.93%
+│      Power Flow solution                    1    2.26s  9.27%   92.8MiB  5.27%
+│    Build Simulation Inputs                  1    6.06s  24.9%    369MiB  21.0%
+│      Wrap Static Injectors                  1    319ms  1.31%   5.95MiB  0.34%
+│      Calculate MM, DAE_vector, Tota...      1    157ms  0.64%   24.8MiB  1.41%
+│      Wrap Dynamic Injectors                 1    2.68s  11.0%    257MiB  14.6%
+│      Wrap Branches                          1   44.5μs  0.00%   3.88KiB  0.00%
 │  ─────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -129,5 +129,5 @@ generator-102-1
 │ Time Span                  │ (0.0, 30.0) │
 │ Total Time Steps           │ 1503        │
 │ Number of States           │ 6           │
-│ Total solve time           │ 4.230220235 │
-└────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; angle = get_state_series(results, (&quot;generator-102-1&quot;, :δ));</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/f-plot.svg" alt="plot"/></p><p>If you miss PSS/e&#39;s plotting aesthetics and want something that resembles that, you can use <a href="https://github.com/Evizero/UnicodePlots.jl"><code>UnicodePlots</code></a>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using UnicodePlots</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; unicodeplots()</code><code class="nohighlight hljs ansi" style="display:block;">Plots.UnicodePlotsBackend()</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/unicode.png" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../execute/">Simulation Execution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Friday 29 October 2021 19:23">Friday 29 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+│ Total solve time           │ 5.554886812 │
+└────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; angle = get_state_series(results, (&quot;generator-102-1&quot;, :δ));</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/f-plot.svg" alt="plot"/></p><p>If you miss PSS/e&#39;s plotting aesthetics and want something that resembles that, you can use <a href="https://github.com/Evizero/UnicodePlots.jl"><code>UnicodePlots</code></a>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using UnicodePlots</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; unicodeplots()</code><code class="nohighlight hljs ansi" style="display:block;">Plots.UnicodePlotsBackend()</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/unicode.png" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../execute/">Simulation Execution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.10 on <span class="colophon-date" title="Friday 29 October 2021 19:35">Friday 29 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
