@@ -85,21 +85,24 @@ end
         kwargs...,
     end
 
-Builds the simulation object and conducts the indexing process. The initial conditions are stored in the system.
+Builds the simulation object and conducts the indexing process. The original system is not modified and a copy its created and stored in the Simulation.
 
-# Arguments
-- `::SimulationModel` : Type of Simulation Model. ResidualModel or MassMatrixModel
+# Arguments:
+- `::SimulationModel` : Type of Simulation Model. `ResidualModel` or `MassMatrixModel`. See [Models Section](https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/models/) for more details
 - `system::PowerSystems.System` : System data
 - `simulation_folder::String` : Folder directory
 - `tspan::NTuple{2, Float64}` : Time span for simulation
 - `perturbations::Vector{<:Perturbation}` : Vector of Perturbations for the Simulation. Default: No Perturbations
-
-# Accepted Key Words
-- `initialize_simulation::Bool` : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
+- `initialize_simulation::Bool` : Runs the initialization routine. If false, simulation runs based on the operation point stored in System
 - `initial_conditions::Vector{Float64}` : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
-- `system_to_file::Bool`: Serializes the initialized system
-- `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
-- `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
+- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available: 
+    - `ConstantFrequency` assumes that the network frequency is 1.0 per unit at all times.
+    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used. 
+    - Future implementations will include a `CenterOfInertia` frequency model, and a `FrequencyDivider` model
+- `system_to_file::Bool` : Default `false`. Serializes the initialized system
+- `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
+- `file_level::Logging` : Default `Logging.Debug`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
+- `disable_timer_output::Bool` : Default `false`. Allows the user to display timer information about the construction and initilization of the Simulation.
 """
 function Simulation!(
     ::Type{T},
@@ -142,19 +145,22 @@ end
 
 Builds the simulation object and conducts the indexing process. The initial conditions are stored in the system.
 
-# Arguments
-- `::SimulationModel` : Type of Simulation Model. ResidualModel or MassMatrixModel
+# Arguments:
+- `::SimulationModel` : Type of Simulation Model. `ResidualModel` or `MassMatrixModel`. See [Models Section](https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/models/) for more details
 - `system::PowerSystems.System` : System data
 - `simulation_folder::String` : Folder directory
 - `tspan::NTuple{2, Float64}` : Time span for simulation
 - `perturbations::Vector{<:Perturbation}` : Vector of Perturbations for the Simulation. Default: No Perturbations
-
-# Accepted Key Words
-- `initialize_simulation::Bool : Runs the initialization routine. If false, simulation runs based on the operation point stored in System`
+- `initialize_simulation::Bool` : Runs the initialization routine. If false, simulation runs based on the operation point stored in System
 - `initial_conditions::Vector{Float64}` : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
-- `system_to_file::Bool`: Serializes the initialized system
-- `console_level::Logging`: Sets the level of logging output to the console. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
-- `file_level::Logging`: Sets the level of logging output to file. Can be set to Logging.Error, Logging.Warn, Logging.Info or Logging.Debug
+- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available: 
+    - `ConstantFrequency` assumes that the network frequency is 1.0 per unit at all times.
+    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used. 
+    - Future implementations will include a `CenterOfInertia` frequency model, and a `FrequencyDivider` model
+- `system_to_file::Bool` : Default `false`. Serializes the initialized system
+- `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
+- `file_level::Logging` : Default `Logging.Debug`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
+- `disable_timer_output::Bool` : Default `false`. Allows the user to display timer information about the construction and initilization of the Simulation.
 """
 function Simulation(
     ::Type{T},
@@ -485,6 +491,21 @@ function _execute!(sim::Simulation, solver; kwargs...)
     end
 end
 
+"""
+    execute!(
+        sim::Simulation,
+        solver;
+        kwargs...
+    )
+
+Solves the time-domain dynamic simulation model.
+
+# Arguments
+- `sim::Simulation` : Initialized simulation object
+- `solver` : Solver used for numerical integration. Must be passed correctly depending on the Type of Simulation Model
+- `enable_progress_bar::Bool` : Default: `true`. Enables progress bar for the integration routine.
+- Additional solver keyword arguments can be included. See [Common Solver Options](https://diffeq.sciml.ai/stable/basics/common_solver_opts/) in the `DifferentialEquations.jl` documentation for more details.
+"""
 function execute!(sim::Simulation, solver; kwargs...)
     logger = configure_logging(sim, "a"; kwargs...)
     try
@@ -508,6 +529,15 @@ function get_dynamic_wrapper(sim::Simulation, name::AbstractString)
     return get_dynamic_wrapper(get_simulation_inputs(sim), name)
 end
 
+"""
+    get_setpoints(sim::Simulation)
+
+Function that returns the reference setpoints for all the dynamic devices.
+
+# Arguments
+
+- `sim::Simulation` : Simulation object that contains the initial condition and setpoints.
+"""
 function get_setpoints(sim::Simulation)
     return get_setpoints(get_simulation_inputs(sim))
 end
