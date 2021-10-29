@@ -12,7 +12,7 @@ open("precompile_time.txt", "a") do io
     write(io, "| $(ARGS[1]) | $(precompile.time) |\n")
 end
 
-sys = System("test/data_tests/WECC_240_dynamic.json")
+sys = System("test/data_tests/WECC_240_dynamic.json"; runchecks = false)
 
 # First runs
 try
