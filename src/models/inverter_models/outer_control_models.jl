@@ -14,11 +14,11 @@ end
 
 #Freq_Flag = 1
 function _mdl_ode_RE_active_controller_AB!(
-    active_controller_ode,
-    active_controller_states,
-    p_elec_out,
-    ω_sys,
-    Vt_filt,
+    active_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    active_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p_elec_out::ACCEPTED_REAL_TYPES,
+    ω_sys::ACCEPTED_REAL_TYPES,
+    Vt_filt::ACCEPTED_REAL_TYPES,
     ::Type{Base.RefValue{1}},
     active_power_control::PSY.ActiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
@@ -95,11 +95,11 @@ end
 
 #Freq_Flag = 0
 function _mdl_ode_RE_active_controller_AB!(
-    active_controller_ode,
-    active_controller_states,
-    p_elec_out,
-    ω_sys,
-    Vt_filt,
+    active_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    active_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p_elec_out::ACCEPTED_REAL_TYPES,
+    ω_sys::ACCEPTED_REAL_TYPES,
+    Vt_filt::ACCEPTED_REAL_TYPES,
     ::Type{Base.RefValue{0}},
     active_power_control::PSY.ActiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
@@ -146,10 +146,10 @@ end
 
 #VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
 function _mdl_ode_RE_reactive_controller_AB!(
-    reactive_controller_ode,
-    reactive_controller_states,
-    q_elec_out,
-    Vt_filt,
+    reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    q_elec_out::ACCEPTED_REAL_TYPES,
+    Vt_filt::ACCEPTED_REAL_TYPES,
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
@@ -229,10 +229,10 @@ end
 
 #VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
 function _mdl_ode_RE_reactive_controller_AB!(
-    reactive_controller_ode,
-    reactive_controller_states,
-    q_elec_out,
-    Vt_filt,
+    reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    q_elec_out::ACCEPTED_REAL_TYPES,
+    Vt_filt::ACCEPTED_REAL_TYPES,
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
@@ -303,10 +303,10 @@ end
 ############################################
 
 function mdl_outer_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
-    ω_sys,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
             C,
@@ -387,10 +387,10 @@ function mdl_outer_ode!(
 end
 
 function mdl_outer_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
-    ω_sys,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
             C,
@@ -473,10 +473,10 @@ function mdl_outer_ode!(
 end
 
 function mdl_outer_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
-    ω_sys,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
             C,
@@ -557,10 +557,10 @@ function mdl_outer_ode!(
 end
 
 function mdl_outer_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
-    ω_sys,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
             C,

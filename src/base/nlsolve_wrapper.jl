@@ -21,7 +21,7 @@ function _nlsolve_call(
     initial_guess::Vector{Float64},
     f_eval::Function,
     jacobian::JacobianFunctionWrapper,
-    tolerance::Float64,
+    f_tolerance::Float64,
     solver::Symbol,
 )
     df = NLsolve.OnceDifferentiable(
@@ -34,8 +34,8 @@ function _nlsolve_call(
     sys_solve = NLsolve.nlsolve(
         df,
         initial_guess;
-        xtol = tolerance,
-        ftol = tolerance,
+        xtol = NLSOLVE_X_TOLERANCE,
+        ftol = f_tolerance,
         method = solver,
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
@@ -44,14 +44,14 @@ end
 function _nlsolve_call(
     initial_guess::Vector{Float64},
     f_eval::Function,
-    tolerance::Float64,
+    f_tolerance::Float64,
     solver::Symbol,
 )
     sys_solve = NLsolve.nlsolve(
         f_eval,
         initial_guess;
-        xtol = tolerance,
-        ftol = tolerance,
+        xtol = NLSOLVE_X_TOLERANCE,
+        ftol = f_tolerance,
         method = solver,
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
@@ -97,7 +97,7 @@ function refine_initial_condition!(
         val, ix = findmax(ini_res)
         @warn "The initial residual in $ix of the NLsolve function is has a value of $val. NLsolve might not converge."
     end
-    for tol in [STRICT_NL_SOLVE_TOLERANCE, RELAXED_NL_SOLVE_TOLERANCE]
+    for tol in [STRICT_NLSOLVE_F_TOLERANCE, RELAXED_NLSOLVE_F_TOLERANCE]
         if converged
             break
         end
@@ -119,7 +119,7 @@ function refine_initial_condition!(
     end
 
     pf_diff = abs.(powerflow_solution .- initial_guess[bus_range])
-    if maximum(pf_diff) > MINIMAL_ACCEPTABLE_NL_SOLVE_TOLERANCE
+    if maximum(pf_diff) > MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE
         @warn "The resulting voltages in the initial conditions differ from the power flow results"
     end
 

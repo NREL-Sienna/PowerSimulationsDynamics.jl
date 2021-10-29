@@ -4,7 +4,7 @@ function mdl_source!(
     current_r::AbstractArray{T},
     current_i::AbstractArray{T},
     static_device::StaticWrapper{PSY.Source},
-) where {T <: Real}
+) where {T <: ACCEPTED_REAL_TYPES}
     #Load device parameters
     V_R = get_V_ref(static_device) * cos(get_θ_ref(static_device))
     V_I = get_V_ref(static_device) * sin(get_θ_ref(static_device))

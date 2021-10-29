@@ -172,6 +172,7 @@ function configure_logging(sim::Simulation, file_mode; kwargs...)
         file_mode = file_mode,
         tracker = nothing,
         set_global = false,
+        progress = _prog_meter_enabled(),
     )
 end
 
@@ -417,7 +418,9 @@ function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
 end
 
 function _prog_meter_enabled()
-    return false #isa(stderr, Base.TTY) || (get(ENV, "CI", nothing) == "true")
+    return isa(stderr, Base.TTY) &&
+           (get(ENV, "CI", nothing) != "true") &&
+           (get(ENV, "RUNNING_PSID_TESTS", nothing) != "true")
 end
 
 function _execute!(sim::Simulation, solver; kwargs...)

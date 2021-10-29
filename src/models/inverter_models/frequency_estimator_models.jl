@@ -7,10 +7,10 @@ function mass_matrix_freq_estimator_entries!(
 end
 
 function mdl_freq_estimator_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
-    ω_sys,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F}},
 ) where {
     C <: PSY.Converter,
@@ -67,10 +67,10 @@ function mdl_freq_estimator_ode!(
 end
 
 function mdl_freq_estimator_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
-    ω_sys,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F},
     },
@@ -124,10 +124,10 @@ function mdl_freq_estimator_ode!(
 end
 
 function mdl_freq_estimator_ode!(
-    device_states,
-    output_ode,
-    inner_vars,
-    ω_sys,
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F},
     },

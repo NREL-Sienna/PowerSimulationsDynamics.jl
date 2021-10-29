@@ -126,9 +126,10 @@ const GLOBAL_VAR_SYS_FREQ_INDEX = 1
 get_vars_ix() = Dict{Int, Int}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
 
 const SMALL_SIGNAL_ACCEPTED_KWARGS = [:reset_simulation!]
-const RELAXED_NL_SOLVE_TOLERANCE = :1e-6
-const STRICT_NL_SOLVE_TOLERANCE = :1e-9
-const MINIMAL_ACCEPTABLE_NL_SOLVE_TOLERANCE = :1e-3
+const RELAXED_NLSOLVE_F_TOLERANCE = :1e-4
+const STRICT_NLSOLVE_F_TOLERANCE = :1e-7
+const NLSOLVE_X_TOLERANCE = :1e-9
+const MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE = :1e-3
 const MAX_INIT_RESIDUAL = 1e2
 
 const SIMULATION_LOG_FILENAME = "power-simulations-dynamics.log"
@@ -150,3 +151,5 @@ Defines the status of the simulation object
 end
 
 const BUILD_TIMER = TimerOutputs.TimerOutput()
+
+const ACCEPTED_REAL_TYPES = Union{Float64, ForwardDiff.Dual}

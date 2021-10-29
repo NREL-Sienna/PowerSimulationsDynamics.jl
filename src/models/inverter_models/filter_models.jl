@@ -7,12 +7,12 @@ function mass_matrix_filter_entries!(
 end
 
 function mdl_filter_ode!(
-    device_states,
-    output_ode,
-    current_r,
-    current_i,
-    inner_vars,
-    ω_sys,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter}},
 ) where {
     C <: PSY.Converter,
@@ -101,12 +101,12 @@ function mdl_filter_ode!(
 end
 
 function mdl_filter_ode!(
-    device_states,
-    output_ode,
-    current_r,
-    current_i,
-    inner_vars,
-    ω_sys,
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter}},
 ) where {
     C <: PSY.Converter,
