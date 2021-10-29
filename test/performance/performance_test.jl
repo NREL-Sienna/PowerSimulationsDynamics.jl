@@ -63,10 +63,11 @@ try
         sys, #system
         pwd(),
         (0.0, 20.0), #time span
-        BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
+        BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");,
         #console_level = Logging.Error,
     ) #Type of Fault
-    status = execute!(sim_rodas, Rodas4(), abstol = 1e-9, initializealg  = NoInit())
+    status =
+        execute!(sim_rodas, Rodas4(), rtol = 1e-9, atol = 1e-9, initializealg = NoInit())
     if status == PSID.SIMULATION_FINALIZED
         res_rodas = read_results(sim_rodas)
         solve_time = res_rodas.time_log[:timed_solve_time]
