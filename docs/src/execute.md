@@ -1,14 +1,8 @@
 # Executing a Simulation
 
-Once a Simulation is constructed and properly initialized, the `execute!` command is used to run the Simulation. If no perturbation was included, then a steady state simulation will be run over the time span defined. The constructor is the following:
+After constructing the System data from `PowerSystems.jl` with its dynamic components, a `Simulation` structure must be constructed. Check the API for [`Simulation`](@ref) and [`Simulation!`](@ref) for its construction and available arguments.
 
-```julia
-function execute!
-    sim::Simulation
-    solver;
-    kwargs...
-end
-```
+Once a Simulation is constructed and properly initialized, the `execute!` command is used to run the Simulation. If no perturbation was included, then a steady state simulation will be run over the time span defined. See the API of [`execute!`](@ref) for more details.
 
 ## Solvers
 
@@ -51,27 +45,27 @@ Once a Simulation is executed and the results are stored via `results = read_res
 
 ### Show initial conditions
 
-The function `show_states_initial_value(results)` can be used to display the initial condition of the voltages and dynamic states of each dynamic component.
+The function [`show_states_initial_value`](@ref)`(results)` can be used to display the initial condition of the voltages and dynamic states of each dynamic component.
 
 ### Explore bus voltages
 
-The function `get_voltage_magnitude_series(results, BusNumber)` can be used to obtain the voltage magnitude time series of the specified bus. Similarly, `get_voltage_angle_series(results, BusNumber)` can be used to obtain the voltage angle time series of the specified bus.
+The function [`get_voltage_magnitude_series`](@ref)`(results, BusNumber)` can be used to obtain the voltage magnitude time series of the specified bus. Similarly, [`get_voltage_angle_series`](@ref)`(results, BusNumber)` can be used to obtain the voltage angle time series of the specified bus.
 
 ### Explore output currents
 
-The functions `get_real_current_series(results, "DeviceName")` and `get_imaginary_current_series(results, "DeviceName")` can be used to obtain the output current time series of the specified device.
+The functions [`get_real_current_series`](@ref)`(results, "DeviceName")` and [`get_imaginary_current_series`](@ref)`(results, "DeviceName")` can be used to obtain the output current time series of the specified device.
 
 ### Explore output power
 
-The functions `get_activepower_series(results, "DeviceName")` and `get_reactivepower_series(results, "DeviceName")` can be used to obtain the output power time series of the specified device.
+The functions [`get_activepower_series`](@ref)`(results, "DeviceName")` and [`get_reactivepower_series`](@ref)`(results, "DeviceName")` can be used to obtain the output power time series of the specified device.
 
 ### Explore dynamic states
 
-The function `get_state_series(results, ("DeviceName", :StateSymbol)` can be used to obtain the specified state time series of the specified device.
+The function [`get_state_series`](@ref)`(results, ("DeviceName", :StateSymbol)` can be used to obtain the specified state time series of the specified device.
 
 ### Explore Reference Setpoints
 
-The function `get_setpoints(sim)` can be used to obtain the reference setpoints of each dynamic device. **Note:** If a setpoint was changed via a perturbation, this function will return the modified setpoint.
+The function [`get_setpoints`](@ref)`(sim)` can be used to obtain the reference setpoints of each dynamic device. **Note:** If a setpoint was changed via a perturbation, this function will return the modified setpoint.
 
 
 ## Keyword Arguments

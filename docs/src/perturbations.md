@@ -1,23 +1,21 @@
 # Perturbations
 
-Perturbations are used to alter the system from its steady state operation. If a Simulation is properly initialized, all states will remain fixed in their initial condition if no perturbation is applied to the system. The list of perturbations is as follows:
+Perturbations are used to alter the system from its steady state operation. If a Simulation is properly initialized, all states will remain fixed in their initial condition if no perturbation is applied to the system.
 
-## NetworkSwitch
+## List of perturbations
 
-A `NetworkSwitch` allows to modify directly the admittance matrix, `Ybus`, used in the Simulation. This allows the user to perform branch modifications, three phase faults (with impedance larger than zero) or branch trips, as long as the new `Ybus` provided captures that perturbation.
+- [`NetworkSwitch`](@ref): allows to modify directly the admittance matrix, `Ybus`, used in the Simulation.
+- [`BranchTrip`](@ref): completely disconnects a branch from the system.
+- [`BranchImpedanceChange`](@ref): change the impedance of a branch by a user defined multiplier. 
+- [`GeneratorTrip`](@ref): allows to disconnect a Dynamic Generation unit from the system.
+- [`ControlReferenceChange`](@ref): allows to change the reference setpoint provided by a generator/inverter.
+- [`LoadChange`](@ref): allows to change the active or reactive power setpoint from a load.
+- [`LoadTrip`](@ref): allows the user to disconnect a load from the system.
+- [`SourceBusVoltageChange`](@ref): allows to change the reference setpoint provided by a voltage source.
 
-The constructor is given by:
+## Examples
 
-```julia
-mutable struct NetworkSwitch <: Perturbations
-    time::Float64
-    ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}
-end
-```
-
-The `time` defines when the Network Switch will happen. This time should be inside the time span considered in the Simulation. `ybus` provides the new Ybus.
-
-### Example 1: Circuit Disconnection
+### Example 1: Circuit Disconnection using `NetworkSwitch`
 
 Consider a two bus system connected via a double circuit line, on which each circuit has parameters, `r = 0.0, x = 0.1, b = 0.0` per unit, then the admittance matrix of the original system is given by:
 
@@ -38,7 +36,7 @@ Then, this perturbation ocurring at ``t = 1.0`` seconds can be included as:
 ns1 = NetworkSwitch(1.0, new_yb)
 ```
 
-### Example 2: Three Phase Fault
+### Example 2: Three Phase Fault using `NetworkSwitch`
 
 Another perturbation that can be modeled is a three phase fault at Bus 1 with impedance `r_f = 0.0001, x_f = 0.0` per unit, then the admittance of this new system is:
 
@@ -73,21 +71,8 @@ three_fault = [ns2, ns3]
 
 that can be passed as a perturbation argument in the Simulation construction.
 
-## BranchTrip
 
-A `BranchTrip` completely disconnects a branch from the system. Currently there is only support for static branches disconnection. Future releases will provide support for a Dynamic Line disconnection. The constructor is as follows:
-
-```julia
-mutable struct BranchTrip <: Perturbation
-    time::Float64
-    branch_type::Type{<:PowerSystems.ACBranch}
-    branch_name::String
-end
-```
-
-The `time` defines when the Branch Trip will happen. The `branch_type` can be `Line` and `Transformer2W`. `DynamicLine` is currently not supported. The `branch_name` determines which branch will be disconnected.
-
-### Example
+### Example 3: `BranchTrip`
 
 Consider the following 2 bus system defined by:
 
@@ -133,20 +118,11 @@ b_trip = BranchTrip(1.0, Line, "Circuit2")
 
 **Note:** Islanding is currently not supported in `PowerSimulationsDynamics.jl`. If a `BranchTrip` isolates a generation unit, the system may diverge due to the isolated generator.
 
-## GeneratorTrip
+### Example 4: `BranchImpedanceChange`
 
-A `GeneratorTrip` allows to disconnect a Dynamic Generation unit from the system at a specified time. The constructor is the following
+bla
 
-```julia
-mutable struct GeneratorTrip <: Perturbation
-    time::Float64
-    device::PSY.DynamicInjection
-end
-```
-
-The `time` defines when the Generator Trip will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which device will be disconnected from the system.
-
-### Example
+### Example 5: `GeneratorTrip`
 
 Consider that you have a generator at bus 102, named `"generator-102-1"` in your system called `sys`. The constructor to trip it from the system is:
 
@@ -154,29 +130,7 @@ Consider that you have a generator at bus 102, named `"generator-102-1"` in your
 g = get_component(DynamicGenerator, sys, "generator-102-1")
 g_trip = GeneratorTrip(1.0, g)
 ```
-
-## ControlReferenceChange
-
-A `ControlReferenceChange` allows to change the reference setpoint provided by a generator/inverter. The constructor is the following:
-
-```julia
-mutable struct ControlReferenceChange <: Perturbation
-    time::Float64
-    device::PSY.DynamicInjection
-    signal::Symbol
-    ref_value::Float64
-end
-```
-
-The `time` defines when the Control Reference Change will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which device will modify its setpoint. The `signal`, determines which reference setpoint will be modified. The accepted signals are:
-- `:P_ref`: Modifies the active power reference setpoint.
-- `:V_ref`: Modifies the voltage magnitude reference setpoint.
-- `:Q_ref`: Modifies the reactive power reference setpoint (if used).
-- `:ω_ref`: Modifies the frequency setpoint.
-
-The `ref_value` updates the setpoint.
-
-### Example
+### Example 6: `ControlReferenceChange`
 
 Consider that you have a generator at bus 102, named `"generator-102-1"` in your system called `sys`. The constructor to change is active power reference to `0.5` is:
 
@@ -185,26 +139,7 @@ g = get_component(DynamicGenerator, sys, "generator-102-1")
 crc = ControlReferenceChange(1.0, g, :P_ref, 0.5)
 ```
 
-## LoadChange
-
-A `LoadChange` allows to change the active or reactive power setpoint from a load. The constructor is the following:
-
-```julia
-mutable struct LoadChange <: Perturbation
-    time::Float64
-    device::PSY.ElectricLoad
-    signal::Symbol
-    ref_value::Float64
-end
-```
-
-The `time` defines when the Load Change will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which load will modify its setpoint. The `signal` determines which reference setpoint will be modified. The accepted signals are:
-- `:P_ref`: Modifies the active power reference setpoint.
-- `:Q_ref`: Modifies the reactive power reference setpoint. 
-
-The `ref_value` updates the setpoint.
-
-### Example
+### Example 7: `LoadChange`
 
 Consider that you have a load at bus 103, named `"load-103-1"` in your system called `sys`. The constructor to change is active power reference to `0.8` per unit at ``t = 1.0`` seconds is:
 
@@ -213,20 +148,7 @@ l_device = get_component(ElectricLoad, sys, "load-103-1")
 l_change = LoadChange(1.0, l_device, :P_ref, 0.8)
 ```
 
-## LoadTrip
-
-A `LoadTrip` allows the user to disconnect a load from the system. The constructor is the following:
-
-```julia
-mutable struct LoadTrip <: Perturbation
-    time::Float64
-    device::PSY.ElectricLoad
-end
-```
-
-The `time` defines when the Load Change will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which load will be disconnected from the system.
-
-### Example
+### Example 8: `LoadTrip`
 
 Consider that you have a load at bus 103, named `"load-103-1"` in your system called `sys`. The constructor to disconnect such load at ``t = 1.0`` seconds is:
 
@@ -235,26 +157,7 @@ l_device = get_component(ElectricLoad, sys, "load-103-1")
 l_trip = LoadTrip(1.0, l_device)
 ```
 
-## SourceBusVoltageChange
-
-A `SourceBusVoltageChange` allows to change the reference setpoint provided by a voltage source. The constructor is the following:
-
-```julia
-mutable struct SourceBusVoltageChange <: Perturbation
-    time::Float64
-    device::PSY.Source
-    signal_index::Int
-    ref_value::Float64
-end
-```
-
-The `time` defines when the Source Voltage Change will happen. This time should be inside the time span considered in the Simulation. The `device` must be taken from the system to identify which load will modify its setpoint. The `signal_index` determines which reference setpoint will be modified. The accepted signals are:
-- `1`: Modifies the internal voltage magnitude reference setpoint.
-- `2`: Modifies the internal voltage angle reference setpoint.
-
-The `ref_value` updates the setpoint.
-
-### Example
+### Example 9: `SourceBusVoltageChange`
 
 Consider that you have a voltage source at bus 101, named `"source-101-1"` in your system called `sys`. The constructor to change is voltage magnitude reference to `1.02` per unit at ``t = 1.0`` seconds is:
 
