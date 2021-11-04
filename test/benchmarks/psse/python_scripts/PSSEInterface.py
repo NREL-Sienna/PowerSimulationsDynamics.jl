@@ -63,8 +63,11 @@ def SetUpDynamicSimulation(dynamic_data_file, convergence_tolerance = 0.0001, de
     if err != 0:
         raise(Exception("Dynamics failed to set-up models"))
 
-def SetUpOutputChannels(channel_file, signals, slack_bus):
+def SetUpOutputChannels(output, run_name, signals, slack_bus, channel_file='channels.out'):
     print '\nSet-up output Channels ...'   
+
+    results_path = os.path.join(output, run_name)
+    channel_file = os.path.join(results_path, channel_file)
     
     ierr, machine_buses = agenbusint(-1, 1, "NUMBER")
     ierr = delete_all_plot_channels()
@@ -105,6 +108,17 @@ def LineFault(from_node, to_node):
     
     return line_trip
 
+def get_line_trips():
+    line_perturbations = []
+    ierr, branch_array = abrnint(-1, _i, _i, 1, 1, ['FROMNUMBER', 'TONUMBER'])
+    if ierr != 0:
+        raise(Exception("Line data can't be read")) 
+    for i in range(0, len(branch_array[0])):
+        bus_from = branch_array[0][i]
+        bus_to = branch_array[1][i]
+        line_perturbations.append(("line_{f}_{t}".format(f = bus_from, t = bus_to), LineFault( bus_from, bus_to)))
+    return line_perturbations
+
 def RunSimulation(fault, tspan = (0.0, 10.0), fault_time = 1.0):
     if okstrt()!=0:
         raise(Exception("Simulation Initialization failed"))
@@ -119,9 +133,10 @@ def RunSimulation(fault, tspan = (0.0, 10.0), fault_time = 1.0):
     if ierr != 0:
         raise(Exception("simulation failed"))   
 
-def ProcessResults(results_path, channel_file, csv_file, slack_channel):
-    print '\nProcessing outputs ...'   
+def ProcessResults(output, run_name, csv_file, slack_channel, channel_file='channels.out'):
+    results_path = os.path.join(output, run_name)
     channel_file_path = os.path.join(results_path, channel_file)
+    print '\nProcessing outputs ...'   
     print "\nReading Channel File {}".format(channel_file_path)
     chnfobj = dyntools.CHNF(channel_file_path)
     print '\nChannel File Opened ...'
@@ -130,8 +145,13 @@ def ProcessResults(results_path, channel_file, csv_file, slack_channel):
     export = np.array(t)
     header = "t,"
     tspan = (min(t), max(t))
+    
     plots_path = os.path.join(results_path, "plots")
-    os.mkdir(plots_path)
+    if (os.path.exists(plots_path)):
+        print("Overwriting {}".format(plots_path))
+    else:    
+        os.mkdir(plots_path)
+
     for k, title in chanid.items():
         if k == 'time':
             continue
@@ -161,3 +181,10 @@ def CloseSession():
     ierr = pssehalt_2()
     if ierr != 0:
         raise(Exception("PSSe session not closed succesfully"))
+
+def FileSystemSetUp(output, run_name):
+    results_path = os.path.join(output, run_name)
+    if (os.path.exists(results_path)):
+        print("Overwriting {}".format(results_path))
+    else:    
+        os.makedirs(results_path)  

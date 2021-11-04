@@ -1,28 +1,23 @@
 import PSSEInterface
 import os
 
-powerflow_file='ThreeBusRenewable.raw'         
-dynamic_data_file='ThreeBus_REN_A_NOFREQFLAG_with_REF_FLAG.dyr'      
+powerflow_file='C:\Users\jlara\Desktop\case\mod_ren14.raw'         
+dynamic_data_file='C:\Users\jlara\Desktop\case\dyn_data_14bus_mod.dyr'         
 print '\nInput Files ...'
 print powerflow_file    
 print dynamic_data_file
 
-channel_file='channels.out'  
 csv_file='results.csv'
-output = '.'        
+output = '.\\14-Bus'        
 print '\Output files...'
-print channel_file
 print csv_file
 
-perturbations = [("line101_103", PSSEInterface.LineFault(101, 103))]
-
 PSSEInterface.init_system(powerflow_file)
+perturbations = PSSEInterface.get_line_trips()
 slack_bus = PSSEInterface.get_slack_bus()
 
 for p in perturbations:
-    results_path = os.path.join(output, p[0])
-    os.mkdir(results_path)
-    channel_file_path = os.path.join(results_path, channel_file)
+    PSSEInterface.FileSystemSetUp(output, p[0])
     PSSEInterface.init_system(powerflow_file)
     PSSEInterface.PowerFlowConvert()
     PSSEInterface.SetUpDynamicSimulation(dynamic_data_file, convergence_tolerance = 0.0001, delta_t = 0.005)
@@ -37,7 +32,7 @@ for p in perturbations:
             7, #SPEED,
             #8, #XADIFID, 
         ]
-    slack_channel = PSSEInterface.SetUpOutputChannels(channel_file_path, signals, slack_bus)
+    slack_channel = PSSEInterface.SetUpOutputChannels(output, p[0], signals, slack_bus)
     PSSEInterface.RunSimulation(p[1], tspan = (0.0, 10.0), fault_time = 1.0)
-    PSSEInterface.ProcessResults(results_path, channel_file, csv_file, slack_channel)
+    PSSEInterface.ProcessResults(output, p[0], csv_file, slack_channel)
     PSSEInterface.CloseSession()
