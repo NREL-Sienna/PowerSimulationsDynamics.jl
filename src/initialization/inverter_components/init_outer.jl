@@ -321,7 +321,11 @@ function initialize_outer!(
             V_flt_input = V_reg + K_c * q_elec_out
         else
             #V_flt_input = | V_reg - (R_c + jX_c)(I_r + jI_i) |
-            V_flt_input = sqrt(V_reg^2  + 2 * V_reg * (I_I * X_c - I_R * R_c) + (I_I^2 + I_R^2) * (R_c^2 + X_c^2))
+            V_flt_input = sqrt(
+                V_reg^2 +
+                2 * V_reg * (I_I * X_c - I_R * R_c) +
+                (I_I^2 + I_R^2) * (R_c^2 + X_c^2),
+            )
         end
         #Update states
         internal_states[state_ct] = V_flt_input #Vc_flt
