@@ -153,6 +153,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
     ::Type{Base.RefValue{0}},
+    ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{1}},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
@@ -234,6 +235,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
+    ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
