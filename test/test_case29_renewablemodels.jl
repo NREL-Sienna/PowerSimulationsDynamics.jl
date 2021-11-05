@@ -207,12 +207,12 @@ raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/ThreeBusRenewable.
 
 names_dyr = [
     "RENA: No F_Flag, Ref_Flag = 1, V_Flag = 1, Q_Flag = 0",
-    #"RENA: No F_Flag, Ref_Flag = 1, V_Flag = 1, Q_Flag = 1",
+    "RENA: No F_Flag, Ref_Flag = 1, V_Flag = 1, Q_Flag = 1",
 ]
 
 csv_files_dyr = [
     joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/TEST_RENA_NOFREQ_REF_FLAG.csv"),
-    #joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/TEST_RENA_NOFREQ_REF_FLAG_Q_FLAG.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/TEST_RENA_NOFREQ_REF_FLAG_Q_FLAG.csv"),
 ]
 
 dyr_files = [
@@ -220,19 +220,23 @@ dyr_files = [
         TEST_FILES_DIR,
         "benchmarks/psse/RENA/ThreeBus_REN_A_NOFREQFLAG_with_REF_FLAG.dyr",
     ),
-    #joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/ThreeBus_REN_A_NOFREQFLAG_with_REF_FLAG_Q_FLAG.dyr"),
+    joinpath(
+        TEST_FILES_DIR,
+        "benchmarks/psse/RENA/ThreeBus_REN_A_NOFREQFLAG_with_REF_FLAG_Q_FLAG.dyr",
+    ),
 ]
 
 init_conditions_dyr = [test29_x0_init_Rflag, test29_x0_init_Rflag_Qflag]
 
 eigs_values_dyr = [test29_eigvals_Rflag, test29_eigvals_Rflag_Qflag]
 
-function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value)
+tspans = [(0.0, 10.0), (0.0, 20.0)]
+
+function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan)
     path = (joinpath(pwd(), "test-psse-renA_dyr"))
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
-        tspan = (0.0, 10.0)
 
         # Define Simulation Problem
         sim = Simulation!(
@@ -258,7 +262,7 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value)
         @test small_sig.stable
 
         #Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
 
         # Solve problem
         @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
@@ -274,8 +278,8 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value)
         M, _ = readdlm(csv_file, ',', header = true)
 
         M_t = M[:, 1]
-        M_v = M[:, 18]
-        M_θ = M[:, 9]
+        M_θ = M[:, 2]
+        M_v = M[:, 3]
 
         t_psse, v_psse = clean_extra_timestep!(M_t, M_v)
         _, θ_psse = clean_extra_timestep!(M_t, M_θ)
@@ -291,12 +295,11 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value)
     end
 end
 
-function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value)
+function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan)
     path = (joinpath(pwd(), "test-psse-renA_dyr"))
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
-        tspan = (0.0, 10.0)
 
         # Define Simulation Problem
         sim = Simulation!(
@@ -322,7 +325,7 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value)
         @test small_sig.stable
 
         #Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
+        @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
 
         # Solve problem
         @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
@@ -338,8 +341,8 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value)
         M, _ = readdlm(csv_file, ',', header = true)
 
         M_t = M[:, 1]
-        M_v = M[:, 18]
-        M_θ = M[:, 9]
+        M_θ = M[:, 2]
+        M_v = M[:, 3]
 
         t_psse, v_psse = clean_extra_timestep!(M_t, M_v)
         _, θ_psse = clean_extra_timestep!(M_t, M_θ)
@@ -362,7 +365,8 @@ end
             csv_file = csv_files_dyr[ix]
             init_cond = init_conditions_dyr[ix]
             eigs_value = eigs_values_dyr[ix]
-            test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value)
+            tspan = tspans[ix]
+            test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan)
         end
     end
 end
@@ -374,7 +378,8 @@ end
             csv_file = csv_files_dyr[ix]
             init_cond = init_conditions_dyr[ix]
             eigs_value = eigs_values_dyr[ix]
-            test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value)
+            tspan = tspans[ix]
+            test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan)
         end
     end
 end
