@@ -207,10 +207,12 @@ raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/ThreeBusRenewable.
 
 names_dyr = [
     "RENA: No F_Flag, Ref_Flag = 1, V_Flag = 1, Q_Flag = 0",
+    "RENA: No F_Flag, Ref_Flag = 1, V_Flag = 0, Q_Flag = 0",
     "RENA: No F_Flag, Ref_Flag = 1, V_Flag = 1, Q_Flag = 1",
 ]
 
 csv_files_dyr = [
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/TEST_RENA_NOFREQ_REF_FLAG.csv"),
     joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/TEST_RENA_NOFREQ_REF_FLAG.csv"),
     joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/TEST_RENA_NOFREQ_REF_FLAG_Q_FLAG.csv"),
 ]
@@ -222,15 +224,21 @@ dyr_files = [
     ),
     joinpath(
         TEST_FILES_DIR,
+        "benchmarks/psse/RENA/ThreeBus_REN_A_NOFREQFLAG_with_REF_FLAG_no_V_FLAG.dyr",
+    ),
+    joinpath(
+        TEST_FILES_DIR,
         "benchmarks/psse/RENA/ThreeBus_REN_A_NOFREQFLAG_with_REF_FLAG_Q_FLAG.dyr",
     ),
 ]
 
-init_conditions_dyr = [test29_x0_init_Rflag, test29_x0_init_Rflag_Qflag]
+init_conditions_dyr =
+    [test29_x0_init_Rflag, test29_x0_init_Rflag_no_Vflag, test29_x0_init_Rflag_Qflag]
 
-eigs_values_dyr = [test29_eigvals_Rflag, test29_eigvals_Rflag_Qflag]
+eigs_values_dyr =
+    [test29_eigvals_Rflag, test29_eigvals_Rflag_no_Vflag, test29_eigvals_Rflag_Qflag]
 
-tspans = [(0.0, 10.0), (0.0, 20.0)]
+tspans = [(0.0, 10.0), (0.0, 10.0), (0.0, 20.0)]
 
 function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan)
     path = (joinpath(pwd(), "test-psse-renA_dyr"))
