@@ -360,8 +360,8 @@ function initialize_outer!(
         internal_states[state_ct + 1] = q_elec_out / K_i
         internal_states[state_ct + 2] = q_elec_out
         #Update Inner Vars
-        @show inner_vars[V_oc_var] = V_flt_input - V_t
-        inner_vars[Iq_oc_var] = V_flt_input / max(V_t, 0.01)
+        inner_vars[V_oc_var] = 0.0
+        inner_vars[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
     else
         error("Flags for Generic Renewable Model not supported yet")
     end

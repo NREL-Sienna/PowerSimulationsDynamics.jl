@@ -464,6 +464,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     e_min, e_max = PSY.get_e_lim(reactive_power_control)
     dbd1, dbd2 = PSY.get_dbd_pnts(reactive_power_control)
     Q_min, Q_max = PSY.get_Q_lim(reactive_power_control)
+    V_min, V_max = PSY.get_V_lim(reactive_power_control)
 
     #Define internal states for Reactive Control
     V_cflt = reactive_controller_states[1]
@@ -487,7 +488,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     Q_pi_sat = clamp(Q_pi, Q_min, Q_max)
     Q_binary_logic = Q_min <= Q_pi <= Q_max ? 1.0 : 0.0
     #Lead-Lag block
-    @show Q_ext = q_LL + (T_ft / T_fv) * Q_pi_sat
+    Q_ext = q_LL + (T_ft / T_fv) * Q_pi_sat
     #Skip PI voltage inner block
     V_pi_sat = clamp(Q_ext, V_min, V_max)
 
