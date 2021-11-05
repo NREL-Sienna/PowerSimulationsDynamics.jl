@@ -44,3 +44,22 @@ Finally, the remaining part from [REECB](https://www.powerworld.com/WebHelp/Cont
 ``` ⠀
 
 The [REGCA](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_A.htm)model was directly included in a Converter Block, and the filter can be bypassed using an `RLFilter` block with `rf = lf = 0`.
+
+## Current availability of model flags in PSID
+
+### Active Controller
+
+For the active controller, both `Freq_Flag = 0` (ignoring frequency regulation) and `Freq_Flag = 1` (considering frequency regulation) are available.
+
+### Reactive Controller
+
+The following table describes the current available combination of flags in PSID:
+
+| `REF_Flag` | `PF_Flag` | `V_Flag` | `Q_Flag` |
+|:--------:|:-------:|:------:|:------:|
+|     0    |    0    |    0   |    0   |
+|     0    |    0    |    1   |    0   |
+|     1    |    0    |    1   |    1   |
+|     1    |    0    |    0   |    0   |
+
+Any combination outside of these cases may not converge to a feasible operating point. Check the following [CAISO report](http://www.caiso.com/Documents/InverterBasedInterconnectionRequestsIBRDynamicModelReviewGuideline.pdf) for the description and compliance of each flag combination.
