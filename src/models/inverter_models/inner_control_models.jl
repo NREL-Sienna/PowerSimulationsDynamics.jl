@@ -102,6 +102,10 @@ function _mdl_ode_RE_inner_controller_B!(
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
     K_vp = PSY.get_K_vp(inner_control)
     K_vi = PSY.get_K_vi(inner_control)
+    V_ref0 = PSY.get_V_ref0(inner_control)
+    dbd1, dbd2 = PSY.get_dbd_pnts(inner_control)
+    K_qv = PSY.get_K_qv(inner_control)
+    I_ql1, I_qh1 = PSY.get_Iqinj_lim(inner_control)
 
     #Read local states
     Vt_filt = inner_controller_states[1]

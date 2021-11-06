@@ -142,15 +142,16 @@ end
 ### Reactive Controllers ###
 
 # Order of Flags are:
-# VC_Flag, Ref_Flag, PF_Flag, V_Flag
+# Ref_Flag, PF_Flag, V_Flag
 
-#VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
+# VC_Flag == N/A && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
+# Named: Fixed Plant Q: Not compliant if Q_Flag = 0 from Inner Control
+# Named: Plant Q and Local Q/V if Q_Flag = 1 (compliant).
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{1}},
@@ -227,13 +228,13 @@ function _mdl_ode_RE_reactive_controller_AB!(
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
-#VC_Flag == 0 && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
+# VC_Flag == N/A && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
+# Fixed Plant Q if Q_Flag = 0 from Inner Control (not Compliant from CAISO requirements)
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
     ::Type{Base.RefValue{0}},
@@ -295,6 +296,209 @@ function _mdl_ode_RE_reactive_controller_AB!(
 
     #Update Inner Vars
     inner_vars[V_oc_var] = Q_ext - Vt_filt
+    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+end
+
+# VC_Flag == 0 or 1 && Ref_Flag == 1 && PF_Flag == 0 && V_Flag == 1
+# Plant V if Q_Flag = 0 (compliant)
+# Plant V and Local Q/V if Q_Flag = 1 (compliant)
+# Ref_Flag = 1 is used for plant-level voltage control, typically some point of the entire plant
+# This depends on where V_reg is being measured. For our purposes, to regulate V_t, the voltage bus that
+# the plant is connected, you can do it by setting up K_c = 0 (for VC_Flag = 0) or Rc = Xc = 0 (for VC_Flag = 1)
+function _mdl_ode_RE_reactive_controller_AB!(
+    reactive_controller_ode,
+    reactive_controller_states,
+    q_elec_out,
+    Vt_filt,
+    ::Type{Base.RefValue{1}},
+    ::Type{Base.RefValue{0}},
+    ::Type{Base.RefValue{1}},
+    reactive_power_control::PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
+        },
+    },
+    inner_vars::AbstractVector,
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+    #Obtain external parameters
+    V_ref = get_V_ref(dynamic_device)
+
+    #Obtain regulated voltage (assumed to be terminal voltage)
+    V_reg = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
+    I_R = inner_vars[Ir_inv_var]
+    I_I = inner_vars[Ii_inv_var]
+
+    # Get Reactive Controller parameters
+    T_fltr = PSY.get_T_fltr(reactive_power_control)
+    K_p = PSY.get_K_p(reactive_power_control)
+    K_c = PSY.get_K_c(reactive_power_control)
+    R_c = PSY.get_R_c(reactive_power_control)
+    X_c = PSY.get_R_c(reactive_power_control)
+    VC_Flag = PSY.get_VC_Flag(reactive_power_control)
+    K_i = PSY.get_K_i(reactive_power_control)
+    T_ft = PSY.get_T_ft(reactive_power_control)
+    T_fv = PSY.get_T_fv(reactive_power_control)
+    # V_frz not implemented yet
+    # V_frz = PSY.get_V_frz(reactive_power_control)
+    e_min, e_max = PSY.get_e_lim(reactive_power_control)
+    dbd1, dbd2 = PSY.get_dbd_pnts(reactive_power_control)
+    Q_min, Q_max = PSY.get_Q_lim(reactive_power_control)
+    Q_min_inner, Q_max_inner = PSY.get_Q_lim_inner(reactive_power_control)
+    V_min, V_max = PSY.get_V_lim(reactive_power_control)
+    K_qp = PSY.get_K_qp(reactive_power_control)
+    K_qi = PSY.get_K_qi(reactive_power_control)
+
+    #Define internal states for Reactive Control
+    V_cflt = reactive_controller_states[1]
+    ξq_oc = reactive_controller_states[2]
+    q_LL = reactive_controller_states[3]
+    ξ_Q = reactive_controller_states[4]
+
+    #Compute input to the compensated voltage filter
+    if VC_Flag == 0
+        V_flt_input = V_reg + K_c * q_elec_out
+    else
+        # Calculate compensated voltage: | V_reg - (R_c + jX_c)(I_r + jI_i) |
+        V_flt_input = sqrt(
+            V_reg^2 +
+            2 * V_reg * (I_I * X_c - I_R * R_c) +
+            (I_I^2 + I_R^2) * (R_c^2 + X_c^2),
+        )
+    end
+    #Q error - PI controller
+    q_err = clamp(deadband_function(V_ref - V_cflt, dbd1, dbd2), e_min, e_max)
+    Q_pi = K_p * q_err + K_i * ξq_oc
+    Q_pi_sat = clamp(Q_pi, Q_min, Q_max)
+    Q_binary_logic = Q_min <= Q_pi <= Q_max ? 1.0 : 0.0
+    #Lead-Lag block
+    Q_ext = q_LL + (T_ft / T_fv) * Q_pi_sat
+    #PI voltage inner block
+    V_pi_in = clamp(Q_ext, Q_min_inner, Q_max_inner) - q_elec_out
+    V_pi = K_qp * V_pi_in + K_qi * ξ_Q
+    V_pi_sat = clamp(V_pi, V_min, V_max)
+    V_binary_logic = V_min <= V_pi <= V_max ? 1.0 : 0.0
+
+    #Update ODEs
+    reactive_controller_ode[1] = (1.0 / T_fltr) * (V_flt_input - V_cflt)
+    reactive_controller_ode[2] = Q_binary_logic * q_err
+    reactive_controller_ode[3] = (1.0 / T_fv) * (Q_pi_sat * (1.0 - T_ft / T_fv) - q_LL)
+    reactive_controller_ode[4] = V_binary_logic * V_pi_in
+
+    #Update Inner Vars
+    inner_vars[V_oc_var] = V_pi_sat - Vt_filt
+    inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+end
+
+# VC_Flag == 0 or 1 && Ref_Flag == 1 && PF_Flag == 0 && V_Flag == 0
+# Plant V if Q_Flag = 0 (compliant)
+# Plant V and Local V if Q_Flag = 1 (compliant)
+# Ref_Flag = 1 is used for plant-level voltage control, typically some point of the entire plant
+# This depends on where V_reg is being measured. For our purposes, to regulate V_t, the voltage bus that
+# the plant is connected, you can do it by setting up K_c = 0 (for VC_Flag = 0) or Rc = Xc = 0 (for VC_Flag = 1)
+# CURRENTLY NOT WORKING with Q_Flag = 1
+function _mdl_ode_RE_reactive_controller_AB!(
+    reactive_controller_ode,
+    reactive_controller_states,
+    q_elec_out,
+    Vt_filt,
+    ::Type{Base.RefValue{1}},
+    ::Type{Base.RefValue{0}},
+    ::Type{Base.RefValue{0}},
+    reactive_power_control::PSY.ReactiveRenewableControllerAB,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveRenewableControllerAB,
+                PSY.ReactiveRenewableControllerAB,
+            },
+            IC,
+            DC,
+            P,
+            F,
+        },
+    },
+    inner_vars::AbstractVector,
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+    #Obtain external parameters
+    V_ref = get_V_ref(dynamic_device)
+
+    #Obtain regulated voltage (assumed to be terminal voltage)
+    V_reg = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
+    I_R = inner_vars[Ir_inv_var]
+    I_I = inner_vars[Ii_inv_var]
+
+    # Get Reactive Controller parameters
+    T_fltr = PSY.get_T_fltr(reactive_power_control)
+    K_p = PSY.get_K_p(reactive_power_control)
+    K_c = PSY.get_K_c(reactive_power_control)
+    R_c = PSY.get_R_c(reactive_power_control)
+    X_c = PSY.get_R_c(reactive_power_control)
+    VC_Flag = PSY.get_VC_Flag(reactive_power_control)
+    K_i = PSY.get_K_i(reactive_power_control)
+    T_ft = PSY.get_T_ft(reactive_power_control)
+    T_fv = PSY.get_T_fv(reactive_power_control)
+    # V_frz not implemented yet
+    # V_frz = PSY.get_V_frz(reactive_power_control)
+    e_min, e_max = PSY.get_e_lim(reactive_power_control)
+    dbd1, dbd2 = PSY.get_dbd_pnts(reactive_power_control)
+    Q_min, Q_max = PSY.get_Q_lim(reactive_power_control)
+    V_min, V_max = PSY.get_V_lim(reactive_power_control)
+
+    #Define internal states for Reactive Control
+    V_cflt = reactive_controller_states[1]
+    ξq_oc = reactive_controller_states[2]
+    q_LL = reactive_controller_states[3]
+
+    #Compute input to the compensated voltage filter
+    if VC_Flag == 0
+        V_flt_input = V_reg + K_c * q_elec_out
+    else
+        # Calculate compensated voltage: | V_reg - (R_c + jX_c)(I_r + jI_i) |
+        V_flt_input = sqrt(
+            V_reg^2 +
+            2 * V_reg * (I_I * X_c - I_R * R_c) +
+            (I_I^2 + I_R^2) * (R_c^2 + X_c^2),
+        )
+    end
+    #Q error - PI controller
+    q_err = clamp(deadband_function(V_ref - V_cflt, dbd1, dbd2), e_min, e_max)
+    Q_pi = K_p * q_err + K_i * ξq_oc
+    Q_pi_sat = clamp(Q_pi, Q_min, Q_max)
+    Q_binary_logic = Q_min <= Q_pi <= Q_max ? 1.0 : 0.0
+    #Lead-Lag block
+    Q_ext = q_LL + (T_ft / T_fv) * Q_pi_sat
+    #Skip PI voltage inner block
+    V_pi_sat = clamp(Q_ext, V_min, V_max)
+
+    #Update ODEs
+    reactive_controller_ode[1] = (1.0 / T_fltr) * (V_flt_input - V_cflt)
+    reactive_controller_ode[2] = Q_binary_logic * q_err
+    reactive_controller_ode[3] = (1.0 / T_fv) * (Q_pi_sat * (1.0 - T_ft / T_fv) - q_LL)
+
+    #Update Inner Vars
+    inner_vars[V_oc_var] = V_pi_sat - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
 end
 
@@ -592,21 +796,9 @@ function mdl_outer_ode!(
     )
     Vt_filt = device_states[external_ix[1]]
 
-    #function get_value_I(v::Float64)
-    #    return v
-    #end
-    #function get_value_I(v::Int)
-    #    return v
-    #end
-    #function get_value_I(v::ForwardDiff.Dual)
-    #    return v.value
-    #end
-
     #Monitoring power from other branch not supported.
     V_R = inner_vars[Vr_inv_var]
     V_I = inner_vars[Vi_inv_var]
-    #I_R = get_value_I(inner_vars[Ir_inv_var])
-    #I_I = get_value_I(inner_vars[Ii_inv_var])
     I_R = inner_vars[Ir_inv_var]
     I_I = inner_vars[Ii_inv_var]
     p_elec_out = I_R * V_R + I_I * V_I
@@ -621,7 +813,6 @@ function mdl_outer_ode!(
     #Get Reactive Power Controller parameters
     reactive_power_control = PSY.get_reactive_power(outer_control)
     #Note: Monitoring power from other branch not supported.
-    VC_Flag = PSY.get_VC_Flag(reactive_power_control)
     Ref_Flag = PSY.get_Ref_Flag(reactive_power_control)
     PF_Flag = PSY.get_PF_Flag(reactive_power_control)
     V_Flag = PSY.get_V_Flag(reactive_power_control)
@@ -664,7 +855,6 @@ function mdl_outer_ode!(
         reactive_states,
         q_elec_out,
         Vt_filt,
-        Base.RefValue{VC_Flag},
         Base.RefValue{Ref_Flag},
         Base.RefValue{PF_Flag},
         Base.RefValue{V_Flag},
