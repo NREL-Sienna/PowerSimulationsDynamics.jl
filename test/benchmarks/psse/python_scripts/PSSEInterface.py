@@ -53,13 +53,13 @@ def PowerFlowConvert():
     if err != 0:
         raise(Exception("Conversion failed"))
 
-def SetUpDynamicSimulation(dynamic_data_file, convergence_tolerance = 0.0001, delta_t = 0.005, network_solve_max_iters = _i):
+def SetUpDynamicSimulation(dynamic_data_file, convergence_tolerance = 0.000100, delta_t = 0.008333, network_solve_max_iters = 25):
     print '\nLoad DynamicDdata ...'   
     err = dyre_new([1,1,1,1], dynamic_data_file,"","","")
     #
     print '\nSetup Simulation ...'   
     
-    err = dynamics_solution_param_2([network_solve_max_iters, _i,_i,_i,_i,_i,_i,_i],[_f,_f,delta_t,convergence_tolerance,_f,_f,_f,_f])
+    err = dynamics_solution_param_2([network_solve_max_iters, _i,_i,_i,_i,_i,_i,_i],[_f, convergence_tolerance, delta_t, _f,_f,_f,_f])
     if err != 0:
         raise(Exception("Dynamics failed to set-up models"))
 
@@ -123,10 +123,19 @@ def RunSimulation(fault, tspan = (0.0, 10.0), fault_time = 1.0):
     if okstrt()!=0:
         raise(Exception("Simulation Initialization failed"))
     
+    if fault_time > tspan[1]:
+        raise(Exception("Fault Time Larger than end of tspan"))
+
     print '\nRun Simulation ...'   
 
-    run(0, fault_time, 100000, 1, 1) 
+    ierr = run(0, tspan[0], 1000, 1, 1) 
+    if ierr != 0:
+        raise(Exception("simulation failed")) 
     
+    ierr = run(0, fault_time, 999, 1, 1) 
+    if ierr != 0:
+        raise(Exception("simulation failed"))
+
     fault()
     
     ierr = run(0, tspan[1], 10000, 1, 1)
@@ -151,11 +160,10 @@ def ProcessResults(output, run_name, csv_file, slack_channel, channel_file='chan
         print("Overwriting {}".format(plots_path))
     else:    
         os.mkdir(plots_path)
-
+    print("Plotting for {}".format(run_name)) 
     for k, title in chanid.items():
         if k == 'time':
             continue
-        print(k)
         if bool(re.match(r'ANGL', title)):
             result = np.array(chandata[k]) - np.array(chandata[slack_channel])
         else:
