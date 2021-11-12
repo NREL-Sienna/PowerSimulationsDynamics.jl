@@ -62,7 +62,7 @@ function mdl_freq_estimator_ode!(
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
     inner_vars[ω_freq_estimator_var] =
-        (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + ω_sys)
+        (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + 1.0)
     inner_vars[θ_freq_estimator_var] = θ_pll
 end
 
@@ -119,7 +119,7 @@ function mdl_freq_estimator_ode!(
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    inner_vars[ω_freq_estimator_var] = (kp_pll * vpll_q + ki_pll * ϵ_pll + ω_sys)
+    inner_vars[ω_freq_estimator_var] = (kp_pll * vpll_q + ki_pll * ϵ_pll + 1.0)
     inner_vars[θ_freq_estimator_var] = θ_pll
 end
 
