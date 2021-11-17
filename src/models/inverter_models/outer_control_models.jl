@@ -570,8 +570,8 @@ function mdl_outer_ode!(
 
     #Define internal states for Outer Control
     internal_states = @view device_states[local_ix]
-    ω_oc = internal_states[1]
-    θ_oc = internal_states[2]
+    θ_oc = internal_states[1]
+    ω_oc = internal_states[2]
     qm = internal_states[3]
 
     #Obtain additional expressions
@@ -579,9 +579,9 @@ function mdl_outer_ode!(
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
 
     #Compute 3 states ODEs
-    output_ode[local_ix[1]] =
+    output_ode[local_ix[1]] = ωb * (ω_oc - ω_sys)
+    output_ode[local_ix[2]] =
         (p_ref / Ta - p_elec_out / Ta - kd * (ω_oc - ω_pll) / Ta - kω * (ω_oc - ω_ref) / Ta)
-    output_ode[local_ix[2]] = ωb * (ω_oc - ω_sys)
     output_ode[local_ix[3]] = (ωf * (q_elec_out - qm))
 
     #Update inner vars

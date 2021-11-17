@@ -46,8 +46,8 @@ function initialize_outer!(
         PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
     )
     outer_states = @view device_states[outer_ix]
-    outer_states[1] = get_ω_ref(dynamic_device) #ω
-    outer_states[2] = θ0_oc #θ_oc
+    outer_states[1] = θ0_oc #θ_oc
+    outer_states[2] = get_ω_ref(dynamic_device) #ω
     outer_states[3] = q_elec_out #qm
 
     #Update inner vars
