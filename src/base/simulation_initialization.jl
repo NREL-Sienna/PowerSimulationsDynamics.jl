@@ -169,10 +169,16 @@ function read_initial_conditions(sim::Simulation)
     for bus in PSY.get_components(PSY.Bus, system)
         bus_n = PSY.get_number(bus)
         bus_ix = get_lookup(simulation_inputs)[bus_n]
-        V_R[bus_n] = sim.x0_init[bus_ix]
-        V_I[bus_n] = sim.x0_init[bus_ix + bus_size]
-        Vm[bus_n] = sqrt(sim.x0_init[bus_ix]^2 + sim.x0_init[bus_ix + bus_size]^2)
-        θ[bus_n] = atan(sim.x0_init[bus_ix + bus_size] / sim.x0_init[bus_ix])
+        V_R[bus_n] = get_initial_conditions(sim)[bus_ix]
+        V_I[bus_n] = get_initial_conditions(sim)[bus_ix + bus_size]
+        Vm[bus_n] = sqrt(
+            get_initial_conditions(sim)[bus_ix]^2 +
+            get_initial_conditions(sim)[bus_ix + bus_size]^2,
+        )
+        θ[bus_n] = atan(
+            get_initial_conditions(sim)[bus_ix + bus_size] /
+            get_initial_conditions(sim)[bus_ix],
+        )
     end
     results = Dict{String, Any}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
     for device in get_dynamic_injectors(simulation_inputs)
@@ -181,7 +187,7 @@ function read_initial_conditions(sim::Simulation)
         global_index = get_global_index(device)
         x0_device = Dict{Symbol, Float64}()
         for s in states
-            x0_device[s] = sim.x0_init[global_index[s]]
+            x0_device[s] = get_initial_conditions(sim)[global_index[s]]
         end
         results[name] = x0_device
     end
@@ -193,7 +199,7 @@ function read_initial_conditions(sim::Simulation)
             global_index = get_global_index(br)
             x0_br = Dict{Symbol, Float64}()
             for s in states
-                x0_br[s] = sim.x0_init[global_index[s]]
+                x0_br[s] = get_initial_conditions(sim)[global_index[s]]
             end
             printed_name = "Line " * name
             results[printed_name] = x0_br

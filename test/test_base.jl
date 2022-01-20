@@ -27,7 +27,6 @@ end
             ResidualModel,
             omib_sys, #system
             path1,
-            (0.0, 30.0), #time span
             Ybus_change;
             system_to_file = true,
         )
@@ -61,7 +60,6 @@ end
             ResidualModel,
             omib_sys, #system
             path2,
-            (0.0, 30.0), #time span
             Ybus_change;
             system_to_file = true,
         )
@@ -110,7 +108,7 @@ end
     end
 
     # Tests for all Dynamic Lines
-    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir(), (0.0, 10.0))
+    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir())
     @test sim.status == PSID.BUILT
     sim_inputs = sim.inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
@@ -136,7 +134,7 @@ end
     # Tests for dynamic lines with b = 0
     set_b!(dyn_branch12, (from = 0.0, to = 0.0))
     set_b!(dyn_branch23, (from = 0.0, to = 0.0))
-    sim = Simulation(ResidualModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
+    sim = Simulation(ResidualModel, threebus_sys_dyns, pwd())
     @test sim.status == PSID.BUILT
     sim_inputs = sim.inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
@@ -171,22 +169,16 @@ end
         ResidualModel,
         sys,
         pwd(),
-        (0.0, 20.0),
         BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1");
         initialize_simulation = false,
         initial_conditions = x0_test,
     )
-    @test LinearAlgebra.norm(sim.x0_init - x0_test) <= 1e-6
+    @test LinearAlgebra.norm(PSID.get_initial_conditions(sim) - x0_test) <= 1e-6
     #Initialize System normally
-    sim_normal = Simulation(
-        ResidualModel,
-        sys,
-        pwd(),
-        (0.0, 20.0),
-        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"),
-    )
+    sim_normal =
+        Simulation(ResidualModel, sys, pwd(), BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"))
     #Save states without generator at bus 2
-    x0 = sim_normal.x0_init
+    x0 = PSID.get_initial_conditions(sim_normal)
     x0_no_gen = vcat(x0[1:6], x0[13:end])
     #Make Generator 2 unavailable and transform bus into PQ bus
     gen = PSY.get_component(ThermalStandard, sys, "generator-102-1")
@@ -197,41 +189,35 @@ end
     sim_trip_gen = Simulation(
         ResidualModel,
         sys,
-        pwd(),
-        (0.0, 20.0);
+        pwd();
         initialize_simulation = false,
         initial_conditions = x0_no_gen,
     )
-    @test LinearAlgebra.norm(sim_trip_gen.x0_init - x0_no_gen) <= 1e-6
+    @test LinearAlgebra.norm(PSID.get_initial_conditions(sim_trip_gen) - x0_no_gen) <= 1e-6
     #Create Simulation without Gen 2 at steady state
-    sim_normal_no_gen = Simulation(
-        ResidualModel,
-        sys,
-        pwd(),
-        (0.0, 20.0),
-        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"),
-    )
-    @test length(sim_normal_no_gen.x0_init) == 17
+    sim_normal_no_gen =
+        Simulation(ResidualModel, sys, pwd(), BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"))
+    @test length(PSID.get_initial_conditions(sim_normal_no_gen)) == 17
     #Ignore Initial Conditions without passing initialize_simulation = false
-    sim_ignore_init =
-        Simulation(ResidualModel, sys, pwd(), (0.0, 20.0); initial_conditions = x0_no_gen)
-    @test LinearAlgebra.norm(sim_ignore_init.x0_init - sim_normal_no_gen.x0_init) <= 1e-6
+    sim_ignore_init = Simulation(ResidualModel, sys, pwd(); initial_conditions = x0_no_gen)
+    @test LinearAlgebra.norm(
+        PSID.get_initial_conditions(sim_ignore_init) -
+        PSID.get_initial_conditions(sim_normal_no_gen),
+    ) <= 1e-6
     #Pass wrong vector size
     x0_wrong = zeros(20)
     @test_logs (:error, "Build failed") match_mode = :any Simulation(
         ResidualModel,
         sys,
-        pwd(),
-        (0.0, 20.0);
+        pwd();
         initialize_simulation = false,
         initial_conditions = x0_wrong,
     )
     #Flat start initialization
-    sim_flat =
-        Simulation(ResidualModel, sys, pwd(), (0.0, 20.0); initialize_simulation = false)
+    sim_flat = Simulation(ResidualModel, sys, pwd(); initialize_simulation = false)
     x0_flat = zeros(17)
     x0_flat[1:3] .= 1.0
-    @test LinearAlgebra.norm(sim_flat.x0_init - x0_flat) <= 1e-6
+    @test LinearAlgebra.norm(PSID.get_initial_conditions(sim_flat) - x0_flat) <= 1e-6
 end
 
 @testset "Test Network Kirchoff Calculation" begin
@@ -425,7 +411,7 @@ end
     end
 
     # Tests for all Dynamic Lines
-    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir(), (0.0, 10.0))
+    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir())
     global_index = PSID.make_global_state_map(sim.inputs)
     @test_throws ErrorException PSID.get_state_from_ix(global_index, 40)
     @test ("V_2", :R) == PSID.get_state_from_ix(global_index, 2)
@@ -443,8 +429,7 @@ end
     sim = Simulation(
         ResidualModel,
         sys, #system
-        mktempdir(),
-        (0.0, 20.0), #time span
+        mktempdir();
         # Not initialized to speed up the test
         initialize_simulation = false,
     )
@@ -454,8 +439,7 @@ end
     sim = Simulation(
         ResidualModel,
         sys, #system
-        mktempdir(),
-        (0.0, 20.0),
+        mktempdir();
         # Not initialized to speed up the test
         initialize_simulation = false,
         frequency_reference = ConstantFrequency, #time span
@@ -473,8 +457,7 @@ end
     @test_logs (:error, "Build failed") match_mode = :any Simulation(
         ResidualModel,
         sys, #system
-        mktempdir(),
-        (0.0, 20.0),
+        mktempdir();
         # Not initialized to speed up the test
         initialize_simulation = false,
         frequency_reference = ConstantFrequency, #time span
@@ -487,8 +470,7 @@ end
     sim = Simulation(
         ResidualModel,
         omib_sys_copy, #system
-        mktempdir(),
-        (0.0, 30.0); #time span
+        mktempdir();
         all_lines_dynamic = true,
     )
     @test sim.status == PSID.BUILT
@@ -499,8 +481,7 @@ end
     sim = Simulation(
         ResidualModel,
         omib_sys_copy, #system
-        mktempdir(),
-        (0.0, 30.0); #time span
+        mktempdir();
         all_branches_dynamic = true,
     )
     @test sim.status == PSID.BUILT
@@ -511,8 +492,7 @@ end
     sim = Simulation!(
         ResidualModel,
         omib_sys_copy, #system
-        mktempdir(),
-        (0.0, 30.0); #time span
+        mktempdir(); #time span
         all_lines_dynamic = true,
     )
     @test sim.status == PSID.BUILT
