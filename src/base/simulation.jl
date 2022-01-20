@@ -1,30 +1,26 @@
 mutable struct Simulation{T <: SimulationModel}
     status::BUILD_STATUS
-    problem::Union{Nothing, SciMLBase.DEProblem}
-    tspan::NTuple{2, Float64}
     sys::PSY.System
     perturbations::Vector{<:Perturbation}
-    x0_init::Vector{Float64}
-    initialized::Bool
-    tstops::Vector{Float64}
-    callbacks::DiffEqBase.CallbackSet
     simulation_folder::String
     inputs::Union{Nothing, SimulationInputs}
     results::Union{Nothing, SimulationResults}
+    internal::Union{Nothing, SimulationInternal}
     console_level::Base.CoreLogging.LogLevel
     file_level::Base.CoreLogging.LogLevel
     multimachine::Bool
+    user_provided_initial_conditions::Vector{Float64}
+    initialized::Bool
 end
 
 get_system(sim::Simulation) = sim.sys
 get_simulation_inputs(sim::Simulation) = sim.inputs
-get_initial_conditions(sim::Simulation) = sim.x0_init
-get_tspan(sim::Simulation) = sim.tspan
+get_initial_conditions(sim::Simulation) = sim.internal.x0_init
+get_tspan(sim::Simulation) = sim.internal.tspan
 
 function Simulation(
     ::Type{T},
     sys::PSY.System;
-    tspan,
     initial_conditions,
     initialize_simulation,
     perturbations,
@@ -36,20 +32,17 @@ function Simulation(
 
     return Simulation{T}(
         BUILD_INCOMPLETE,
-        nothing,
-        tspan,
         sys,
         perturbations,
-        initial_conditions,
-        !initialize_simulation,
-        Vector{Float64}(),
-        DiffEqBase.CallbackSet(),
         simulation_folder,
+        nothing,
         nothing,
         nothing,
         console_level,
         file_level,
         false,
+        initial_conditions,
+        !initialize_simulation,
     )
 end
 
@@ -95,9 +88,9 @@ Builds the simulation object and conducts the indexing process. The original sys
 - `perturbations::Vector{<:Perturbation}` : Vector of Perturbations for the Simulation. Default: No Perturbations
 - `initialize_simulation::Bool` : Runs the initialization routine. If false, simulation runs based on the operation point stored in System
 - `initial_conditions::Vector{Float64}` : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
-- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available: 
+- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available:
     - `ConstantFrequency` assumes that the network frequency is 1.0 per unit at all times.
-    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used. 
+    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used.
 - `system_to_file::Bool` : Default `false`. Serializes the initialized system
 - `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
 - `file_level::Logging` : Default `Logging.Debug`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
@@ -152,9 +145,9 @@ Builds the simulation object and conducts the indexing process. The initial cond
 - `perturbations::Vector{<:Perturbation}` : Vector of Perturbations for the Simulation. Default: No Perturbations
 - `initialize_simulation::Bool` : Runs the initialization routine. If false, simulation runs based on the operation point stored in System
 - `initial_conditions::Vector{Float64}` : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
-- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available: 
+- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available:
     - `ConstantFrequency` assumes that the network frequency is 1.0 per unit at all times.
-    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used. 
+    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used.
 - `system_to_file::Bool` : Default `false`. Serializes the initialized system
 - `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
 - `file_level::Logging` : Default `Logging.Debug`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
@@ -174,7 +167,6 @@ function Simulation(
     sim = Simulation(
         T,
         simulation_system;
-        tspan = tspan,
         initial_conditions = get(kwargs, :initial_conditions, Vector{Float64}()),
         initialize_simulation = get(kwargs, :initialize_simulation, true),
         simulation_folder = simulation_folder,
@@ -331,27 +323,22 @@ function _get_diffeq_problem(
     return
 end
 
-function _get_diffeq_problem(
+function _get_diffeq_function(
     sim::Simulation,
     model::SystemModel{MassMatrixModel},
     jacobian::JacobianFunctionWrapper,
 )
     simulation_inputs = get_simulation_inputs(sim)
-    sim.problem = SciMLBase.ODEProblem(
-        SciMLBase.ODEFunction{true}(
-            model,
-            mass_matrix = get_mass_matrix(simulation_inputs),
-            jac = jacobian,
-            jac_prototype = jacobian.Jv,
-            # Necessary to avoid unnecessary calculations in Rosenbrock methods
-            tgrad = (dT, u, p, t) -> dT .= false,
-        ),
-        sim.x0_init,
-        get_tspan(sim),
-        simulation_inputs,
+    val = SciMLBase.ODEFunction{true}(
+        model,
+        mass_matrix = get_mass_matrix(simulation_inputs),
+        jac = jacobian,
+        jac_prototype = jacobian.Jv,
+        # Necessary to avoid unnecessary calculations in Rosenbrock methods
+        tgrad = (dT, u, p, t) -> dT .= false,
     )
     sim.status = BUILT
-    return
+    return val
 end
 
 function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
@@ -383,7 +370,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                 get_global_vars_update_pointers(sim.inputs)[GLOBAL_VAR_SYS_FREQ_INDEX] != 0
         end
         TimerOutputs.@timeit BUILD_TIMER "Pre-initialization" begin
-            _pre_initialize_simulation!(sim)
+            x0_init = _pre_initialize_simulation!(sim)
         end
         if sim.status != BUILD_FAILED
             simulation_inputs = get_simulation_inputs(sim)
@@ -392,16 +379,18 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                     jacobian = _get_jacobian(sim)
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Make Model Function" begin
-                    model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
+                    model = T(simulation_inputs, x0_init, SimCache)
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Initial Condition NLsolve refinement" begin
                     refine_initial_condition!(sim, model, jacobian)
                 end
+                TimerOutputs.@timeit BUILD_TIMER "Make DiffEq Problem" begin
+                    model_function = _get_model_function(sim, model, jacobian)
+                end
+
+                sim.internal = SimulationInternal(x0_init, jacobian, model, model_function)
                 TimerOutputs.@timeit BUILD_TIMER "Build Perturbations" begin
                     _build_perturbations!(sim)
-                end
-                TimerOutputs.@timeit BUILD_TIMER "Make DiffEq Problem" begin
-                    _get_diffeq_problem(sim, model, jacobian)
                 end
                 @info "Simulations status = $(sim.status)"
             catch e
