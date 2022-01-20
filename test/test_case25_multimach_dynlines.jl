@@ -48,7 +48,7 @@ Pref_change = ControlReferenceChange(1.0, gen2, :P_ref, 0.9);
         @test small_sig.stable
 
         # Solve problem in equilibrium
-        @test execute!(sim, Sundials.IDA(), dtmax = 0.01, saveat = 0.01) ==
+        @test execute!(sim, Sundials.IDA(), (0.0, 40.0), dtmax = 0.01, saveat = 0.01) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -91,7 +91,7 @@ end
         @test small_sig.stable
 
         # Solve problem in equilibrium
-        @test execute!(sim, Rodas4(), dtmax = 0.01, saveat = 0.01) ==
+        @test execute!(sim, Rodas4(), (0.0, 40.0), dtmax = 0.01, saveat = 0.01) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 

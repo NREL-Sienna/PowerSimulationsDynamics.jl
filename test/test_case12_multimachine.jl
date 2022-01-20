@@ -33,7 +33,7 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             threebus_sys, #system,
             path,
-            tspan, #time span
+
             Ybus_change, #Type of Fault
         )
 
@@ -58,6 +58,7 @@ Ybus_change = NetworkSwitch(
         @test execute!(
             sim, #simulation structure
             IDA(),#Sundials DAE Solver
+            tspan,
             dtmax = 0.02, #keywords arguments
         ) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
@@ -77,7 +78,7 @@ end
             MassMatrixModel,
             threebus_sys, #system,
             path,
-            tspan, #time span
+
             Ybus_change, #Type of Fault
         )
 
@@ -102,6 +103,7 @@ end
         @test execute!(
             sim, #simulation structure
             Rodas4(),#Sundials DAE Solver
+            tspan,
             dtmax = 0.02, #keywords arguments
         ) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)

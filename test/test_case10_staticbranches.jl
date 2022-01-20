@@ -32,7 +32,7 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             threebus_sys, #system,
             path,
-            tspan, #time span
+
             Ybus_change, #Type of Fault
         )
 
@@ -53,7 +53,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test10_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA()) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(), tspan) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for voltages
@@ -79,7 +79,7 @@ end
             MassMatrixModel,
             threebus_sys, #system,
             path,
-            tspan, #time span
+
             Ybus_change, #Type of Fault
         )
 
@@ -100,7 +100,7 @@ end
         @test LinearAlgebra.norm(eigs - test10_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4()) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas4(), tspan) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for voltages

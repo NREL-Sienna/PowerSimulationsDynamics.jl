@@ -37,7 +37,7 @@ init_conditions = [
 eigs_values = [test18_eigvals]
 
 raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENSAL/ThreeBusMulti.raw")
-tspan = (0.0, 20.0)
+
 
 function test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-gensal"))
@@ -50,7 +50,7 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
             ResidualModel,
             sys, #system
             path,
-            tspan, #time span
+
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
@@ -72,7 +72,7 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -111,7 +111,7 @@ function test_gensal_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
             MassMatrixModel,
             sys, #system
             path,
-            tspan, #time span
+
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
@@ -133,7 +133,7 @@ function test_gensal_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 

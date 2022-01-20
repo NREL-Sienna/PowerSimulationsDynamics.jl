@@ -45,7 +45,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test17.jl"))
         @test LinearAlgebra.norm(eigs - test17_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.01) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.01) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for angles
@@ -87,7 +87,8 @@ end
         @test LinearAlgebra.norm(eigs - test17_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.01) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.01) ==
+              PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for angles

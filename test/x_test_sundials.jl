@@ -44,7 +44,7 @@ function test_sundials(solver)
             ResidualModel,
             path,
             threebus_sys, #system
-            tspan, #time span
+
             Ybus_change, #Type of Fault
         )
 
@@ -52,7 +52,7 @@ function test_sundials(solver)
         small_sig = small_signal_analysis(sim)
 
         #Solve problem
-        @info "$(solver)" @time execute!(sim, IDA(linear_solver = solver);)
+        @info "$(solver)" @time execute!(sim, IDA(linear_solver = solver), tspan)
 
         #Obtain data for voltages
         series = get_voltage_magnitude_series(results, 102)

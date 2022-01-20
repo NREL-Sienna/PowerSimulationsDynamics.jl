@@ -36,7 +36,6 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
             ResidualModel,
             omib_sys, # system
             path,
-            tspan,
             Pref_change,
         )
 
@@ -57,7 +56,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(), tspan, dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -90,7 +89,6 @@ end
             MassMatrixModel,
             omib_sys, # system
             path,
-            tspan,
             Pref_change,
         )
 
@@ -111,7 +109,7 @@ end
         @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), tspan, dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 

@@ -23,7 +23,6 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
             ResidualModel,
             sys, #system
             path,
-            (0.0, 20.0), #time span
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         )
 
@@ -45,7 +44,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
         @test LinearAlgebra.norm(eigs - test31_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -84,7 +83,6 @@ end
             MassMatrixModel,
             sys, #system
             path,
-            (0.0, 20.0), #time span
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         )
 
@@ -106,7 +104,7 @@ end
         @test LinearAlgebra.norm(eigs - test31_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 

@@ -15,8 +15,6 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test06.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-# time span
-tspan = (0.0, 200.0);
 # Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
@@ -32,7 +30,6 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             threebus_sys, #system
             path,
-            (0.0, 20.0), #time span
             Ybus_change, #Type of Fault
         ) #initial guess
 
@@ -54,7 +51,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(), (0.0, 200.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -77,7 +74,6 @@ end
             MassMatrixModel,
             threebus_sys, #system
             path,
-            (0.0, 20.0), #time span
             Ybus_change, #Type of Fault
         ) #initial guess
 
@@ -99,7 +95,7 @@ end
         @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), (0.0, 200.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 

@@ -15,7 +15,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test13.jl"))
 ##################################################
 
 # Time span
-tspan = (0.0, 20.0)
+
 
 #Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
@@ -32,7 +32,7 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             threebus_sys, #system,
             path,
-            tspan, #time span
+
             Ybus_change, #Type of Fault
         )
 
@@ -54,7 +54,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test13_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.02) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.02) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         #Obtain data for angles
@@ -74,7 +74,7 @@ end
             MassMatrixModel,
             threebus_sys, #system,
             path,
-            tspan, #time span
+
             Ybus_change, #Type of Fault
         )
 
@@ -96,7 +96,8 @@ end
         @test LinearAlgebra.norm(eigs - test13_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.02) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.02) ==
+              PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         #Obtain data for angles
