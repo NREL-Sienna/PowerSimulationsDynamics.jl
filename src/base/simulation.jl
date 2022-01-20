@@ -207,22 +207,14 @@ function _build_inputs!(
     return
 end
 
-function _get_flat_start(inputs::SimulationInputs)
-    bus_count = get_bus_count(inputs)
-    var_count = get_variable_count(inputs)
-    initial_conditions = zeros(var_count)
-    initial_conditions[1:bus_count] .= 1.0
-    return initial_conditions
-end
-
 function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_inputs = get_simulation_inputs(sim)
     x0_init = deepcopy(sim.user_provided_initial_conditions)
     if isempty(x0_init) && sim.initialized
         @warn "Initial Conditions set to flat start"
-        x0_init = _get_flat_start(simulation_inputs)
+        x0_init = get_flat_start(simulation_inputs)
     elseif isempty(x0_init) && !sim.initialized
-        x0_init = _get_flat_start(simulation_inputs)
+        x0_init = get_flat_start(simulation_inputs)
     elseif !isempty(x0_init) && sim.initialized
         if length(x0_init) != get_variable_count(simulation_inputs)
             throw(
@@ -234,7 +226,7 @@ function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel
     elseif !isempty(x0_init) && !sim.initialized
         @warn "initial_conditions were provided with initialize_simulation. User's initial_conditions will be overwritten."
         if length(x0_init) != get_variable_count(simulation_inputs)
-            x0_init = _get_flat_start(simulation_inputs)
+            x0_init = get_flat_start(simulation_inputs)
         end
     else
         @assert false
@@ -295,10 +287,10 @@ function _get_model_function(
 )
     return SciMLBase.DAEFunction{true}(
         model;
-        # Currently commented for Sundials compatibility
+        # Currently commented for Sundials.jl compatibility
         #jac = jacobian,
         tgrad = (dT, u, p, t) -> dT .= false,
-        jac_prototype = jacobian.Jv,
+        #jac_prototype = jacobian.Jv,
     )
 end
 

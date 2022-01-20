@@ -1,4 +1,12 @@
-function _power_flow_solution!(
+function get_flat_start(inputs::SimulationInputs)
+    bus_count = get_bus_count(inputs)
+    var_count = get_variable_count(inputs)
+    initial_conditions = zeros(var_count)
+    initial_conditions[1:bus_count] .= 1.0
+    return initial_conditions
+end
+
+function power_flow_solution!(
     initial_guess::Vector{Float64},
     sys::PSY.System,
     inputs::SimulationInputs,
@@ -20,7 +28,7 @@ function _power_flow_solution!(
     return BUILD_INCOMPLETE
 end
 
-function _initialize_static_injection!(inputs::SimulationInputs)
+function initialize_static_injection!(inputs::SimulationInputs)
     @debug "Updating Source internal voltage magnitude and angle"
     static_injection_devices = get_static_injectors(inputs)
     if !isempty(static_injection_devices)
@@ -37,7 +45,7 @@ function _initialize_static_injection!(inputs::SimulationInputs)
     return BUILD_INCOMPLETE
 end
 
-function _initialize_dynamic_injection!(
+function initialize_dynamic_injection!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
     system::PSY.System,
@@ -67,7 +75,7 @@ function _initialize_dynamic_injection!(
     return BUILD_INCOMPLETE
 end
 
-function _initialize_dynamic_branches!(
+function initialize_dynamic_branches!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
 )
@@ -130,17 +138,17 @@ function _calculate_initial_guess!(x0_init::Vector{Float64}, sim::Simulation)
     while sim.status == BUILD_INCOMPLETE
         @debug "Start state intialization routine"
         TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
-            sim.status = _power_flow_solution!(x0_init, get_system(sim), inputs)
+            sim.status = power_flow_solution!(x0_init, get_system(sim), inputs)
         end
         TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
-            sim.status = _initialize_static_injection!(inputs)
+            sim.status = initialize_static_injection!(inputs)
         end
         TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
-            sim.status = _initialize_dynamic_injection!(x0_init, inputs, get_system(sim))
+            sim.status = initialize_dynamic_injection!(x0_init, inputs, get_system(sim))
         end
         if has_dyn_lines(inputs)
             TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
-                sim.status = _initialize_dynamic_branches!(x0_init, inputs)
+                sim.status = initialize_dynamic_branches!(x0_init, inputs)
             end
         else
             @debug "No Dynamic Branches in the system"
