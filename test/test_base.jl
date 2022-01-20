@@ -38,6 +38,8 @@ end
         @test isa(dic_init_conds, Dict)
         dic_control_refs = get_setpoints(sim)
         @test isa(dic_control_refs, Dict)
+        @test !isempty(sim.internal.tstops)
+        @test !isempty(sim.internal.callbacks)
 
         o_system = System(joinpath(path1, "input_system.json"))
         for b in get_components(Bus, o_system)
