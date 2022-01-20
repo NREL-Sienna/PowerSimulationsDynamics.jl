@@ -16,7 +16,6 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test13.jl"))
 
 # Time span
 
-
 #Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
@@ -32,7 +31,6 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             threebus_sys, #system,
             path,
-
             Ybus_change, #Type of Fault
         )
 
@@ -74,7 +72,6 @@ end
             MassMatrixModel,
             threebus_sys, #system,
             path,
-
             Ybus_change, #Type of Fault
         )
 

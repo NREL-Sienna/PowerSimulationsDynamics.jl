@@ -33,7 +33,7 @@ Pref_change = ControlReferenceChange(1.0, gen2, :P_ref, 0.9);
     !isdir(path) && mkdir(path)
     try
         # Define Simulation Problem
-        sim = Simulation!(ResidualModel, sys, path, tspan, Pref_change)
+        sim = Simulation!(ResidualModel, sys, path, Pref_change)
 
         # Test Initial Condition
         diff = [0.0]
@@ -76,7 +76,7 @@ end
     !isdir(path) && mkdir(path)
     try
         # Define Simulation Problem
-        sim = Simulation!(MassMatrixModel, sys, path, tspan, Pref_change)
+        sim = Simulation!(MassMatrixModel, sys, path, Pref_change)
 
         # Test Initial Condition
         diff = [0.0]

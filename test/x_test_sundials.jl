@@ -44,7 +44,6 @@ function test_sundials(solver)
             ResidualModel,
             path,
             threebus_sys, #system
-
             Ybus_change, #Type of Fault
         )
 

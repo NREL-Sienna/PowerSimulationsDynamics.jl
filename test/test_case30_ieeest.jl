@@ -25,8 +25,6 @@ init_conditions = [test_psse_ieeest_no_filt_init, test_psse_ieeest_with_filt_ini
 
 eigs_values = [test30_eigvals_no_filt, test30_eigvals_with_filt]
 
-
-
 function test_ieeest_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-ieeest"))
     !isdir(path) && mkdir(path)
@@ -38,7 +36,6 @@ function test_ieeest_implicit(dyr_file, csv_file, init_cond, eigs_value)
             ResidualModel,
             sys, #system
             path,
-
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
@@ -105,7 +102,6 @@ function test_ieeest_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
             MassMatrixModel,
             sys, #system
             path,
-
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 

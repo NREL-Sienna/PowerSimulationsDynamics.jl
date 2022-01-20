@@ -32,7 +32,6 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             threebus_sys, #system,
             path,
-
             Ybus_change, #Type of Fault
         )
 
@@ -79,7 +78,6 @@ end
             MassMatrixModel,
             threebus_sys, #system,
             path,
-
             Ybus_change, #Type of Fault
         )
 

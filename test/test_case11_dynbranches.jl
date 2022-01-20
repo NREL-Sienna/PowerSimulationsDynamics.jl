@@ -32,7 +32,6 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             threebus_sys, #system,
             path,
-
             Ybus_change, #Type of Fault
         )
         # Get dictionary of initial conditions
@@ -75,7 +74,6 @@ end
             MassMatrixModel,
             threebus_sys, #system,
             path,
-
             Ybus_change, #Type of Fault
         )
 

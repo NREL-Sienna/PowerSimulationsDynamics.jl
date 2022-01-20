@@ -38,7 +38,6 @@ eigs_values = [test18_eigvals]
 
 raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENSAL/ThreeBusMulti.raw")
 
-
 function test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-gensal"))
     !isdir(path) && mkdir(path)
@@ -50,7 +49,6 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
             ResidualModel,
             sys, #system
             path,
-
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
@@ -111,7 +109,6 @@ function test_gensal_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
             MassMatrixModel,
             sys, #system
             path,
-
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 

@@ -28,7 +28,6 @@ eigs_values = [test16_eigvals, test16_eigvals_high_sat]
 
 raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROE/ThreeBusMulti.raw")
 
-
 function test_genroe_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-genrou"))
     !isdir(path) && mkdir(path)
@@ -40,7 +39,6 @@ function test_genroe_implicit(dyr_file, csv_file, init_cond, eigs_value)
             ResidualModel,
             sys, #system
             path,
-
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
@@ -101,7 +99,6 @@ function test_genroe_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
             MassMatrixModel,
             sys, #system
             path,
-
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
