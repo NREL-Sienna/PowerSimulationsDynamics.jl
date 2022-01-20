@@ -96,3 +96,11 @@ function (J::JacobianFunctionWrapper)(
     JM .= gamma * LinearAlgebra.Diagonal(ones(length(x))) .- J.Jf(JM, x)
     return JM
 end
+
+function get_jacobian(
+    ::Type{T},
+    inputs::SimulationInputs,
+    x0_init::Vector{Float64},
+) where {T <: SimulationModel}
+    return JacobianFunctionWrapper(T(inputs, x0_init, JacobianCache), x0_init)
+end

@@ -124,35 +124,34 @@ end
 
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-function _calculate_initial_guess!(sim::Simulation)
+function _calculate_initial_guess!(x0_init::Vector{Float64}, sim::Simulation)
     inputs = get_simulation_inputs(sim)
     @assert sim.status == BUILD_INCOMPLETE
     while sim.status == BUILD_INCOMPLETE
         @debug "Start state intialization routine"
         TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
-            sim.status = _power_flow_solution!(sim.x0_init, get_system(sim), inputs)
+            sim.status = _power_flow_solution!(x0_init, get_system(sim), inputs)
         end
         TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
             sim.status = _initialize_static_injection!(inputs)
         end
         TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
-            sim.status =
-                _initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
+            sim.status = _initialize_dynamic_injection!(x0_init, inputs, get_system(sim))
         end
         if has_dyn_lines(inputs)
             TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
-                sim.status = _initialize_dynamic_branches!(sim.x0_init, inputs)
+                sim.status = _initialize_dynamic_branches!(x0_init, inputs)
             end
         else
             @debug "No Dynamic Branches in the system"
         end
-        sim.status = check_valid_values(sim.x0_init, inputs)
+        sim.status = check_valid_values(x0_init, inputs)
     end
     return
 end
 
-function precalculate_initial_conditions!(sim::Simulation)
-    _calculate_initial_guess!(sim)
+function precalculate_initial_conditions!(x0_init::Vector{Float64}, sim::Simulation)
+    _calculate_initial_guess!(x0_init, sim)
     return sim.status != BUILD_FAILED
 end
 
