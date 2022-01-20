@@ -269,22 +269,22 @@ function _build_perturbations!(sim::Simulation)
     @info "Attaching Perturbations"
     if isempty(sim.perturbations)
         @debug "The simulation has no perturbations"
-        return DiffEqBase.CallbackSet(), [0.0]
+        return SciMLBase.CallbackSet(), [0.0]
     end
     inputs = get_simulation_inputs(sim)
     perturbations = sim.perturbations
     perturbations_count = length(perturbations)
-    callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
+    callback_vector = Vector{SciMLBase.DiscreteCallback}(undef, perturbations_count)
     tstops = Vector{Float64}(undef, perturbations_count)
     for (ix, pert) in enumerate(perturbations)
         @debug pert
         condition = (x, t, integrator) -> t in [pert.time]
         affect = get_affect(inputs, get_system(sim), pert)
-        callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
+        callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
     sim.internal.tstops .= tstops
-    sim.internal.callbacks = DiffEqBase.CallbackSet((), tuple(callback_vector...))
+    sim.internal.callbacks = SciMLBase.CallbackSet((), tuple(callback_vector...))
     return
 end
 

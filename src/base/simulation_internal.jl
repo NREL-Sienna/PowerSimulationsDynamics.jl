@@ -4,7 +4,7 @@ mutable struct SimulationInternal{T, U, V}
     system_model::U
     sciml_function::V
     tstops::Vector{Float64}
-    callbacks::DiffEqBase.CallbackSet
+    callbacks::SciMLBase.CallbackSet
     problem::Union{Nothing, SciMLBase.DEProblem}
 end
 
@@ -15,7 +15,7 @@ function SimulationInternal(x0_init, jacobian, system_model, model_function)
         system_model,
         model_function,
         Vector{Float64}(),
-        DiffEqBase.CallbackSet(),
+        SciMLBase.CallbackSet(),
         nothing,
     )
 end
