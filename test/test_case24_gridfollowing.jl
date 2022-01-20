@@ -17,9 +17,6 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test24.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-# time span
-tspan = (0.0, 2.0);
-
 # PSCAD benchmark data
 csv_file = joinpath(TEST_FILES_DIR, "benchmarks/pscad/Test24/Test24_p.csv")
 t_offset = 9.0
@@ -36,7 +33,6 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
             ResidualModel,
             omib_sys, # system
             path,
-            tspan,
             Pref_change,
         )
 
