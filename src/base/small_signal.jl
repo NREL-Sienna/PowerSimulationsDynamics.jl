@@ -154,7 +154,7 @@ function _get_participation_factors(
     return participation_factors
 end
 
-function small_signal_analysis(sim::Simulation{T}; kwargs...) where T <: SimulationModel
+function small_signal_analysis(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     #simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
     #sim.status = CONVERTED_FOR_SMALL_SIGNAL
     inputs = get_simulation_inputs(sim)
