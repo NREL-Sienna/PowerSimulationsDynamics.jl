@@ -93,7 +93,6 @@ end
             MassMatrixModel,
             omib_sys, # system
             path,
-            tspan,
             Pref_change,
         )
 

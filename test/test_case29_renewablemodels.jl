@@ -274,7 +274,7 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
 
         # Solve problem
-        @test execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(), tspan, dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -336,7 +336,7 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
 
         # Solve problem
-        @test execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), tspan, dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
