@@ -256,8 +256,8 @@ function show_states_initial_value(sim::Simulation)
         println("====================")
         bus_n = PSY.get_number(bus)
         bus_ix = PSID.get_lookup(sim.inputs)[bus_n]
-        V_R = PSID.get_initial_conditions(sim)[bus_ix]
-        V_I = PSID.get_initial_conditions(sim)[bus_ix + bus_size]
+        V_R = get_initial_conditions(sim)[bus_ix]
+        V_I = get_initial_conditions(sim)[bus_ix + bus_size]
         Vm = sqrt(V_R^2 + V_I^2)
         θ = angle(V_R + V_I * 1im)
         print("Vm ", round(Vm, digits = 4), "\n")
@@ -273,7 +273,12 @@ function show_states_initial_value(sim::Simulation)
         println("====================")
         global_index = global_state_map[name]
         for s in states
-            print(s, " ", round(PSID.get_initial_conditions(sim)[global_index[s]], digits = 4), "\n")
+            print(
+                s,
+                " ",
+                round(get_initial_conditions(sim)[global_index[s]], digits = 4),
+                "\n",
+            )
         end
         println("====================")
     end
@@ -290,7 +295,12 @@ function show_states_initial_value(sim::Simulation)
             global_index = global_state_map[name]
             x0_br = Dict{Symbol, Float64}()
             for (i, s) in enumerate(states)
-                print(s, " ", round(PSID.get_initial_conditions(sim)[global_index[s]], digits = 5), "\n")
+                print(
+                    s,
+                    " ",
+                    round(get_initial_conditions(sim)[global_index[s]], digits = 5),
+                    "\n",
+                )
             end
             println("====================")
         end
