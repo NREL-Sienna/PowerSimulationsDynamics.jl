@@ -504,3 +504,9 @@ end
     @test !isempty(PSY.get_components(PSY.DynamicBranch, omib_sys_copy))
     @test isempty(PSY.get_components(PSY.Line, omib_sys_copy))
 end
+
+@testset "Jacobian" begin
+    omib_sys_copy = deepcopy(omib_sys)
+    jac = get_jacobian(ResidualModel, omib_sys_copy)
+    @test isa(jac, Function)
+end
