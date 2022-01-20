@@ -283,7 +283,7 @@ function _build_perturbations!(sim::Simulation)
         callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
-    sim.internal.tstops .= tstops
+    sim.internal.tstops = tstops
     sim.internal.callbacks = SciMLBase.CallbackSet((), tuple(callback_vector...))
     return
 end
