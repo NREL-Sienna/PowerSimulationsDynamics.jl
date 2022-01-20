@@ -28,7 +28,6 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             omib_sys, #system
             path,
-            (0.0, 20.0), #time span
             Ybus_change,
         )
 
@@ -51,7 +50,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -97,7 +96,6 @@ end
             MassMatrixModel,
             omib_sys, #system
             path,
-            (0.0, 20.0), #time span
             Ybus_change,
         )
 
@@ -132,7 +130,7 @@ end
         @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
