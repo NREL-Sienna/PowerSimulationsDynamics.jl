@@ -158,7 +158,7 @@ function _small_signal_analysis(
     jacobian::Matrix{Float64},
     x_eval::Vector{Float64},
     inputs::SimulationInputs,
-    multimachine::Bool = true,
+    multimachine::Bool,
 )
     mass_matrix = get_mass_matrix(inputs)
     diff_states = get_DAE_vector(inputs)
@@ -185,9 +185,10 @@ function _small_signal_analysis(
     ::Type{T},
     inputs::SimulationInputs,
     x_eval::Vector{Float64},
+    multimachine = true,
 ) where {T <: SimulationModel}
     jacwrapper = get_jacobian(T, inputs, x_eval, 0)
-    return _small_signal_analysis(jacwrapper.Jv, jacwrapper.x, inputs)
+    return _small_signal_analysis(jacwrapper.Jv, jacwrapper.x, inputs, multimachine)
 end
 
 function small_signal_analysis(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
