@@ -2,9 +2,12 @@
 # custom code since the structure of the system models is not compatible with the functionalities
 # in SparseDiffTools
 
-struct JacobianFunctionWrapper{F} <: Function
+struct JacobianFunctionWrapper{
+    F,
+    T <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}},
+} <: Function
     Jf::F
-    Jv::SparseArrays.SparseMatrixCSC{Float64, Int64}
+    Jv::T
     x::Vector{Float64}
 end
 
@@ -31,7 +34,7 @@ function JacobianFunctionWrapper(
     end
     Jv = SparseArrays.sparse(jac)
     Jf(Jv, x0)
-    return JacobianFunctionWrapper{typeof(Jf)}(Jf, Jv, x0)
+    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0)
 end
 
 function JacobianFunctionWrapper(
@@ -56,7 +59,7 @@ function JacobianFunctionWrapper(
     end
     Jv = SparseArrays.sparse(jac)
     Jf(Jv, x0)
-    return JacobianFunctionWrapper{typeof(Jf)}(Jf, Jv, x0)
+    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0)
 end
 
 function (J::JacobianFunctionWrapper)(x::AbstractVector{Float64})
@@ -65,34 +68,63 @@ function (J::JacobianFunctionWrapper)(x::AbstractVector{Float64})
 end
 
 function (J::JacobianFunctionWrapper)(
-    JM::SparseArrays.SparseMatrixCSC{Float64, Int64},
+    JM::U,
     x::AbstractVector{Float64},
-)
+) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
     J.x .= x
     J.Jf(JM, x)
     return
 end
 
 function (J::JacobianFunctionWrapper)(
-    JM::SparseArrays.SparseMatrixCSC{Float64, Int64},
+    JM::U,
     x::AbstractVector{Float64},
     p,
     t,
-)
+) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
     J.x .= x
     J.Jf(JM, x)
     return
 end
 
 function (J::JacobianFunctionWrapper)(
-    JM::SparseArrays.SparseMatrixCSC{Float64, Int64},
+    JM::U,
     dx::AbstractVector{Float64},
     x::AbstractVector{Float64},
     p,
     gamma,
     t,
-)
+) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
     J.x .= x
     JM .= gamma * LinearAlgebra.Diagonal(ones(length(x))) .- J.Jf(JM, x)
     return JM
+end
+
+function get_jacobian(
+    ::Type{T},
+    inputs::SimulationInputs,
+    x0_init::Vector{Float64},
+) where {T <: SimulationModel}
+    return JacobianFunctionWrapper(T(inputs, x0_init, JacobianCache), x0_init)
+end
+
+function _set_operating_point!(
+    x0_init::Vector{Float64},
+    inputs::SimulationInputs,
+    system::PSY.System,
+)
+    status = power_flow_solution!(x0_init, system, inputs)
+    status = initialize_static_injection!(inputs)
+    status = initialize_dynamic_injection!(x0_init, inputs, system)
+    status = initialize_dynamic_branches!(x0_init, inputs)
+    return status
+end
+
+function get_jacobian(T, system::PSY.System)
+    # Deepcopy avoid system modifications
+    simulation_system = deepcopy(system)
+    inputs = SimulationInputs(T, simulation_system, ReferenceBus)
+    x0_init = get_flat_start(inputs)
+    _set_operating_point!(x0_init, inputs, system)
+    return get_jacobian(T, inputs, x0_init)
 end
