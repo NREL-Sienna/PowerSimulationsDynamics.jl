@@ -440,7 +440,6 @@ function build!(sim; kwargs...)
 end
 
 function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
-    reset_sim = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_sim
     if sim.status == BUILD_FAILED
         error(
             "The Simulation status is $(sim.status). Can not continue, correct your inputs and build the simulation again.",
