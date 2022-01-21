@@ -158,7 +158,7 @@ function _small_signal_analysis(
     jacobian::Matrix{Float64},
     x_eval::Vector{Float64},
     inputs::SimulationInputs,
-    multimachine::Bool = true
+    multimachine::Bool = true,
 )
     mass_matrix = get_mass_matrix(inputs)
     diff_states = get_DAE_vector(inputs)
