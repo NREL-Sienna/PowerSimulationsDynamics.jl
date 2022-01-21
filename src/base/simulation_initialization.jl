@@ -215,3 +215,22 @@ function read_initial_conditions(sim::Simulation)
     end
     return results
 end
+
+function set_operating_point!(
+    x0_init::Vector{Float64},
+    inputs::SimulationInputs,
+    system::PSY.System,
+)
+    status = BUILD_INCOMPLETE
+    while status == BUILD_INCOMPLETE
+        status = power_flow_solution!(x0_init, system, inputs)
+        status = initialize_static_injection!(inputs)
+        status = initialize_dynamic_injection!(x0_init, inputs, system)
+        status = initialize_dynamic_branches!(x0_init, inputs)
+        status = SIMULATION_INITIALIZED
+    end
+    if status != SIMULATION_INITIALIZED
+        error("Failed to find operating point")
+    end
+    return
+end

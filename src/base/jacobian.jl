@@ -125,18 +125,6 @@ function get_jacobian(
     )
 end
 
-function _set_operating_point!(
-    x0_init::Vector{Float64},
-    inputs::SimulationInputs,
-    system::PSY.System,
-)
-    status = power_flow_solution!(x0_init, system, inputs)
-    status = initialize_static_injection!(inputs)
-    status = initialize_dynamic_injection!(x0_init, inputs, system)
-    status = initialize_dynamic_branches!(x0_init, inputs)
-    return status
-end
-
 """
     function get_jacobian(
     ::Type{T},
@@ -160,6 +148,6 @@ function get_jacobian(
     simulation_system = deepcopy(system)
     inputs = SimulationInputs(T, simulation_system, ReferenceBus)
     x0_init = get_flat_start(inputs)
-    _set_operating_point!(x0_init, inputs, system)
+    set_operating_point!(x0_init, inputs, system)
     return get_jacobian(T, inputs, x0_init, sparse_retrieve_loop)
 end
