@@ -11,7 +11,7 @@ struct JacobianFunctionWrapper{
     x::Vector{Float64}
 end
 
-# This version of the function is type unstable should only be used for non-critial
+# This version of the function is type unstable should only be used for non-critial ops
 function (J::JacobianFunctionWrapper)(x::AbstractVector{Float64})
     J.x .= x
     return J.Jf(J.Jv, x)
