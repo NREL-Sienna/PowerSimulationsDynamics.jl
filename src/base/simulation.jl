@@ -261,7 +261,7 @@ function _pre_initialize_simulation!(sim::Simulation)
     _initialize_state_space(sim)
     if sim.initialized != true
         @info("Pre-Initializing Simulation States")
-        sim.initialized = precalculate_initial_conditions!(sim)
+        sim.initialized = precalculate_initial_conditions!(sim.x0_init, sim)
         if !sim.initialized
             error(
                 "The simulation failed to find an adequate initial guess for the initialization. Check the intialization routine.",
