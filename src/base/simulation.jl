@@ -7,7 +7,7 @@ mutable struct Simulation{T <: SimulationModel}
     x0_init::Vector{Float64}
     initialized::Bool
     tstops::Vector{Float64}
-    callbacks::DiffEqBase.CallbackSet
+    callbacks::SciMLBase.CallbackSet
     simulation_folder::String
     inputs::Union{Nothing, SimulationInputs}
     results::Union{Nothing, SimulationResults}
@@ -43,7 +43,7 @@ function Simulation(
         initial_conditions,
         !initialize_simulation,
         Vector{Float64}(),
-        DiffEqBase.CallbackSet(),
+        SciMLBase.CallbackSet(),
         simulation_folder,
         nothing,
         nothing,
@@ -95,9 +95,9 @@ Builds the simulation object and conducts the indexing process. The original sys
 - `perturbations::Vector{<:Perturbation}` : Vector of Perturbations for the Simulation. Default: No Perturbations
 - `initialize_simulation::Bool` : Runs the initialization routine. If false, simulation runs based on the operation point stored in System
 - `initial_conditions::Vector{Float64}` : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
-- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available: 
+- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available:
     - `ConstantFrequency` assumes that the network frequency is 1.0 per unit at all times.
-    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used. 
+    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used.
 - `system_to_file::Bool` : Default `false`. Serializes the initialized system
 - `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
 - `file_level::Logging` : Default `Logging.Debug`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
@@ -152,9 +152,9 @@ Builds the simulation object and conducts the indexing process. The initial cond
 - `perturbations::Vector{<:Perturbation}` : Vector of Perturbations for the Simulation. Default: No Perturbations
 - `initialize_simulation::Bool` : Runs the initialization routine. If false, simulation runs based on the operation point stored in System
 - `initial_conditions::Vector{Float64}` : Allows the user to pass a vector with the initial condition values desired in the simulation. If initialize_simulation = true, these values are used as a first guess and overwritten.
-- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available: 
+- `frequency_reference` : Default `ReferenceBus`. Determines which frequency model is used for the network. Currently there are two options available:
     - `ConstantFrequency` assumes that the network frequency is 1.0 per unit at all times.
-    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used. 
+    - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used.
 - `system_to_file::Bool` : Default `false`. Serializes the initialized system
 - `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
 - `file_level::Logging` : Default `Logging.Debug`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
@@ -286,22 +286,22 @@ function _build_perturbations!(sim::Simulation)
     @info "Attaching Perturbations"
     if isempty(sim.perturbations)
         @debug "The simulation has no perturbations"
-        return DiffEqBase.CallbackSet(), [0.0]
+        return SciMLBase.CallbackSet(), [0.0]
     end
     inputs = get_simulation_inputs(sim)
     perturbations = sim.perturbations
     perturbations_count = length(perturbations)
-    callback_vector = Vector{DiffEqBase.DiscreteCallback}(undef, perturbations_count)
+    callback_vector = Vector{SciMLBase.DiscreteCallback}(undef, perturbations_count)
     tstops = Vector{Float64}(undef, perturbations_count)
     for (ix, pert) in enumerate(perturbations)
         @debug pert
         condition = (x, t, integrator) -> t in [pert.time]
         affect = get_affect(inputs, get_system(sim), pert)
-        callback_vector[ix] = DiffEqBase.DiscreteCallback(condition, affect)
+        callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
     sim.tstops = tstops
-    sim.callbacks = DiffEqBase.CallbackSet((), tuple(callback_vector...))
+    sim.callbacks = SciMLBase.CallbackSet((), tuple(callback_vector...))
     return
 end
 
