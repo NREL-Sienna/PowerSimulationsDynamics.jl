@@ -47,13 +47,13 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
         sim = Simulation(ResidualModel, sys, path, Ybus_change)
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -98,6 +98,7 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
+        sim = nothing
     end
 end
 
@@ -118,13 +119,13 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
         sim = Simulation(MassMatrixModel, sys, path, Ybus_change)
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -169,6 +170,7 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
+        sim = nothing
     end
 end
 
@@ -257,13 +259,13 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
         ) #Type of Fault
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -319,13 +321,13 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
         ) #Type of Fault
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)

@@ -55,12 +55,12 @@ function test_sundials(solver)
 
         #Obtain data for voltages
         series = get_voltage_magnitude_series(results, 102)
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test10_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
         @test res.solution.retcode == :Success
     finally
         @info("removing test files")
