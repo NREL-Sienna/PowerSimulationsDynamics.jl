@@ -30,17 +30,18 @@ export LoadChange
 # export BusTrip
 
 # Export for routines
-export small_signal_analysis
-export get_state_series
-export get_voltage_magnitude_series
-export get_voltage_angle_series
-export show_states_initial_value
-export read_initial_conditions
-export get_real_current_series
-export get_imaginary_current_series
 export get_activepower_series
+export get_jacobian
+export get_imaginary_current_series
 export get_reactivepower_series
+export get_real_current_series
 export get_setpoints
+export get_state_series
+export get_voltage_angle_series
+export get_voltage_magnitude_series
+export read_initial_conditions
+export show_states_initial_value
+export small_signal_analysis
 
 ####################################### Package Imports ####################################
 import Logging
@@ -48,7 +49,6 @@ import InfrastructureSystems
 import SciMLBase
 import DataStructures: OrderedDict
 import Random
-import DiffEqBase
 import ForwardDiff
 import SparseArrays
 import LinearAlgebra
@@ -79,6 +79,7 @@ include("base/branch_wrapper.jl")
 include("base/frequency_reference.jl")
 include("base/file_system.jl")
 include("base/simulation_model.jl")
+include("base/simulation_internal.jl")
 include("base/simulation_inputs.jl")
 include("base/perturbations.jl")
 include("base/caches.jl")

@@ -33,7 +33,6 @@ init_conditions = [
 eigs_values = [test19_eigvals]
 
 raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENSAE/ThreeBusMulti.raw")
-tspan = (0.0, 20.0)
 
 function test_gensae_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-gensae"))
@@ -46,18 +45,17 @@ function test_gensae_implicit(dyr_file, csv_file, init_cond, eigs_value)
             ResidualModel,
             sys, #system
             path,
-            tspan, #time span
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -68,7 +66,7 @@ function test_gensae_implicit(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -107,18 +105,17 @@ function test_gensae_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
             MassMatrixModel,
             sys, #system
             path,
-            tspan, #time span
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -129,7 +126,7 @@ function test_gensae_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 

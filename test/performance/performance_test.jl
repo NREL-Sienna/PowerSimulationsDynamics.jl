@@ -21,7 +21,6 @@ try
             m,
             sys,
             pwd(),
-            (0.0, 20.0), #time span
             BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
             console_level = Logging.Error,
         )
@@ -35,11 +34,11 @@ try
         ResidualModel,
         sys,
         pwd(),
-        (0.0, 20.0), #time span
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
         console_level = Logging.Error,
     )
-    status = execute!(sim_ida, IDA(), dtmax = 0.01, enable_progress_bar = false)
+    status =
+        execute!(sim_ida, IDA(), (0.0, 20.0), dtmax = 0.01, enable_progress_bar = false)
     if status == PSID.SIMULATION_FINALIZED
         res_ida = read_results(sim_ida)
         solve_time = res_ida.time_log[:timed_solve_time]
@@ -62,7 +61,6 @@ try
         MassMatrixModel,
         sys, #system
         pwd(),
-        (0.0, 20.0), #time span
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10"),
         #console_level = Logging.Error,
     ) #Type of Fault

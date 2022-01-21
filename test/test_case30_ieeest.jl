@@ -25,8 +25,6 @@ init_conditions = [test_psse_ieeest_no_filt_init, test_psse_ieeest_with_filt_ini
 
 eigs_values = [test30_eigvals_no_filt, test30_eigvals_with_filt]
 
-tspan = (0.0, 20.0)
-
 function test_ieeest_implicit(dyr_file, csv_file, init_cond, eigs_value)
     path = (joinpath(pwd(), "test-psse-ieeest"))
     !isdir(path) && mkdir(path)
@@ -34,22 +32,21 @@ function test_ieeest_implicit(dyr_file, csv_file, init_cond, eigs_value)
         sys = System(raw_file_dir, dyr_file)
 
         # Define Simulation Problem
-        sim = Simulation!(
+        sim = Simulation(
             ResidualModel,
             sys, #system
             path,
-            tspan, #time span
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -60,7 +57,7 @@ function test_ieeest_implicit(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -91,7 +88,9 @@ function test_ieeest_implicit(dyr_file, csv_file, init_cond, eigs_value)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
+        sim = nothing
     end
+    return
 end
 
 function test_ieeest_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
@@ -101,22 +100,21 @@ function test_ieeest_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         sys = System(raw_file_dir, dyr_file)
 
         # Define Simulation Problem
-        sim = Simulation!(
+        sim = Simulation(
             MassMatrixModel,
             sys, #system
             path,
-            tspan, #time span
             BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"), #Type of Fault
         ) #Type of Fault
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -127,7 +125,7 @@ function test_ieeest_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -158,7 +156,9 @@ function test_ieeest_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
+        sim = nothing
     end
+    return
 end
 
 @testset "Test 30 IEEEST ResidualModel" begin

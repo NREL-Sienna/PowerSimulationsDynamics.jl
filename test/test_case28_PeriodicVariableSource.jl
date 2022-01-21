@@ -27,11 +27,10 @@ tsteps = tspan[1]:step:tspan[2]
             ResidualModel,
             sys, # system
             path,
-            tspan,
         )
 
         #Solve problem
-        @test execute!(sim, IDA(), saveat = tsteps) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(), tspan, saveat = tsteps) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
         pvs = collect(get_components(PeriodicVariableSource, sys))[1]
 
@@ -68,11 +67,10 @@ end
             MassMatrixModel,
             sys, # system
             path,
-            tspan,
         )
 
         #Solve problem
-        @test execute!(sim, Rodas4(), saveat = tsteps) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas4(), tspan, saveat = tsteps) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
         pvs = collect(get_components(PeriodicVariableSource, sys))[1]
 

@@ -18,7 +18,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
 ####### Changing magnitude of votlage at source bus #########
 
 # time span
-tspan = (0.0, 20.0);
+;
 case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 
 # Define Fault using Callbacks
@@ -33,20 +33,19 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.V_source_index, 
             ResidualModel,
             threebus_sys, # system
             path,
-            tspan,
             V_source_change,
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, IDA(), dtmax = 0.02)
+        execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.02)
         results = read_results(sim)
 
         # Obtain data for angles
@@ -66,20 +65,19 @@ end
             MassMatrixModel,
             threebus_sys, # system
             path,
-            tspan,
             V_source_change,
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, Rodas4(), dtmax = 0.02)
+        execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.02)
         results = read_results(sim)
 
         # Obtain data for angles
@@ -93,7 +91,7 @@ end
 ####### Changing angle of voltage at source bus #########
 
 #time span
-tspan = (0.0, 20.0);
+;
 case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 
 #Define Fault using Callbacks
@@ -108,20 +106,19 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.θ_source_index,
             ResidualModel,
             threebus_sys, # system
             path,
-            tspan,
             V_source_change,
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, IDA(), dtmax = 0.02)
+        execute!(sim, IDA(), (0.0, 20.0), dtmax = 0.02)
         results = read_results(sim)
 
         # Obtain data for angles
@@ -140,20 +137,19 @@ end
             MassMatrixModel,
             threebus_sys, # system
             path,
-            tspan,
             V_source_change,
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, Rodas4(), dtmax = 0.02)
+        execute!(sim, Rodas4(), (0.0, 20.0), dtmax = 0.02)
         results = read_results(sim)
 
         # Obtain data for angles

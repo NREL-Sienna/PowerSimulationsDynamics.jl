@@ -32,19 +32,18 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             threebus_sys, #system,
             path,
-            tspan, #time span
             Ybus_change, #Type of Fault
         )
         # Get dictionary of initial conditions
         init_conds = read_initial_conditions(sim)
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test10_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -55,7 +54,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test11_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA()) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(), tspan) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for voltages
@@ -75,17 +74,16 @@ end
             MassMatrixModel,
             threebus_sys, #system,
             path,
-            tspan, #time span
             Ybus_change, #Type of Fault
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test10_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -96,7 +94,7 @@ end
         @test LinearAlgebra.norm(eigs - test11_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas5()) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas5(), tspan) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for voltages

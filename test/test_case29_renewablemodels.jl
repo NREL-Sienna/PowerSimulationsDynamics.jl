@@ -44,16 +44,16 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
 
         Ybus_change = BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2")
 
-        sim = Simulation(ResidualModel, sys, path, tspan, Ybus_change)
+        sim = Simulation(ResidualModel, sys, path, Ybus_change)
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -67,6 +67,7 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
         @test execute!(
             sim,
             IDA(),
+            tspan,
             dtmax = 0.005,
             saveat = 0.005,
             abstol = 1e-9,
@@ -97,6 +98,7 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
+        sim = nothing
     end
 end
 
@@ -114,16 +116,16 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
 
         Ybus_change = BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2")
 
-        sim = Simulation(MassMatrixModel, sys, path, tspan, Ybus_change)
+        sim = Simulation(MassMatrixModel, sys, path, Ybus_change)
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -137,6 +139,7 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
         @test execute!(
             sim,
             Rodas4(),
+            tspan,
             dtmax = 0.005,
             saveat = 0.005,
             abstol = 1e-6,
@@ -167,6 +170,7 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
+        sim = nothing
     end
 end
 
@@ -200,7 +204,7 @@ end
 Case 29: Test with dyr files
 This case study a three bus system with 1 Generic Renewable Model (REPCA, REECB, REGCA) and an infinite source.
 The fault drop the connection between buses 1 and 3, eliminating the direct connection between the load at bus 1
-and the generator located in bus 3. The infinite generator is located at bus 2. 
+and the generator located in bus 3. The infinite generator is located at bus 2.
 """
 
 raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/ThreeBusRenewable.raw")
@@ -251,18 +255,17 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
             ResidualModel,
             sys, #system
             path,
-            tspan, #time span
             BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2"), #Type of Fault
         ) #Type of Fault
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -273,7 +276,7 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(), tspan, dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -314,18 +317,17 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
             MassMatrixModel,
             sys, #system
             path,
-            tspan, #time span
             BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2"), #Type of Fault
         ) #Type of Fault
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in init_cond
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -336,7 +338,7 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), tspan, dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 

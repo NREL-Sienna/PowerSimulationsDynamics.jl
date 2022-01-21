@@ -8,8 +8,8 @@ function get_init_values_for_comparison(sim::Simulation)
     for bus in PSY.get_components(PSY.Bus, system)
         bus_n = PSY.get_number(bus)
         bus_ix = PSID.get_lookup(sim.inputs)[bus_n]
-        V_R[bus_ix] = sim.x0_init[bus_ix]
-        V_I[bus_ix] = sim.x0_init[bus_ix + bus_size]
+        V_R[bus_ix] = PSID.get_initial_conditions(sim)[bus_ix]
+        V_I[bus_ix] = PSID.get_initial_conditions(sim)[bus_ix + bus_size]
         Vm[bus_ix] = sqrt(V_R[bus_ix]^2 + V_I[bus_ix]^2)
         θ[bus_ix] = angle(V_R[bus_ix] + V_I[bus_ix] * 1im)
     end
@@ -21,7 +21,7 @@ function get_init_values_for_comparison(sim::Simulation)
         global_index = PSID.get_global_index(device)
         x0_device = Vector{Float64}(undef, length(states))
         for (i, s) in enumerate(states)
-            x0_device[i] = sim.x0_init[global_index[s]]
+            x0_device[i] = PSID.get_initial_conditions(sim)[global_index[s]]
         end
         results[name] = x0_device
     end
@@ -31,7 +31,7 @@ function get_init_values_for_comparison(sim::Simulation)
         global_index = PSID.get_global_index(br)
         x0_br = Vector{Float64}(undef, length(states))
         for (i, s) in enumerate(states)
-            x0_br[i] = sim.x0_init[global_index[s]]
+            x0_br[i] = PSID.get_initial_conditions(sim)[global_index[s]]
         end
         printed_name = "Line " * name
         results[printed_name] = x0_br

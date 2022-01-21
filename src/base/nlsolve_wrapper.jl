@@ -71,6 +71,7 @@ function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbo
 end
 
 function refine_initial_condition!(
+    initial_guess::Vector{Float64},
     sim::Simulation,
     model::SystemModel,
     jacobian::JacobianFunctionWrapper,
@@ -84,7 +85,6 @@ function refine_initial_condition!(
 
     @debug "Start NLSolve System Run"
     converged = false
-    initial_guess = get_initial_conditions(sim)
     inputs = get_simulation_inputs(sim)
     bus_range = get_bus_range(inputs)
     powerflow_solution = deepcopy(initial_guess[bus_range])

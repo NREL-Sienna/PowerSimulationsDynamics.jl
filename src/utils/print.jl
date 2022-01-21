@@ -69,8 +69,7 @@ function show_simulation_table(
         "Simulation Type" val_model
         "Initialized?" val_initialized
         "Multimachine system?" val_multimachine
-        "Time Span" string(sim.tspan)
-        "Number of States" string(length(sim.x0_init))
+        "Number of States" (!isnothing(sim.internal) ? string(length(sim.internal.x0_init)) : "Not built")
         "Number of Perturbations" string(length(sim.perturbations))
     ]
     PrettyTables.pretty_table(

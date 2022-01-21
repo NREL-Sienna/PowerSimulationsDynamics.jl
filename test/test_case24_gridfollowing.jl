@@ -17,9 +17,6 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test24.jl"))
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-# time span
-tspan = (0.0, 2.0);
-
 # PSCAD benchmark data
 csv_file = joinpath(TEST_FILES_DIR, "benchmarks/pscad/Test24/Test24_p.csv")
 t_offset = 9.0
@@ -36,17 +33,16 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
             ResidualModel,
             omib_sys, # system
             path,
-            tspan,
             Pref_change,
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test24_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -57,7 +53,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
 
         #Solve problem in equilibrium
-        @test execute!(sim, Sundials.IDA(), dtmax = 0.001, saveat = 0.005) ==
+        @test execute!(sim, Sundials.IDA(), (0.0, 2.0), dtmax = 0.001, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -97,17 +93,16 @@ end
             MassMatrixModel,
             omib_sys, # system
             path,
-            tspan,
             Pref_change,
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test24_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -118,7 +113,7 @@ end
         @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
 
         #Solve problem in equilibrium
-        @test execute!(sim, Rodas4(), dtmax = 0.001, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(), (0.0, 2.0), dtmax = 0.001, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 

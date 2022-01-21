@@ -33,22 +33,22 @@ Pref_change = ControlReferenceChange(1.0, gen2, :P_ref, 0.9);
     !isdir(path) && mkdir(path)
     try
         # Define Simulation Problem
-        sim = Simulation!(ResidualModel, sys, path, tspan, Pref_change)
+        sim = Simulation!(ResidualModel, sys, path, Pref_change)
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test25_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
         @test small_sig.stable
 
         # Solve problem in equilibrium
-        @test execute!(sim, Sundials.IDA(), dtmax = 0.01, saveat = 0.01) ==
+        @test execute!(sim, Sundials.IDA(), (0.0, 40.0), dtmax = 0.01, saveat = 0.01) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -76,22 +76,22 @@ end
     !isdir(path) && mkdir(path)
     try
         # Define Simulation Problem
-        sim = Simulation!(MassMatrixModel, sys, path, tspan, Pref_change)
+        sim = Simulation!(MassMatrixModel, sys, path, Pref_change)
 
         # Test Initial Condition
-        diff = [0.0]
+        diffvals = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test25_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diffvals[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diffvals[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
         @test small_sig.stable
 
         # Solve problem in equilibrium
-        @test execute!(sim, Rodas4(), dtmax = 0.01, saveat = 0.01) ==
+        @test execute!(sim, Rodas4(), (0.0, 40.0), dtmax = 0.01, saveat = 0.01) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 

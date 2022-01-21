@@ -154,13 +154,14 @@ function _get_participation_factors(
     return participation_factors
 end
 
-function small_signal_analysis(sim::Simulation; kwargs...)
+function small_signal_analysis(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     #simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
     #sim.status = CONVERTED_FOR_SMALL_SIGNAL
     inputs = get_simulation_inputs(sim)
     mass_matrix = get_mass_matrix(inputs)
-    x_eval = get(kwargs, :operating_point, sim.x0_init)
-    jacwrapper = _get_jacobian(sim)
+    x_eval = get(kwargs, :operating_point, PSID.get_initial_conditions(sim))
+    x0_init = get_initial_conditions(sim)
+    jacwrapper = get_jacobian(T, inputs, x0_init)
     jacwrapper(x_eval)
     jacobian = jacwrapper.Jv
     diff_states = get_DAE_vector(inputs)
