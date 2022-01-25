@@ -1,7 +1,6 @@
 ## Common implementation of each block:
 ## returns a tuple of (output, internal_derivative)
 
-
 """
 Low Pass Filter
              y_max
@@ -15,13 +14,27 @@ u -> │ ────── │ -> y
    y_min
 """
 
-function low_pass(
+function low_pass(u::Z, y::Z, K::Float64, T::Float64) where {Z <: ACCEPTED_REAL_TYPES}
+    return y, (1.0 / T) * (K * u - y)
+end
+
+# Low pass modified with denominator K_den instead of 1.0
+"""
+Low Pass Filter Modified
+     ┌─────────────┐
+     │      K      │
+u -> │ ────────────│ -> y
+     │ K_den + sT  │
+     └─────────────┘
+"""
+function low_pass_modified(
     u::Z,
     y::Z,
     K::Float64,
-    T::Float64
+    K_den::Z,
+    T::Float64,
 ) where {Z <: ACCEPTED_REAL_TYPES}
-    return y, (1.0 / T) * (K * u - y)
+    return y, (1.0 / T) * (K * u - K_den * y)
 end
 
 # Use this one if T = 0 is allowed, and let the mass matrix take care of it.
@@ -29,8 +42,8 @@ function low_pass_mass_matrix(
     u::Z,
     y::Z,
     K::Float64,
-    T::Float64
-) where {X <: ACCEPTED_REAL_TYPES}
+    T::Float64,
+) where {Z <: ACCEPTED_REAL_TYPES}
     return y, T * low_pass(u, y, K, T)[2]
 end
 
@@ -64,11 +77,10 @@ function low_pass_nonwindup_ramp_limits(
     y_sat = clamp(y, y_min, y_max)
     dydt_sat = clamp((1.0 / T) * (K * u - y), dy_min, dy_max)
     # Non Windup logic from IEEE Std 421.5
-    binary_logic = ((y >= y_max) && (dydt_sat > 0)) || ((y <= y_min) && (dydt_sat < 0)) ? 0.0 : 1.0
+    binary_logic =
+        ((y >= y_max) && (dydt_sat > 0)) || ((y <= y_min) && (dydt_sat < 0)) ? 0.0 : 1.0
     return y_sat, binary_logic * dydt_sat
 end
-
-
 
 """
 High Pass Filter 
@@ -81,13 +93,8 @@ u -> │ ────── │ -> y
 Internal State: x
 """
 
-function high_pass(
-    u::Z,
-    x::Z,
-    K::Float64,
-    T::Float64
-) where {Z <: ACCEPTED_REAL_TYPES}
-    dxdt = - (1.0 / T) * ((K / T) * u + x)
+function high_pass(u::Z, x::Z, K::Float64, T::Float64) where {Z <: ACCEPTED_REAL_TYPES}
+    dxdt = -(1.0 / T) * ((K / T) * u + x)
     return x + (K / T) * u, dxdt
 end
 
@@ -95,11 +102,10 @@ function high_pass_mass_matrix(
     u::Z,
     x::Z,
     K::Float64,
-    T::Float64
+    T::Float64,
 ) where {Z <: ACCEPTED_REAL_TYPES}
     return x + (K / T) * u, T * high_pass(u, x, K, T)[2]
 end
-
 
 """
 Lead-Lag Block:
@@ -131,7 +137,6 @@ function lead_lag_mass_matrix(
 ) where {Z <: ACCEPTED_REAL_TYPES}
     return x + (K * T1 / T2) * u, T2 * lead_lag[2]
 end
-
 
 """
 2nd Order Low Pass Filter
@@ -169,7 +174,6 @@ function low_pass_2nd_mass_matrix(
     dydt = x
     return y, dxdt, dydt
 end
-
 
 """
 2nd Order Lead-Lag Block
@@ -227,12 +231,7 @@ u -> │kp + ───  │ -> y
 Internal State: x
 """
 
-function pi_block(
-    u::Z,
-    x::Z,
-    kp::Float64,
-    ki::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+function pi_block(u::Z, x::Z, kp::Float64, ki::Float64) where {Z <: ACCEPTED_REAL_TYPES}
     return kp * u + ki * x, u
 end
 

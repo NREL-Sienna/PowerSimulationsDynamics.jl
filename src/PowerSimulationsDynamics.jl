@@ -99,6 +99,7 @@ include("models/device.jl")
 include("models/network_model.jl")
 include("models/dynline_model.jl")
 include("models/ref_transformations.jl")
+include("models/common_controls.jl")
 
 #Generator Component Models
 include("models/generator_models/machine_models.jl")

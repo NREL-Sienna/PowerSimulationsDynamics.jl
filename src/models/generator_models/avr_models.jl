@@ -100,18 +100,17 @@ function mdl_avr_ode!(
     Se_Vf = Ae * exp(Be * abs(Vf)) #16.13
     V_ref = V0_ref + Vs
 
-    #Set anti-windup for Vr1. #TODO in callbacks
-    #if Vr1 > Vr_max
-    #    Vr1 = Vr_max
-    #elseif Vr1 < Vr_min
-    #    Vr1 = Vr_min
-    #end
+    # Compute block derivatives
+    _, dVm_dt = low_pass(V_th, Vm, 1.0, Tr)
+    y_hp, dVr2_dt = high_pass(Vf, Vr2, Kf, Tf)
+    _, dVr1_dt = low_pass(V_ref - Vm - y_hp, Vr1, Ka, Ta)
+    _, dVf_dt = low_pass_modified(Vr1, Vf, 1.0, Ke + Se_Vf, Te)
 
     #Compute 4 States AVR ODE:
-    output_ode[local_ix[1]] = -(1.0 / Te) * (Vf * (Ke + Se_Vf) - Vr1) #16.12c
-    output_ode[local_ix[2]] = (1.0 / Ta) * (Ka * (V_ref - Vm - Vr2 - (Kf / Tf) * Vf) - Vr1) #16.12a
-    output_ode[local_ix[3]] = -(1.0 / Tf) * ((Kf / Tf) * Vf + Vr2) #16.12b
-    output_ode[local_ix[4]] = (1.0 / Tr) * (V_th - Vm) #16.11
+    output_ode[local_ix[1]] = dVf_dt #16.12c
+    output_ode[local_ix[2]] = dVr1_dt #16.12a
+    output_ode[local_ix[3]] = dVr2_dt #16.12b
+    output_ode[local_ix[4]] = dVm_dt #16.11
 
     #Update inner_vars
     inner_vars[Vf_var] = Vf
@@ -154,26 +153,24 @@ function mdl_avr_ode!(
     Tr = PSY.get_Tr(avr)
     Ae = PSY.get_Ae(avr)
     Be = PSY.get_Be(avr)
+    Va_min, Va_max = PSY.get_Va_lim(avr)
 
     #Compute auxiliary parameters
     Se_Vf = Ae * exp(Be * abs(Vf)) #16.13
     V_ref = V0_ref + Vs
-    Vr = K0 * Vr2 + (T4 / T3) * (Vr1 + K0 * (T2 / T1) * (V_ref - Vm)) #16.21
 
-    #Set anti-windup for Vr1. #TODO in callbacks
-    #if Vr > Vr_max
-    #    Vr = Vr_max
-    #elseif Vr < Vr_min
-    #    Vr = Vr_min
-    #end
+    # Compute block derivatives
+    _, dVm_dt = low_pass(V_th, Vm, 1.0, Tr)
+    y_ll1, dVr1_dt = lead_lag(V_ref - Vm, Vr1, K0, T2, T1)
+    y_ll2, dVr2_dt = lead_lag(y_ll1, K0 * Vr2, 1.0, K0 * T4, K0 * T3)
+    Vr = clamp(y_ll2, Va_min, Va_max)
+    _, dVf_dt = low_pass_modified(Vr, Vf, 1.0, 1.0 + Se_Vf, Te)
 
     #Compute 4 States AVR ODE:
-    output_ode[local_ix[1]] = -(1.0 / Te) * (Vf * (1.0 + Se_Vf) - Vr) #16.18
-    output_ode[local_ix[2]] = (1.0 / T1) * (K0 * (1.0 - (T2 / T1)) * (V_ref - Vm) - Vr1) #16.14
-    output_ode[local_ix[3]] =
-        (1.0 / (K0 * T3)) *
-        ((1.0 - (T4 / T3)) * (Vr1 + K0 * (T2 / T1) * (V_ref - Vm)) - K0 * Vr2)  #16.20
-    output_ode[local_ix[4]] = (1.0 / Tr) * (V_th - Vm) #16.11
+    output_ode[local_ix[1]] = dVf_dt #16.18
+    output_ode[local_ix[2]] = dVr1_dt #16.14
+    output_ode[local_ix[3]] = dVr2_dt
+    output_ode[local_ix[4]] = dVm_dt #16.11
 
     #Update inner_vars
     inner_vars[Vf_var] = Vf
