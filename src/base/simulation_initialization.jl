@@ -1,4 +1,12 @@
-function _power_flow_solution!(
+function get_flat_start(inputs::SimulationInputs)
+    bus_count = get_bus_count(inputs)
+    var_count = get_variable_count(inputs)
+    initial_conditions = zeros(var_count)
+    initial_conditions[1:bus_count] .= 1.0
+    return initial_conditions
+end
+
+function power_flow_solution!(
     initial_guess::Vector{Float64},
     sys::PSY.System,
     inputs::SimulationInputs,
@@ -20,7 +28,7 @@ function _power_flow_solution!(
     return BUILD_INCOMPLETE
 end
 
-function _initialize_static_injection!(inputs::SimulationInputs)
+function initialize_static_injection!(inputs::SimulationInputs)
     @debug "Updating Source internal voltage magnitude and angle"
     static_injection_devices = get_static_injectors(inputs)
     if !isempty(static_injection_devices)
@@ -37,7 +45,7 @@ function _initialize_static_injection!(inputs::SimulationInputs)
     return BUILD_INCOMPLETE
 end
 
-function _initialize_dynamic_injection!(
+function initialize_dynamic_injection!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
     system::PSY.System,
@@ -67,7 +75,7 @@ function _initialize_dynamic_injection!(
     return BUILD_INCOMPLETE
 end
 
-function _initialize_dynamic_branches!(
+function initialize_dynamic_branches!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
 )
@@ -124,24 +132,23 @@ end
 
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-function _calculate_initial_guess!(sim::Simulation)
+function _calculate_initial_guess!(x0_init::Vector{Float64}, sim::Simulation)
     inputs = get_simulation_inputs(sim)
     @assert sim.status == BUILD_INCOMPLETE
     while sim.status == BUILD_INCOMPLETE
         @debug "Start state intialization routine"
         TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
-            sim.status = _power_flow_solution!(sim.x0_init, get_system(sim), inputs)
+            sim.status = power_flow_solution!(sim.x0_init, get_system(sim), inputs)
         end
         TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
-            sim.status = _initialize_static_injection!(inputs)
+            sim.status = initialize_static_injection!(inputs)
         end
         TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
-            sim.status =
-                _initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
+            sim.status = initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
         end
         if has_dyn_lines(inputs)
             TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
-                sim.status = _initialize_dynamic_branches!(sim.x0_init, inputs)
+                sim.status = initialize_dynamic_branches!(sim.x0_init, inputs)
             end
         else
             @debug "No Dynamic Branches in the system"
@@ -151,8 +158,8 @@ function _calculate_initial_guess!(sim::Simulation)
     return
 end
 
-function precalculate_initial_conditions!(sim::Simulation)
-    _calculate_initial_guess!(sim)
+function precalculate_initial_conditions!(x0_init::Vector{Float64}, sim::Simulation)
+    _calculate_initial_guess!(x0_init, sim)
     return sim.status != BUILD_FAILED
 end
 
@@ -170,10 +177,16 @@ function read_initial_conditions(sim::Simulation)
     for bus in PSY.get_components(PSY.Bus, system)
         bus_n = PSY.get_number(bus)
         bus_ix = get_lookup(simulation_inputs)[bus_n]
-        V_R[bus_n] = sim.x0_init[bus_ix]
-        V_I[bus_n] = sim.x0_init[bus_ix + bus_size]
-        Vm[bus_n] = sqrt(sim.x0_init[bus_ix]^2 + sim.x0_init[bus_ix + bus_size]^2)
-        θ[bus_n] = atan(sim.x0_init[bus_ix + bus_size] / sim.x0_init[bus_ix])
+        V_R[bus_n] = get_initial_conditions(sim)[bus_ix]
+        V_I[bus_n] = get_initial_conditions(sim)[bus_ix + bus_size]
+        Vm[bus_n] = sqrt(
+            get_initial_conditions(sim)[bus_ix]^2 +
+            get_initial_conditions(sim)[bus_ix + bus_size]^2,
+        )
+        θ[bus_n] = atan(
+            get_initial_conditions(sim)[bus_ix + bus_size] /
+            get_initial_conditions(sim)[bus_ix],
+        )
     end
     results = Dict{String, Any}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
     for device in get_dynamic_injectors(simulation_inputs)
@@ -182,7 +195,7 @@ function read_initial_conditions(sim::Simulation)
         global_index = get_global_index(device)
         x0_device = Dict{Symbol, Float64}()
         for s in states
-            x0_device[s] = sim.x0_init[global_index[s]]
+            x0_device[s] = get_initial_conditions(sim)[global_index[s]]
         end
         results[name] = x0_device
     end
@@ -194,11 +207,30 @@ function read_initial_conditions(sim::Simulation)
             global_index = get_global_index(br)
             x0_br = Dict{Symbol, Float64}()
             for s in states
-                x0_br[s] = sim.x0_init[global_index[s]]
+                x0_br[s] = get_initial_conditions(sim)[global_index[s]]
             end
             printed_name = "Line " * name
             results[printed_name] = x0_br
         end
     end
     return results
+end
+
+function set_operating_point!(
+    x0_init::Vector{Float64},
+    inputs::SimulationInputs,
+    system::PSY.System,
+)
+    status = BUILD_INCOMPLETE
+    while status == BUILD_INCOMPLETE
+        status = power_flow_solution!(x0_init, system, inputs)
+        status = initialize_static_injection!(inputs)
+        status = initialize_dynamic_injection!(x0_init, inputs, system)
+        status = initialize_dynamic_branches!(x0_init, inputs)
+        status = SIMULATION_INITIALIZED
+    end
+    if status != SIMULATION_INITIALIZED
+        error("Failed to find operating point")
+    end
+    return
 end

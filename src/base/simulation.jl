@@ -261,7 +261,7 @@ function _pre_initialize_simulation!(sim::Simulation)
     _initialize_state_space(sim)
     if sim.initialized != true
         @info("Pre-Initializing Simulation States")
-        sim.initialized = precalculate_initial_conditions!(sim)
+        sim.initialized = precalculate_initial_conditions!(sim.x0_init, sim)
         if !sim.initialized
             error(
                 "The simulation failed to find an adequate initial guess for the initialization. Check the intialization routine.",
@@ -440,7 +440,6 @@ function build!(sim; kwargs...)
 end
 
 function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
-    reset_sim = sim.status == CONVERTED_FOR_SMALL_SIGNAL || reset_sim
     if sim.status == BUILD_FAILED
         error(
             "The Simulation status is $(sim.status). Can not continue, correct your inputs and build the simulation again.",

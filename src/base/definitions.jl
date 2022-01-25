@@ -147,7 +147,6 @@ Defines the status of the simulation object
     SIMULATION_STARTED = 5
     SIMULATION_FINALIZED = 6
     SIMULATION_FAILED = 7
-    CONVERTED_FOR_SMALL_SIGNAL = 8
 end
 
 const BUILD_TIMER = TimerOutputs.TimerOutput()

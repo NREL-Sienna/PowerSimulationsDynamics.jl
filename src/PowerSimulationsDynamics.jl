@@ -30,6 +30,7 @@ export LoadChange
 # export BusTrip
 
 # Export for routines
+export get_jacobian
 export small_signal_analysis
 export get_state_series
 export get_voltage_magnitude_series

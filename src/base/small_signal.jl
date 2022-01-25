@@ -69,7 +69,7 @@ function _make_reduced_jacobian_index(global_index, diff_states)
 end
 
 function _reduce_jacobian(
-    jacobian::SparseArrays.SparseMatrixCSC{Float64, Int},
+    jacobian::Matrix{Float64},
     diff_states::Vector{Bool},
     mass_matrix::LinearAlgebra.Diagonal{Float64, Vector{Float64}},
     global_index::MAPPING_DICT,
@@ -100,7 +100,7 @@ function _reduce_jacobian(
     gx = @view jacobian[alg_states, diff_states]
     M = @view mass_matrix[diff_states, diff_states]
     inv_diag_M = 1.0 ./ LinearAlgebra.diag(M)
-    inv_g = inv(Matrix(gy))
+    inv_g = inv(gy)
     reduced_jacobian = inv_diag_M .* (fx - fy * inv_g * gx)
     return reduced_jacobian
 end
@@ -154,20 +154,18 @@ function _get_participation_factors(
     return participation_factors
 end
 
-function small_signal_analysis(sim::Simulation; kwargs...)
-    #simulation_pre_step!(sim, get(kwargs, :reset_simulation, false), Real)
-    #sim.status = CONVERTED_FOR_SMALL_SIGNAL
-    inputs = get_simulation_inputs(sim)
+function _small_signal_analysis(
+    jacobian::Matrix{Float64},
+    x_eval::Vector{Float64},
+    inputs::SimulationInputs,
+    multimachine::Bool,
+)
     mass_matrix = get_mass_matrix(inputs)
-    x_eval = get(kwargs, :operating_point, sim.x0_init)
-    jacwrapper = _get_jacobian(sim)
-    jacwrapper(x_eval)
-    jacobian = jacwrapper.Jv
     diff_states = get_DAE_vector(inputs)
     global_index = make_global_state_map(inputs)
     jac_index = _make_reduced_jacobian_index(global_index, diff_states)
     reduced_jacobian = _reduce_jacobian(jacobian, diff_states, mass_matrix, global_index)
-    eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, sim.multimachine)
+    eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, multimachine)
     damping = _get_damping(eigen_vals, jac_index)
     stable = _determine_stability(eigen_vals)
     participation_factors = _get_participation_factors(R_eigen_vect, jac_index)
@@ -181,4 +179,28 @@ function small_signal_analysis(sim::Simulation; kwargs...)
         damping,
         participation_factors,
     )
+end
+
+function _small_signal_analysis(
+    ::Type{T},
+    inputs::SimulationInputs,
+    x_eval::Vector{Float64},
+    multimachine = true,
+) where {T <: SimulationModel}
+    jacwrapper = get_jacobian(T, inputs, x_eval, 0)
+    return _small_signal_analysis(jacwrapper.Jv, jacwrapper.x, inputs, multimachine)
+end
+
+function small_signal_analysis(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
+    inputs = get_simulation_inputs(sim)
+    x_eval = get(kwargs, :operating_point, get_initial_conditions(sim))
+    return _small_signal_analysis(T, inputs, x_eval, sim.multimachine)
+end
+
+function small_signal_analysis(::Type{T}, system::PSY.System) where {T <: SimulationModel}
+    simulation_system = deepcopy(system)
+    inputs = SimulationInputs(T, simulation_system, ReferenceBus)
+    x0_init = get_flat_start(inputs)
+    set_operating_point!(x0_init, inputs, system)
+    return _small_signal_analysis(T, inputs, x0_init)
 end

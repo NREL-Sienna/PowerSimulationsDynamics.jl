@@ -522,3 +522,31 @@ end
     @test !isempty(PSY.get_components(PSY.DynamicBranch, omib_sys_copy))
     @test isempty(PSY.get_components(PSY.Line, omib_sys_copy))
 end
+
+@testset "Jacobian" begin
+    for model_type in [ResidualModel, MassMatrixModel]
+        omib_sys_copy = deepcopy(omib_sys)
+        @test_throws IS.ConflictingInputsError get_jacobian(model_type, omib_sys_copy, -1)
+        jac = get_jacobian(model_type, omib_sys_copy)
+        @test isa(jac, Function)
+        @test isa(jac.Jv, PSID.SparseArrays.SparseMatrixCSC{Float64, Int64})
+
+        # ODE Jacobian
+        test_x = deepcopy(jac.x)
+        test_JM = similar(jac.Jv)
+        jac(test_JM, test_x, 0, 0)
+        @test test_JM == jac.Jv
+
+        # DAE Jacobian
+        test_x = deepcopy(jac.x)
+        test_dx = similar(jac.x)
+        test_JM = similar(jac.Jv)
+        jac(test_JM, test_dx, test_x, 0, 0.0, 0)
+        @test test_JM == jac.Jv
+
+        jac_dense = get_jacobian(model_type, omib_sys_copy, 0)
+        @test isa(jac_dense, Function)
+        @test !isa(jac_dense.Jv, PSID.SparseArrays.SparseMatrixCSC{Float64, Int64})
+        @test isa(jac_dense.Jv, Matrix{Float64})
+    end
+end
