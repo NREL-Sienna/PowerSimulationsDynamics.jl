@@ -119,7 +119,8 @@ function high_pass_mass_matrix(
     K::Float64,
     T::Float64,
 ) where {Z <: ACCEPTED_REAL_TYPES}
-    return x + (K / T) * u, T * high_pass(u, x, K, T)[2]
+    K_T = T < eps() ? 0.0 : (K / T)
+    return x + K_T * u, -(K_T * u + x)
 end
 
 """
@@ -150,7 +151,8 @@ function lead_lag_mass_matrix(
     T1::Float64,
     T2::Float64,
 ) where {Z <: ACCEPTED_REAL_TYPES}
-    return x + (K * T1 / T2) * u, T2 * lead_lag(u, x, K, T1, T2)[2]
+    T1_T2 = T2 < eps() ? 0.0 : (T1 / T2)
+    return x + (K * T1_T2) * u, K * (1 - T1_T2) * u - x
 end
 
 """
@@ -185,7 +187,7 @@ function low_pass_2nd_mass_matrix(
     T1::Float64,
     T2::Float64,
 ) where {Z <: ACCEPTED_REAL_TYPES}
-    dxdt = T2 * low_pass_2nd(u, x, y, K, T1, T2)[2]
+    dxdt = K * u - T1 * x - y
     dydt = x
     return y, dxdt, dydt
 end
@@ -210,9 +212,9 @@ function lead_lag_2nd(
     T3::Float64,
     T4::Float64,
 ) where {Z <: ACCEPTED_REAL_TYPES}
-    dx1dt = x2
-    dx2dt = (1.0 / T2) * (u - T1 * x2 - x1)
-    y = (T4 / T2) * u + (T3 - T4 * T1 / T2) * x2 + (1.0 - T4 / T2) * x1
+    dx1dt = (1.0 / T2) * (u - T1 * x1 - x2)
+    dx2dt = x1
+    y = (T4 / T2) * u + (T3 - T1 * T4 / T2) * x1 + (1.0 - T4 / T2) * x2
     return y, dx1dt, dx2dt
 end
 
@@ -225,9 +227,10 @@ function lead_lag_2nd_mass_matrix(
     T3::Float64,
     T4::Float64,
 ) where {Z <: ACCEPTED_REAL_TYPES}
-    dx1dt = x2
-    dx2dt = u - T1 * x2 - x1
-    y = (T4 / T2) * u + (T3 - T4 * T1 / T2) * x2 + (1.0 - T4 / T2) * x1
+    dx1dt = u - T1 * x1 - x2
+    dx2dt = x1
+    T4_T2 = T2 < eps() ? 0.0 : (T4 / T2)
+    y = T4_T2 * u + (T3 - T1 * T4_T2) * x1 + (1.0 - T4_T2) * x2
     return y, dx1dt, dx2dt
 end
 
