@@ -63,6 +63,21 @@ function low_pass_nonwindup(
     return y_sat, binary_logic * dydt
 end
 
+function low_pass_nonwindup_mass_matrix(
+    u::Z,
+    y::Z,
+    K::Float64,
+    T::Float64,
+    y_min::Float64,
+    y_max::Float64,
+) where {Z <: ACCEPTED_REAL_TYPES}
+    dydt = K * u - y
+    y_sat = clamp(y, y_min, y_max)
+    # Non Windup logic from IEEE Std 421.5
+    binary_logic = ((y >= y_max) && (dydt > 0)) || ((y <= y_min) && (dydt < 0)) ? 0.0 : 1.0
+    return y_sat, binary_logic * dydt
+end
+
 # Does not accept T = 0
 function low_pass_nonwindup_ramp_limits(
     u::Z,
@@ -135,7 +150,7 @@ function lead_lag_mass_matrix(
     T1::Float64,
     T2::Float64,
 ) where {Z <: ACCEPTED_REAL_TYPES}
-    return x + (K * T1 / T2) * u, T2 * lead_lag[2]
+    return x + (K * T1 / T2) * u, T2 * lead_lag(u, x, K, T1, T2)[2]
 end
 
 """
