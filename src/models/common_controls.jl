@@ -12,21 +12,21 @@ u -> │ ────────────│ -> y
 """
 function low_pass_modified_mass_matrix(
     u::Z,
-    y::Z,
+    y::V,
     K::Float64,
     K_den::W,
     T::Float64,
-) where {W, Z <: ACCEPTED_REAL_TYPES}
+) where {V, W, Z <: ACCEPTED_REAL_TYPES}
     return y, K * u - K_den * y
 end
 
 function low_pass_modified(
     u::Z,
-    y::Z,
+    y::V,
     K::Float64,
     K_den::W,
     T::Float64,
-) where {W, Z <: ACCEPTED_REAL_TYPES}
+) where {V, W, Z <: ACCEPTED_REAL_TYPES}
     return y, (1.0 / T) * low_pass_modified_mass_matrix(u, y, K, K_den, T)[2]
 end
 
@@ -42,14 +42,14 @@ u -> │ ────── │ -> y
 # Use this one if T = 0 is allowed, and let the mass matrix take care of it.
 function low_pass_mass_matrix(
     u::Z,
-    y::Z,
+    y::V,
     K::Float64,
     T::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+) where {V, Z <: ACCEPTED_REAL_TYPES}
     return low_pass_modified_mass_matrix(u, y, K, 1.0, T)
 end
 
-function low_pass(u::Z, y::Z, K::Float64, T::Float64) where {Z <: ACCEPTED_REAL_TYPES}
+function low_pass(u::Z, y::V, K::Float64, T::Float64) where {V, Z <: ACCEPTED_REAL_TYPES}
     return low_pass_modified(u, y, K, 1.0, T)
 end
 
@@ -68,12 +68,12 @@ u -> │ ────── │ -> y
 
 function low_pass_nonwindup_mass_matrix(
     u::Z,
-    y::Z,
+    y::V,
     K::Float64,
     T::Float64,
     y_min::Float64,
     y_max::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+) where {V, Z <: ACCEPTED_REAL_TYPES}
     dydt = K * u - y
     y_sat = clamp(y, y_min, y_max)
     # Non Windup logic from IEEE Std 421.5
@@ -84,12 +84,12 @@ end
 # Does not accept T = 0
 function low_pass_nonwindup(
     u::Z,
-    y::Z,
+    y::V,
     K::Float64,
     T::Float64,
     y_min::Float64,
     y_max::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+) where {V, Z <: ACCEPTED_REAL_TYPES}
     y_sat, dydt_scaled = low_pass_nonwindup_mass_matrix(u, y, K, T, y_min, y_max)
     return y_sat, (1.0 / T) * dydt_scaled
 end
@@ -97,14 +97,14 @@ end
 # Does not accept T = 0
 function low_pass_nonwindup_ramp_limits(
     u::Z,
-    y::Z,
+    y::V,
     K::Float64,
     T::Float64,
     y_min::Float64,
     y_max::Float64,
     dy_min::Float64,
     dy_max::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+) where {V, Z <: ACCEPTED_REAL_TYPES}
     y, dydt = low_pass(u, y, K, T)
     y_sat = clamp(y, y_min, y_max)
     dydt_sat = clamp(dydt, dy_min, dy_max)
