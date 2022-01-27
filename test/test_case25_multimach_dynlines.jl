@@ -63,7 +63,7 @@ Pref_change = ControlReferenceChange(1.0, gen2, :P_ref, 0.9);
         v_pscad = M[:, 2]
 
         # Relaxed constraint to account for mismatch in damping
-        @test LinearAlgebra.norm(v - v_pscad) <= 0.05
+        @test LinearAlgebra.norm(v - v_pscad) <= 0.1
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
     finally
         @info("removing test files")
@@ -106,7 +106,7 @@ end
         v_pscad = M[:, 2]
 
         # Relaxed constraint to account for mismatch in damping
-        @test LinearAlgebra.norm(v - v_pscad) <= 0.05
+        @test LinearAlgebra.norm(v - v_pscad) <= 0.1
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
     finally
         @info("removing test files")
