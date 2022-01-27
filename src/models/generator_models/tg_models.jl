@@ -63,25 +63,23 @@ function mdl_tg_ode!(
     T3 = PSY.get_T3(tg)
     T4 = PSY.get_T4(tg)
     T5 = PSY.get_T5(tg)
+    P_min, P_max = PSY.get_valve_position_limits(tg)
 
     #Compute auxiliary parameters
-    P_in = P_ref + inv_R * (ω_ref - ω[1])
+    P_in_sat = clamp(P_ref + inv_R * (ω_ref - ω[1]), P_min, P_max)
 
-    #Set anti-windup for P_in. #TODO in callbacks
-    #if P_in > P_max
-    #    P_in = P_max
-    #elseif P_in < P_min
-    #    P_in = P_min
-    #end
+    #Compute block derivatives
+    _, dxg1_dt = low_pass(P_in_sat, x_g1, 1.0, Ts)
+    y_ll, dxg2_dt = lead_lag(x_g1, x_g2, 1.0, T3, Tc)
+    τ_m, dxg3_dt = lead_lag(y_ll, x_g3, 1.0, T4, T5)
 
     #Compute 3 States TG ODE:
-    output_ode[local_ix[1]] = (1.0 / Ts) * (P_in - x_g1)
-    output_ode[local_ix[2]] = (1.0 / Tc) * ((1.0 - T3 / Tc) * x_g1 - x_g2)
-    output_ode[local_ix[3]] =
-        (1.0 / T5) * ((1.0 - T4 / T5) * (x_g2 + (T3 / Tc) * x_g1) - x_g3)
+    output_ode[local_ix[1]] = dxg1_dt
+    output_ode[local_ix[2]] = dxg2_dt
+    output_ode[local_ix[3]] = dxg3_dt
 
     #Update mechanical torque
-    inner_vars[τm_var] = x_g3 + (T4 / T5) * (x_g2 + (T3 / Tc) * x_g1)
+    inner_vars[τm_var] = τ_m
 
     return
 end
@@ -115,18 +113,12 @@ function mdl_tg_ode!(
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
 
-    #Compute auxiliary parameters
-    τ_m = inv_R * (T1 / T2) * (ω_ref - ω[1]) + P_ref / 1.0 + xg
-
-    #Set anti-windup for τ_m. NOT WORKING
-    #if τ_m > τ_max
-    #    τ_m = τ_max
-    #elseif τ_m < τ_min
-    #    τ_m = τ_min
-    #end
+    #Compute block derivatives
+    y_ll1, dxg_dt = lead_lag(inv_R * (ω_ref - ω[1]), xg, 1.0, T1, T2)
+    τ_m = y_ll1 + P_ref / 1.0
 
     #Compute 1 State TG ODE:
-    output_ode[local_ix[1]] = (1.0 / T2) * (inv_R * (1 - T2 / T1) * (ω_ref - ω[1]) - xg)
+    output_ode[local_ix[1]] = dxg_dt
 
     #Update mechanical torque
     inner_vars[τm_var] = τ_m
