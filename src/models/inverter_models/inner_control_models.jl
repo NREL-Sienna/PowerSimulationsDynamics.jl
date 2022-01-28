@@ -53,6 +53,8 @@ function _mdl_ode_RE_inner_controller_B!(
     K_qv = PSY.get_K_qv(inner_control)
     I_ql1, I_qh1 = PSY.get_Iqinj_lim(inner_control)
     V_ref0 = PSY.get_V_ref0(inner_control)
+    T_rv = PSY.get_T_rv(inner_control)
+    T_iq = PSY.get_T_iq(inner_control)
 
     #Read local states
     Vt_filt = inner_controller_states[1]
@@ -68,8 +70,8 @@ function _mdl_ode_RE_inner_controller_B!(
     Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
 
     #ODE update
-    inner_controller_ode[1] = V_t - Vt_filt
-    inner_controller_ode[2] = Iq_oc - I_icv
+    inner_controller_ode[1] = low_pass_mass_matrix(V_t, Vt_filt, 1.0, T_rv)[2]
+    inner_controller_ode[2] = low_pass_mass_matrix(Iq_oc, I_icv, 1.0, T_iq)[2]
 
     #Update Inner Vars
     inner_vars[Id_ic_var] = Ip_cmd
@@ -106,6 +108,7 @@ function _mdl_ode_RE_inner_controller_B!(
     dbd1, dbd2 = PSY.get_dbd_pnts(inner_control)
     K_qv = PSY.get_K_qv(inner_control)
     I_ql1, I_qh1 = PSY.get_Iqinj_lim(inner_control)
+    T_rv = PSY.get_T_rv(inner_control)
 
     #Read local states
     Vt_filt = inner_controller_states[1]
@@ -114,8 +117,10 @@ function _mdl_ode_RE_inner_controller_B!(
     #Compute additional states
     V_err = deadband_function(V_ref0 - Vt_filt, dbd1, dbd2)
     Iq_inj = clamp(K_qv * V_err, I_ql1, I_qh1)
-    #To do: Limits on PI non-windup
-    I_icv = K_vp * V_oc + K_vi * ξ_icv
+
+    #Compute block derivatives
+    _, dVtfilt_dt = low_pass_mass_matrix(V_t, Vt_filt, 1.0, T_rv)
+    I_icv, dξicv_dt = pi_block(V_oc, ξ_icv, K_vp, K_vi)
     Iq_cmd = I_icv + Iq_inj
     Ip_min, Ip_max, Iq_min, Iq_max =
         current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, Vt_filt, Ip_oc, Iq_cmd)
@@ -123,8 +128,8 @@ function _mdl_ode_RE_inner_controller_B!(
     Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
 
     #ODE update
-    inner_controller_ode[1] = V_t - Vt_filt
-    inner_controller_ode[2] = V_oc
+    inner_controller_ode[1] = dVtfilt_dt
+    inner_controller_ode[2] = dξicv_dt
 
     #Update Inner Vars
     inner_vars[Id_ic_var] = Ip_cmd
@@ -206,44 +211,36 @@ function mdl_inner_ode!(
     Vd_filter_ref = (v_refr - rv * I_dq_filter[d] + ω_oc * lv * I_dq_filter[q])
     Vq_filter_ref = (-rv * I_dq_filter[q] - ω_oc * lv * I_dq_filter[d])
 
-    #Voltage Control ODEs
+    #Voltage Control PI Blocks
+    Id_pi, dξd_dt = pi_block(Vd_filter_ref - V_dq_filter[d], ξ_d, kpv, kiv)
+    Iq_pi, dξq_dt = pi_block(Vq_filter_ref - V_dq_filter[q], ξ_q, kpv, kiv)
     #PI Integrator (internal state)
-    output_ode[local_ix[1]] = (Vd_filter_ref - V_dq_filter[d])
-    output_ode[local_ix[2]] = (Vq_filter_ref - V_dq_filter[q])
+    output_ode[local_ix[1]] = dξd_dt
+    output_ode[local_ix[2]] = dξq_dt
 
-    #Output Control Signal - Links to SRF Current Controller
-    Id_cnv_ref = (
-        kpv * (Vd_filter_ref - V_dq_filter[d]) + kiv * ξ_d - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
-    )
-
-    Iq_cnv_ref = (
-        kpv * (Vq_filter_ref - V_dq_filter[q]) +
-        kiv * ξ_q +
-        cf * ω_oc * V_dq_filter[d] +
-        kffi * I_dq_filter[q]
-    )
+    #Compensate output Control Signal - Links to SRF Current Controller
+    Id_cnv_ref = Id_pi - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
+    Iq_cnv_ref = Iq_pi + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
 
     ## SRF Current Control ##
-    #Current Control ODEs
+    #Current Control PI Blocks
+    Vd_pi, dγd_dt = pi_block(Id_cnv_ref - I_dq_cnv[d], γ_d, kpc, kic)
+    Vq_pi, dγq_dt = pi_block(Iq_cnv_ref - I_dq_cnv[q], γ_q, kpc, kic)
     #PI Integrator (internal state)
-    output_ode[local_ix[3]] = Id_cnv_ref - I_dq_cnv[d]
-    output_ode[local_ix[4]] = Iq_cnv_ref - I_dq_cnv[q]
+    output_ode[local_ix[3]] = dγd_dt
+    output_ode[local_ix[4]] = dγq_dt
 
-    #References for Converter Output Voltage
-    Vd_cnv_ref = (
-        kpc * (Id_cnv_ref - I_dq_cnv[d]) + kic * γ_d - ω_oc * lf * I_dq_cnv[q] +
-        kffv * V_dq_filter[d] - kad * (V_dq_filter[d] - ϕ_d)
-    )
-    Vq_cnv_ref = (
-        kpc * (Iq_cnv_ref - I_dq_cnv[q]) +
-        kic * γ_q +
-        ω_oc * lf * I_dq_cnv[d] +
-        kffv * V_dq_filter[q] - kad * (V_dq_filter[q] - ϕ_q)
-    )
+    #Compensate References for Converter Output Voltage
+    Vd_cnv_ref =
+        Vd_pi - ω_oc * lf * I_dq_cnv[q] + kffv * V_dq_filter[d] -
+        kad * (V_dq_filter[d] - ϕ_d)
+    Vq_cnv_ref =
+        Vq_pi + ω_oc * lf * I_dq_cnv[d] + kffv * V_dq_filter[q] -
+        kad * (V_dq_filter[q] - ϕ_q)
 
     #Active Damping LPF (internal state)
-    output_ode[local_ix[5]] = ωad * V_dq_filter[d] - ωad * ϕ_d
-    output_ode[local_ix[6]] = ωad * V_dq_filter[q] - ωad * ϕ_q
+    output_ode[local_ix[5]] = low_pass(V_dq_filter[d], ϕ_d, 1.0, 1.0 / ωad)[2]
+    output_ode[local_ix[6]] = low_pass(V_dq_filter[q], ϕ_q, 1.0, 1.0 / ωad)[2]
 
     #Update inner_vars
     #Modulation Commands to Converter
@@ -304,22 +301,16 @@ function mdl_inner_ode!(
     Id_cnv_ref = inner_vars[Id_oc_var]
     Iq_cnv_ref = inner_vars[Iq_oc_var]
 
-    #Current Control ODEs
+    #Current Control PI Blocks
+    Vd_pi, dγd_dt = pi_block(Id_cnv_ref - I_dq_cnv[d], γ_d, kpc, kic)
+    Vq_pi, dγq_dt = pi_block(Iq_cnv_ref - I_dq_cnv[q], γ_q, kpc, kic)
     #PI Integrator (internal state)
-    output_ode[local_ix[1]] = Id_cnv_ref - I_dq_cnv[d]
-    output_ode[local_ix[2]] = Iq_cnv_ref - I_dq_cnv[q]
+    output_ode[local_ix[1]] = dγd_dt
+    output_ode[local_ix[2]] = dγq_dt
 
-    #References for Converter Output Voltage
-    Vd_cnv_ref = (
-        kpc * (Id_cnv_ref - I_dq_cnv[d]) + kic * γ_d - ω_oc * lf * I_dq_cnv[q] +
-        kffv * V_dq_filter[d]
-    )
-    Vq_cnv_ref = (
-        kpc * (Iq_cnv_ref - I_dq_cnv[q]) +
-        kic * γ_q +
-        ω_oc * lf * I_dq_cnv[d] +
-        kffv * V_dq_filter[q]
-    )
+    #Compensate references for Converter Output Voltage
+    Vd_cnv_ref = Vd_pi - ω_oc * lf * I_dq_cnv[q] + kffv * V_dq_filter[d]
+    Vq_cnv_ref = Vq_pi + ω_oc * lf * I_dq_cnv[d] + kffv * V_dq_filter[q]
 
     #Update inner_vars
     #Modulation Commands to Converter

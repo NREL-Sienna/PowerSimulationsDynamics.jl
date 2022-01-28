@@ -49,20 +49,20 @@ function mdl_freq_estimator_ode!(
     #Compute 6 states ODEs (D'Arco EPSR122 Model)
     #Output Voltage LPF (internal state)
     #𝜕vpll_d/𝜕t, D'Arco ESPR122 eqn. 12
-    output_ode[local_ix[1]] = ω_lp * (V_dq_pll[d] - vpll_d)
+    output_ode[local_ix[1]] = low_pass(V_dq_pll[d], vpll_d, 1.0, 1.0 / ω_lp)[2]
     #𝜕vpll_q/𝜕t, D'Arco ESPR122 eqn. 12
-    output_ode[local_ix[2]] = ω_lp * (V_dq_pll[q] - vpll_q)
+    output_ode[local_ix[2]] = low_pass(V_dq_pll[q], vpll_q, 1.0, 1.0 / ω_lp)[2]
     #PI Integrator (internal state)
+    Δω_pi, dϵ_dt = pi_block(atan(vpll_q / vpll_d), ϵ_pll, kp_pll, ki_pll)
     #𝜕dϵ_pll/𝜕t, D'Arco ESPR122 eqn. 13
-    output_ode[local_ix[3]] = atan(vpll_q / vpll_d)
+    output_ode[local_ix[3]] = dϵ_dt
     #PLL Frequency Deviation (internal state)
     #𝜕θ_pll/𝜕t, D'Arco ESPR122 eqn. 15
-    output_ode[local_ix[4]] = (ωb * kp_pll * atan(vpll_q / vpll_d) + ωb * ki_pll * ϵ_pll)
+    output_ode[local_ix[4]] = ωb * Δω_pi
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    inner_vars[ω_freq_estimator_var] =
-        (kp_pll * atan(vpll_q / vpll_d) + ki_pll * ϵ_pll + 1.0)
+    inner_vars[ω_freq_estimator_var] = Δω_pi + 1.0
     inner_vars[θ_freq_estimator_var] = θ_pll
 end
 
@@ -109,17 +109,18 @@ function mdl_freq_estimator_ode!(
 
     #Output Voltage LPF (internal state)
     #𝜕vpll_q/𝜕t, Low Pass Filter, Johnson COMPEL2017 eqn. 3.1
-    output_ode[local_ix[1]] = ω_lp * (V_dq_pll[q] - vpll_q)
+    output_ode[local_ix[1]] = low_pass(V_dq_pll[q], vpll_q, 1.0, 1.0 / ω_lp)[2]
     #PI Integrator (internal state)
+    Δω_pi, dϵ_dt = pi_block(vpll_q, ϵ_pll, kp_pll, ki_pll)
     #𝜕dϵ_pll/𝜕t, Johnson COMPEL2017 eqn. 3.2
-    output_ode[local_ix[2]] = vpll_q
+    output_ode[local_ix[2]] = dϵ_dt
     #PLL Frequency Deviation (internal state)
     #𝜕θ_pll/𝜕t, DJohnson COMPEL2017 eqn. 3.3
-    output_ode[local_ix[3]] = ωb * (kp_pll * vpll_q + ki_pll * ϵ_pll)
+    output_ode[local_ix[3]] = ωb * Δω_pi
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    inner_vars[ω_freq_estimator_var] = (kp_pll * vpll_q + ki_pll * ϵ_pll + 1.0)
+    inner_vars[ω_freq_estimator_var] = Δω_pi + 1.0
     inner_vars[θ_freq_estimator_var] = θ_pll
 end
 
