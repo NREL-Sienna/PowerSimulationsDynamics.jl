@@ -151,6 +151,7 @@ function mdl_pss_ode!(
     A1 = PSY.get_A1(pss)
     A2 = PSY.get_A2(pss)
     A3 = PSY.get_A3(pss)
+    A4 = PSY.get_A4(pss)
     A5 = PSY.get_A5(pss)
     A6 = PSY.get_A6(pss)
     T1 = PSY.get_T1(pss)
@@ -165,29 +166,36 @@ function mdl_pss_ode!(
     V_cl = PSY.get_Vcl(pss)
 
     #Compute Parameter Ratios
-    A6_A2 = A2 < eps() ? 0.0 : (A6 / A2)
-    T1_T2 = T2 < eps() ? 0.0 : (T1 / T2)
-    T3_T4 = T4 < eps() ? 0.0 : (T3 / T4)
-    KsT5_T6 = T6 < eps() ? 0.0 : (Ks * T5 / T6)
+    #A6_A2 = A2 < eps() ? 0.0 : (A6 / A2)
+    #T1_T2 = T2 < eps() ? 0.0 : (T1 / T2)
+    #T3_T4 = T4 < eps() ? 0.0 : (T3 / T4)
+    #KsT5_T6 = T6 < eps() ? 0.0 : (Ks * T5 / T6)
 
     #Compute output of the filter
-    y_f = A6_A2 * x_p2 + (A5 - A1 * A6_A2) * x_p3 + (1.0 - A6_A2) * x_p4
+    #y_f = A6_A2 * x_p2 + (A5 - A1 * A6_A2) * x_p3 + (1.0 - A6_A2) * x_p4
 
     #Define Output of Lead-Lag blocks
-    y_LL1 = x_p5 + T1_T2 * y_f
-    y_LL2 = x_p6 + T3_T4 * y_LL1
+    #y_LL1 = x_p5 + T1_T2 * y_f
+    #y_LL2 = x_p6 + T3_T4 * y_LL1
 
     #Define Output of Feedback block
-    y_out = KsT5_T6 * (y_LL2 - x_p7)
+    #y_out = KsT5_T6 * (y_LL2 - x_p7)
+
+    # Compute block derivatives
+    _, dxp1_dt, dxp2_dt = low_pass_2nd_mass_matrix(u, x_p1, x_p2, 1.0, A3, A4)
+    y_f, dxp3_dt, dxp4_dt = lead_lag_2nd_mass_matrix(x_p2, x_p3, x_p4, A1, A2, A5, A6)
+    y_LL1, dxp5_dt = lead_lag_mass_matrix(y_f, x_p5, 1.0, T1, T2)
+    y_LL2, dxp6_dt = lead_lag_mass_matrix(y_LL1, x_p6, 1.0, T3, T4)
+    y_out, dxp7_dt = high_pass_mass_matrix(y_LL2, x_p7, Ks * T5, T6)
 
     #Compute 7 states PSS ODE
-    output_ode[local_ix[1]] = u - A3 * x_p1 - x_p2  # dx_p1/dt
-    output_ode[local_ix[2]] = x_p1  # dx_p2/dt
-    output_ode[local_ix[3]] = x_p2 - A1 * x_p3 - x_p4 # dx_p3/dt
-    output_ode[local_ix[4]] = x_p3 # dx_p4/dt
-    output_ode[local_ix[5]] = y_f * (1.0 - T1_T2) - x_p5 # dx_p5/dt
-    output_ode[local_ix[6]] = y_LL1 * (1.0 - T3_T4) - x_p6 # dx_p6/dt
-    output_ode[local_ix[7]] = y_LL2 - x_p7 # dx_p7/dt
+    output_ode[local_ix[1]] = dxp1_dt
+    output_ode[local_ix[2]] = dxp2_dt
+    output_ode[local_ix[3]] = dxp3_dt
+    output_ode[local_ix[4]] = dxp4_dt
+    output_ode[local_ix[5]] = dxp5_dt
+    output_ode[local_ix[6]] = dxp6_dt
+    output_ode[local_ix[7]] = dxp7_dt
 
     #Compute and update output signal
     V_ss = clamp(y_out, Ls_min, Ls_max)

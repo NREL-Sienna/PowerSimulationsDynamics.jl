@@ -197,8 +197,8 @@ tg_type1() = TGTypeI(
 
 tg_type2() = TGTypeII(
     0.05, #R
-    2.0, #T1
-    1.0, #T2
+    1.0, #T1
+    2.0, #T2
     (min = 0.1, max = 1.5), #τ_lims
 )
 
