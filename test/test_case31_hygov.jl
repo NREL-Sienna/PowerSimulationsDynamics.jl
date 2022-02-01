@@ -151,7 +151,7 @@ end
             path,
             (0.0, 2.0),
             #The system is small signal unstable in the margins
-            ControlReferenceChange(1.0, gen_dynamic, :P_ref, 0.6)
+            ControlReferenceChange(1.0, gen_dynamic, :P_ref, 0.6),
         )
         small_sig = small_signal_analysis(sim)
         @test execute!(sim, IDA(), dtmax = 0.01) == PSID.SIMULATION_FINALIZED
@@ -162,7 +162,7 @@ end
             path,
             (0.0, 2.0),
             #The system is small signal unstable in the margins
-            ControlReferenceChange(1.0, gen_dynamic, :P_ref, 0.6)
+            ControlReferenceChange(1.0, gen_dynamic, :P_ref, 0.6),
         )
         small_sig = small_signal_analysis(sim)
         @test execute!(sim, Rodas4()) == PSID.SIMULATION_FINALIZED
