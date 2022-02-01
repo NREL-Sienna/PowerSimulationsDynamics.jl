@@ -252,7 +252,7 @@ function initialize_tg!(
         out[4] = (1.0 - h)
         out[5] = (x_g4 - q_nl) * h * At - D_T * Δω * x_g3 - τm0
     end
-    P0 = R*(q_nl + τm0/At) # mechanical power initial guess. It migth be different than electrical output power
+    P0 = R * (q_nl + τm0 / At) # mechanical power initial guess. It migth be different than electrical output power
     x0 = [P0, 0, (r * Tr) * P0 / R, P0 / R, P0 / R]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
