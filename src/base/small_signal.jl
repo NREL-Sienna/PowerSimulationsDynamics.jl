@@ -111,7 +111,7 @@ function _get_eigenvalues(reduced_jacobian::AbstractArray{Float64}, multimachine
         @warn(
             "No Infinite Bus found. Confirm stability directly checking eigenvalues.\nIf all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable."
         )
-        #@debug(eigen_vals)
+        @debug(eigen_vals)
     end
     return eigen_vals, R_eigen_vect
 end
