@@ -142,7 +142,7 @@ the form:
 
 ```math
 \begin{align}
-  JM = \gamma * I .+ J(x)
+  JM = \gamma * I + J(x)
 \end{align}
 ```
 
