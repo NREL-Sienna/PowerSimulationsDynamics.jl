@@ -133,7 +133,7 @@ This version complied with the requirements to be used in DiffEq for ODE solvers
 p and t aren't used they just mean to match the interfaces. See [DiffEqDocs](https://diffeq.sciml.ai/stable/features/performance_overloads/#Examples)
 
 ```julia
-jacobian(JM, dx, x, p, gamma, t,)
+jacobian(JM, dx, x, p, gamma, t)
 ```
 
 This version complied with the requirements to be used in DiffEq for DAE solvers.
