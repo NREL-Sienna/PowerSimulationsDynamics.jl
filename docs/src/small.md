@@ -91,3 +91,60 @@ that defines our reduced system for the differential variables
 ```
 
 on which we can compute its eigenvalues to analyze local stability.
+
+## Accessing the Jacobian function
+
+You can retrieve the Jacobian function for a simulation using the `get_jacobian` function as follows:
+
+```julia
+jacobian = function get_jacobian(ResidualModel, system)
+```
+
+optionally you can pass the number of iterations to check for sparsity as follows:
+
+```julia
+jacobian = function get_jacobian(ResidualModel, system, 0)
+```
+
+if you specify 0, the jacobian function will use a full matrix.
+
+The return of `get_jacobian` is known as a functor in Julia and can be used to make evaluations.
+Currently, any function can be evaluated with the following inputs:
+
+```julia
+jacobian(x)
+```
+
+This version of the function is type unstable should only be used for non-critial ops. It works
+to get the eigenvalues given an operating point `x`
+
+```julia
+jacobian(JM, x)
+```
+
+This version evaluates in place the value of the jacobian for an operating point `x` and writes
+to the matrix `JM`
+
+```julia
+jacobian(JM, x, p, t)
+```
+
+This version complied with the requirements to be used in DiffEq for ODE solvers.
+p and t aren't used they just mean to match the interfaces. See [DiffEqDocs](https://diffeq.sciml.ai/stable/features/performance_overloads/#Examples)
+
+```julia
+jacobian(JM, dx, x, p, gamma, t)
+```
+
+This version complied with the requirements to be used in DiffEq for DAE solvers.
+p and t aren't used they just mean to match the interfaces. It assumes that the jacobian has
+the form:
+
+```math
+\begin{align}
+  JM = \gamma * I + J(x)
+\end{align}
+```
+
+See [DiffEqDocs](https://diffeq.sciml.ai/stable/features/performance_overloads/#Examples) for
+additional details.
