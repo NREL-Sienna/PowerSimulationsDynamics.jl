@@ -112,12 +112,36 @@ The return of `get_jacobian` is known as a functor in Julia and can be used to m
 Currently, any function can be evaluated with the following inputs:
 
 ```julia
-# This version of the function is type unstable should only be used for non-critial ops
 jacobian(x)
+```
+
+This version of the function is type unstable should only be used for non-critial ops. It works
+to get the eigenvalues given an operating point `x`
+
+```julia
 jacobian(JM, x)
+```
+
+This version evaluates in place the value of the jacobian for an operating point `x` and writes
+to the matrix `JM`
+
+```julia
 jacobian(JM, x, p, t)
+```
+
+This version complied with the requirements to be used in DiffEq for ODE solvers.
+p and t aren't used they just mean to match the interfaces.
+
+```julia
 jacobian(JM, dx, x, p, gamma, t,)
 ```
 
-where `JM` is a matrix to store the Jacobian values. Using the Jacobian outside of a simulation
-is still an advanced feature and has had limited testing.
+This version complied with the requirements to be used in DiffEq for DAE solvers.
+p and t aren't used they just mean to match the interfaces. It assumes that the jacobian has
+the form:
+
+```math
+\begin{align}
+  JM = \gamma * I .+ J(x)
+\end{align}
+```
