@@ -67,7 +67,6 @@ The function [`get_state_series`](@ref)`(results, ("DeviceName", :StateSymbol)` 
 
 The function [`get_setpoints`](@ref)`(sim)` can be used to obtain the reference setpoints of each dynamic device. **Note:** If a setpoint was changed via a perturbation, this function will return the modified setpoint.
 
-
 ## Keyword Arguments
 
 Any solver option available in `DifferentialEquations.jl` can be passed as keyword arguments in the `execute!` function. Please see the [Common Solver Options](https://diffeq.sciml.ai/stable/basics/common_solver_opts/) in the `DifferentialEquations.jl` documentation for more details.

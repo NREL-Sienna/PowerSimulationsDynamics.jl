@@ -96,13 +96,13 @@ on which we can compute its eigenvalues to analyze local stability.
 
 You can retrieve the Jacobian function for a simulation using the `get_jacobian` function as follows:
 
-```@repl
+```julia
 jacobian = function get_jacobian(ResidualModel, system)
 ```
 
 optionally you can pass the number of iterations to check for sparsity as follows:
 
-```@repl
+```julia
 jacobian = function get_jacobian(ResidualModel, system, 0)
 ```
 
