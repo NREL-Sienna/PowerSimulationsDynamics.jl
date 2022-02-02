@@ -231,7 +231,6 @@ function initialize_tg!(
     #Gate velocity limits not implemented
     #VELM = PSY.get_VELM(tg)
     G_min, G_max = PSY.get_gate_position_limits(tg)
-    Tw = PSY.get_Tw(tg)
     At = PSY.get_At(tg)
     D_T = PSY.get_D_T(tg)
     q_nl = PSY.get_q_nl(tg)
@@ -247,14 +246,14 @@ function initialize_tg!(
         P_in = P_ref - Δω - R * c
         h = (x_g4 / x_g3)^2
 
-        out[1] = (P_in - x_g1) #dx_g1/dt
+        out[1] = (P_in - x_g1)
         out[2] = x_g1
-        out[3] = c - x_g3
-        out[4] = (1.0 - h) / Tw
+        out[3] = (c - x_g3)
+        out[4] = (1.0 - h)
         out[5] = (x_g4 - q_nl) * h * At - D_T * Δω * x_g3 - τm0
     end
-    P0 = PSY.get_active_power(static)
-    x0 = [P0, 0.0, P0 / R, P0 / (R * r * Tr), τm0]
+    P0 = R * (q_nl + τm0 / At) # mechanical power initial guess. It migth be different than electrical output power
+    x0 = [P0, 0, (r * Tr) * P0 / R, P0 / R, P0 / R]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in Synch. Machine failed")
@@ -263,7 +262,7 @@ function initialize_tg!(
         #Error if x_g3 is outside PI limits
         if sol_x0[4] > G_max || sol_x0[4] < G_min
             error(
-                "Hydro Turbine Governor of device $(PSY.get_name(static)) is outside its gate limits. Check parameters or Power Flow",
+                "Hydro Turbine Governor $(PSY.get_name(static)) $(sol_x0[4]) outside its gate limits $G_min, $G_max. Check parameters or Power Flow",
             )
         end
         #Update Control Refs
