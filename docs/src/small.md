@@ -91,3 +91,33 @@ that defines our reduced system for the differential variables
 ```
 
 on which we can compute its eigenvalues to analyze local stability.
+
+## Accessing the Jacobian function
+
+You can retrieve the Jacobian function for a simulation using the `get_jacobian` function as follows:
+
+```@repl
+jacobian = function get_jacobian(ResidualModel, system)
+```
+
+optionally you can pass the number of iterations to check for sparsity as follows:
+
+```@repl
+jacobian = function get_jacobian(ResidualModel, system, 0)
+```
+
+if you specify 0, the jacobian function will use a full matrix.
+
+The return of `get_jacobian` is known as a functor in Julia and can be used to make evaluations.
+Currently, any function can be evaluated with the following inputs:
+
+```julia
+# This version of the function is type unstable should only be used for non-critial ops
+jacobian(x)
+jacobian(JM, x)
+jacobian(JM, x, p, t)
+jacobian(JM, dx, x, p, gamma, t,)
+```
+
+where `JM` is a matrix to store the Jacobian values. Using the Jacobian outside of a simulation
+is still an advanced feature and has had limited testing.
