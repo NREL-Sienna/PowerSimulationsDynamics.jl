@@ -139,8 +139,8 @@ end
     !isdir(path) && mkdir(path)
     try
         sys = System(
-            joinpath(TEST_FILES_DIR, "11BUS_KUNDUR.raw"),
-            joinpath(TEST_FILES_DIR, "11BUS_KUNDUR_B.dyr"),
+            joinpath(TEST_FILES_DIR, "data_tests/11BUS_KUNDUR.raw"),
+            joinpath(TEST_FILES_DIR, "data_tests/11BUS_KUNDUR_B.dyr"),
         )
 
         gen_static = get_component(ThermalStandard, sys, "generator-1-1")
