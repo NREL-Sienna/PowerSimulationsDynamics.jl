@@ -37,6 +37,8 @@ function _nlsolve_call(
         xtol = NLSOLVE_X_TOLERANCE,
         ftol = f_tolerance,
         method = solver,
+        iterations = MAX_NLSOLVE_INTERATIONS,
+        show_trace = true
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
 end
@@ -52,6 +54,7 @@ function _nlsolve_call(
         initial_guess;
         xtol = NLSOLVE_X_TOLERANCE,
         ftol = f_tolerance,
+        iterations = MAX_NLSOLVE_INTERATIONS,
         method = solver,
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
