@@ -42,6 +42,7 @@ export get_imaginary_current_series
 export get_activepower_series
 export get_reactivepower_series
 export get_setpoints
+export get_solution
 
 ####################################### Package Imports ####################################
 import Logging
