@@ -8,6 +8,7 @@ function compute_output_current(
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
+    dt::Union{Nothing, Float64},
 ) where {G <: PSY.DynamicInverter}
 
     #Obtain Data
@@ -28,6 +29,7 @@ function compute_output_current(
         base_power_ratio,
         res,
         dynamic_device,
+        dt,
     )
 end
 
@@ -44,11 +46,12 @@ function _output_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dynamic_device::G,
+    dt::Union{Nothing, Float64},
 ) where {C <: PSY.Converter, G <: PSY.DynamicInverter}
-    ir_filter = post_proc_state_series(res, (name, :ir_filter))
-    ii_filter = post_proc_state_series(res, (name, :ii_filter))
+    ts, ir_filter = post_proc_state_series(res, (name, :ir_filter), dt)
+    ts, ii_filter = post_proc_state_series(res, (name, :ii_filter), dt)
 
-    return base_power_ratio * ir_filter, base_power_ratio * ii_filter
+    return ts, base_power_ratio * ir_filter, base_power_ratio * ii_filter
 end
 
 """
@@ -63,7 +66,8 @@ function _output_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dynamic_device::G,
+    ::G,
+    dt::Union{Nothing, Float64},
 ) where {G <: PSY.DynamicInverter}
 
     #Get Converter parameters
@@ -86,9 +90,9 @@ function _output_current(
     Iq_extra = max.(K_hv * (V_t .- Vo_lim), 0.0)
 
     #Compute current
-    Ip = post_proc_state_series(res, (name, :Ip))
-    Iq = post_proc_state_series(res, (name, :Iq))
-    Vmeas = post_proc_state_series(res, (name, :Vmeas))
+    ts, Ip = post_proc_state_series(res, (name, :Ip), dt)
+    _, Iq = post_proc_state_series(res, (name, :Iq), dt)
+    _, Vmeas = post_proc_state_series(res, (name, :Vmeas), dt)
     Ip_sat = Ip
     if Lvpl_sw == 1
         LVPL = get_LVPL_gain.(Vmeas, Zerox, Brkpt, Lvpl1)
@@ -129,5 +133,5 @@ function _output_current(
         Ii_filt = Ii_cnv
     end
 
-    return base_power_ratio * Ir_filt, base_power_ratio * Ii_filt
+    return ts, base_power_ratio * Ir_filt, base_power_ratio * Ii_filt
 end

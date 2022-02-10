@@ -8,6 +8,7 @@ function compute_output_current(
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
+    dt::Union{Nothing, Float64},
 ) where {G <: PSY.DynamicGenerator}
 
     #Obtain Data
@@ -25,6 +26,7 @@ function compute_output_current(
         V_I,
         base_power_ratio,
         res,
+        dt,
     )
 end
 
@@ -39,8 +41,9 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
+    dt::Union{Nothing, Float64},
 )
-    δ = post_proc_state_series(res, (name, :δ))
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
 
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
@@ -59,7 +62,7 @@ function _machine_current(
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
-    return I_R, I_I
+    return ts, I_R, I_I
 end
 
 """
@@ -72,10 +75,11 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
+    dt::Union{Nothing, Float64},
 )
-    δ = post_proc_state_series(res, (name, :δ))
-    eq_p = post_proc_state_series(res, (name, :eq_p))
-    ed_p = post_proc_state_series(res, (name, :ed_p))
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
+    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt)
 
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
@@ -96,7 +100,7 @@ function _machine_current(
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
-    return I_R, I_I
+    return ts, I_R, I_I
 end
 
 """
@@ -109,10 +113,11 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
+    dt::Union{Nothing, Float64},
 )
-    δ = post_proc_state_series(res, (name, :δ))
-    eq_pp = post_proc_state_series(res, (name, :eq_pp))
-    ed_pp = post_proc_state_series(res, (name, :ed_pp))
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt)
+    _, ed_pp = post_proc_state_series(res, (name, :ed_pp), dt)
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -136,7 +141,7 @@ function _machine_current(
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
-    return I_R, I_I
+    return ts, I_R, I_I
 end
 
 """
@@ -145,16 +150,17 @@ Function to obtain the output current time series of a Marconato or AndersonFoua
 function _machine_current(
     machine::Union{PSY.MarconatoMachine, PSY.AndersonFouadMachine},
     name::String,
-    V_R::Vector{Float64},
-    V_I::Vector{Float64},
+    ::Vector{Float64},
+    ::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
+    dt::Union{Nothing, Float64},
 )
-    δ = post_proc_state_series(res, (name, :δ))
-    eq_pp = post_proc_state_series(res, (name, :eq_pp))
-    ed_pp = post_proc_state_series(res, (name, :ed_pp))
-    ψd = post_proc_state_series(res, (name, :ψd))
-    ψq = post_proc_state_series(res, (name, :ψq))
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt)
+    _, ed_pp = post_proc_state_series(res, (name, :ed_pp), dt)
+    _, ψd = post_proc_state_series(res, (name, :ψd), dt)
+    _, ψq = post_proc_state_series(res, (name, :ψq), dt)
 
     #Get parameters
     Xd_pp = PSY.get_Xd_pp(machine)
@@ -173,7 +179,7 @@ function _machine_current(
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
-    return I_R, I_I
+    return ts, I_R, I_I
 end
 
 """
@@ -186,12 +192,13 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
+    dt::Union{Nothing, Float64},
 )
-    δ = post_proc_state_series(res, (name, :δ))
-    eq_p = post_proc_state_series(res, (name, :eq_p))
-    ed_p = post_proc_state_series(res, (name, :ed_p))
-    ψ_kd = post_proc_state_series(res, (name, :ψ_kd))
-    ψ_kq = post_proc_state_series(res, (name, :ψ_kq))
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
+    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt)
+    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
+    _, ψ_kq = post_proc_state_series(res, (name, :ψ_kq), dt)
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -224,7 +231,7 @@ function _machine_current(
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
-    return I_R, I_I
+    return ts, I_R, I_I
 end
 
 """
@@ -237,11 +244,12 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
+    dt::Union{Nothing, Float64},
 )
-    δ = post_proc_state_series(res, (name, :δ))
-    eq_p = post_proc_state_series(res, (name, :eq_p))
-    ψ_kd = post_proc_state_series(res, (name, :ψ_kd))
-    ψq_pp = post_proc_state_series(res, (name, :ψq_pp))
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
+    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
+    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt)
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -267,5 +275,5 @@ function _machine_current(
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
-    return I_R, I_I
+    return ts, I_R, I_I
 end
