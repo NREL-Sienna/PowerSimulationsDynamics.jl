@@ -5,7 +5,7 @@ function get_injectors_with_dynamics(sys::PSY.System)
     return PSY.get_components(
         PSY.StaticInjection,
         sys,
-        x -> PSY.get_dynamic_injector(x) !== nothing && PSY.get_available(x),
+        x -> PSY.get_dynamic_injector(x) !== nothing && (PSY.get_status(x) * PSY.get_available(x)),
     )
 end
 
