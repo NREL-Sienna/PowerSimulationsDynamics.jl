@@ -8,7 +8,7 @@ function compute_output_current(
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 ) where {G <: PSY.DynamicInverter}
 
     #Obtain Data
@@ -29,7 +29,7 @@ function compute_output_current(
         base_power_ratio,
         res,
         dynamic_device,
-        dt
+        dt,
     )
 end
 
@@ -46,7 +46,7 @@ function _output_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 ) where {C <: PSY.Converter, G <: PSY.DynamicInverter}
     ts, ir_filter = post_proc_state_series(res, (name, :ir_filter), dt)
     ts, ii_filter = post_proc_state_series(res, (name, :ii_filter), dt)
@@ -67,7 +67,7 @@ function _output_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     ::G,
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 ) where {G <: PSY.DynamicInverter}
 
     #Get Converter parameters

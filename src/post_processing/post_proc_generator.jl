@@ -8,7 +8,7 @@ function compute_output_current(
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 ) where {G <: PSY.DynamicGenerator}
 
     #Obtain Data
@@ -26,7 +26,7 @@ function compute_output_current(
         V_I,
         base_power_ratio,
         res,
-        dt
+        dt,
     )
 end
 
@@ -41,7 +41,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
 
@@ -75,7 +75,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
@@ -113,7 +113,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt)
@@ -154,7 +154,7 @@ function _machine_current(
     ::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt)
@@ -192,7 +192,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
@@ -244,7 +244,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)

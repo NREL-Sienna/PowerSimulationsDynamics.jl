@@ -29,7 +29,7 @@ function _post_proc_state_series(solution, ix::Int, dt::Union{Nothing, Float64})
     if dt === nothing
         ix_t = unique(i -> solution.t[i], eachindex(solution.t))
         ts = solution.t[ix_t]
-        state = solution[ix,ix_t]
+        state = solution[ix, ix_t]
     else
         ts = range(0, stop = solution.t[end], step = dt)
         state = solution(ts, idxs = ix)
@@ -41,7 +41,11 @@ end
 Function to obtain the state time series of a specific state. It receives the simulation, and a tuple
 containing the name of the Dynamic Device and the symbol of the state.
 """
-function post_proc_state_series(res::SimulationResults, ref::Tuple{String, Symbol}, dt::Union{Nothing, Float64})
+function post_proc_state_series(
+    res::SimulationResults,
+    ref::Tuple{String, Symbol},
+    dt::Union{Nothing, Float64},
+)
     global_state_index = get_global_index(res)
     ix = get(global_state_index[ref[1]], ref[2], 0)
     return _post_proc_state_series(get_solution(res), ix, dt)
@@ -54,7 +58,7 @@ of the Dynamic Device.
 function post_proc_voltage_current_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64}
+    dt::Union{Nothing, Float64},
 )::NTuple{5, Vector{Float64}}
     #Note: Type annotation since get_dynamic_injector is type unstable and solution is Union{Nothing, DAESol}
     system = get_system(res)
@@ -74,10 +78,15 @@ Function to obtain voltage using the bus index (and not the bus number). It rece
 the total number of buses.
 
 """
-function post_proc_voltage_series(solution, bus_ix::Int, n_buses::Int, dt::Union{Nothing, Float64})
+function post_proc_voltage_series(
+    solution,
+    bus_ix::Int,
+    n_buses::Int,
+    dt::Union{Nothing, Float64},
+)
     bus_ix < 0 && error("Bus number $(bus_number) not found.")
     ts, V_R = _post_proc_state_series(solution, bus_ix, dt)
-    _, V_I = _post_proc_state_series(solution, bus_ix+ n_buses, dt)
+    _, V_I = _post_proc_state_series(solution, bus_ix + n_buses, dt)
     return ts, V_R, V_I
 end
 
@@ -86,7 +95,11 @@ Function to compute the real current output time series of a Dynamic Injection s
 string name of the Dynamic Injection device.
 
 """
-function post_proc_real_current_series(res::SimulationResults, name::String, dt::Union{Nothing, Float64})
+function post_proc_real_current_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
     ts, _, _, I_R, _ = post_proc_voltage_current_series(res, name, dt)
     return ts, I_R
 end
@@ -95,7 +108,11 @@ Function to compute the imaginary current output time series of a Dynamic Inject
 string name of the Dynamic Injection device.
 
 """
-function post_proc_imaginary_current_series(res::SimulationResults, name::String, dt::Union{Nothing, Float64})
+function post_proc_imaginary_current_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
     ts, _, _, _, I_I = post_proc_voltage_current_series(res, name, dt)
     return ts, I_I
 end
@@ -105,7 +122,11 @@ Function to compute the active power output time series of a Dynamic Injection s
 string name of the Dynamic Injection device.
 
 """
-function post_proc_activepower_series(res::SimulationResults, name::String, dt::Union{Nothing, Float64})
+function post_proc_activepower_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
     ts, V_R, V_I, I_R, I_I = post_proc_voltage_current_series(res, name, dt)
     return ts, V_R .* I_R + V_I .* I_I
 end
@@ -115,7 +136,11 @@ Function to compute the active power output time series of a Dynamic Injection s
 string name of the Dynamic Injection device.
 
 """
-function post_proc_reactivepower_series(res::SimulationResults, name::String, dt::Union{Nothing, Float64})
+function post_proc_reactivepower_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
     ts, V_R, V_I, I_R, I_I = post_proc_voltage_current_series(res, name, dt)
     return ts, V_I .* I_R - V_R .* I_I
 end
