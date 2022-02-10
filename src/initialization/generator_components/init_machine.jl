@@ -593,7 +593,7 @@ function initialize_mach_shaft!(
     _a = ψ_pp0_abs * (Se0 * γ_qd + 1.0)
     _b = (Xq_pp - Xq) * abs(I)
     θ_It = ψ_pp0_ang - angle(I)
-    δ0 = ψ_pp0_ang + atan((_b * cos(θ_It)), (_b * sin(θ_It) - _a))
+    δ0 = ψ_pp0_ang + atan((_b * cos(θ_It)) / (_b * sin(θ_It) - _a))
     #Fluxes
     ψ_pp0_dq = ri_dq(δ0 + pi / 2) * [real(ψ_pp0); imag(ψ_pp0)]
     ψd_pp0 = ψ_pp0_dq[1]
@@ -858,7 +858,7 @@ function initialize_mach_shaft!(
     _a = ψ_pp0_abs * (Se0 * γ_qd + 1.0)
     _b = (Xq_pp - Xq) * abs(I)
     θ_It = ψ_pp0_ang - angle(I)
-    δ0 = ψ_pp0_ang + atan((_b * cos(θ_It)), (_b * sin(θ_It) - _a))
+    δ0 = ψ_pp0_ang + atan((_b * cos(θ_It)) / (_b * sin(θ_It) - _a))
     #Fluxes
     ψ_pp0_dq = ri_dq(δ0 + pi / 2) * [real(ψ_pp0); imag(ψ_pp0)]
     ψd_pp0 = ψ_pp0_dq[1]
