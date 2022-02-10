@@ -1,13 +1,13 @@
 # This is where we do some type pyracy on the PSY types
 get_n_buses(sys::PSY.System) = length(sys.bus_numbers)
 
-function _filter_function(x::T) where T <: PSY.StaticInjection
+function _filter_function(x::T) where {T <: PSY.StaticInjection}
     if PSY.get_dynamic_injector(x) === nothing
         return false
     end
 
     if hasfield(T, :status)
-        return PSY.get_status(x)*PSY.get_available(x)
+        return PSY.get_status(x) * PSY.get_available(x)
     else
         return PSY.get_available(x)
     end
@@ -15,11 +15,7 @@ function _filter_function(x::T) where T <: PSY.StaticInjection
 end
 
 function get_injectors_with_dynamics(sys::PSY.System)
-    return PSY.get_components(
-        PSY.StaticInjection,
-        sys,
-        x -> _filter_function(x)
-    )
+    return PSY.get_components(PSY.StaticInjection, sys, x -> _filter_function(x))
 end
 
 function get_injection_without_dynamics(sys::PSY.System)
