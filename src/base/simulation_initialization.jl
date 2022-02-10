@@ -184,7 +184,7 @@ function read_initial_conditions(sim::Simulation)
             get_initial_conditions(sim)[bus_ix + bus_size]^2,
         )
         θ[bus_n] = atan(
-            get_initial_conditions(sim)[bus_ix + bus_size] /
+            get_initial_conditions(sim)[bus_ix + bus_size],
             get_initial_conditions(sim)[bus_ix],
         )
     end

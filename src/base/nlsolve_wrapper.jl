@@ -109,7 +109,6 @@ function refine_initial_condition!(
                NLsolve might not converge."
     end
     for tol in [STRICT_NLSOLVE_F_TOLERANCE, RELAXED_NLSOLVE_F_TOLERANCE]
-        error()
         if converged
             break
         end

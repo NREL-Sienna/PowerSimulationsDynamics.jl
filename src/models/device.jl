@@ -470,7 +470,7 @@ function _update_inner_vars!(
     V_R = inner_vars[Vr_inv_var]
     V_I = inner_vars[Vi_inv_var]
     V_t = sqrt(V_R^2 + V_I^2)
-    θ = atan(V_I / V_R)
+    θ = atan(V_I, V_R)
 
     #Get Converter parameters
     converter = PSY.get_converter(dynamic_device)

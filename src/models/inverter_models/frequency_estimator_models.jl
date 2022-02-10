@@ -53,7 +53,7 @@ function mdl_freq_estimator_ode!(
     #𝜕vpll_q/𝜕t, D'Arco ESPR122 eqn. 12
     output_ode[local_ix[2]] = low_pass(V_dq_pll[q], vpll_q, 1.0, 1.0 / ω_lp)[2]
     #PI Integrator (internal state)
-    Δω_pi, dϵ_dt = pi_block(atan(vpll_q / vpll_d), ϵ_pll, kp_pll, ki_pll)
+    Δω_pi, dϵ_dt = pi_block(atan(vpll_q, vpll_d), ϵ_pll, kp_pll, ki_pll)
     #𝜕dϵ_pll/𝜕t, D'Arco ESPR122 eqn. 13
     output_ode[local_ix[3]] = dϵ_dt
     #PLL Frequency Deviation (internal state)
