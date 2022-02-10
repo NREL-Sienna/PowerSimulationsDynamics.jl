@@ -197,7 +197,7 @@ function initialize_tg!(
         @warn("Initialization in TG failed")
     else
         sol_x0 = sol.zero
-        if (sol_x0[2] > V_max) || (sol_x0[2] < V_min)
+        if (sol_x0[2] >= V_max - BOUNDS_TOLERANCE) || (sol_x0[2] <= V_min + BOUNDS_TOLERANCE)
             @error(
                 "Valve limits for TG in $(PSY.get_name(dynamic_device)) are bounded (x_g1 = $(sol_x0[2])). Consider updating their values."
             )
