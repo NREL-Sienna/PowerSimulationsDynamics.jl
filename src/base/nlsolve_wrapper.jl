@@ -81,29 +81,42 @@ function refine_initial_condition!(
         @info "Simulation already initialized. Refinement not executed"
         return
     end
-
-    @debug "Start NLSolve System Run"
     converged = false
     initial_guess = get_initial_conditions(sim)
     inputs = get_simulation_inputs(sim)
     bus_range = get_bus_range(inputs)
     powerflow_solution = deepcopy(initial_guess[bus_range])
-    @debug "NLsolve initial guess $initial_guess"
+    # @debug "NLsolve initial guess $initial_guess"
     f! = _get_model_closure(model, initial_guess)
     ini_res = similar(initial_guess)
     f!(ini_res, initial_guess)
-    @debug "NLsolve initial residual $ini_res"
-    if maximum(ini_res) > MAX_INIT_RESIDUAL
-        val, ix = findmax(ini_res)
-        @warn "The initial residual in $ix of the NLsolve function is has a value of $val. NLsolve might not converge."
+    val, ix = findmax(ini_res)
+    @debug "NLsolve initial residual: max = $(val) at $ix, total = $(sum(ini_res))"
+    if sum(ini_res) > MAX_INIT_RESIDUAL
+        state_map = make_global_state_map(inputs)
+        gen_name = ""
+        state = ""
+        for (gen, states) in state_map
+           for (state_name, index) in states
+                if index == ix
+                        gen_name = gen
+                        state = state_name
+                end
+           end
+        end
+        @warn "The initial residual in $ix of the NLsolve function has a value of $val.
+               Generator = $gen_name, state = $state
+               NLsolve might not converge."
     end
     for tol in [STRICT_NLSOLVE_F_TOLERANCE, RELAXED_NLSOLVE_F_TOLERANCE]
+        error()
         if converged
             break
         end
         for solv in [:trust_region, :newton]
+            @debug "Start NLSolve System Run with $(solv) and F_tol = $tol"
             sys_solve = _nlsolve_call(initial_guess, f!, jacobian, tol, solv)
-            # sys_solve = _nlsolve_call(initial_guess, f!, tol, solv)
+            #sys_solve = _nlsolve_call(initial_guess, f!, tol, solv)
             failed(sys_solve) && return BUILD_FAILED
             converged = _convergence_check(sys_solve, tol, solv)
             @debug "Write initial guess vector using $solv with tol = $tol convergence = $converged"
