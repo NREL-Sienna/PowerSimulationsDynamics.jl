@@ -97,12 +97,12 @@ function refine_initial_condition!(
         gen_name = ""
         state = ""
         for (gen, states) in state_map
-           for (state_name, index) in states
+            for (state_name, index) in states
                 if index == ix
-                        gen_name = gen
-                        state = state_name
+                    gen_name = gen
+                    state = state_name
                 end
-           end
+            end
         end
         @warn "The initial residual in $ix of the NLsolve function has a value of $val.
                Generator = $gen_name, state = $state
