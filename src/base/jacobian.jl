@@ -9,6 +9,7 @@ struct JacobianFunctionWrapper{
     Jf::F
     Jv::T
     x::Vector{Float64}
+    mass_matrix::LinearAlgebra.Diagonal{Float64}
 end
 
 # This version of the function is type unstable should only be used for non-critial ops
@@ -45,7 +46,7 @@ function (J::JacobianFunctionWrapper)(
     t,
 ) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
     J(JM, x)
-    JM .= gamma * LinearAlgebra.Diagonal(ones(length(x))) .+ JM
+    JM .= JM .- gamma .* J.mass_matrix
     return
 end
 
@@ -78,7 +79,8 @@ function JacobianFunctionWrapper(
         throw(IS.ConflictingInputsError("negative sparse_retrieve_loop not valid"))
     end
     Jf(Jv, x0)
-    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0)
+    mass_matrix = get_mass_matrix(m!.inputs)
+    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0, mass_matrix)
 end
 
 function JacobianFunctionWrapper(
@@ -109,7 +111,8 @@ function JacobianFunctionWrapper(
         throw(IS.ConflictingInputsError("negative sparse_retrieve_loop not valid"))
     end
     Jf(Jv, x0)
-    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0)
+    mass_matrix = get_mass_matrix(m!.inputs)
+    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0, mass_matrix)
 end
 
 function get_jacobian(
