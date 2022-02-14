@@ -47,7 +47,7 @@ function (J::JacobianFunctionWrapper)(
 ) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
     J(JM, x)
     for i in 1:length(x)
-        JM[i,i] -= gamma * J.mass_matrix[i, i]
+        JM[i, i] -= gamma * J.mass_matrix[i, i]
     end
     return
 end
