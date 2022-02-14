@@ -52,7 +52,7 @@ function mdl_converter_ode!(
     V_R = inner_vars[Vr_inv_var]
     V_I = inner_vars[Vi_inv_var]
     V_t = sqrt(V_R^2 + V_I^2)
-    θ = atan(V_I / V_R)
+    θ = atan(V_I, V_R)
     Ip_cmd = inner_vars[Id_ic_var]
     Iq_cmd = inner_vars[Iq_ic_var]
 

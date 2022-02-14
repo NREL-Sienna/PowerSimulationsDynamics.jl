@@ -9,6 +9,7 @@ struct JacobianFunctionWrapper{
     Jf::F
     Jv::T
     x::Vector{Float64}
+    mass_matrix::LinearAlgebra.Diagonal{Float64}
 end
 
 # This version of the function is type unstable should only be used for non-critial ops
@@ -45,7 +46,9 @@ function (J::JacobianFunctionWrapper)(
     t,
 ) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
     J(JM, x)
-    JM .= gamma * LinearAlgebra.Diagonal(ones(length(x))) .+ JM
+    for i in 1:length(x)
+        JM[i, i] -= gamma * J.mass_matrix[i, i]
+    end
     return
 end
 
@@ -53,7 +56,7 @@ function JacobianFunctionWrapper(
     m!::SystemModel{MassMatrixModel},
     x0_guess::Vector{Float64};
     # Improve the heuristic to do sparsity detection
-    sparse_retrieve_loop::Int = 3,
+    sparse_retrieve_loop::Int = max(3, length(x0_guess) ÷ 100),
 )
     x0 = deepcopy(x0_guess)
     n = length(x0)
@@ -78,14 +81,15 @@ function JacobianFunctionWrapper(
         throw(IS.ConflictingInputsError("negative sparse_retrieve_loop not valid"))
     end
     Jf(Jv, x0)
-    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0)
+    mass_matrix = get_mass_matrix(m!.inputs)
+    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0, mass_matrix)
 end
 
 function JacobianFunctionWrapper(
     m!::SystemModel{ResidualModel},
     x0::Vector{Float64};
     # Improve the heuristic to do sparsity detection
-    sparse_retrieve_loop::Int = 3,
+    sparse_retrieve_loop::Int = max(3, length(x0) ÷ 100),
 )
     n = length(x0)
     m_ = (residual, x) -> m!(residual, zeros(n), x, nothing, 0.0)
@@ -95,6 +99,7 @@ function JacobianFunctionWrapper(
         ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
         return
     end
+    mass_matrix = get_mass_matrix(m!.inputs)
     jac = zeros(n, n)
     if sparse_retrieve_loop > 0
         for _ in 1:sparse_retrieve_loop
@@ -102,14 +107,15 @@ function JacobianFunctionWrapper(
             Jf(temp, abs.(x0 + Random.rand(n) - Random.rand(n)))
             jac .+= abs.(temp)
         end
-        Jv = SparseArrays.sparse(jac)
+        Jv = SparseArrays.sparse(jac .+ mass_matrix)
     elseif sparse_retrieve_loop == 0
         Jv = jac
     else
         throw(IS.ConflictingInputsError("negative sparse_retrieve_loop not valid"))
     end
     Jf(Jv, x0)
-    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0)
+    mass_matrix = get_mass_matrix(m!.inputs)
+    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0, mass_matrix)
 end
 
 function get_jacobian(

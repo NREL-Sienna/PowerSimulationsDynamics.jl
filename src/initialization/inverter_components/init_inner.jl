@@ -250,10 +250,18 @@ function initialize_inner!(
 
     Ip_min, Ip_max, Iq_min, Iq_max =
         current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, V_t, Ip_oc, Iq_cmd)
-    Ip_min < Ip_oc < Ip_max ? nothing :
-    error("Inverter out of current limits. Check Power Flow or Parameters")
-    Iq_min < Iq_oc < Iq_max ? nothing :
-    error("Inverter out of current limits. Check Power Flow or Parameters")
+
+    if Ip_oc >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_oc
+        @error(
+            "Inverter $(PSY.get_name(static)) current $(Ip_oc) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
+        )
+    end
+
+    if Iq_oc >= Iq_max + BOUNDS_TOLERANCE || Iq_min - BOUNDS_TOLERANCE >= Iq_oc
+        @error(
+            "Inverter $(PSY.get_name(static)) current $(Iq_oc) out of limits $(Iq_min) $(Iq_max). Check Power Flow or Parameters"
+        )
+    end
 
     if Q_Flag == 0
         local_ix = get_local_state_ix(dynamic_device, PSY.RECurrentControlB)

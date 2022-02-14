@@ -30,7 +30,10 @@ function initialize_converter!(
     #Get inner vars
     V_R = inner_vars[Vr_inv_var]
     V_I = inner_vars[Vi_inv_var]
-    θ = atan(V_I / V_R)
+    θ = atan(V_I, V_R)
+    bus = PSY.get_bus(static)
+    bus_angle = PSY.get_angle(bus)
+    @assert isapprox(θ, bus_angle)
     V_t = sqrt(V_R^2 + V_I^2)
     Iq_external = inner_vars[Ii_cnv_var]
     Ip_external = inner_vars[Ir_cnv_var]
@@ -45,7 +48,9 @@ function initialize_converter!(
     _, Lv_pnt1 = PSY.get_Lv_pnts(converter)
 
     if (Iq < Io_lim) || (V_t > Vo_lim) || (V_t < Lv_pnt1)
-        error("Power flow solution outside of inverter limits. Update parameters.")
+        @error(
+            "Power flow solution outside of inverter limits $(PSY.get_name(static)). Update parameters."
+        )
     end
 
     #Update converter states
