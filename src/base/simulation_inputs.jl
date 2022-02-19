@@ -16,6 +16,7 @@ struct SimulationInputs
     DAE_vector::Vector{Bool}
     mass_matrix::LinearAlgebra.Diagonal{Float64}
     global_vars_update_pointers::Dict{Int, Int}
+    global_state_map::MAPPING_DICT
 
     function SimulationInputs(
         sys::PSY.System,
@@ -84,6 +85,7 @@ struct SimulationInputs
             DAE_vector,
             mass_matrix,
             global_vars,
+            MAPPING_DICT(),
         )
     end
 end
