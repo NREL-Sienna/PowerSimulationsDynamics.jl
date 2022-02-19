@@ -69,7 +69,7 @@ function initialize_avr!(
     x0 = [1.0, Vf0, Vf0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in AVR failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -126,7 +126,7 @@ function initialize_avr!(
     x0 = [1.0, Vf0, Vf0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in AVR failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -186,7 +186,7 @@ function initialize_avr!(
     x0 = [1.0]
     sol = NLsolve.nlsolve(f_Ve!, x0)
     if !NLsolve.converged(sol)
-        @error("Initialization in V_e0 failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         V_e0 = sol_x0[1]
@@ -231,7 +231,7 @@ function initialize_avr!(
     x0 = [V_ref0, V_r10, V_r20, V_e0, V_r30]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in AVR failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -279,7 +279,7 @@ function initialize_avr!(
     x0 = [1.0, Vf0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in AVR failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update V_ref
