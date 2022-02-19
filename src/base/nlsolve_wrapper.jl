@@ -63,16 +63,41 @@ end
 function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbol)
     if converged(sys_solve)
         @info(
-            "Initialization succeeded with a tolerance of $(tol) using solver $(solv). Saving solution."
+            "Initialization non-linear solve succeeded with a tolerance of $(tol) using solver $(solv). Saving solution."
         )
     else
         @warn(
-            "Initialization convergence failed, initial conditions do not meet conditions for an stable equilibrium.\nTrying to solve again reducing numeric tolerance or using another solver"
+            "Initialization non-linear solve convergence failed, initial conditions do not meet conditions for an stable equilibrium.\nAttempting again with reduced numeric tolerance and using another solver"
         )
     end
     return converged(sys_solve)
 end
 
+function _check_residual(
+    residual::Vector{Float64},
+    inputs::SimulationInputs,
+    tolerance::Float64,
+)
+    val, ix = findmax(residual)
+    @debug "Residual from initial guess: max = $(val) at $ix, total = $(sum(residual))"
+    if sum(residual) > tolerance
+        state_map = make_global_state_map(inputs)
+        gen_name = ""
+        state = ""
+        for (gen, states) in state_map
+            for (state_name, index) in states
+                if index == ix
+                    gen_name = gen
+                    state = state_name
+                end
+            end
+        end
+        @warn "The initial residual in $ix of the NLsolve function has a value of $val.
+               Generator = $gen_name, state = $state.
+               Expect convergence problems"
+    end
+    return
+end
 function refine_initial_condition!(
     sim::Simulation,
     model::SystemModel,
@@ -89,28 +114,10 @@ function refine_initial_condition!(
     inputs = get_simulation_inputs(sim)
     bus_range = get_bus_range(inputs)
     powerflow_solution = deepcopy(initial_guess[bus_range])
-    # @debug "NLsolve initial guess $initial_guess"
     f! = _get_model_closure(model, initial_guess)
-    ini_res = similar(initial_guess)
-    f!(ini_res, initial_guess)
-    val, ix = findmax(ini_res)
-    @debug "NLsolve initial residual: max = $(val) at $ix, total = $(sum(ini_res))"
-    if sum(ini_res) > MAX_INIT_RESIDUAL
-        state_map = make_global_state_map(inputs)
-        gen_name = ""
-        state = ""
-        for (gen, states) in state_map
-            for (state_name, index) in states
-                if index == ix
-                    gen_name = gen
-                    state = state_name
-                end
-            end
-        end
-        @warn "The initial residual in $ix of the NLsolve function has a value of $val.
-               Generator = $gen_name, state = $state
-               NLsolve might not converge."
-    end
+    residual = similar(initial_guess)
+    f!(residual, initial_guess)
+    _check_residual(residual, inputs, MAX_INIT_RESIDUAL)
     for tol in [STRICT_NLSOLVE_F_TOLERANCE, RELAXED_NLSOLVE_F_TOLERANCE]
         if converged
             break
@@ -128,9 +135,20 @@ function refine_initial_condition!(
             end
         end
     end
+
     sim.status = check_valid_values(initial_guess, inputs)
     if sim.status == BUILD_FAILED
-        error("Initial conditions refinement failed to find a valid initial condition")
+        error(
+            "Initial conditions refinement failed to find a valid initial condition. Run show_states_initial_value on your simulation",
+        )
+    end
+
+    f!(residual, initial_guess)
+    if !converged || (sum(residual) > MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE)
+        _check_residual(residual, inputs, MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE)
+        @warn("Initialization didn't found a solution to desired tolerances.\\
+              Initial conditions do not meet conditions for an stable equilibrium. \\
+              Simulation might fail")
     end
 
     pf_diff = abs.(powerflow_solution .- initial_guess[bus_range])
@@ -138,10 +156,5 @@ function refine_initial_condition!(
         @warn "The resulting voltages in the initial conditions differ from the power flow results"
     end
 
-    if !converged
-        @warn("Initialization didn't converged to desired tolerances.\\
-              Initial conditions do not meet conditions for an stable equilibrium. \\
-              Simulation might fail")
-    end
     return
 end
