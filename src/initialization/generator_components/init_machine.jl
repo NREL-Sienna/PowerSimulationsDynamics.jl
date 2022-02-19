@@ -314,7 +314,7 @@ function initialize_mach_shaft!(
             (1.0 / (R^2 + Xd_pp * Xq_pp)) *
             (-Xd_pp * (ed_pp - V_dq[1]) + R * (eq_pp - V_dq[2]))      #15.25
         Pe = (V_dq[1] + R * i_d) * i_d + (V_dq[2] + R * i_q) * i_q
-        out[1] = τm - Pe + (i_d^2 + i_q^2) * R #Mechanical Torque
+        out[1] = τm - (Pe + (i_d^2 + i_q^2) * R) #Mechanical Torque
         out[2] = P0 - (V_dq[1] * i_d + V_dq[2] * i_q) #Output Power
         out[3] = Q0 - (V_dq[2] * i_d - V_dq[1] * i_q) #Output Reactive Power
         out[4] = -eq_p - (Xd - Xd_p - γd) * i_d + (1 - (T_AA / Td0_p)) * Vf0             #15.16 eq_p
