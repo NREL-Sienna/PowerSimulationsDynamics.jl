@@ -55,200 +55,33 @@ Dynamic Components
 │ DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed} │ 1   ⋯
 └────────────────────────────────────────────────────────────────────────┴──────
                                                                 1 column omitted</code></pre><p>For more details about loading data and adding more dynamic components check the <a href="https://nrel-siip.github.io/PowerSystems.jl/stable/modeler_guide/system_dynamic_data/">Creating a System with Dynamic devices</a> section of the documentation in <code>PowerSystems.jl</code>.</p><h2 id="Define-the-Simulation"><a class="docs-heading-anchor" href="#Define-the-Simulation">Define the Simulation</a><a id="Define-the-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Define-the-Simulation" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; time_span = (0.0, 30.0)</code><code class="nohighlight hljs ansi" style="display:block;">(0.0, 30.0)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; perturbation_trip = BranchTrip(1.0, Line, &quot;BUS 1-BUS 2-i_1&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">BranchTrip(1.0, Line, &quot;BUS 1-BUS 2-i_1&quot;)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim = Simulation!(ResidualModel, omib_sys, pwd(), time_span, perturbation_trip)</code><code class="nohighlight hljs ansi" style="display:block;">[ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
-┌ Error: Dynamic Injection Failed to Initialize
-│   exception =
-│    AssertionError: !(isapprox(τm0, P0))
-│    Stacktrace:
-│      [1] initialize_mach_shaft!(device_states::Vector{Float64}, static::ThermalStandard, dynamic_device::PowerSimulationsDynamics.DynamicWrapper{DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}}, inner_vars::SubArray{Float64, 1, Vector{Float64}, Tuple{Vector{Int64}}, false})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/initialization/generator_components/init_machine.jl:31
-│      [2] initialize_dynamic_device!(dynamic_device::PowerSimulationsDynamics.DynamicWrapper{DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}}, static::ThermalStandard, initial_inner_vars::SubArray{Float64, 1, Vector{Float64}, Tuple{Vector{Int64}}, false})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/initialization/init_device.jl:10
-│      [3] initialize_dynamic_injection!(initial_guess::Vector{Float64}, inputs::PowerSimulationsDynamics.SimulationInputs, system::System)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:65
-│      [4] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:146 [inlined]
-│      [5] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/5tW2E/src/TimerOutput.jl:236 [inlined]
-│      [6] _calculate_initial_guess!(x0_init::Vector{Float64}, sim::Simulation{ResidualModel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:145
-│      [7] precalculate_initial_conditions!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:161 [inlined]
-│      [8] _pre_initialize_simulation!(sim::Simulation{ResidualModel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:264
-│      [9] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:386 [inlined]
-│     [10] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/5tW2E/src/TimerOutput.jl:236 [inlined]
-│     [11] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:385 [inlined]
-│     [12] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/5tW2E/src/TimerOutput.jl:236 [inlined]
-│     [13] _build!(sim::Simulation{ResidualModel}; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:366
-│     [14] _build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:358 [inlined]
-│     [15] (::PowerSimulationsDynamics.var&quot;#80#81&quot;{Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}}, Simulation{ResidualModel}})()
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:423
-│     [16] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│     [17] with_logger
-│        @ ./logging.jl:623 [inlined]
-│     [18] build!(sim::Simulation{ResidualModel}; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:422
-│     [19] build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:420 [inlined]
-│     [20] Simulation!(::Type{ResidualModel}, system::System, simulation_folder::String, tspan::Tuple{Float64, Float64}, perturbations::Vector{BranchTrip}; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:128
-│     [21] Simulation!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:114 [inlined]
-│     [22] #Simulation!#67
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:64 [inlined]
-│     [23] Simulation!(::Type{ResidualModel}, system::System, simulation_folder::String, tspan::Tuple{Float64, Float64}, perturbation::BranchTrip)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:64
-│     [24] top-level scope
-│        @ REPL[3]:1
-│     [25] eval
-│        @ ./boot.jl:373 [inlined]
-│     [26] #20
-│        @ ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:667 [inlined]
-│     [27] cd(f::Documenter.Expanders.var&quot;#20#22&quot;{Module}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [28] (::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module})()
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:666
-│     [29] (::IOCapture.var&quot;#3#5&quot;{DataType, Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}, Task, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:118
-│     [30] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│     [31] with_logger
-│        @ ./logging.jl:623 [inlined]
-│     [32] capture(f::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool)
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:116
-│     [33] runner(#unused#::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:665
-│     [34] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::Markdown.Code, ::Vararg{Any})
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/Nu7Lp/src/Utilities/Selectors.jl:170
-│     [35] expand(doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:42
-│     [36] runner(#unused#::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Documents.Document)
-│        @ Documenter.Builder ~/.julia/packages/Documenter/Nu7Lp/src/Builder.jl:226
-│     [37] dispatch(#unused#::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Documents.Document)
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/Nu7Lp/src/Utilities/Selectors.jl:170
-│     [38] #2
-│        @ ~/.julia/packages/Documenter/Nu7Lp/src/Documenter.jl:266 [inlined]
-│     [39] cd(f::Documenter.var&quot;#2#3&quot;{Documenter.Documents.Document}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [40] #makedocs#1
-│        @ ~/.julia/packages/Documenter/Nu7Lp/src/Documenter.jl:265 [inlined]
-│     [41] top-level scope
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
-│     [42] include(mod::Module, _path::String)
-│        @ Base ./Base.jl:418
-│     [43] exec_options(opts::Base.JLOptions)
-│        @ Base ./client.jl:292
-│     [44] _start()
-│        @ Base ./client.jl:495
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:72
-┌ Error: Invalid initial condition values [&quot;generator-102-1 - :ω&quot;]
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:125
-┌ Error: Build failed
-│   exception =
-│    The simulation failed to find an adequate initial guess for the initialization. Check the intialization routine.
-│    Stacktrace:
-│      [1] error(s::String)
-│        @ Base ./error.jl:33
-│      [2] _pre_initialize_simulation!(sim::Simulation{ResidualModel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:266
-│      [3] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:386 [inlined]
-│      [4] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/5tW2E/src/TimerOutput.jl:236 [inlined]
-│      [5] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:385 [inlined]
-│      [6] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/5tW2E/src/TimerOutput.jl:236 [inlined]
-│      [7] _build!(sim::Simulation{ResidualModel}; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:366
-│      [8] _build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:358 [inlined]
-│      [9] (::PowerSimulationsDynamics.var&quot;#80#81&quot;{Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}}, Simulation{ResidualModel}})()
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:423
-│     [10] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│     [11] with_logger
-│        @ ./logging.jl:623 [inlined]
-│     [12] build!(sim::Simulation{ResidualModel}; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:422
-│     [13] build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:420 [inlined]
-│     [14] Simulation!(::Type{ResidualModel}, system::System, simulation_folder::String, tspan::Tuple{Float64, Float64}, perturbations::Vector{BranchTrip}; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:128
-│     [15] Simulation!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:114 [inlined]
-│     [16] #Simulation!#67
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:64 [inlined]
-│     [17] Simulation!(::Type{ResidualModel}, system::System, simulation_folder::String, tspan::Tuple{Float64, Float64}, perturbation::BranchTrip)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:64
-│     [18] top-level scope
-│        @ REPL[3]:1
-│     [19] eval
-│        @ ./boot.jl:373 [inlined]
-│     [20] #20
-│        @ ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:667 [inlined]
-│     [21] cd(f::Documenter.Expanders.var&quot;#20#22&quot;{Module}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [22] (::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module})()
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:666
-│     [23] (::IOCapture.var&quot;#3#5&quot;{DataType, Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}, Task, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:118
-│     [24] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│     [25] with_logger
-│        @ ./logging.jl:623 [inlined]
-│     [26] capture(f::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool)
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:116
-│     [27] runner(#unused#::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:665
-│     [28] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::Markdown.Code, ::Vararg{Any})
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/Nu7Lp/src/Utilities/Selectors.jl:170
-│     [29] expand(doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:42
-│     [30] runner(#unused#::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Documents.Document)
-│        @ Documenter.Builder ~/.julia/packages/Documenter/Nu7Lp/src/Builder.jl:226
-│     [31] dispatch(#unused#::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Documents.Document)
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/Nu7Lp/src/Utilities/Selectors.jl:170
-│     [32] #2
-│        @ ~/.julia/packages/Documenter/Nu7Lp/src/Documenter.jl:266 [inlined]
-│     [33] cd(f::Documenter.var&quot;#2#3&quot;{Documenter.Documents.Document}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [34] #makedocs#1
-│        @ ~/.julia/packages/Documenter/Nu7Lp/src/Documenter.jl:265 [inlined]
-│     [35] top-level scope
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
-│     [36] include(mod::Module, _path::String)
-│        @ Base ./Base.jl:418
-│     [37] exec_options(opts::Base.JLOptions)
-│        @ Base ./client.jl:292
-│     [38] _start()
-│        @ Base ./client.jl:495
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:426
+Iter     f(x) inf-norm    Step 2-norm 
+------   --------------   --------------
+     0     5.619942e-07              NaN
+     1     3.552714e-15     4.680883e-08
 ┌ Info: 
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     14.9s             574MiB    
+│                 Total measured:                     26.1s            1.55GiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    14.4s  100.0%    545MiB  100.0%
-│    Pre-initialization                       1    8.53s   59.4%    328MiB   60.1%
-│      Initialize Dynamic Injectors           1    2.49s   17.4%    157MiB   28.8%
-│      Initialize Static Injectors            1    3.62s   25.2%   74.7MiB   13.7%
-│      Power Flow solution                    1    2.33s   16.2%   89.0MiB   16.3%
-│    Build Simulation Inputs                  1    5.83s   40.6%    217MiB   39.9%
-│      Wrap Static Injectors                  1    301ms    2.1%   6.44MiB    1.2%
-│      Calculate MM, DAE_vector, Tota...      1    157ms    1.1%   23.5MiB    4.3%
-│      Wrap Dynamic Injectors                 1    2.07s   14.4%    108MiB   19.8%
-│      Wrap Branches                          1   39.6μs    0.0%   4.16KiB    0.0%
+│  Build Simulation                           1    25.8s  100.0%   1.53GiB  100.0%
+│    Make DiffEq Problem                      1    192ms    0.7%   12.9MiB    0.8%
+│    Build Perturbations                      1    763ms    3.0%   96.8MiB    6.2%
+│    Initial Condition NLsolve refine...      1    3.35s   13.0%   69.9MiB    4.5%
+│    Make Model Function                      1    127ms    0.5%   10.2MiB    0.7%
+│    Calculate Jacobian                       1    8.79s   34.0%    940MiB   60.1%
+│    Pre-initialization                       1    6.78s   26.2%    219MiB   14.0%
+│      Initialize Dynamic Injectors           1    740ms    2.9%   55.9MiB    3.6%
+│      Initialize Static Injectors            1    3.59s   13.9%   74.1MiB    4.7%
+│      Power Flow solution                    1    2.45s    9.5%   88.7MiB    5.7%
+│    Build Simulation Inputs                  1    5.83s   22.5%    216MiB   13.8%
+│      Wrap Static Injectors                  1    297ms    1.2%   6.48MiB    0.4%
+│      Calculate MM, DAE_vector, Tota...      1    187ms    0.7%   23.5MiB    1.5%
+│      Wrap Dynamic Injectors                 1    2.01s    7.8%    107MiB    6.9%
+│      Wrap Branches                          1   35.1μs    0.0%   4.16KiB    0.0%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -256,22 +89,22 @@ Simulation Summary
 │ Property                │ Value          │
 ├─────────────────────────┼────────────────┤
 │ Simulation Type         │ Residual Model │
-│ Initialized?            │ No             │
+│ Initialized?            │ Yes            │
 │ Multimachine system?    │ No             │
 │ Time Span               │ (0.0, 30.0)    │
 │ Number of States        │ 6              │
 │ Number of Perturbations │ 1              │
 └─────────────────────────┴────────────────┘</code></pre><h2 id="Explore-initial-conditions-for-the-simulation"><a class="docs-heading-anchor" href="#Explore-initial-conditions-for-the-simulation">Explore initial conditions for the simulation</a><a id="Explore-initial-conditions-for-the-simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Explore-initial-conditions-for-the-simulation" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; x0_init = read_initial_conditions(sim)</code><code class="nohighlight hljs ansi" style="display:block;">Dict{String, Any} with 5 entries:
-  &quot;generator-102-1&quot; =&gt; Dict(:ω=&gt;0.0, :δ=&gt;0.0)
+  &quot;generator-102-1&quot; =&gt; Dict(:ω=&gt;1.0, :δ=&gt;0.539921)
   &quot;V_R&quot;             =&gt; Dict(102=&gt;1.03973, 101=&gt;1.05)
   &quot;Vm&quot;              =&gt; Dict(102=&gt;1.04, 101=&gt;1.05)
-  &quot;θ&quot;               =&gt; Dict(102=&gt;0.0228958, 101=&gt;0.0)
-  &quot;V_I&quot;             =&gt; Dict(102=&gt;0.0238096, 101=&gt;0.0)</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; show_states_initial_value(sim)</code><code class="nohighlight hljs ansi" style="display:block;">Voltage Variables
+  &quot;θ&quot;               =&gt; Dict(102=&gt;0.0228958, 101=&gt;-4.67827e-9)
+  &quot;V_I&quot;             =&gt; Dict(102=&gt;0.0238095, 101=&gt;-4.91218e-9)</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; show_states_initial_value(sim)</code><code class="nohighlight hljs ansi" style="display:block;">Voltage Variables
 ====================
 BUS 1
 ====================
 Vm 1.05
-θ 0.0
+θ -0.0
 ====================
 BUS 2
 ====================
@@ -282,76 +115,23 @@ Vm 1.04
 Differential States
 generator-102-1
 ====================
-δ 0.0
-ω 0.0
+δ 0.5399
+ω 1.0
 ====================</code></pre><h2 id="Obtain-small-signal-results-for-initial-conditions"><a class="docs-heading-anchor" href="#Obtain-small-signal-results-for-initial-conditions">Obtain small signal results for initial conditions</a><a id="Obtain-small-signal-results-for-initial-conditions-1"></a><a class="docs-heading-anchor-permalink" href="#Obtain-small-signal-results-for-initial-conditions" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig = small_signal_analysis(sim)</code><code class="nohighlight hljs ansi" style="display:block;">The system is small signal stable</code></pre><p>Show eigenvalues for operating point</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig.eigenvalues</code><code class="nohighlight hljs ansi" style="display:block;">2-element Vector{ComplexF64}:
- -0.15883100381194412 - 6.886002836358983im
- -0.15883100381194412 + 6.886002836358983im</code></pre><p>Show reduced jacobian for operating point</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig.reduced_jacobian</code><code class="nohighlight hljs ansi" style="display:block;">2×2 SparseArrays.SparseMatrixCSC{Float64, Int64} with 3 stored entries:
+ -0.15883100381194415 - 6.213869164314339im
+ -0.15883100381194415 + 6.213869164314339im</code></pre><p>Show reduced jacobian for operating point</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig.reduced_jacobian</code><code class="nohighlight hljs ansi" style="display:block;">2×2 SparseArrays.SparseMatrixCSC{Float64, Int64} with 3 stored entries:
    ⋅        376.991
- -0.125845   -0.317662</code></pre><p>Explore participation factors. In this case for state ω</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     part_factors = small_sig.participation_factors</code><code class="nohighlight hljs ansi" style="display:block;">Dict{String, Dict{Symbol, Array{Float64}}} with 1 entry:
+ -0.102489   -0.317662</code></pre><p>Explore participation factors. In this case for state ω</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     part_factors = small_sig.participation_factors</code><code class="nohighlight hljs ansi" style="display:block;">Dict{String, Dict{Symbol, Array{Float64}}} with 1 entry:
   &quot;generator-102-1&quot; =&gt; Dict(:ω=&gt;[0.5, 0.5], :δ=&gt;[0.5, 0.5])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt;     part_factors[&quot;generator-102-1&quot;][:ω]</code><code class="nohighlight hljs ansi" style="display:block;">2-element Vector{Float64}:
  0.5
- 0.5</code></pre><p>This means that the state ω of the generator at bus 102, participates 50% in eigenvalue 1 and 50% in eigenvalue 2.</p><h2 id="Execute-the-simulation"><a class="docs-heading-anchor" href="#Execute-the-simulation">Execute the simulation</a><a id="Execute-the-simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Execute-the-simulation" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     execute!(sim, IDA(), dtmax = 0.02, saveat = 0.02, enable_progress_bar = false)</code><code class="nohighlight hljs ansi" style="display:block;">┌ Error: Execution failed
-│   exception =
-│    The Simulation status is BUILD_FAILED. Can not continue, correct your inputs and build the simulation again.
-│    Stacktrace:
-│      [1] error(s::String)
-│        @ Base ./error.jl:33
-│      [2] simulation_pre_step!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:444 [inlined]
-│      [3] _execute!(sim::Simulation{ResidualModel}, solver::Sundials.IDA{:Dense, Nothing, Nothing}; kwargs::Base.Pairs{Symbol, Real, Tuple{Symbol, Symbol, Symbol}, NamedTuple{(:dtmax, :saveat, :enable_progress_bar), Tuple{Float64, Float64, Bool}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:465
-│      [4] (::PowerSimulationsDynamics.var&quot;#84#85&quot;{Base.Pairs{Symbol, Real, Tuple{Symbol, Symbol, Symbol}, NamedTuple{(:dtmax, :saveat, :enable_progress_bar), Tuple{Float64, Float64, Bool}}}, Simulation{ResidualModel}, Sundials.IDA{:Dense, Nothing, Nothing}})()
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:513
-│      [5] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│      [6] with_logger
-│        @ ./logging.jl:623 [inlined]
-│      [7] execute!(sim::Simulation{ResidualModel}, solver::Sundials.IDA{:Dense, Nothing, Nothing}; kwargs::Base.Pairs{Symbol, Real, Tuple{Symbol, Symbol, Symbol}, NamedTuple{(:dtmax, :saveat, :enable_progress_bar), Tuple{Float64, Float64, Bool}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:512
-│      [8] top-level scope
-│        @ REPL[1]:1
-│      [9] eval
-│        @ ./boot.jl:373 [inlined]
-│     [10] #20
-│        @ ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:667 [inlined]
-│     [11] cd(f::Documenter.Expanders.var&quot;#20#22&quot;{Module}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [12] (::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module})()
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:666
-│     [13] (::IOCapture.var&quot;#3#5&quot;{DataType, Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}, Task, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:118
-│     [14] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│     [15] with_logger
-│        @ ./logging.jl:623 [inlined]
-│     [16] capture(f::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool)
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:116
-│     [17] runner(#unused#::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:665
-│     [18] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::Markdown.Code, ::Vararg{Any})
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/Nu7Lp/src/Utilities/Selectors.jl:170
-│     [19] expand(doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/Nu7Lp/src/Expanders.jl:42
-│     [20] runner(#unused#::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Documents.Document)
-│        @ Documenter.Builder ~/.julia/packages/Documenter/Nu7Lp/src/Builder.jl:226
-│     [21] dispatch(#unused#::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Documents.Document)
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/Nu7Lp/src/Utilities/Selectors.jl:170
-│     [22] #2
-│        @ ~/.julia/packages/Documenter/Nu7Lp/src/Documenter.jl:266 [inlined]
-│     [23] cd(f::Documenter.var&quot;#2#3&quot;{Documenter.Documents.Document}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [24] #makedocs#1
-│        @ ~/.julia/packages/Documenter/Nu7Lp/src/Documenter.jl:265 [inlined]
-│     [25] top-level scope
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
-│     [26] include(mod::Module, _path::String)
-│        @ Base ./Base.jl:418
-│     [27] exec_options(opts::Base.JLOptions)
-│        @ Base ./client.jl:292
-│     [28] _start()
-│        @ Base ./client.jl:495
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:516
-SIMULATION_FAILED::BUILD_STATUS = 7</code></pre><h2 id="Make-a-plot-of-the-results"><a class="docs-heading-anchor" href="#Make-a-plot-of-the-results">Make a plot of the results</a><a id="Make-a-plot-of-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Make-a-plot-of-the-results" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; results = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; angle = get_state_series(results, (&quot;generator-102-1&quot;, :δ));</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching get_state_series(::Nothing, ::Tuple{String, Symbol})
-Closest candidates are:
-  get_state_series(!Matched::SimulationResults, ::Tuple{String, Symbol}; dt) at ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:163</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/f-plot.svg" alt="plot"/></p><p>If you miss PSS/e&#39;s plotting aesthetics and want something that resembles that, you can use <a href="https://github.com/Evizero/UnicodePlots.jl"><code>UnicodePlots</code></a>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using UnicodePlots</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; unicodeplots()</code><code class="nohighlight hljs ansi" style="display:block;">Plots.UnicodePlotsBackend()</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/unicode.png" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../execute/">Simulation Execution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.12 on <span class="colophon-date" title="Saturday 19 February 2022 01:33">Saturday 19 February 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 0.5</code></pre><p>This means that the state ω of the generator at bus 102, participates 50% in eigenvalue 1 and 50% in eigenvalue 2.</p><h2 id="Execute-the-simulation"><a class="docs-heading-anchor" href="#Execute-the-simulation">Execute the simulation</a><a id="Execute-the-simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Execute-the-simulation" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     execute!(sim, IDA(), dtmax = 0.02, saveat = 0.02, enable_progress_bar = false)</code><code class="nohighlight hljs ansi" style="display:block;">SIMULATION_FINALIZED::BUILD_STATUS = 6</code></pre><h2 id="Make-a-plot-of-the-results"><a class="docs-heading-anchor" href="#Make-a-plot-of-the-results">Make a plot of the results</a><a id="Make-a-plot-of-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Make-a-plot-of-the-results" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; results = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;">Simulation Results Summary
+┌────────────────────────────┬─────────────┐
+│ Property                   │ Value       │
+├────────────────────────────┼─────────────┤
+│ System Base Power [MVA]    │ 100.0       │
+│ System Base Frequency [Hz] │ 60.0        │
+│ Time Span                  │ (0.0, 30.0) │
+│ Total Time Steps           │ 1503        │
+│ Number of States           │ 6           │
+│ Total solve time           │ 6.247174571 │
+└────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; angle = get_state_series(results, (&quot;generator-102-1&quot;, :δ));</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/f-plot.svg" alt="plot"/></p><p>If you miss PSS/e&#39;s plotting aesthetics and want something that resembles that, you can use <a href="https://github.com/Evizero/UnicodePlots.jl"><code>UnicodePlots</code></a>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using UnicodePlots</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; unicodeplots()</code><code class="nohighlight hljs ansi" style="display:block;">Plots.UnicodePlotsBackend()</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/unicode.png" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../execute/">Simulation Execution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.12 on <span class="colophon-date" title="Saturday 19 February 2022 01:41">Saturday 19 February 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
