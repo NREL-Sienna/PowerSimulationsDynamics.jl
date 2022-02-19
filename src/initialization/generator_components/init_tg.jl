@@ -30,6 +30,7 @@ function initialize_tg!(
     T3 = PSY.get_T3(tg)
     T4 = PSY.get_T4(tg)
     T5 = PSY.get_T5(tg)
+    V_min, V_max = PSY.get_valve_position_limits(tg)
 
     #Get References
     ω_ref = get_ω_ref(dynamic_device)
@@ -56,7 +57,7 @@ function initialize_tg!(
     ]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update Control Refs
@@ -65,6 +66,11 @@ function initialize_tg!(
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeI)
         tg_states = @view device_states[tg_ix]
+        if (sol_x0[2] > V_max) || (sol_x0[2] < V_min)
+            @error(
+                "Valve limits for TG in $(PSY.get_name(dynamic_device)) (x_g1 = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min. Consider updating the operating point."
+            )
+        end
         tg_states[1] = sol_x0[2]
         tg_states[2] = sol_x0[3]
         tg_states[3] = sol_x0[4]
@@ -98,7 +104,7 @@ function initialize_tg!(
     x0 = [τm0, 0.0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update Control Refs
@@ -146,7 +152,7 @@ function initialize_tg!(
     x0 = [1.0 / inv_R, τm0, τm0, τm0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update Control Refs
@@ -203,7 +209,7 @@ function initialize_tg!(
         if (sol_x0[2] >= V_max + BOUNDS_TOLERANCE) ||
            (sol_x0[2] <= V_min - BOUNDS_TOLERANCE)
             @error(
-                "Valve limits for TG in $(PSY.get_name(dynamic_device)) are bounded (x_g1 = $(sol_x0[2])), V_max = $V_max, Vmin = $V_min. Consider updating their values."
+                "Valve limits for TG in $(PSY.get_name(dynamic_device)) (x_g1 = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min.  Consider updating the operating point."
             )
         end
         #Update Control Refs
@@ -261,13 +267,13 @@ function initialize_tg!(
     x0 = [P0, 0, (r * Tr) * P0 / R, P0 / R, P0 / R]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Error if x_g3 is outside PI limits
         if sol_x0[4] > G_max || sol_x0[4] < G_min
             error(
-                "Hydro Turbine Governor $(PSY.get_name(static)) $(sol_x0[4]) outside its gate limits $G_min, $G_max. Check parameters or Power Flow",
+                "Hydro Turbine Governor $(PSY.get_name(static)) $(sol_x0[4]) outside its gate limits $G_min, $G_max. Consider updating the operating point.",
             )
         end
         #Update Control Refs
