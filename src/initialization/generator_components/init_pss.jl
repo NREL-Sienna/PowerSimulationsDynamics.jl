@@ -111,6 +111,7 @@ function initialize_pss!(
     pss_states[5] = x_p5
     pss_states[6] = x_p6
     pss_states[7] = x_p7
+    return
 end
 
 #Currently not working properly.
