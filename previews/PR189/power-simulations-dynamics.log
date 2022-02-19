@@ -1,60 +1,60 @@
-┌ Info: 2022-02-19T01:27:26.931 [2743:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2022-02-19T01:28:58.275 [2874:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/M5MJB/src/utils/network_calculations/ybus_calculations.jl:308
-┌ Info: 2022-02-19T01:27:27.173 [2743:1]: The System has no islands
+┌ Info: 2022-02-19T01:28:58.598 [2874:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/M5MJB/src/utils/network_calculations/ybus_calculations.jl:254
-┌ Debug: 2022-02-19T01:27:27.173 [2743:1]: System doesn't contain Dynamic Branches
+┌ Debug: 2022-02-19T01:28:58.598 [2874:1]: System doesn't contain Dynamic Branches
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:210
-┌ Debug: 2022-02-19T01:27:27.390 [2743:1]: Wrapping generator-102-1
+┌ Debug: 2022-02-19T01:28:58.916 [2874:1]: Wrapping generator-102-1
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:151
-┌ Debug: 2022-02-19T01:27:27.437 [2743:1]: ix_range=5:6 ode_range=1:2 inner_vars_range= 1:9
+┌ Debug: 2022-02-19T01:28:58.976 [2874:1]: ix_range=5:6 ode_range=1:2 inner_vars_range= 1:9
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:160
-┌ Debug: 2022-02-19T01:27:28.775 [2743:1]: Using default mass matrix entries TGFixed
+┌ Debug: 2022-02-19T01:29:01.043 [2874:1]: Using default mass matrix entries TGFixed
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/tg_models.jl:6
-┌ Debug: 2022-02-19T01:27:28.775 [2743:1]: Using default mass matrix entries PSSFixed
+┌ Debug: 2022-02-19T01:29:01.043 [2874:1]: Using default mass matrix entries PSSFixed
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/pss_models.jl:6
-┌ Debug: 2022-02-19T01:27:28.775 [2743:1]: Using default mass matrix entries AVRFixed
+┌ Debug: 2022-02-19T01:29:01.044 [2874:1]: Using default mass matrix entries AVRFixed
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/avr_models.jl:6
-┌ Debug: 2022-02-19T01:27:28.775 [2743:1]: Using default mass matrix entries BaseMachine
+┌ Debug: 2022-02-19T01:29:01.044 [2874:1]: Using default mass matrix entries BaseMachine
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/machine_models.jl:6
-┌ Debug: 2022-02-19T01:27:28.775 [2743:1]: Using default mass matrix entries SingleMass
+┌ Debug: 2022-02-19T01:29:01.044 [2874:1]: Using default mass matrix entries SingleMass
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/shaft_models.jl:6
-┌ Info: 2022-02-19T01:27:28.970 [2743:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
+┌ Info: 2022-02-19T01:29:01.359 [2874:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:70
-┌ Debug: 2022-02-19T01:27:28.982 [2743:1]: Simulation Inputs Created
+┌ Debug: 2022-02-19T01:29:01.375 [2874:1]: Simulation Inputs Created
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:221
-┌ Info: 2022-02-19T01:27:28.982 [2743:1]: Pre-Initializing Simulation States
+┌ Info: 2022-02-19T01:29:01.376 [2874:1]: Pre-Initializing Simulation States
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:263
-┌ Debug: 2022-02-19T01:27:28.982 [2743:1]: Start state intialization routine
+┌ Debug: 2022-02-19T01:29:01.376 [2874:1]: Start state intialization routine
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:138
-┌ Info: 2022-02-19T01:27:28.982 [2743:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+┌ Info: 2022-02-19T01:29:01.376 [2874:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/M5MJB/src/base.jl:346
-┌ Info: 2022-02-19T01:27:28.982 [2743:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2022-02-19T01:29:01.376 [2874:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/M5MJB/src/utils/network_calculations/ybus_calculations.jl:308
-┌ Info: 2022-02-19T01:27:28.982 [2743:1]: The System has no islands
+┌ Info: 2022-02-19T01:29:01.376 [2874:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/M5MJB/src/utils/network_calculations/ybus_calculations.jl:254
-┌ Info: 2022-02-19T01:27:30.768 [2743:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2022-02-19T01:29:03.719 [2874:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/M5MJB/src/utils/power_flow.jl:325
-┌ Info: 2022-02-19T01:27:30.768 [2743:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Info: 2022-02-19T01:29:03.719 [2874:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/M5MJB/src/base.jl:346
-┌ Debug: 2022-02-19T01:27:30.768 [2743:1]: Updating bus voltage magnitude and angle to match power flow result
+┌ Debug: 2022-02-19T01:29:03.720 [2874:1]: Updating bus voltage magnitude and angle to match power flow result
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:20
-┌ Debug: 2022-02-19T01:27:30.778 [2743:1]: BUS 1 V_r = 1.05, V_i = 0.0
+┌ Debug: 2022-02-19T01:29:03.732 [2874:1]: BUS 1 V_r = 1.05, V_i = 0.0
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:26
-┌ Debug: 2022-02-19T01:27:30.778 [2743:1]: BUS 2 V_r = 1.039727418725999, V_i = 0.023809551641536846
+┌ Debug: 2022-02-19T01:29:03.732 [2874:1]: BUS 2 V_r = 1.039727418725999, V_i = 0.023809551641536846
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:26
-┌ Debug: 2022-02-19T01:27:30.778 [2743:1]: Updating Source internal voltage magnitude and angle
+┌ Debug: 2022-02-19T01:29:03.732 [2874:1]: Updating Source internal voltage magnitude and angle
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:32
-┌ Debug: 2022-02-19T01:27:33.344 [2743:1]: Updating Dynamic Injection Component Initial Guess
+┌ Debug: 2022-02-19T01:29:07.267 [2874:1]: Updating Dynamic Injection Component Initial Guess
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:53
-┌ Debug: 2022-02-19T01:27:33.353 [2743:1]: Initializing generator-102-1 - DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}
+┌ Debug: 2022-02-19T01:29:07.281 [2874:1]: Initializing generator-102-1 - DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:62
-┌ Error: 2022-02-19T01:27:35.160 [2743:1]: Dynamic Injection Failed to Initialize
-│   exception = (AssertionError("!(isapprox(τm0, P0))"), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007f1add8e9ca9, Ptr{Nothing} @0x00007f1add8e9faf, Ptr{Nothing} @0x00007f1add8ea08f, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1add875857, Ptr{Nothing} @0x00007f1add88214e, Ptr{Nothing} @0x00007f1add882dae, Ptr{Nothing} @0x00007f1add884165, Ptr{Nothing} @0x00007f1add88bba6, Ptr{Nothing} @0x00007f1add88bbbf, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b244911e8, Ptr{Nothing} @0x00007f1add831516, Ptr{Nothing} @0x00007f1add832167, Ptr{Nothing} @0x00007f1add8322c9, Ptr{Nothing} @0x00007f1add832355, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b38c46e95, Ptr{Nothing} @0x00007f1b38c4690d, Ptr{Nothing} @0x00007f1b38c476d1, Ptr{Nothing} @0x00007f1b38c482f7, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__quick_start_guide at statement 1, Ptr{Nothing} @0x00007f1b38c657a3, Ptr{Nothing} @0x00007f1b38c659e4, Ptr{Nothing} @0x00007f1b38c67629, Ptr{Nothing} @0x00007f1b228cab87, Ptr{Nothing} @0x00007f1b228cae8e, Ptr{Nothing} @0x00007f1b228cb87e, Ptr{Nothing} @0x00007f1b228cbf1f, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b244911e8, Ptr{Nothing} @0x00007f1b228ca70e, Ptr{Nothing} @0x00007f1b228ca8da, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b228c9620, Ptr{Nothing} @0x00007f1b228c9681, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b228c636a, Ptr{Nothing} @0x00007f1b228c724c, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b38c3a158, Ptr{Nothing} @0x00007f1b22891e0b, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b2288dfb0, Ptr{Nothing} @0x00007f1b2288ebdf, Ptr{Nothing} @0x00007f1b2288edfe, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b228582cb, Ptr{Nothing} @0x00007f1b228584a0, Ptr{Nothing} @0x00007f1b22858a01, Ptr{Nothing} @0x00007f1b22858a7d, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b38c46e95, Ptr{Nothing} @0x00007f1b38c4690d, Ptr{Nothing} @0x00007f1b38c476d1, Ptr{Nothing} @0x00007f1b38c482f7, Base.InterpreterIP in top-level CodeInfo for Main at statement 50, Ptr{Nothing} @0x00007f1b38c657a3, Ptr{Nothing} @0x00007f1b38c659e4, Ptr{Nothing} @0x00007f1b38c67629, Ptr{Nothing} @0x00007f1b24d9b83a, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b24e8b35a, Ptr{Nothing} @0x00007f1b249a8c15, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b24f1164b, Ptr{Nothing} @0x00007f1b249cb0f7, Ptr{Nothing} @0x00007f1b249cb268, Ptr{Nothing} @0x00007f1b38c27e09, Ptr{Nothing} @0x00007f1b38c8b2d5, Ptr{Nothing} @0x00007f1b38c8bc7c, Ptr{Nothing} @0x00000000004007d8, Ptr{Nothing} @0x00007f1b398150b2, Ptr{Nothing} @0x0000000000400808])
+┌ Error: 2022-02-19T01:29:09.744 [2874:1]: Dynamic Injection Failed to Initialize
+│   exception = (UndefVarError(:tm0), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007fe8859da47f, Ptr{Nothing} @0x00007fe885a771a1, Ptr{Nothing} @0x00007fe82714acc4, Ptr{Nothing} @0x00007fe82714bf2f, Ptr{Nothing} @0x00007fe82714c00f, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe8270ddfce, Ptr{Nothing} @0x00007fe8270e2bae, Ptr{Nothing} @0x00007fe8270e380e, Ptr{Nothing} @0x00007fe8270e5945, Ptr{Nothing} @0x00007fe8270ed376, Ptr{Nothing} @0x00007fe8270ed38f, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe8712c41e8, Ptr{Nothing} @0x00007fe827092916, Ptr{Nothing} @0x00007fe8270937b7, Ptr{Nothing} @0x00007fe827093919, Ptr{Nothing} @0x00007fe8270939a5, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe885a79e95, Ptr{Nothing} @0x00007fe885a7990d, Ptr{Nothing} @0x00007fe885a7a6d1, Ptr{Nothing} @0x00007fe885a7b2f7, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__quick_start_guide at statement 1, Ptr{Nothing} @0x00007fe885a987a3, Ptr{Nothing} @0x00007fe885a989e4, Ptr{Nothing} @0x00007fe885a9a629, Ptr{Nothing} @0x00007fe86f6dcd77, Ptr{Nothing} @0x00007fe86f6dd07e, Ptr{Nothing} @0x00007fe86f6dda6e, Ptr{Nothing} @0x00007fe86f6de10f, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe8712c41e8, Ptr{Nothing} @0x00007fe86f6dc8fe, Ptr{Nothing} @0x00007fe86f6dcaca, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe86f6db810, Ptr{Nothing} @0x00007fe86f6db871, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe86f6d8566, Ptr{Nothing} @0x00007fe86f6d943c, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe885a6d158, Ptr{Nothing} @0x00007fe86f6a3f8b, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe86f6a08c0, Ptr{Nothing} @0x00007fe86f6a0d5f, Ptr{Nothing} @0x00007fe86f6a0f7e, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe86f66587b, Ptr{Nothing} @0x00007fe86f665b70, Ptr{Nothing} @0x00007fe86f66ab53, Ptr{Nothing} @0x00007fe86f66abcd, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe885a79e95, Ptr{Nothing} @0x00007fe885a7990d, Ptr{Nothing} @0x00007fe885a7a6d1, Ptr{Nothing} @0x00007fe885a7b2f7, Base.InterpreterIP in top-level CodeInfo for Main at statement 50, Ptr{Nothing} @0x00007fe885a987a3, Ptr{Nothing} @0x00007fe885a989e4, Ptr{Nothing} @0x00007fe885a9a629, Ptr{Nothing} @0x00007fe871bce83a, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe871cbe35a, Ptr{Nothing} @0x00007fe8717dbc15, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe871d4464b, Ptr{Nothing} @0x00007fe8717fe0f7, Ptr{Nothing} @0x00007fe8717fe268, Ptr{Nothing} @0x00007fe885a5ae09, Ptr{Nothing} @0x00007fe885abe2d5, Ptr{Nothing} @0x00007fe885abec7c, Ptr{Nothing} @0x00000000004007d8, Ptr{Nothing} @0x00007fe8866480b2, Ptr{Nothing} @0x0000000000400808])
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:72
-┌ Debug: 2022-02-19T01:27:35.262 [2743:1]: No Dynamic Branches in the system
+┌ Debug: 2022-02-19T01:29:09.906 [2874:1]: No Dynamic Branches in the system
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:153
-┌ Error: 2022-02-19T01:27:35.318 [2743:1]: Invalid initial condition values ["generator-102-1 - :ω"]
+┌ Error: 2022-02-19T01:29:09.985 [2874:1]: Invalid initial condition values ["generator-102-1 - :ω"]
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:125
-┌ Debug: 2022-02-19T01:27:51.914 [2743:1]: status before execute
+┌ Debug: 2022-02-19T01:29:33.143 [2874:1]: status before execute
 │   sim.status = BUILD_FAILED
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:464
