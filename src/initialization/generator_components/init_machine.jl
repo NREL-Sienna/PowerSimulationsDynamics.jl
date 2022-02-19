@@ -28,7 +28,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xd_p * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert isapprox(τm0, P0) τm0, P0
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE) τm0, P0
     #To solve: δ, τm, Vf0
     function f!(out, x)
         δ = x[1]
@@ -100,7 +100,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert isapprox(τm0, P0) τm0, P0
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE) τm0, P0
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -189,7 +189,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert isapprox(τm0, P0)
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -295,7 +295,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert isapprox(τm0, P0)
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -392,7 +392,7 @@ function initialize_mach_shaft!(
     ω0 = 1.0
     τm0 = real(V * conj(I))
 
-    @assert isapprox(τm0, P0)
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -430,6 +430,8 @@ function initialize_mach_shaft!(
         @show sol_x0[2]
         @show τm0
         @show P0
+        @show δ0
+        @show sol_x0[1]
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I
@@ -495,7 +497,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert isapprox(τm0, P0)
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -592,7 +594,8 @@ function initialize_mach_shaft!(
     Xq_pp = Xd_pp
     Xl = PSY.get_Xl(machine)
     Se = PSY.get_Se(machine)
-    Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
+    # Initialization doesn't consider saturation
+    #Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
     γ_d1 = PSY.get_γ_d1(machine)
     γ_q1 = PSY.get_γ_q1(machine)
     γ_d2 = PSY.get_γ_d2(machine)
@@ -624,8 +627,6 @@ function initialize_mach_shaft!(
     ## External Variables
     τm0 = I_d0 * (V_d0 + I_d0 * R) + I_q0 * (V_q0 + I_q0 * R)
     Vf0 = I_d0 * (Xd - Xd_pp) + ψd_pp0 * (Se0 + 1.0)
-    ψd0 = V_q0 + R * I_q0
-    ψq0 = -V_d0 - R * I_d0
     ## States
     eq_p0 = I_d0 * (Xd_p - Xd) - Se0 * ψd_pp0 + Vf0
     ed_p0 = I_q0 * (Xq - Xq_p) - Se0 * γ_qd * ψq_pp0
