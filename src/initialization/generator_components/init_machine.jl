@@ -28,7 +28,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xd_p * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert !isapprox(τm0, P0)
+    @assert isapprox(τm0, P0)
     #To solve: δ, τm, Vf0
     function f!(out, x)
         δ = x[1]
@@ -100,7 +100,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert !isapprox(τm0, P0)
+    @assert isapprox(τm0, P0)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -189,7 +189,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert !isapprox(τm0, P0)
+    @assert isapprox(τm0, P0)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -295,7 +295,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert !isapprox(τm0, P0)
+    @assert isapprox(τm0, P0)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -392,7 +392,7 @@ function initialize_mach_shaft!(
     ω0 = 1.0
     τm0 = real(V * conj(I))
 
-    @assert !isapprox(τm0, P0)
+    @assert isapprox(τm0, P0)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -495,7 +495,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
-    @assert !isapprox(τm0, P0)
+    @assert isapprox(τm0, P0)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
