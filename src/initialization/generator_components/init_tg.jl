@@ -11,6 +11,7 @@ function initialize_tg!(
     #PSY.set_P_ref!(tg, P_ref)
     #Update Control Refs
     set_P_ref(dynamic_device, P_ref)
+    return
 end
 
 function initialize_tg!(
@@ -33,7 +34,6 @@ function initialize_tg!(
     #Get References
     ω_ref = get_ω_ref(dynamic_device)
     ω0 = 1.0
-
     function f!(out, x)
         P_ref = x[1]
         x_g1 = x[2]
@@ -45,10 +45,15 @@ function initialize_tg!(
 
         out[1] = P_in - x_g1
         out[2] = (1.0 - T3 / Tc) * x_g1 - x_g2
-        out[3] = ((1.0 - T4 / T5) * (x_g2 + (T3 / Tc) * x_g1) - x_g3)
+        out[3] = (1.0 - T4 / T5) * (x_g2 + (T3 / Tc) * x_g1) - x_g3
         out[4] = x_g3 + (T4 / T5) * (x_g2 + (T3 / Tc) * x_g1) - τm0
     end
-    x0 = [τm0, τm0, (1.0 - T3 / Tc) * τm0, τm0]
+    x0 = [
+        τm0,
+        τm0,
+        (1.0 - T3 / Tc) * τm0,
+        (1.0 - T4 / T5) * ((1.0 - T3 / Tc) * τm0 + (T3 / Tc) * τm0),
+    ]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
         @warn("Initialization in Synch. Machine failed")
@@ -64,6 +69,7 @@ function initialize_tg!(
         tg_states[2] = sol_x0[3]
         tg_states[3] = sol_x0[4]
     end
+    return
 end
 
 function initialize_tg!(
@@ -103,6 +109,7 @@ function initialize_tg!(
         tg_states = @view device_states[tg_ix]
         tg_states[1] = sol_x0[2]
     end
+    return
 end
 
 function initialize_tg!(
@@ -118,15 +125,10 @@ function initialize_tg!(
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
     inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
-    T3 = PSY.get_T3(tg)
     D_turb = PSY.get_D_turb(tg)
     AT = PSY.get_AT(tg)
     KT = PSY.get_Kt(tg)
     V_min, V_max = PSY.get_V_lim(tg)
-    ω_ref = get_ω_ref(dynamic_device)
-    ω0 = ω_ref
 
     function f!(out, x)
         P_ref = x[1]
@@ -157,6 +159,7 @@ function initialize_tg!(
         tg_states[2] = sol_x0[3]
         tg_states[3] = sol_x0[4]
     end
+    return
 end
 
 function initialize_tg!(
@@ -212,6 +215,7 @@ function initialize_tg!(
         tg_states[1] = sol_x0[2]
         tg_states[2] = sol_x0[3]
     end
+    return
 end
 
 function initialize_tg!(
@@ -277,4 +281,5 @@ function initialize_tg!(
         tg_states[3] = sol_x0[4]
         tg_states[4] = sol_x0[5]
     end
+    return
 end
