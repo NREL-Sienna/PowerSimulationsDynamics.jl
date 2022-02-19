@@ -427,11 +427,6 @@ function initialize_mach_shaft!(
         @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
-        @show sol_x0[2]
-        @show τm0
-        @show P0
-        @show δ0
-        @show sol_x0[1]
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I
