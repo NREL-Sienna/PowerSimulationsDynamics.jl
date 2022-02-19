@@ -8,6 +8,7 @@ function initialize_avr!(
     Vf = inner_vars[Vf_var]
     #Update Control Refs
     set_V_ref(dynamic_device, Vf)
+    return
 end
 
 function initialize_avr!(
@@ -29,6 +30,7 @@ function initialize_avr!(
     PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vm)
     #Update Control Refs
     set_V_ref(dynamic_device, Vm)
+    return
 end
 
 function initialize_avr!(
@@ -81,6 +83,7 @@ function initialize_avr!(
         avr_states[3] = sol_x0[3]
         avr_states[4] = Vm
     end
+    return
 end
 
 function initialize_avr!(
@@ -137,6 +140,7 @@ function initialize_avr!(
         avr_states[3] = sol_x0[3] #Vr2
         avr_states[4] = Vm #Vm
     end
+    return
 end
 
 function initialize_avr!(

@@ -64,4 +64,5 @@ function initialize_converter!(
     inner_vars[Id_ic_var] = Ip
     # Multiplied by -1 because PSS/e doesn't do a conjugate.
     inner_vars[Iq_ic_var] = -Iq
+    return
 end

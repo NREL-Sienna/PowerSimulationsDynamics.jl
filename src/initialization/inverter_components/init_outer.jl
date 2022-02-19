@@ -57,6 +57,7 @@ function initialize_outer!(
     set_P_ref(dynamic_device, p_elec_out)
     PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
     set_Q_ref(dynamic_device, q_elec_out)
+    return
 end
 
 function initialize_outer!(
@@ -193,6 +194,7 @@ function initialize_outer!(
         PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
     )
+    return
 end
 
 function initialize_outer!(
@@ -365,4 +367,5 @@ function initialize_outer!(
     else
         error("Flags for Generic Renewable Model not supported yet")
     end
+    return
 end
