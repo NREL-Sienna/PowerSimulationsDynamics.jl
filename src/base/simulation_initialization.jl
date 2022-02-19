@@ -106,7 +106,6 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
     end
 
     for device in get_dynamic_injectors(inputs)
-        device_initial_guess = initial_guess[get_ix_range(device)]
         device_index = get_global_index(device)
         if haskey(device_index, :ω)
             dev_freq = initial_guess[device_index[:ω]]
@@ -115,7 +114,6 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
             end
         end
         all(isfinite, initial_guess) && continue
-        invalid_set = findall(!isfinite, device_initial_guess)
         for state in get_global_index(device)
             if state.second ∈ i
                 push!(invalid_initial_guess, "$device - $(p.first)")
@@ -127,6 +125,7 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
         @error("Invalid initial condition values $invalid_initial_guess")
         return BUILD_FAILED
     end
+
     return BUILD_IN_PROGRESS
 end
 
