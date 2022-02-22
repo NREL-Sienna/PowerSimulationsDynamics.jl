@@ -135,6 +135,7 @@ function initialize_inner!(
         inner_states[5] = sol_x0[7] #ϕ_d
         inner_states[6] = sol_x0[8] #ϕ_q
     end
+    return
 end
 
 function initialize_inner!(
@@ -219,6 +220,7 @@ function initialize_inner!(
         inner_states[1] = sol_x0[1] #γ_d
         inner_states[2] = sol_x0[2] #γ_q
     end
+    return
 end
 
 function initialize_inner!(
@@ -284,4 +286,5 @@ function initialize_inner!(
     if PSY.get_V_ref0(inner_control) == 0.0
         PSY.set_V_ref0!(inner_control, V_t)
     end
+    return
 end

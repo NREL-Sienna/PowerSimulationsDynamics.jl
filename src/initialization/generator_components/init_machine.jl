@@ -28,6 +28,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xd_p * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE) τm0, P0
     #To solve: δ, τm, Vf0
     function f!(out, x)
         δ = x[1]
@@ -45,7 +46,7 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -63,6 +64,7 @@ function initialize_mach_shaft!(
         PSY.set_eq_p!(machine, sol_x0[3])
         inner_vars[Vf_var] = sol_x0[3]
     end
+    return
 end
 
 """
@@ -98,6 +100,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE) τm0, P0
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -121,7 +124,7 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -143,6 +146,7 @@ function initialize_mach_shaft!(
         machine_states[1] = sol_x0[4] #eq_p
         machine_states[2] = sol_x0[5] #ed_p
     end
+    return
 end
 
 """
@@ -185,6 +189,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -216,7 +221,7 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[1], V_dq0[2], V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -245,6 +250,7 @@ function initialize_mach_shaft!(
         inner_vars[ψq_var] = sol_x0[4]
         inner_vars[ψd_var] = sol_x0[5]
     end
+    return
 end
 
 """
@@ -289,6 +295,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -319,7 +326,7 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -343,6 +350,7 @@ function initialize_mach_shaft!(
         machine_states[3] = sol_x0[6] #eq_pp
         machine_states[4] = sol_x0[7] #ed_pp
     end
+    return
 end
 
 """
@@ -383,6 +391,8 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
+
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -414,7 +424,7 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[1], V_dq0[2], V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -443,6 +453,7 @@ function initialize_mach_shaft!(
         inner_vars[ψq_var] = sol_x0[4]
         inner_vars[ψd_var] = sol_x0[5]
     end
+    return
 end
 
 """
@@ -481,6 +492,7 @@ function initialize_mach_shaft!(
     δ0 = angle(V + (R + Xq * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
+    @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
     function f!(out, x)
         δ = x[1]
@@ -511,7 +523,7 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -535,6 +547,7 @@ function initialize_mach_shaft!(
         machine_states[3] = sol_x0[6] #eq_pp
         machine_states[4] = sol_x0[7] #ed_pp
     end
+    return
 end
 
 function initialize_mach_shaft!(
@@ -576,7 +589,8 @@ function initialize_mach_shaft!(
     Xq_pp = Xd_pp
     Xl = PSY.get_Xl(machine)
     Se = PSY.get_Se(machine)
-    Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
+    # Initialization doesn't consider saturation
+    #Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
     γ_d1 = PSY.get_γ_d1(machine)
     γ_q1 = PSY.get_γ_q1(machine)
     γ_d2 = PSY.get_γ_d2(machine)
@@ -608,8 +622,6 @@ function initialize_mach_shaft!(
     ## External Variables
     τm0 = I_d0 * (V_d0 + I_d0 * R) + I_q0 * (V_q0 + I_q0 * R)
     Vf0 = I_d0 * (Xd - Xd_pp) + ψd_pp0 * (Se0 + 1.0)
-    ψd0 = V_q0 + R * I_q0
-    ψq0 = -V_d0 - R * I_d0
     ## States
     eq_p0 = I_d0 * (Xd_p - Xd) - Se0 * ψd_pp0 + Vf0
     ed_p0 = I_q0 * (Xq - Xq_p) - Se0 * γ_qd * ψq_pp0
@@ -661,7 +673,7 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, Vf0, eq_p0, ed_p0, ψ_kd0, ψ_kq0, Xad_Ifd0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -687,6 +699,7 @@ function initialize_mach_shaft!(
         machine_states[3] = sol_x0[6] #ψ_kd
         machine_states[4] = sol_x0[7] #ψ_kq
     end
+    return
 end
 
 function initialize_mach_shaft!(
@@ -783,7 +796,7 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0, Xad_Ifd0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -808,6 +821,7 @@ function initialize_mach_shaft!(
         machine_states[2] = sol_x0[5] #ψ_kd
         machine_states[3] = sol_x0[6] #ψq_pp
     end
+    return
 end
 
 function initialize_mach_shaft!(
@@ -916,7 +930,7 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0, Xad_Ifd0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -941,6 +955,7 @@ function initialize_mach_shaft!(
         machine_states[2] = sol_x0[5] #ψ_kd
         machine_states[3] = sol_x0[6] #ψq_pp
     end
+    return
 end
 
 #=
@@ -1011,7 +1026,7 @@ static::PSY.StaticInjection,
     x0 = [δ0, τm0, 1.0, V_dq0[2], -V_dq0[1], 1.0, 0.0, 0.0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Synch. Machine failed")
+        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages

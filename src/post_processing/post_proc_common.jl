@@ -1,5 +1,8 @@
 function make_global_state_map(inputs::SimulationInputs)
-    dic = MAPPING_DICT()
+    dic = inputs.global_state_map
+    if !isempty(dic)
+        return dic
+    end
     device_wrappers = get_dynamic_injectors(inputs)
     branches_wrappers = get_dynamic_branches(inputs)
     buses_diffs = get_voltage_buses_ix(inputs)

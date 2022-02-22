@@ -121,6 +121,7 @@ function initialize_frequency_estimator!(
         inner_vars[ω_freq_estimator_var] = get_ω_ref(dynamic_device)
         inner_vars[θ_freq_estimator_var] = sol_x0[3]
     end
+    return
 end
 
 function initialize_frequency_estimator!(
@@ -143,4 +144,5 @@ function initialize_frequency_estimator!(
 
     #Update guess of frequency estimator
     inner_vars[ω_freq_estimator_var] = frequency
+    return
 end

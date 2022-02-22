@@ -63,10 +63,10 @@ function mdl_tg_ode!(
     T3 = PSY.get_T3(tg)
     T4 = PSY.get_T4(tg)
     T5 = PSY.get_T5(tg)
-    P_min, P_max = PSY.get_valve_position_limits(tg)
+    V_min, V_max = PSY.get_valve_position_limits(tg)
 
     #Compute auxiliary parameters
-    P_in_sat = clamp(P_ref + inv_R * (ω_ref - ω[1]), P_min, P_max)
+    P_in_sat = clamp(P_ref + inv_R * (ω_ref - ω[1]), V_min, V_max)
 
     #Compute block derivatives
     _, dxg1_dt = low_pass(P_in_sat, x_g1, 1.0, Ts)

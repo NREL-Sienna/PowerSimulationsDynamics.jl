@@ -87,4 +87,5 @@ function initialize_shaft!(
         shaft_states[9] = sol_x0[5] #δ_ex
         shaft_states[10] = ω #ω_ex
     end
+    return
 end

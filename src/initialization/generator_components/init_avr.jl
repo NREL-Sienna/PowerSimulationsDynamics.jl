@@ -8,6 +8,7 @@ function initialize_avr!(
     Vf = inner_vars[Vf_var]
     #Update Control Refs
     set_V_ref(dynamic_device, Vf)
+    return
 end
 
 function initialize_avr!(
@@ -29,6 +30,7 @@ function initialize_avr!(
     PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vm)
     #Update Control Refs
     set_V_ref(dynamic_device, Vm)
+    return
 end
 
 function initialize_avr!(
@@ -67,7 +69,7 @@ function initialize_avr!(
     x0 = [1.0, Vf0, Vf0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in AVR failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -81,6 +83,7 @@ function initialize_avr!(
         avr_states[3] = sol_x0[3]
         avr_states[4] = Vm
     end
+    return
 end
 
 function initialize_avr!(
@@ -123,7 +126,7 @@ function initialize_avr!(
     x0 = [1.0, Vf0, Vf0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in AVR failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -137,6 +140,7 @@ function initialize_avr!(
         avr_states[3] = sol_x0[3] #Vr2
         avr_states[4] = Vm #Vm
     end
+    return
 end
 
 function initialize_avr!(
@@ -182,7 +186,7 @@ function initialize_avr!(
     x0 = [1.0]
     sol = NLsolve.nlsolve(f_Ve!, x0)
     if !NLsolve.converged(sol)
-        @error("Initialization in V_e0 failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         V_e0 = sol_x0[1]
@@ -227,7 +231,7 @@ function initialize_avr!(
     x0 = [V_ref0, V_r10, V_r20, V_e0, V_r30]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in AVR failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -275,7 +279,7 @@ function initialize_avr!(
     x0 = [1.0, Vf0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in AVR failed")
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update V_ref

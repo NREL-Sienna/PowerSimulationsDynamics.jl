@@ -145,4 +145,5 @@ function initialize_filter!(
     inner_vars[Vi_cnv_var] = imag(V_cnv)
     inner_vars[Ir_cnv_var] = real(I_cnv)
     inner_vars[Ii_cnv_var] = imag(I_cnv)
+    return
 end
