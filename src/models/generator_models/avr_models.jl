@@ -4,6 +4,7 @@ function mass_matrix_avr_entries!(
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {T <: PSY.AVR}
     @debug "Using default mass matrix entries $T"
+    return
 end
 
 function mass_matrix_avr_entries!(
@@ -13,6 +14,7 @@ function mass_matrix_avr_entries!(
 )
     mass_matrix[global_index[:Vf], global_index[:Vf]] = PSY.get_Te(avr)
     mass_matrix[global_index[:Vr], global_index[:Vr]] = PSY.get_Tb(avr)
+    return
 end
 
 function mdl_avr_ode!(
