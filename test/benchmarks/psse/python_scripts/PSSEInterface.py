@@ -145,7 +145,7 @@ def get_line_trips():
     for i in range(0, len(branch_array[0])):
         bus_from = branch_array[0][i]
         bus_to = branch_array[1][i]
-        line_perturbations.append(("line_{f}_{t}".format(f = bus_from, t = bus_to), LineTrip(bus_from, bus_to, branch_ids[0][i])))
+        line_perturbations.append(("line_{f}_{t}-{id}".format(f = bus_from, t = bus_to, id = branch_ids[0][i]).strip(), LineTrip(bus_from, bus_to, branch_ids[0][i])))
     return line_perturbations
 
 def GenTrip(node, id):
