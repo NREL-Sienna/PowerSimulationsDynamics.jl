@@ -83,6 +83,7 @@ function initialize_filter!(
         filter_states[5] = I_R #Ir_filter
         filter_states[6] = I_I #Ii_filter
     end
+    return
 end
 
 function initialize_filter!(
