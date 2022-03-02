@@ -47,6 +47,7 @@ end
 
 function _initialization_debug(dynamic_device, static, x0_device::Vector{Float64})
     residual = similar(x0_device)
+<<<<<<< HEAD
     Vm = PSY.get_magnitude(PSY.get_bus(static))
     θ = PSY.get_angle(PSY.get_bus(static))
     device!(
@@ -64,6 +65,25 @@ function _initialization_debug(dynamic_device, static, x0_device::Vector{Float64
     for (ix, state) in enumerate(PSY.get_states(dynamic_device))
         @debug state residual[ix]
     end
+=======
+        Vm = PSY.get_magnitude(PSY.get_bus(static))
+        θ = PSY.get_angle(PSY.get_bus(static))
+        device!(
+            x0_device,
+            residual,
+            Vm * cos(θ),
+            Vm * sin(θ),
+            zeros(10),
+            zeros(10),
+            [1.0],
+            zeros(100),
+            dynamic_device,
+            0,
+        )
+        for (ix, state) in enumerate(PSY.get_states(dynamic_device))
+            @debug state residual[ix]
+        end
+>>>>>>> update debugging of initialization
     return
 end
 
@@ -89,6 +109,12 @@ function initialize_dynamic_injection!(
             ix_range = get_ix_range(dynamic_device)
             initial_guess[ix_range] = x0_device
             @debug _initialization_debug(dynamic_device, static, x0_device)
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> update debugging of initialization
         end
     catch e
         bt = catch_backtrace()
