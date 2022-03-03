@@ -527,11 +527,10 @@ function _update_inner_vars!(
                     (Ir_cnv + Vi_inv * lf_ratio + Vr_inv * rf_ratio) * l_total_ratio +
                     (Ii_cnv + Vi_inv * rf_ratio - Vr_inv * lf_ratio) * r_total_ratio
                 )
+            return Vr_cnv, Vi_cnv
         else
-            Vr_cnv = Vr_inv
-            Vi_cnv = Vi_inv
+            return  Vr_inv, Vi_inv
         end
-        return Vr_cnv, Vi_cnv
     end
 
     Vr_cnv, Vi_cnv = V_cnv_calc(Ir_cnv, Ii_cnv, V_R, V_I)
