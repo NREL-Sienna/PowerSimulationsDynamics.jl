@@ -483,7 +483,7 @@ function _update_inner_vars!(
     Lvpl_sw = PSY.get_Lvpl_sw(converter)
     R_source = PSY.get_R_source(converter)
     X_source = PSY.get_X_source(converter)
-    Z_source_sq = R_source^2 + X_source^2 
+    Z_source_sq = R_source^2 + X_source^2
 
     #Define internal states for Converter
     converter_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)

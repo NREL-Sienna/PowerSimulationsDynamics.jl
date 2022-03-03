@@ -129,16 +129,18 @@ function mdl_filter_ode!(
 
     Vr_cnv = inner_vars[Vr_cnv_var]
     Vi_cnv = inner_vars[Vi_cnv_var]
+    Vr_inv = inner_vars[Vr_inv_var]
+    Vi_inv = inner_vars[Vi_inv_var]
 
     #Compute output currents
     if lf != 0.0 || rf != 0.0
-        Vr_inv = inner_vars[Vr_inv_var]
-        Vi_inv = inner_vars[Vi_inv_var]
         Zmag_squared = rf^2 + lf^2
         Ir_filt = (1.0 / Zmag_squared) * ((Vr_cnv - Vr_inv) * rf + (Vi_cnv - Vi_inv) * lf)
         Ii_filt = (1.0 / Zmag_squared) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
     else
         #Obtain converter
+        @assert Vr_cnv == Vr_inv
+        @assert Vi_cnv == Vi_inv
         converter = PSY.get_converter(dynamic_device)
         R_source = PSY.get_R_source(converter)
         X_source = PSY.get_X_source(converter)
@@ -148,13 +150,15 @@ function mdl_filter_ode!(
         Ir_filt = inner_vars[Ir_cnv_var] - I_aux_r
         Ii_filt = inner_vars[Ii_cnv_var] - I_aux_i
     end
-
     #Update Inner Vars
     inner_vars[Ir_inv_var] = Ir_filt
     inner_vars[Ii_inv_var] = Ii_filt
 
+    inner_vars[Ir_inv_var] = Ir_cnv
+    inner_vars[Ii_inv_var] = Ii_cnv
+
     #Update current
-    current_r[1] += ratio_power * Ir_filt
-    current_i[1] += ratio_power * Ii_filt
+    current_r[1] += ratio_power * Ir_cnv
+    current_i[1] += ratio_power * Ii_cnv
     return
 end

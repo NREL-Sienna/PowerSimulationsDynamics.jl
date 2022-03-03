@@ -4,6 +4,7 @@ function mass_matrix_inner_entries!(
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {IC <: PSY.InnerControl}
     @debug "Using default mass matrix entries $IC"
+    return
 end
 
 function mass_matrix_inner_entries!(
@@ -17,6 +18,7 @@ function mass_matrix_inner_entries!(
         mass_matrix[global_index[:I_icv], global_index[:I_icv]] =
             PSY.get_T_iq(inner_control)
     end
+    return
 end
 
 #####################################################
@@ -76,6 +78,7 @@ function _mdl_ode_RE_inner_controller_B!(
     #Update Inner Vars
     inner_vars[Id_ic_var] = Ip_cmd
     inner_vars[Iq_ic_var] = Iq_cmd
+    return
 end
 
 #Q_Flag = 1
@@ -134,6 +137,7 @@ function _mdl_ode_RE_inner_controller_B!(
     #Update Inner Vars
     inner_vars[Id_ic_var] = Ip_cmd
     inner_vars[Iq_ic_var] = Iq_cmd
+    return
 end
 
 ############################################
@@ -246,6 +250,7 @@ function mdl_inner_ode!(
     #Modulation Commands to Converter
     inner_vars[md_var] = Vd_cnv_ref / Vdc
     inner_vars[mq_var] = Vq_cnv_ref / Vdc
+    return
 end
 
 function mdl_inner_ode!(
@@ -316,6 +321,7 @@ function mdl_inner_ode!(
     #Modulation Commands to Converter
     inner_vars[md_var] = Vd_cnv_ref / Vdc
     inner_vars[mq_var] = Vq_cnv_ref / Vdc
+    return
 end
 
 function mdl_inner_ode!(
@@ -353,4 +359,5 @@ function mdl_inner_ode!(
         dynamic_device,
         inner_vars,
     )
+    return
 end
