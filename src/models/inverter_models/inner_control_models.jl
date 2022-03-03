@@ -31,7 +31,7 @@ end
 function _mdl_ode_RE_inner_controller_B!(
     inner_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ::Type{Base.RefValue{0}},
+    ::Val{0},
     inner_control::PSY.RECurrentControlB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
@@ -67,7 +67,7 @@ function _mdl_ode_RE_inner_controller_B!(
     Iq_inj = clamp(K_qv * V_err, I_ql1, I_qh1)
     Iq_cmd = I_icv + Iq_inj
     Ip_min, Ip_max, Iq_min, Iq_max =
-        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, Vt_filt, Ip_oc, Iq_cmd)
+        current_limit_logic(inner_control, Val(PQ_Flag), Vt_filt, Ip_oc, Iq_cmd)
     Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
     Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
 
@@ -85,7 +85,7 @@ end
 function _mdl_ode_RE_inner_controller_B!(
     inner_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    ::Type{Base.RefValue{1}},
+    ::Val{1},
     inner_control::PSY.RECurrentControlB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
@@ -126,7 +126,7 @@ function _mdl_ode_RE_inner_controller_B!(
     I_icv, dξicv_dt = pi_block(V_oc, ξ_icv, K_vp, K_vi)
     Iq_cmd = I_icv + Iq_inj
     Ip_min, Ip_max, Iq_min, Iq_max =
-        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, Vt_filt, Ip_oc, Iq_cmd)
+        current_limit_logic(inner_control, Val(PQ_Flag), Vt_filt, Ip_oc, Iq_cmd)
     Iq_cmd = clamp(Iq_cmd, Iq_min, Iq_max)
     Ip_cmd = clamp(Ip_oc, Ip_min, Ip_max)
 
@@ -354,7 +354,7 @@ function mdl_inner_ode!(
     _mdl_ode_RE_inner_controller_B!(
         internal_ode,
         internal_states,
-        Base.RefValue{Q_Flag},
+        Val(Q_Flag),
         inner_control,
         dynamic_device,
         inner_vars,

@@ -251,7 +251,7 @@ function initialize_inner!(
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
 
     Ip_min, Ip_max, Iq_min, Iq_max =
-        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, V_t, Ip_oc, Iq_cmd)
+        current_limit_logic(inner_control, Val(PQ_Flag), V_t, Ip_oc, Iq_cmd)
 
     if Ip_oc >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_oc
         @error(

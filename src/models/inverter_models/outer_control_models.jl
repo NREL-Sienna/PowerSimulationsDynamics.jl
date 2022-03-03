@@ -19,7 +19,7 @@ function _mdl_ode_RE_active_controller_AB!(
     p_elec_out::ACCEPTED_REAL_TYPES,
     ω_sys::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{1}},
+    ::Val{1},
     active_power_control::PSY.ActiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -109,7 +109,7 @@ function _mdl_ode_RE_active_controller_AB!(
     p_elec_out::ACCEPTED_REAL_TYPES,
     ω_sys::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
+    ::Val{0},
     active_power_control::PSY.ActiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -165,9 +165,9 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{1}},
+    ::Val{0},
+    ::Val{0},
+    ::Val{1},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -247,9 +247,9 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{0}},
+    ::Val{0},
+    ::Val{0},
+    ::Val{0},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -322,9 +322,9 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_states,
     q_elec_out,
     Vt_filt,
-    ::Type{Base.RefValue{1}},
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{1}},
+    ::Val{1},
+    ::Val{0},
+    ::Val{1},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -428,9 +428,9 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_states,
     q_elec_out,
     Vt_filt,
-    ::Type{Base.RefValue{1}},
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{0}},
+    ::Val{1},
+    ::Val{0},
+    ::Val{0},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -869,7 +869,7 @@ function mdl_outer_ode!(
         p_elec_out,
         ω_sys,
         Vt_filt,
-        Base.RefValue{Freq_Flag},
+        Val(Freq_Flag),
         active_power_control,
         dynamic_device,
         inner_vars,
@@ -881,9 +881,9 @@ function mdl_outer_ode!(
         reactive_states,
         q_elec_out,
         Vt_filt,
-        Base.RefValue{Ref_Flag},
-        Base.RefValue{PF_Flag},
-        Base.RefValue{V_Flag},
+        Val(Ref_Flag),
+        Val(PF_Flag),
+        Val(V_Flag),
         reactive_power_control,
         dynamic_device,
         inner_vars,
