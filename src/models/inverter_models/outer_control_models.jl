@@ -99,6 +99,7 @@ function _mdl_ode_RE_active_controller_AB!(
 
     #Update Inner Vars: Ioc_pcmd
     inner_vars[Id_oc_var] = p_ord_sat / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 #Freq_Flag = 0
@@ -148,6 +149,7 @@ function _mdl_ode_RE_active_controller_AB!(
 
     #Update Inner Vars: Ioc_pcmd
     inner_vars[Id_oc_var] = p_ord / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 ### Reactive Controllers ###
@@ -235,6 +237,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     #Update Inner Vars
     inner_vars[V_oc_var] = V_pi_sat - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 # VC_Flag == N/A && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
@@ -305,6 +308,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     #Update Inner Vars
     inner_vars[V_oc_var] = Q_ext - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 # VC_Flag == 0 or 1 && Ref_Flag == 1 && PF_Flag == 0 && V_Flag == 1
@@ -409,6 +413,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     #Update Inner Vars
     inner_vars[V_oc_var] = V_pi_sat - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 # VC_Flag == 0 or 1 && Ref_Flag == 1 && PF_Flag == 0 && V_Flag == 0
@@ -508,6 +513,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     #Update Inner Vars
     inner_vars[V_oc_var] = V_pi_sat - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 ############################################
@@ -599,6 +605,7 @@ function mdl_outer_ode!(
     inner_vars[θ_oc_var] = θ_oc
     inner_vars[ω_oc_var] = ω_oc
     inner_vars[V_oc_var] = V_ref + kq * (q_ref - qm)
+    return
 end
 
 function mdl_outer_ode!(
@@ -685,6 +692,7 @@ function mdl_outer_ode!(
     inner_vars[θ_oc_var] = θ_oc
     inner_vars[ω_oc_var] = ω_oc
     inner_vars[V_oc_var] = V_ref + kq * (q_ref - qm)
+    return
 end
 
 function mdl_outer_ode!(
@@ -775,6 +783,7 @@ function mdl_outer_ode!(
     inner_vars[ω_oc_var] = ω_pll
     inner_vars[Iq_oc_var] = Iq_pi
     inner_vars[Id_oc_var] = Id_pi
+    return
 end
 
 function mdl_outer_ode!(
@@ -879,4 +888,5 @@ function mdl_outer_ode!(
         dynamic_device,
         inner_vars,
     )
+    return
 end

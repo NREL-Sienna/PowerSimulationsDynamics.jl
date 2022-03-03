@@ -16,6 +16,7 @@ function mass_matrix_pss_entries!(
     mass_matrix[global_index[:x_p5], global_index[:x_p5]] = PSY.get_T2(pss)
     mass_matrix[global_index[:x_p6], global_index[:x_p6]] = PSY.get_T4(pss)
     mass_matrix[global_index[:x_p7], global_index[:x_p7]] = PSY.get_T6(pss)
+    return
 end
 
 #####################################################
