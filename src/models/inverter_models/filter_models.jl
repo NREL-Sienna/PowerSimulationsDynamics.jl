@@ -135,8 +135,15 @@ function mdl_filter_ode!(
         Ir_filt = (1.0 / Zmag_squared) * ((Vr_cnv - Vr_inv) * rf + (Vi_cnv - Vi_inv) * lf)
         Ii_filt = (1.0 / Zmag_squared) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
     else
-        Ir_filt = inner_vars[Ir_cnv_var]
-        Ii_filt = inner_vars[Ii_cnv_var]
+        #Obtain converter
+        converter = PSY.get_converter(dynamic_device)
+        R_source = PSY.get_R_source(converter)
+        X_source = PSY.get_X_source(converter)
+        Z_source_sq = R_source^2 + X_source^2 
+        I_aux_r = (R_source * Vr_cnv + X_source * Vi_cnv) / Z_source_sq
+        I_aux_i = (R_source * Vi_cnv - X_source * Vr_cnv) / Z_source_sq
+        Ir_filt = inner_vars[Ir_cnv_var] - I_aux_r
+        Ii_filt = inner_vars[Ii_cnv_var] - I_aux_i
     end
 
     #Update Inner Vars
