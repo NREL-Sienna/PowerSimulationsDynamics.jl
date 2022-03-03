@@ -529,7 +529,7 @@ function _update_inner_vars!(
                 )
             return Vr_cnv, Vi_cnv
         else
-            return  Vr_inv, Vi_inv
+            return Vr_inv, Vi_inv
         end
     end
 
