@@ -140,7 +140,7 @@ function initialize_filter!(
     # For Debugging later
     V_cnv_pq = V_cnv * exp(-1.0im * θ)
     I_cnv_pq = I_cnv * exp(-1.0im * θ)
-    IS.@assert_op Q_cnv ≈ -abs(V_cnv_pq) * imag(I_cnv_pq) 
+    IS.@assert_op Q_cnv ≈ -abs(V_cnv_pq) * imag(I_cnv_pq)
     IS.@assert_op P_cnv ≈ abs(V_cnv_pq) * real(I_cnv_pq)
     IS.@assert_op P_cnv ≈ P0
 
