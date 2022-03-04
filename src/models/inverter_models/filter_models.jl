@@ -154,11 +154,8 @@ function mdl_filter_ode!(
     inner_vars[Ir_inv_var] = Ir_filt
     inner_vars[Ii_inv_var] = Ii_filt
 
-    inner_vars[Ir_inv_var] = Ir_cnv
-    inner_vars[Ii_inv_var] = Ii_cnv
-
     #Update current
-    current_r[1] += ratio_power * Ir_cnv
-    current_i[1] += ratio_power * Ii_cnv
+    current_r[1] += ratio_power * Ir_filt
+    current_i[1] += ratio_power * Ii_filt
     return
 end

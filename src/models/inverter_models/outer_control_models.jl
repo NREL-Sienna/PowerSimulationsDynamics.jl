@@ -823,12 +823,12 @@ function mdl_outer_ode!(
     Vt_filt = device_states[external_ix[1]]
 
     #Monitoring power from other branch not supported.
-    V_R = inner_vars[Vr_inv_var]
-    V_I = inner_vars[Vi_inv_var]
-    I_R = inner_vars[Ir_inv_var]
-    I_I = inner_vars[Ii_inv_var]
-    p_elec_out = I_R * V_R + I_I * V_I
-    q_elec_out = -I_I * V_R + I_R * V_I
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
+    Ir_cnv = inner_vars[Ir_cnv_var]
+    Ii_cnv = inner_vars[Ii_cnv_var]
+    p_elec_out = Ir_cnv * Vr_cnv + Ii_cnv * Vi_cnv
+    q_elec_out = -Ii_cnv * Vr_cnv + Ir_cnv * Vi_cnv
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
