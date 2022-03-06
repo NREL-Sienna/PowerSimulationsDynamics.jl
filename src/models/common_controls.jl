@@ -21,7 +21,7 @@ function integrator_windup_mass_matrix(
     T::Float64, 
     y_min::Float64, 
     y_max::Float64
-)  where {Z <: PSID.ACCEPTED_REAL_TYPES}
+)  where {Z <: ACCEPTED_REAL_TYPES}
     dydt_scaled = K * u
     y_sat = clamp(y, y_min, y_max)
     return y_sat, dydt_scaled
@@ -30,12 +30,12 @@ end
 # Does not accept T = 0
 function integrator_windup(
     u::Z,
-    y::Z, 
+    y::V, 
     K::Float64, 
     T::Float64, 
     y_min::Float64, 
     y_max::Float64
-)  where {Z <: PSID.ACCEPTED_REAL_TYPES}
+)  where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
     y_sat = clamp(y, y_min, y_max)
     return y_sat, (1.0 / T) * integrator_windup_mass_matrix(u,y,K,T,y_min,y_max)[2]
 end
@@ -56,12 +56,12 @@ u -> │ ────── │ -> y
 
 function integrator_nonwindup_mass_matrix(
     u::Z,
-    y::Z,
+    y::V,
     K::Float64,
     T::Float64,
     y_min::Float64,
     y_max::Float64
-)  where {Z <: PSID.ACCEPTED_REAL_TYPES}
+)  where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
     dydt_scaled = K * u
     y_sat = clamp(y, y_min, y_max)
     binary_logic = ((y >= y_max) && (dydt_scaled > 0)) || ((y <= y_min) && (dydt_scaled < 0)) ? 0.0 : 1.0
@@ -71,12 +71,12 @@ end
 # Does not accept T = 0
 function integrator_nonwindup(
     u::Z,
-    y::Z,
+    y::V,
     K::Float64,
     T::Float64,
     y_min::Float64,
     y_max::Float64
-)  where {Z <: PSID.ACCEPTED_REAL_TYPES}
+)  where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
     y_sat, dydt_scaled = integrator_nonwindup_mass_matrix(u,y,K,T,y_min,y_max)
     return y_sat, (1.0 / T) * dydt_scaled
 end
