@@ -292,3 +292,96 @@ function initialize_avr!(
         avr_states[2] = sol_x0[2] #Vr
     end
 end
+
+
+function initialize_avr!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1_PTI, TG, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain Vf0 solved from Machine
+    Vf0 = inner_vars[Vf_var]
+    #Obtain measured terminal voltage
+    Vt = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    #Obtain field winding current 
+    Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base (for the available generator models)
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    Ka = PSY.get_Ka(avr)
+    Kf = PSY.get_Kf(avr)
+    Tf = PSY.get_Tf(avr)
+    Tc = PSY.get_Tc(avr)
+    Tb = PSY.get_Tb(avr)
+    Kc = PSY.get_Kc(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+
+
+    # Check limits to field voltage 
+    if (Vt*Vr_min-Kc*Ifd > Vf0)  ||  (Vf0 > Vt*Vr_max-Kc*Ifd)
+        @warn("Initial field voltage of AVR in $(PSY.get_name(static)) is out of AVR limits")
+    end
+
+    #Update V_ref
+    Vref0 = Vt + Vf0/Ka
+
+    PSY.set_V_ref!(avr, Vref0)   
+    set_V_ref(dynamic_device, Vref0)
+
+    #States of EXST1_PTI are Vm, Vll, Vr, Vfb
+   
+    #Update AVR states
+    avr_ix = PSID.get_local_state_ix(dynamic_device, PSY.EXST1_PTI)
+    avr_states = @view device_states[avr_ix]
+    avr_states[1] = Vt
+    avr_states[2] = (1.0 - Tc/Tb) * Vf0/Ka
+    avr_states[3] = Vf0
+    avr_states[4] = - Kf/Tf * Vf0
+    return
+end
+
+function initialize_avr!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EX4VSA, TG, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain Vf0 solved from Machine
+    Vf0 = inner_vars[Vf_var]
+
+    #Obtain measured terminal voltage
+    Vt = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    L1 = PSY.get_Oel_lim(avr)[1] 
+    G = PSY.get_G(avr)
+    Ta = PSY.get_Ta(avr)
+    Tb = PSY.get_Tb(avr)
+    L3, L4 = PSY.get_E_lim(avr) # L3 is min_limit - L4 is max_limit
+
+
+    # Check limits to field voltage 
+    if (L3 > Vf0)  ||  (Vf0 > L4)
+        @warn("Initial field voltage of AVR in $(PSY.get_name(static)) is out of AVR limits")
+    end
+
+
+    #Update V_ref
+    Vref0 = Vt + Vf0/G 
+
+    PSY.set_V_ref!(avr, Vref0)   
+    set_V_ref(dynamic_device, Vref0)
+
+    #States of EX4VSA are  Vll, Vex, oel
+   
+    #Update AVR states
+    avr_ix = get_local_state_ix(dynamic_device, PSY.EX4VSA)
+    avr_states = @view device_states[avr_ix]
+    avr_states[1] = (1.0 - Ta/Tb) * Vf0  
+    avr_states[2] = Vf0
+    avr_states[3] = L1
+    
+    return
+end
