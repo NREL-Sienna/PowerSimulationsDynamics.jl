@@ -16,12 +16,12 @@ u - -->│ ────── │ - - - - - /- - - - - --> ysat
 
 function integrator_windup_mass_matrix(
     u::Z,
-    y::Z, 
+    y::V, 
     K::Float64, 
     T::Float64, 
     y_min::Float64, 
     y_max::Float64
-)  where {Z <: ACCEPTED_REAL_TYPES}
+)  where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
     dydt_scaled = K * u
     y_sat = clamp(y, y_min, y_max)
     return y_sat, dydt_scaled
