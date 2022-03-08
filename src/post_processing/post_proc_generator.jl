@@ -30,7 +30,6 @@ function compute_output_current(
     )
 end
 
-
 """
 Function to obtain the field current time series of a Dynamic Generator model out of the DAE Solution. It receives the simulation inputs,
 the dynamic device and bus voltage. It is dispatched for device type to compute the specific current.
@@ -49,17 +48,8 @@ function compute_field_current(
 
     #Get machine
     machine = PSY.get_machine(dynamic_device)
-    return _machine_current(
-        machine,
-        PSY.get_name(dynamic_device),
-        V_R,
-        V_I,
-        base_power_ratio,
-        res,
-        dt,
-    )
+    return _field_current(machine, PSY.get_name(dynamic_device), V_R, V_I, res, dt)
 end
-
 
 """
 Function to obtain the output current time series of a Classic Machine model out of the DAE Solution. It is dispatched via the machine type.
@@ -309,7 +299,6 @@ function _machine_current(
     return ts, I_R, I_I
 end
 
-
 """
 Function to obtain the field current time series of a Dynamic Generator. It is dispatched via the machine type.
 By default, machine does not have support for field current
@@ -322,15 +311,15 @@ function _field_current(
     V_I::Vector{Float64},
     res::SimulationResults,
     dt::Union{Nothing, Float64},
-) where M <: {PSY.Machine}
+) where {M <: PSY.Machine}
+    @warn("Field current is not supported in the machine type $(M). Returning zeros.")
     ts, _ = post_proc_state_series(res, (name, :δ), dt)
     I_fd = zeros(length(ts))
     return ts, I_fd
 end
 
 """
-Function to obtain the field current time series of a Dynamic Generator. It is dispatched via the machine type.
-By default, machine does not have support for field current
+Function to obtain the field current time series of a Dynamic Generator with machine type GENROU/GENROE.
 
 """
 function _field_current(
@@ -340,11 +329,10 @@ function _field_current(
     V_I::Vector{Float64},
     res::SimulationResults,
     dt::Union{Nothing, Float64},
-) where M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential}
-    
+) where {M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential}}
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
-    _, eq_p = post_proc_state_series(res, (name, :ed_p), dt)
+    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt)
     _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
     _, ψ_kq = post_proc_state_series(res, (name, :ψ_kd), dt)
 
@@ -362,7 +350,7 @@ function _field_current(
     #Additional Fluxes
     ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
     ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
-    ψ_pp = sqrt(ψd_pp.^2 + ψq_pp.^2)
+    ψ_pp = sqrt.(ψd_pp .^ 2 + ψq_pp .^ 2)
 
     I_fd = similar(δ, Float64)
 
@@ -376,7 +364,107 @@ function _field_current(
             (-R * (V_d - ψq_pp[ix]) + Xq_pp * (-V_q + ψd_pp[ix]))
 
         Se = saturation_function(machine, ψ_pp[ix])
-        I_fd[ix] = eq_p[ix] + (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd[ix] + γ_d2 * eq_p[ix]) + Se * ψd_pp[ix]
+        I_fd[ix] =
+            eq_p[ix] +
+            (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd[ix] + γ_d2 * eq_p[ix]) +
+            Se * ψd_pp[ix]
+    end
+    return ts, I_fd
+end
+
+"""
+Function to obtain the field current time series of a Dynamic Generator with machine type GENSAL.
+
+"""
+function _field_current(
+    machine::PSY.SalientPoleQuadratic,
+    name::String,
+    V_R::Vector{Float64},
+    V_I::Vector{Float64},
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
+    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
+    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt)
+
+    #Get parameters
+    R = PSY.get_R(machine)
+    Xd = PSY.get_Xd(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xl = PSY.get_Xl(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+
+    #Additional Fluxes
+    ψd_pp = γ_d1 * eq_p + γ_q1 * ψ_kd
+
+    I_fd = similar(δ, Float64)
+
+    for ix in 1:length(δ)
+        v = δ[ix]
+        V_d, V_q = ri_dq(v) * [V_R[ix]; V_I[ix]]
+
+        #Obtain electric current
+        I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d + ψq_pp[ix]) + Xd_pp * (ψd_pp[ix] - V_q))
+        Se = saturation_function(machine, eq_p[ix])
+        I_fd[ix] =
+            eq_p[ix] +
+            Se * eq_p[ix] +
+            (Xd - Xd_p) * (I_d + γ_d2 * (eq_p[ix] - ψ_kd[ix] - (Xd_p - Xl) * I_d))
+    end
+    return ts, I_fd
+end
+
+"""
+Function to obtain the field current time series of a Dynamic Generator with machine type GENSAE.
+
+"""
+function _field_current(
+    machine::PSY.SalientPoleExponential,
+    name::String,
+    V_R::Vector{Float64},
+    V_I::Vector{Float64},
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
+    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
+    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt)
+
+    #Get parameters
+    R = PSY.get_R(machine)
+    Xd = PSY.get_Xd(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = Xd_pp
+    Xl = PSY.get_Xl(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+
+    #Additional Fluxes
+    ψd_pp = γ_d1 * eq_p + γ_q1 * ψ_kd
+    ψ_pp = sqrt.(ψd_pp .^ 2 + ψq_pp .^ 2)
+
+    I_fd = similar(δ, Float64)
+
+    for ix in 1:length(δ)
+        v = δ[ix]
+        V_d, V_q = ri_dq(v) * [V_R[ix]; V_I[ix]]
+
+        #Obtain electric current
+        I_d =
+            (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d - ψq_pp[ix]) + Xq_pp * (-V_q + ψd_pp[ix]))
+        Se = saturation_function(machine, ψ_pp[ix])
+        I_fd[ix] =
+            eq_p[ix] +
+            Se * ψd_pp[ix] +
+            (Xd - Xd_p) * (I_d + γ_d2 * (eq_p[ix] - ψ_kd[ix] - (Xd_p - Xl) * I_d))
     end
     return ts, I_fd
 end
