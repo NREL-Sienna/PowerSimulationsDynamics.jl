@@ -45,7 +45,7 @@ function compute_field_current(
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64},
 ) where {G <: PSY.DynamicInverter}
-    @warn("Field current does not exists in inverters. Returning zeros.")
+    @warn("Field current does not exist in inverters. Returning zeros.")
     return (nothing, zeros(length(V_R)))
 end
 
