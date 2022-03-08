@@ -81,6 +81,8 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
         t = series[1]
         δ = series[2]
         series2 = get_voltage_magnitude_series(results, 102)
+        # TODO: Test I_fd with PSSE
+        series3 = get_field_current_series(results, "generator-102-1")
 
         t_psse, δ_psse = get_csv_delta(csv_file)
 
@@ -142,6 +144,8 @@ function test_gensal_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         t = series[1]
         δ = series[2]
         series2 = get_voltage_magnitude_series(results, 102)
+        # TODO: Test I_fd with PSSE
+        series3 = get_field_current_series(results, "generator-102-1")
 
         t_psse, δ_psse = get_csv_delta(csv_file)
 
