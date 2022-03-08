@@ -45,6 +45,28 @@ function initialize_static_injection!(inputs::SimulationInputs)
     return BUILD_INCOMPLETE
 end
 
+function _initialization_debug(dynamic_device, static, x0_device::Vector{Float64})
+    residual = similar(x0_device)
+    Vm = PSY.get_magnitude(PSY.get_bus(static))
+    θ = PSY.get_angle(PSY.get_bus(static))
+    device!(
+        x0_device,
+        residual,
+        Vm * cos(θ),
+        Vm * sin(θ),
+        zeros(10),
+        zeros(10),
+        [1.0],
+        zeros(100),
+        dynamic_device,
+        0,
+    )
+    for (ix, state) in enumerate(PSY.get_states(dynamic_device))
+        @debug state residual[ix]
+    end
+    return
+end
+
 function initialize_dynamic_injection!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
@@ -66,26 +88,7 @@ function initialize_dynamic_injection!(
             @assert length(x0_device) == n_states
             ix_range = get_ix_range(dynamic_device)
             initial_guess[ix_range] = x0_device
-            #= Uncomment for advanced initial_condition debugging
-            residual = similar(x0_device)
-            Vm = PSY.get_magnitude(PSY.get_bus(static))
-            θ = PSY.get_angle(PSY.get_bus(static))
-            device!(
-                x0_device,
-                residual,
-                Vm * cos(θ),
-                Vm * sin(θ),
-                zeros(10),
-                zeros(10),
-                [1.0],
-                zeros(100),
-                dynamic_device,
-                0,
-            )
-            for (ix, state) in enumerate(PSY.get_states(dynamic_device))
-                @debug state residual[ix]
-            end
-            =#
+            @debug _initialization_debug(dynamic_device, static, x0_device)
         end
     catch e
         bt = catch_backtrace()

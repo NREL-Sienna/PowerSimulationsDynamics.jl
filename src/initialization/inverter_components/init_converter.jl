@@ -28,8 +28,8 @@ function initialize_converter!(
     F <: PSY.Filter,
 }
     #Get inner vars
-    V_R = inner_vars[Vr_inv_var]
-    V_I = inner_vars[Vi_inv_var]
+    V_R = inner_vars[Vr_cnv_var]
+    V_I = inner_vars[Vi_cnv_var]
     θ = atan(V_I, V_R)
     bus = PSY.get_bus(static)
     bus_angle = PSY.get_angle(bus)
