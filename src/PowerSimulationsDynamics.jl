@@ -58,10 +58,13 @@ import NLsolve
 import PrettyTables
 import Base.ImmutableDict
 import PowerSystems
+import PowerFlows
 import TimerOutputs
+
 const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
+const PF = PowerFlows
 
 using DocStringExtensions
 
