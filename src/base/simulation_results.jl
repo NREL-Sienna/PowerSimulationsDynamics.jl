@@ -204,7 +204,7 @@ function get_voltage_angle_series(res::SimulationResults, bus_number::Int; dt = 
     n_buses = get_bus_count(res)
     bus_ix = get(get_bus_lookup(res), bus_number, 0)
     ts, V_R, V_I = post_proc_voltage_series(res.solution, bus_ix, n_buses, dt)
-    return ts, atan.(V_I ./ V_R)
+    return ts, atan.(V_I, V_R)
 end
 
 """

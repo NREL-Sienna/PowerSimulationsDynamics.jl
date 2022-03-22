@@ -100,7 +100,7 @@ function _output_current(
     end
     Id_cnv = G_lv .* Ip_sat
     Iq_cnv = -Iq - Iq_extra
-    θ = atan.(V_I ./ V_R)
+    θ = atan.(V_I, V_R)
     Id_cnv = G_lv .* Ip_sat
     Iq_cnv = -Iq - Iq_extra
     Ir_cnv = Id_cnv .* cos.(θ) - Iq_cnv .* sin.(θ)
