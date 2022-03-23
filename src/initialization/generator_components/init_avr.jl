@@ -104,11 +104,13 @@ function initialize_avr!(
     T2 = PSY.get_T2(avr)
     T3 = PSY.get_T3(avr)
     T4 = PSY.get_T4(avr)
+    Te = PSY.get_Te(avr)
     Tr = PSY.get_Tr(avr)
     Ae = PSY.get_Ae(avr)
     Be = PSY.get_Be(avr)
     #Obtain saturated Vf
     Se_Vf = Ae * (exp(Be * abs(Vf0)))
+    Va_min, Va_max = PSY.get_Va_lim(avr)
 
     #States of AVRTypeII are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr1, Vr2
@@ -117,11 +119,14 @@ function initialize_avr!(
         Vr1 = x[2]
         Vr2 = x[3]
 
-        Vr = K0 * Vr2 + (T4 / T3) * (Vr1 + K0 * (T2 / T1) * (V_ref - Vm)) #16.21
+        y_ll1, dVr1_dt = lead_lag(V_ref - Vm, Vr1, K0, T2, T1)
+        y_ll2, dVr2_dt = lead_lag(y_ll1, K0 * Vr2, 1.0, K0 * T4, K0 * T3)
+        Vr = y_ll2
+        _, dVf_dt = low_pass_modified(Vr, Vf0, 1.0, 1.0 + Se_Vf, Te)
 
-        out[1] = (Vf0 * (1.0 + Se_Vf) - Vr) #16.18
-        out[2] = K0 * (1.0 - (T2 / T1)) * (V_ref - Vm) - Vr1 #16.14
-        out[3] = (1.0 - (T4 / T3)) * (Vr1 + K0 * (T2 / T1) * (V_ref - Vm)) - K0 * Vr2  #16.20
+        out[1] = dVf_dt #16.18
+        out[2] = dVr1_dt #16.14
+        out[3] = dVr2_dt #16.20
     end
     x0 = [1.0, Vf0, Vf0]
     sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
@@ -139,6 +144,11 @@ function initialize_avr!(
         avr_states[2] = sol_x0[2] #Vr1
         avr_states[3] = sol_x0[3] #Vr2
         avr_states[4] = Vm #Vm
+        y_ll1, _ = lead_lag(sol_x0[1] - Vm, sol_x0[2], K0, T2, T1)
+        y_ll2, _ = lead_lag(y_ll1, K0 * sol_x0[3], 1.0, K0 * T4, K0 * T3)
+        if (y_ll2 > Va_max) || (y_ll2 < Va_min)
+            @error("Regulator Voltage V_r = $(y_ll2) outside the limits")
+        end
     end
     return
 end
