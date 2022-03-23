@@ -78,7 +78,7 @@ function _sorted_residuals(residual::Vector{Float64})
         @debug "Residual is zero with tolerance $(STRICT_NLSOLVE_F_TOLERANCE)"
         return
     end
-    ix_sorted = sortperm(abs.(residual), rev=true)
+    ix_sorted = sortperm(abs.(residual), rev = true)
     show_residual = min(10, length(residual))
     for i in 1:show_residual
         ix = ix_sorted[i]
