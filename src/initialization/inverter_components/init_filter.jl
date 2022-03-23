@@ -59,7 +59,7 @@ function initialize_filter!(
         out[6] = Vi_filter - V_I - rg * Ii_filter - ω_sys * lg * Ir_filter
     end
     x0 = [V_R, V_I, I_R, I_I, V_R, V_I]
-    sol = NLsolve.nlsolve(f!, x0)
+    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization in Filter failed")
     else
