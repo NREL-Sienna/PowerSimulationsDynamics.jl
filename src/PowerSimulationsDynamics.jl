@@ -60,6 +60,7 @@ import Base.ImmutableDict
 import PowerSystems
 import PowerFlows
 import TimerOutputs
+import FastClosures: @closure
 
 const PSY = PowerSystems
 const IS = InfrastructureSystems
