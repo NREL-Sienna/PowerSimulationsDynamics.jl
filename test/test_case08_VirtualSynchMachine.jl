@@ -63,6 +63,9 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         t = series[1]
         ω = series[2]
 
+        # Should return zeros and a warning
+        series3 = get_field_current_series(results, "generator-102-1")
+
         # Obtain PSCAD benchmark data
         M = get_csv_data(csv_file)
         t_pscad = M[:, 1] .- t_offset

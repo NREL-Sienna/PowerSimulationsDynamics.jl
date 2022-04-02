@@ -61,6 +61,9 @@ Ybus_change = NetworkSwitch(
         t = series[1]
         δ = series[2]
 
+        # Should return zeros and a warning
+        series3 = get_field_current_series(results, "generator-102-1")
+
         # Obtain PSAT benchmark data
         psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test04/Test04_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
@@ -118,6 +121,9 @@ end
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
+
+        # Should return zeros and a warning
+        series3 = get_field_current_series(results, "generator-102-1")
 
         # Obtain PSAT benchmark data
         psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test04/Test04_delta.csv")

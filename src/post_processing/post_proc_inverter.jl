@@ -34,6 +34,22 @@ function compute_output_current(
 end
 
 """
+Function to obtain the field current time series of a Dynamic Inverter model out of the DAE Solution. It receives the simulation inputs,
+the dynamic device and bus voltage. It must return nothing since field current does not exists in inverters.
+
+"""
+function compute_field_current(
+    res::SimulationResults,
+    dynamic_device::G,
+    V_R::Vector{Float64},
+    V_I::Vector{Float64},
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicInverter}
+    @warn("Field current does not exist in inverters. Returning zeros.")
+    return (nothing, zeros(length(V_R)))
+end
+
+"""
 Function to obtain the output current time series of a LCL Filter model out of the DAE Solution. It is dispatched via the Filter type.
 
 """

@@ -149,6 +149,28 @@ function post_proc_reactivepower_series(
 end
 
 """
+Function to compute the field current output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
+string name of the Dynamic Injection device.
+
+"""
+function post_proc_field_current_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
+    system = get_system(res)
+    bus_lookup = get_bus_lookup(res)
+    n_buses = length(bus_lookup)
+    solution = res.solution
+    device = PSY.get_component(PSY.StaticInjection, system, name)
+    bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
+    ts, V_R, V_I = post_proc_voltage_series(solution, bus_ix, n_buses, dt)
+    dyn_device = PSY.get_dynamic_injector(device)
+    _, I_fd = compute_field_current(res, dyn_device, V_R, V_I, dt)
+    return ts, I_fd
+end
+
+"""
     get_state_series(
         res::SimulationResults,
         ref::Tuple{String, Symbol};
@@ -273,6 +295,23 @@ Function to obtain the reactive power output time series of a Dynamic Injection 
 """
 function get_reactivepower_series(res::SimulationResults, name::String; dt = nothing)
     return post_proc_reactivepower_series(res, name, dt)
+end
+
+"""
+    get_field_current_series(
+            res::SimulationResults,
+            name::String,
+    )
+
+Function to obtain the field current time series of a Dynamic Generator out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
+"""
+function get_field_current_series(res::SimulationResults, name::String; dt = nothing)
+    return post_proc_field_current_series(res, name, dt)
 end
 
 """
