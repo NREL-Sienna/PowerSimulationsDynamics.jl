@@ -313,7 +313,7 @@ function mdl_avr_ode!(
     V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(dynamic_device, PSY.EXST1_PTI) 
+    local_ix = get_local_state_ix(dynamic_device, PSY.EXST1) 
 
     #Define inner states for component
     internal_states = @view device_states[local_ix]
