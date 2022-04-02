@@ -229,8 +229,7 @@ function mdl_pss_ode!(
     pss = PSY.get_pss(dynamic_device)
     #Remote bus control not supported
 
-    #Get Input Signal - this model uses speed deviation as input
-    
+    #Get Input Signal - this model only uses speed deviation as input
     external_ix = get_input_port_ix(dynamic_device, M) 
     ω = device_states[external_ix[1]] # get machine speed
     u = ω - 1.0
