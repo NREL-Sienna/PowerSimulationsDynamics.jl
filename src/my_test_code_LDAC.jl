@@ -20,35 +20,42 @@ avr_exst1() = PSY.EXST1_PTI(
 )
 
 avr_ex4vsa1() = PSY.EX4VSA(
-<<<<<<< HEAD
-    Iflim=1.2,
-=======
     Iflim=1.88,
->>>>>>> a0e618e8262c0967c776b1b29bd47cfb2471baf6
     d=-0.1,
     f=1.0,
     Spar=0.0,
     K1=1.0,
     K2=-1.0,
     Oel_lim = (-12.0,10.0),
-<<<<<<< HEAD
-    G=70.0,
-=======
     G=170.0,
->>>>>>> a0e618e8262c0967c776b1b29bd47cfb2471baf6
     Ta=10.0,
     Tb=20.0,
     Te=0.1,
     E_lim = (0.0,4.0)
 )
 
+avr_exac1() = PSY.EXAC1(
+    Tr = 0.01,
+    Tb = 0.0333,
+    Tc = 1.0,
+    Ka = 1.0,
+    Ta = 250,
+    Vr_lim = (0.5, 13.5),
+    Te = 0.0333,
+    Kf = 0.3,
+    Tf = 0.065,
+    Kc = 0.5,
+    Kd = 0.05,
+    Ke = 1.8,
+    E_sat = (0.6, 0.25),
+    Se = (1.5, 2.0),
+    V_ref = (1.0),
+    saturation_coeffs = (0.8679, 9.8057)
+)
+
 
 pss_stab1() = PSY.STAB1(
-<<<<<<< HEAD
-    Ks = 0,
-=======
     Ks = 150,
->>>>>>> a0e618e8262c0967c776b1b29bd47cfb2471baf6
     Ts = 1.5,
     T1T3 = 13,
     T3 = 0.045,
@@ -58,22 +65,7 @@ pss_stab1() = PSY.STAB1(
 )
 
 
-<<<<<<< HEAD
   synmachineRR()= PSY.RoundRotorQuadratic(
-    R= 0.001,
-    Td0_p=5.0,
-    Td0_pp=0.04,
-    Tq0_p=0.4,
-    Tq0_pp=0.04,
-    Xd= 1.9,
-    Xq= 1.8,
-    Xd_p= 0.3,
-    Xq_p=0.5,
-    Xd_pp=0.2,
-    Xl = 0.15,
-    Se = (0.08,0.45)
-=======
-  synmachineRR()= PSY.RoundRotorMachine(
     R= 0.001,
     Td0_p=7.0,
     Td0_pp=0.05,
@@ -86,7 +78,6 @@ pss_stab1() = PSY.STAB1(
     Xd_pp=0.2,
     Xl = 0.15,
     Se = (0.00,0.00)
->>>>>>> a0e618e8262c0967c776b1b29bd47cfb2471baf6
     )
 
 
@@ -104,7 +95,7 @@ shaft = deepcopy(get_shaft(dynamic_injector))
 tg = deepcopy(get_prime_mover(dynamic_injector))
 pss = deepcopy(get_pss(dynamic_injector))
 
-new_dynamic_injector = DynamicGenerator(name = get_name(thermal_gen), machine = synmachineRR(), shaft=shaft, avr = avr_ex4vsa1(), prime_mover = tg, ω_ref = 1.0, pss = pss_stab1())
+new_dynamic_injector = DynamicGenerator(name = get_name(thermal_gen), machine = synmachineRR(), shaft=shaft, avr = avr_exac1(), prime_mover = tg, ω_ref = 1.0, pss = pss)
 set_dynamic_injector!(thermal_gen, nothing) # delete gen
 add_component!(sys, new_dynamic_injector, thermal_gen)
 
@@ -126,17 +117,24 @@ results = read_results(sim)
 
 angle = get_state_series(results, ("generator-102-1", :δ));
 
-Voutput = get_state_series(results, ("generator-102-1", :Vex));
+out_Vm = get_state_series(results, ("generator-102-1", :Vm));
 
-Voel = get_state_series(results, ("generator-102-1", :oel));
+out_Vr1 = get_state_series(results, ("generator-102-1", :Vr1));
 
-PSS_out = get_state_series(results, ("generator-102-1", :x_p3));
+out_Vr2 = get_state_series(results, ("generator-102-1", :Vr2));
 
+out_Ve = get_state_series(results, ("generator-102-1", :Ve));
 
-plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "gen-102-1")
+out_Vr3 = get_state_series(results, ("generator-102-1", :Vr3));
 
-plot(Voutput , xlabel = "time", ylabel = "field voltage [pu]", label = "gen-102-1")
+display(plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "gen-102-1"))
 
-plot(Voel , xlabel = "time", ylabel = "OEL [pu]", label = "gen-102-1")
+display(plot(out_Vm , xlabel = "time", ylabel = "Vm [pu]", label = "gen-102-1"))
 
-plot(PSS_out , xlabel = "time", ylabel = "Vpss [pu]", label = "gen-102-1")
+display(plot(out_Vr1 , xlabel = "time", ylabel = "Vr1 [pu]", label = "gen-102-1"))
+
+display(plot(out_Vr2 , xlabel = "time", ylabel = "Vr2 [pu]", label = "gen-102-1"))
+
+display(plot(out_Ve , xlabel = "time", ylabel = "Ve [pu]", label = "gen-102-1"))
+
+display(plot(out_Vr3 , xlabel = "time", ylabel = "Vr3 [pu]", label = "gen-102-1"))
