@@ -1,10 +1,15 @@
 using PowerSystems, PowerSystemCaseBuilder, Sundials, Plots, Logging, InfrastructureSystems 
 const PSY = PowerSystems
 
-
-using PowerSimulationsDynamics
-const PSID = PowerSimulationsDynamics
-
+pss_stab1() = PSY.STAB1(
+    KT = 150,
+    T = 1.5,
+    T1T3 = 13,
+    T3 = 0.045,
+    T2T4 = 13,
+    T4 = 0.045,
+    H_lim=0.2
+)
 
 avr_exst1() = PSY.EXST1_PTI(
     Tr = 0.01,
@@ -18,6 +23,12 @@ avr_exst1() = PSY.EXST1_PTI(
     Kf = 0.0,
     Tf = 1.0
 )
+
+using PowerSimulationsDynamics
+const PSID = PowerSimulationsDynamics
+
+
+
 
 avr_ex4vsa1() = PSY.EX4VSA(
     Iflim=1.2,
@@ -38,9 +49,8 @@ avr_ex4vsa1() = PSY.EX4VSA(
 
 
 pss_stab1() = PSY.STAB1(
-    Ks = 0,
-    Ks = 150,
-    Ts = 1.5,
+    KT = 150,
+    T = 1.5,
     T1T3 = 13,
     T3 = 0.045,
     T2T4 = 13,
