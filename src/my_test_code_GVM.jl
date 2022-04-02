@@ -62,19 +62,6 @@ pss_stab1() = PSY.STAB1(
     Xd_pp=0.2,
     Xl = 0.15,
     Se = (0.08,0.45)
-  synmachineRR()= PSY.RoundRotorMachine(
-    R= 0.001,
-    Td0_p=7.0,
-    Td0_pp=0.05,
-    Tq0_p=1.5,
-    Tq0_pp=0.05,
-    Xd= 2.2,
-    Xq= 2.0,
-    Xd_p=0.3,
-    Xq_p=0.4,
-    Xd_pp=0.2,
-    Xl = 0.15,
-    Se = (0.00,0.00)
     )
 
 
