@@ -306,14 +306,14 @@ function mdl_avr_ode!(
     device_states::AbstractArray,
     output_ode::AbstractArray,
     inner_vars::AbstractArray,
-    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1_PTI, TG, P}}, 
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}}, 
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
     V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(dynamic_device, PSY.EXST1_PTI) 
+    local_ix = get_local_state_ix(dynamic_device, PSY.EXST1) 
 
     #Define inner states for component
     internal_states = @view device_states[local_ix]

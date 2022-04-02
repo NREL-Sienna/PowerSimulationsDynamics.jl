@@ -304,7 +304,7 @@ end
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1_PTI, TG, P}},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain Vf0 solved from Machine
@@ -339,7 +339,7 @@ function initialize_avr!(
     #States of EXST1_PTI are Vm, Vll, Vr, Vfb
    
     #Update AVR states
-    avr_ix = PSID.get_local_state_ix(dynamic_device, PSY.EXST1_PTI)
+    avr_ix = PSID.get_local_state_ix(dynamic_device, PSY.EXST1)
     avr_states = @view device_states[avr_ix]
     avr_states[1] = Vt
     avr_states[2] = (1.0 - Tc/Tb) * Vf0/Ka
