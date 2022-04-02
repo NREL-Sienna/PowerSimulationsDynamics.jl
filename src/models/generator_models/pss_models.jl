@@ -274,20 +274,21 @@ function mdl_pss_ode!(
     x_p3 = internal_states[3] # state for LL2
   
     # Get Parameters
-    Ks = PSY.get_Ks(pss)
-    Ts = PSY.get_Ts(pss)
+    KT = PSY.get_KT(pss)
+    T = PSY.get_T(pss)
     T1T3 = PSY.get_T1T3(pss)
     T3 = PSY.get_T3(pss)
     T2T4 = PSY.get_T2T4(pss)
     T4 = PSY.get_T4(pss)
     H_lim = PSY.get_H_lim(pss)
-   
+    
+    K = KT*T
     T1 = T3*T1T3
     T2 = T4*T2T4
 
     # Compute block derivatives
 
-    y_hp, dxp1_dt = high_pass(u,x_p1,Ks,Ts) 
+    y_hp, dxp1_dt = high_pass(u,x_p1,K,T) 
     y_LL1, dxp2_dt = lead_lag(y_hp,x_p2,1.0,T1,T3) 
     y_LL2, dxp3_dt = lead_lag(y_LL1,x_p3,1.0,T2,T4) 
 
