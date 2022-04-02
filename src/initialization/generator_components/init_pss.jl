@@ -146,14 +146,6 @@ function initialize_pss!(
     #Get Signal Input Integer
     pss = PSY.get_pss(dynamic_device)
     
-    #Get Input Signal
-    u = get_pss_input_signal(
-        Base.RefValue{1}, # speed deviation only
-        device_states,
-        inner_vars,
-        1.0,
-        dynamic_device,
-    )
 
     #Obtain PSS States
     pss_ix = get_local_state_ix(dynamic_device, typeof(pss))
