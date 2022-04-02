@@ -41,6 +41,11 @@ function saturation_function(avr::PSY.ESAC1A, x::ACCEPTED_REAL_TYPES)
     return Sat_B * (x - Sat_A)^2 / x
 end
 
+function saturation_function(avr::PSY.EXAC1, x::ACCEPTED_REAL_TYPES)
+    Sat_A, Sat_B = PSY.get_saturation_coeffs(avr)
+    return Sat_B * (x - Sat_A)^2 / x
+end
+
 function rectifier_function(I::T) where {T <: ACCEPTED_REAL_TYPES}
     if I <= 0.0
         return one(T)
@@ -92,7 +97,7 @@ end
 
 function current_limit_logic(
     inner_control::PSY.RECurrentControlB,
-    ::Type{Base.RefValue{0}}, #PQ_Flag = 0: Q Priority
+    ::Val{0}, #PQ_Flag = 0: Q Priority
     Vt_filt::X,
     Ip_cmd::X,
     Iq_cmd::X,
@@ -117,7 +122,7 @@ end
 
 function current_limit_logic(
     inner_control::PSY.RECurrentControlB,
-    ::Type{Base.RefValue{1}}, #PQ_Flag = 1: P Priority
+    ::Val{1}, #PQ_Flag = 1: P Priority
     Vt_filt::X,
     Ip_cmd::X,
     Iq_cmd::X,

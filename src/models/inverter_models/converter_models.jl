@@ -33,6 +33,7 @@ function mdl_converter_ode!(
     #Update inner_vars
     inner_vars[Vr_cnv_var] = m_ri[R] * Vdc
     inner_vars[Vi_cnv_var] = m_ri[I] * Vdc
+    return
 end
 
 function mdl_converter_ode!(
@@ -65,7 +66,7 @@ function mdl_converter_ode!(
     Lvpl1 = PSY.get_Lvpl1(converter)
     Vo_lim = PSY.get_Vo_lim(converter)
     Lv_pnt0, Lv_pnt1 = PSY.get_Lv_pnts(converter)
-    Io_lim = PSY.get_Io_lim(converter)
+    # Io_lim = PSY.get_Io_lim(converter)
     T_fltr = PSY.get_T_fltr(converter)
     K_hv = PSY.get_K_hv(converter)
     Iqr_min, Iqr_max = PSY.get_Iqr_lims(converter)
@@ -156,4 +157,5 @@ function mdl_converter_ode!(
     inner_vars[Ii_cnv_var] = Ii_cnv
     inner_vars[Vr_cnv_var] = Vr_cnv
     inner_vars[Vi_cnv_var] = Vi_cnv
+    return
 end

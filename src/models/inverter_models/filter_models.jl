@@ -4,6 +4,7 @@ function mass_matrix_filter_entries!(
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {F <: PSY.Filter}
     @debug "Using default mass matrix entries $F"
+    return
 end
 
 function mdl_filter_ode!(
@@ -98,6 +99,7 @@ function mdl_filter_ode!(
     #Update current
     current_r[1] += I_RI[1]
     current_i[1] += I_RI[2]
+    return
 end
 
 function mdl_filter_ode!(
@@ -125,20 +127,29 @@ function mdl_filter_ode!(
     rf = PSY.get_rf(filt)
     lf = PSY.get_lf(filt)
 
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
+    Vr_inv = inner_vars[Vr_inv_var]
+    Vi_inv = inner_vars[Vi_inv_var]
+
     #Compute output currents
     if lf != 0.0 || rf != 0.0
-        Vr_cnv = inner_vars[Vr_cnv_var]
-        Vi_cnv = inner_vars[Vi_cnv_var]
-        Vr_inv = inner_vars[Vr_inv_var]
-        Vi_inv = inner_vars[Vi_inv_var]
         Zmag_squared = rf^2 + lf^2
         Ir_filt = (1.0 / Zmag_squared) * ((Vr_cnv - Vr_inv) * rf + (Vi_cnv - Vi_inv) * lf)
         Ii_filt = (1.0 / Zmag_squared) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
     else
-        Ir_filt = inner_vars[Ir_cnv_var]
-        Ii_filt = inner_vars[Ii_cnv_var]
+        #Obtain converter
+        @assert Vr_cnv == Vr_inv
+        @assert Vi_cnv == Vi_inv
+        converter = PSY.get_converter(dynamic_device)
+        R_source = PSY.get_R_source(converter)
+        X_source = PSY.get_X_source(converter)
+        Z_source_sq = R_source^2 + X_source^2
+        I_aux_r = (R_source * Vr_cnv + X_source * Vi_cnv) / Z_source_sq
+        I_aux_i = (R_source * Vi_cnv - X_source * Vr_cnv) / Z_source_sq
+        Ir_filt = inner_vars[Ir_cnv_var] - I_aux_r
+        Ii_filt = inner_vars[Ii_cnv_var] - I_aux_i
     end
-
     #Update Inner Vars
     inner_vars[Ir_inv_var] = Ir_filt
     inner_vars[Ii_inv_var] = Ii_filt
@@ -146,4 +157,5 @@ function mdl_filter_ode!(
     #Update current
     current_r[1] += ratio_power * Ir_filt
     current_i[1] += ratio_power * Ii_filt
+    return
 end

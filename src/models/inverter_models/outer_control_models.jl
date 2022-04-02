@@ -19,7 +19,7 @@ function _mdl_ode_RE_active_controller_AB!(
     p_elec_out::ACCEPTED_REAL_TYPES,
     ω_sys::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{1}},
+    ::Val{1},
     active_power_control::PSY.ActiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -99,6 +99,7 @@ function _mdl_ode_RE_active_controller_AB!(
 
     #Update Inner Vars: Ioc_pcmd
     inner_vars[Id_oc_var] = p_ord_sat / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 #Freq_Flag = 0
@@ -108,7 +109,7 @@ function _mdl_ode_RE_active_controller_AB!(
     p_elec_out::ACCEPTED_REAL_TYPES,
     ω_sys::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
+    ::Val{0},
     active_power_control::PSY.ActiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -148,6 +149,7 @@ function _mdl_ode_RE_active_controller_AB!(
 
     #Update Inner Vars: Ioc_pcmd
     inner_vars[Id_oc_var] = p_ord / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 ### Reactive Controllers ###
@@ -163,9 +165,9 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{1}},
+    ::Val{0},
+    ::Val{0},
+    ::Val{1},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -235,6 +237,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     #Update Inner Vars
     inner_vars[V_oc_var] = V_pi_sat - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 # VC_Flag == N/A && Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
@@ -244,9 +247,9 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{0}},
+    ::Val{0},
+    ::Val{0},
+    ::Val{0},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -305,6 +308,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     #Update Inner Vars
     inner_vars[V_oc_var] = Q_ext - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 # VC_Flag == 0 or 1 && Ref_Flag == 1 && PF_Flag == 0 && V_Flag == 1
@@ -318,9 +322,9 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_states,
     q_elec_out,
     Vt_filt,
-    ::Type{Base.RefValue{1}},
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{1}},
+    ::Val{1},
+    ::Val{0},
+    ::Val{1},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -409,6 +413,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     #Update Inner Vars
     inner_vars[V_oc_var] = V_pi_sat - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 # VC_Flag == 0 or 1 && Ref_Flag == 1 && PF_Flag == 0 && V_Flag == 0
@@ -423,9 +428,9 @@ function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_states,
     q_elec_out,
     Vt_filt,
-    ::Type{Base.RefValue{1}},
-    ::Type{Base.RefValue{0}},
-    ::Type{Base.RefValue{0}},
+    ::Val{1},
+    ::Val{0},
+    ::Val{0},
     reactive_power_control::PSY.ReactiveRenewableControllerAB,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -508,6 +513,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     #Update Inner Vars
     inner_vars[V_oc_var] = V_pi_sat - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
 end
 
 ############################################
@@ -599,6 +605,7 @@ function mdl_outer_ode!(
     inner_vars[θ_oc_var] = θ_oc
     inner_vars[ω_oc_var] = ω_oc
     inner_vars[V_oc_var] = V_ref + kq * (q_ref - qm)
+    return
 end
 
 function mdl_outer_ode!(
@@ -685,6 +692,7 @@ function mdl_outer_ode!(
     inner_vars[θ_oc_var] = θ_oc
     inner_vars[ω_oc_var] = ω_oc
     inner_vars[V_oc_var] = V_ref + kq * (q_ref - qm)
+    return
 end
 
 function mdl_outer_ode!(
@@ -775,6 +783,7 @@ function mdl_outer_ode!(
     inner_vars[ω_oc_var] = ω_pll
     inner_vars[Iq_oc_var] = Iq_pi
     inner_vars[Id_oc_var] = Id_pi
+    return
 end
 
 function mdl_outer_ode!(
@@ -814,12 +823,12 @@ function mdl_outer_ode!(
     Vt_filt = device_states[external_ix[1]]
 
     #Monitoring power from other branch not supported.
-    V_R = inner_vars[Vr_inv_var]
-    V_I = inner_vars[Vi_inv_var]
-    I_R = inner_vars[Ir_inv_var]
-    I_I = inner_vars[Ii_inv_var]
-    p_elec_out = I_R * V_R + I_I * V_I
-    q_elec_out = -I_I * V_R + I_R * V_I
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
+    Ir_cnv = inner_vars[Ir_cnv_var]
+    Ii_cnv = inner_vars[Ii_cnv_var]
+    p_elec_out = Ir_cnv * Vr_cnv + Ii_cnv * Vi_cnv
+    q_elec_out = -Ii_cnv * Vr_cnv + Ir_cnv * Vi_cnv
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
@@ -860,7 +869,7 @@ function mdl_outer_ode!(
         p_elec_out,
         ω_sys,
         Vt_filt,
-        Base.RefValue{Freq_Flag},
+        Val(Freq_Flag),
         active_power_control,
         dynamic_device,
         inner_vars,
@@ -872,11 +881,12 @@ function mdl_outer_ode!(
         reactive_states,
         q_elec_out,
         Vt_filt,
-        Base.RefValue{Ref_Flag},
-        Base.RefValue{PF_Flag},
-        Base.RefValue{V_Flag},
+        Val(Ref_Flag),
+        Val(PF_Flag),
+        Val(V_Flag),
         reactive_power_control,
         dynamic_device,
         inner_vars,
     )
+    return
 end

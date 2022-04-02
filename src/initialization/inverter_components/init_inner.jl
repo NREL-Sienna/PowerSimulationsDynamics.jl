@@ -238,9 +238,9 @@ function initialize_inner!(
     F <: PSY.Filter,
 }
     # Obtain inner variables for component
-    V_R = inner_vars[Vr_inv_var]
-    V_I = inner_vars[Vi_inv_var]
-    V_t = sqrt(V_R^2 + V_I^2)
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
+    V_t = sqrt(Vr_cnv^2 + Vi_cnv^2)
     Iq_cmd = inner_vars[Iq_ic_var]
     Ip_oc = inner_vars[Id_oc_var]
     Iq_oc = inner_vars[Iq_oc_var]
@@ -251,17 +251,17 @@ function initialize_inner!(
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
 
     Ip_min, Ip_max, Iq_min, Iq_max =
-        current_limit_logic(inner_control, Base.RefValue{PQ_Flag}, V_t, Ip_oc, Iq_cmd)
+        current_limit_logic(inner_control, Val(PQ_Flag), V_t, Ip_oc, Iq_cmd)
 
     if Ip_oc >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_oc
         @error(
-            "Inverter $(PSY.get_name(static)) current $(Ip_oc) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
+            "Inverter $(PSY.get_name(static)) active current $(Ip_oc) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
         )
     end
 
     if Iq_oc >= Iq_max + BOUNDS_TOLERANCE || Iq_min - BOUNDS_TOLERANCE >= Iq_oc
         @error(
-            "Inverter $(PSY.get_name(static)) current $(Iq_oc) out of limits $(Iq_min) $(Iq_max). Check Power Flow or Parameters"
+            "Inverter $(PSY.get_name(static)) reactive current $(Iq_oc) out of limits $(Iq_min) $(Iq_max). Check Power Flow or Parameters"
         )
     end
 

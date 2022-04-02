@@ -18,7 +18,7 @@ function initialize_pss!(
 
     #Get Input Signal
     u = get_pss_input_signal(
-        Base.RefValue{input_code},
+        Val(input_code),
         device_states,
         inner_vars,
         1.0,

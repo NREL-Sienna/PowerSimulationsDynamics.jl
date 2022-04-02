@@ -83,6 +83,7 @@ function initialize_filter!(
         filter_states[5] = I_R #Ir_filter
         filter_states[6] = I_I #Ii_filter
     end
+    return
 end
 
 function initialize_filter!(
@@ -113,15 +114,6 @@ function initialize_filter!(
     # PSS/e names I_I as Iq. But is calculated as Q/Vt
     I_I = imag(I)
 
-    # Update Control References
-    PSY.set_Q_ref!(PSY.get_converter(dynamic_device), Q0)
-    set_Q_ref(dynamic_device, Q0)
-    PSY.set_Q_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Q0)
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), P0)
-    set_P_ref(dynamic_device, P0)
-    PSY.set_V_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Vm)
-    set_V_ref(dynamic_device, Vm)
-
     #Get Parameters
     filt = PSY.get_filter(dynamic_device)
     rf = PSY.get_rf(filt)
@@ -136,11 +128,32 @@ function initialize_filter!(
     #Update filter currents (output of converter)
     inner_vars[Ir_inv_var] = I_R
     inner_vars[Ii_inv_var] = I_I
+
     #Update converter currents
     V_cnv = V + (rf + lf * 1im) * I
     I_aux = V_cnv / (R_source + X_source * 1im)
     I_cnv = I + I_aux
+    S_cnv = V_cnv * conj(I_cnv)
+    Q_cnv = imag(S_cnv)
+    P_cnv = real(S_cnv)
 
+    # For Debugging later
+    V_cnv_pq = V_cnv * exp(-1.0im * θ)
+    I_cnv_pq = I_cnv * exp(-1.0im * θ)
+    IS.@assert_op Q_cnv ≈ -abs(V_cnv_pq) * imag(I_cnv_pq)
+    IS.@assert_op P_cnv ≈ abs(V_cnv_pq) * real(I_cnv_pq)
+    IS.@assert_op P_cnv ≈ P0
+
+    # Update Control References
+    PSY.set_Q_ref!(PSY.get_converter(dynamic_device), Q_cnv)
+    set_Q_ref(dynamic_device, Q_cnv)
+    PSY.set_Q_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Q_cnv)
+    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), P_cnv)
+    set_P_ref(dynamic_device, P_cnv)
+    PSY.set_V_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Vm)
+    set_V_ref(dynamic_device, Vm)
+
+    #Update converter currents and voltages
     inner_vars[Vr_cnv_var] = real(V_cnv)
     inner_vars[Vi_cnv_var] = imag(V_cnv)
     inner_vars[Ir_cnv_var] = real(I_cnv)

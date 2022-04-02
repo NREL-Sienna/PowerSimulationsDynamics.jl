@@ -483,6 +483,7 @@ function _update_inner_vars!(
     Lvpl_sw = PSY.get_Lvpl_sw(converter)
     R_source = PSY.get_R_source(converter)
     X_source = PSY.get_X_source(converter)
+    Z_source_sq = R_source^2 + X_source^2
 
     #Define internal states for Converter
     converter_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
@@ -527,11 +528,10 @@ function _update_inner_vars!(
                     (Ir_cnv + Vi_inv * lf_ratio + Vr_inv * rf_ratio) * l_total_ratio +
                     (Ii_cnv + Vi_inv * rf_ratio - Vr_inv * lf_ratio) * r_total_ratio
                 )
+            return Vr_cnv, Vi_cnv
         else
-            Vr_cnv = Vr_inv
-            Vi_cnv = Vi_inv
+            return Vr_inv, Vi_inv
         end
-        return Vr_cnv, Vi_cnv
     end
 
     Vr_cnv, Vi_cnv = V_cnv_calc(Ir_cnv, Ii_cnv, V_R, V_I)
@@ -544,8 +544,11 @@ function _update_inner_vars!(
         Ir_filt = (1.0 / Zmag_squared) * ((Vr_cnv - Vr_inv) * rf + (Vi_cnv - Vi_inv) * lf)
         Ii_filt = (1.0 / Zmag_squared) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
     else
-        Ir_filt = Ir_cnv
-        Ii_filt = Ii_cnv
+        #Compute aux currents
+        I_aux_r = (R_source * Vr_cnv + X_source * Vi_cnv) / Z_source_sq
+        I_aux_i = (R_source * Vi_cnv - X_source * Vr_cnv) / Z_source_sq
+        Ir_filt = Ir_cnv - I_aux_r
+        Ii_filt = Ii_cnv - I_aux_i
     end
 
     #Update inner_vars
