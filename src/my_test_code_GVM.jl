@@ -20,22 +20,16 @@ avr_exst1() = PSY.EXST1_PTI(
 )
 
 avr_ex4vsa1() = PSY.EX4VSA(
-<<<<<<< HEAD
     Iflim=1.2,
-=======
     Iflim=1.88,
->>>>>>> a0e618e8262c0967c776b1b29bd47cfb2471baf6
     d=-0.1,
     f=1.0,
     Spar=0.0,
     K1=1.0,
     K2=-1.0,
     Oel_lim = (-12.0,10.0),
-<<<<<<< HEAD
     G=70.0,
-=======
     G=170.0,
->>>>>>> a0e618e8262c0967c776b1b29bd47cfb2471baf6
     Ta=10.0,
     Tb=20.0,
     Te=0.1,
@@ -44,11 +38,8 @@ avr_ex4vsa1() = PSY.EX4VSA(
 
 
 pss_stab1() = PSY.STAB1(
-<<<<<<< HEAD
     Ks = 0,
-=======
     Ks = 150,
->>>>>>> a0e618e8262c0967c776b1b29bd47cfb2471baf6
     Ts = 1.5,
     T1T3 = 13,
     T3 = 0.045,
@@ -58,7 +49,6 @@ pss_stab1() = PSY.STAB1(
 )
 
 
-<<<<<<< HEAD
   synmachineRR()= PSY.RoundRotorQuadratic(
     R= 0.001,
     Td0_p=5.0,
@@ -72,7 +62,6 @@ pss_stab1() = PSY.STAB1(
     Xd_pp=0.2,
     Xl = 0.15,
     Se = (0.08,0.45)
-=======
   synmachineRR()= PSY.RoundRotorMachine(
     R= 0.001,
     Td0_p=7.0,
@@ -86,7 +75,6 @@ pss_stab1() = PSY.STAB1(
     Xd_pp=0.2,
     Xl = 0.15,
     Se = (0.00,0.00)
->>>>>>> a0e618e8262c0967c776b1b29bd47cfb2471baf6
     )
 
 
