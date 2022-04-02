@@ -226,7 +226,7 @@ function mdl_pss_ode!(
 
     #Get Input Signal - this model uses speed deviation as input
     u = get_pss_input_signal(
-        Base.RefValue{1}, # speed deviation only
+        Val{1}, # speed deviation only
         device_states,
         inner_vars,
         ω_sys,
