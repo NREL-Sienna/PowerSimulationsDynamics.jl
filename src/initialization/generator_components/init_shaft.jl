@@ -14,6 +14,7 @@ function initialize_shaft!(
     shaft_ix = get_local_state_ix(dynamic_device, PSY.FiveMassShaft)
     shaft_states = @view device_states[shaft_ix]
     δ0 = shaft_states[1]
+    δ = δ0
     ω = shaft_states[2]
     ω_hp = ω
     ω_ip = ω
@@ -39,10 +40,10 @@ function initialize_shaft!(
 
     #Obtain inner vars
     τe = inner_vars[τe_var]
-    τm = inner_vars[τm_var]
+    τm0 = inner_vars[τm_var]
 
     function f!(out, x)
-        δ = x[1]
+        τm = x[1]
         δ_hp = x[2]
         δ_ip = x[3]
         δ_lp = x[4]
@@ -70,14 +71,13 @@ function initialize_shaft!(
         out[5] = -D_ex * (ω_ex - ω_sys) - D_45 * (ω_ex - ω) + K_ex * (δ - δ_ex)
     end
 
-    x0 = [δ0, δ0, δ0, δ0, δ0]
-    sol = NLsolve.nlsolve(f!, x0)
+    x0 = [τm0, δ0, δ0, δ0, δ0]
+    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization in Shaft failed")
     else
         sol_x0 = sol.zero
-        shaft_states[1] = sol_x0[1] #δ0
-        shaft_states[2] = ω
+        inner_vars[τm_var] = sol_x0[1] #τm
         shaft_states[3] = sol_x0[2] #δ_hp
         shaft_states[4] = ω #ω_hp
         shaft_states[5] = sol_x0[3] #δ_ip

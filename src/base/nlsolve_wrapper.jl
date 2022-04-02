@@ -9,12 +9,12 @@ converged(sol::NLsolveWrapper) = sol.converged
 failed(sol::NLsolveWrapper) = sol.failed
 
 function _get_model_closure(model::SystemModel{MassMatrixModel}, ::Vector{Float64})
-    return (residual, x) -> model(residual, x, nothing, 0.0)
+    return @closure (residual, x) -> model(residual, x, nothing, 0.0)
 end
 
 function _get_model_closure(model::SystemModel{ResidualModel}, x0::Vector{Float64})
     dx0 = zeros(length(x0))
-    return (residual, x) -> model(residual, dx0, x, nothing, 0.0)
+    return @closure (residual, x) -> model(residual, dx0, x, nothing, 0.0)
 end
 
 function _nlsolve_call(
@@ -73,13 +73,28 @@ function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbo
     return converged(sys_solve)
 end
 
+function _sorted_residuals(residual::Vector{Float64})
+    if isapprox(sum(abs.(residual)), 0.0, atol = STRICT_NLSOLVE_F_TOLERANCE)
+        @debug "Residual is zero with tolerance $(STRICT_NLSOLVE_F_TOLERANCE)"
+        return
+    end
+    ix_sorted = sortperm(abs.(residual), rev = true)
+    show_residual = min(10, length(residual))
+    for i in 1:show_residual
+        ix = ix_sorted[i]
+        @debug ix abs(residual[ix])
+    end
+    return
+end
+
 function _check_residual(
     residual::Vector{Float64},
     inputs::SimulationInputs,
     tolerance::Float64,
 )
+    @debug _sorted_residuals(residual)
     val, ix = findmax(residual)
-    @debug "Residual from initial guess: max = $(val) at $ix, total = $(sum(residual))"
+    @info "Residual from initial guess: max = $(val) at $ix, total = $(sum(residual))"
     if sum(residual) > tolerance
         state_map = make_global_state_map(inputs)
         gen_name = ""

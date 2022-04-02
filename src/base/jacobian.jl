@@ -60,9 +60,9 @@ function JacobianFunctionWrapper(
 )
     x0 = deepcopy(x0_guess)
     n = length(x0)
-    m_ = (residual, x) -> m!(residual, x, nothing, 0.0)
+    m_ = @closure (residual, x) -> m!(residual, x, nothing, 0.0)
     jconfig = ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
-    Jf = (Jv, x) -> begin
+    Jf = @closure (Jv, x) -> begin
         @debug "Evaluating Jacobian Function"
         ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
         return
@@ -92,9 +92,9 @@ function JacobianFunctionWrapper(
     sparse_retrieve_loop::Int = max(3, length(x0) ÷ 100),
 )
     n = length(x0)
-    m_ = (residual, x) -> m!(residual, zeros(n), x, nothing, 0.0)
+    m_ = @closure (residual, x) -> m!(residual, zeros(n), x, nothing, 0.0)
     jconfig = ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
-    Jf = (Jv, x) -> begin
+    Jf = @closure (Jv, x) -> begin
         @debug "Evaluating Jacobian Function"
         ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
         return

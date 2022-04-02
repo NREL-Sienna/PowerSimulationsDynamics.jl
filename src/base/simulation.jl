@@ -7,7 +7,7 @@ mutable struct Simulation{T <: SimulationModel}
     x0_init::Vector{Float64}
     initialized::Bool
     tstops::Vector{Float64}
-    callbacks::SciMLBase.CallbackSet
+    callbacks::Vector
     simulation_folder::String
     inputs::Union{Nothing, SimulationInputs}
     results::Union{Nothing, SimulationResults}
@@ -43,7 +43,7 @@ function Simulation(
         initial_conditions,
         !initialize_simulation,
         Vector{Float64}(),
-        SciMLBase.CallbackSet(),
+        Vector{SciMLBase.AbstractDiscreteCallback}(),
         simulation_folder,
         nothing,
         nothing,
@@ -295,13 +295,13 @@ function _build_perturbations!(sim::Simulation)
     tstops = Vector{Float64}(undef, perturbations_count)
     for (ix, pert) in enumerate(perturbations)
         @debug pert
-        condition = (x, t, integrator) -> t in [pert.time]
+        condition = @closure (x, t, integrator) -> t in [pert.time]
         affect = get_affect(inputs, get_system(sim), pert)
         callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
     end
     sim.tstops = tstops
-    sim.callbacks = SciMLBase.CallbackSet((), tuple(callback_vector...))
+    sim.callbacks = callback_vector
     return
 end
 
@@ -465,13 +465,19 @@ function _execute!(sim::Simulation, solver; kwargs...)
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false))
     sim.status = SIMULATION_STARTED
     time_log = Dict{Symbol, Any}()
+    if get(kwargs, :auto_abstol, false)
+        cb = AutoAbstol(true, get(kwargs, :abstol, 1e-9))
+        callbacks = SciMLBase.CallbackSet((), tuple(push!(sim.callbacks, cb)...))
+    else
+        callbacks = SciMLBase.CallbackSet((), tuple(sim.callbacks...))
+    end
     solution,
     time_log[:timed_solve_time],
     time_log[:solve_bytes_alloc],
     time_log[:sec_in_gc] = @timed SciMLBase.solve(
         sim.problem,
         solver;
-        callback = sim.callbacks,
+        callback = callbacks,
         tstops = sim.tstops,
         progress = get(kwargs, :enable_progress_bar, _prog_meter_enabled()),
         progress_steps = 1,

@@ -66,6 +66,9 @@ function post_proc_voltage_current_series(
     n_buses = length(bus_lookup)
     solution = res.solution
     device = PSY.get_component(PSY.StaticInjection, system, name)
+    if isnothing(device)
+        error("Device $(name) not found in the system")
+    end
     bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
     ts, V_R, V_I = post_proc_voltage_series(solution, bus_ix, n_buses, dt)
     dyn_device = PSY.get_dynamic_injector(device)
@@ -87,7 +90,7 @@ function post_proc_voltage_series(
     bus_ix < 0 && error("Bus number $(bus_number) not found.")
     ts, V_R = _post_proc_state_series(solution, bus_ix, dt)
     _, V_I = _post_proc_state_series(solution, bus_ix + n_buses, dt)
-    return ts, V_R, V_I
+    return collect(ts), collect(V_R), collect(V_I)
 end
 
 """
@@ -201,7 +204,7 @@ function get_voltage_angle_series(res::SimulationResults, bus_number::Int; dt = 
     n_buses = get_bus_count(res)
     bus_ix = get(get_bus_lookup(res), bus_number, 0)
     ts, V_R, V_I = post_proc_voltage_series(res.solution, bus_ix, n_buses, dt)
-    return ts, atan.(V_I ./ V_R)
+    return ts, atan.(V_I, V_R)
 end
 
 """

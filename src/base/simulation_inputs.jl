@@ -238,7 +238,7 @@ end
 
 function _get_ybus(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
-    dyn_lines = PSY.get_components(PSY.DynamicBranch, sys)
+    dyn_lines = PSY.get_components(PSY.DynamicBranch, sys, x -> PSY.get_available(x))
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
         Ybus_ = PSY.Ybus(sys)
         ybus = Ybus_[:, :]

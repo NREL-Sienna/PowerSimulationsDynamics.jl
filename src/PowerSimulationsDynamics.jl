@@ -58,10 +58,14 @@ import NLsolve
 import PrettyTables
 import Base.ImmutableDict
 import PowerSystems
+import PowerFlows
 import TimerOutputs
+import FastClosures: @closure
+
 const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
+const PF = PowerFlows
 
 using DocStringExtensions
 
@@ -73,6 +77,7 @@ using DocStringExtensions
 #Structs for General Devices and System
 include("base/definitions.jl")
 include("base/ports.jl")
+include("base/auto_abstol.jl")
 include("base/bus_categories.jl")
 include("base/load_categories.jl")
 include("base/device_wrapper.jl")
