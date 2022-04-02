@@ -282,7 +282,7 @@ function mdl_pss_ode!(
     T4 = PSY.get_T4(pss)
     H_lim = PSY.get_H_lim(pss)
     
-    K = KT*T
+    K = T*KT
     T1 = T3*T1T3
     T2 = T4*T2T4
 
