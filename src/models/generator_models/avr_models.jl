@@ -306,7 +306,7 @@ function mdl_avr_ode!(
     device_states::AbstractArray,
     output_ode::AbstractArray,
     inner_vars::AbstractArray,
-    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1_PTI, TG, P}}, 
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}}, 
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
