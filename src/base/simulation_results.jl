@@ -32,7 +32,7 @@ function _post_proc_state_series(solution, ix::Int, dt::Union{Nothing, Float64})
         state = solution[ix, ix_t]
     else
         ts = range(0, stop = solution.t[end], step = dt)
-        state = solution(ts, idxs = ix)
+        state = solution(collect(ts); idxs = ix)
     end
     return ts, state
 end

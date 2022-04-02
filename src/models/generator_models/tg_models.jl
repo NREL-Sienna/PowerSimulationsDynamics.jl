@@ -6,13 +6,14 @@ function mass_matrix_tg_entries!(
     @debug "Using default mass matrix entries $TG"
 end
 
-function mass_matrix_avr_entries!(
+function mass_matrix_tg_entries!(
     mass_matrix,
     tg::PSY.HydroTurbineGov,
     global_index::Base.ImmutableDict{Symbol, Int64},
 )
-    mass_matrix[global_index[:x_g1], global_index[:x_g1]] = PSY.get_Tf(avr)
-    mass_matrix[global_index[:x_g3], global_index[:x_g3]] = PSY.get_Tg(avr)
+    mass_matrix[global_index[:x_g1], global_index[:x_g1]] = PSY.get_Tf(tg)
+    mass_matrix[global_index[:x_g3], global_index[:x_g3]] = PSY.get_Tg(tg)
+    return
 end
 
 function mdl_tg_ode!(

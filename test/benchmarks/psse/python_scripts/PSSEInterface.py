@@ -57,12 +57,16 @@ def convert_power_flow():
     while err == 0 and not_finished:
         print 'Init Power Flow\n' 
         for i in [1,2,3]:  
-            err = fnsl([0,0,0,1,1,0,0,0])     
-        
-        print 'Load and Gen Convertion\n'   
+            err = fnsl([0,0,0,1,1,0,0,0])
+            err = fnsl([0,0,0,1,1,0,0,0])
+            err = fnsl([0,0,0,1,1,0,0,0])
+        if err != 0:
+            raise(Exception("Power Flow solve failed"))                 
+            
+        print 'Load and Gen Convertion to constant impedance\n'   
         err = cong(0)
         for i in [1, 2, 3]:
-            err = conl(0,1,i,[0,0],[100.0,0.0,0.0,100.0])
+            err = conl(0,1,i,[0,0],[0.0,100.0,0.0,100.0])
 
         print 'Matrix Factorize and Current Power Flow solve\n'   
         err = fact()     
@@ -103,17 +107,21 @@ def setup_output_channels(output, run_name, signals, slack_bus, channel_file='ch
                 raise(Exception("Channel not set for bus {}, return {}".format(i, ierr)))
         for j in signals:
             if i == slack_bus & j == 1:
+                channel_ix += 1
                 continue
             ierr=machine_array_channel([channel_ix,j,i],machine_ids[0][ix],"")
             if ierr != 0:
                 raise(Exception("Channel not set for bus {}, return {}".format(i, ierr)))
-            
             channel_ix += 1
-
+    
     if slack_channel < 0:
         raise(Exception("Error determining slack channel"))
 
-    ierr = chsb(0, 1, [-1, -1, -1, 1, 13])
+    ierr = chsb(0, 1, [-1, -1, -1, 1, 14])
+    if ierr != 0:
+        raise(Exception("Channels not set for bus quantities"))
+    
+    ierr = chsb(0, 1, [-1, -1, -1, 1, 21])
     if ierr != 0:
         raise(Exception("Channels not set for bus quantities"))
     

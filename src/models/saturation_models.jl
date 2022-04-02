@@ -97,7 +97,7 @@ end
 
 function current_limit_logic(
     inner_control::PSY.RECurrentControlB,
-    ::Type{Base.RefValue{0}}, #PQ_Flag = 0: Q Priority
+    ::Val{0}, #PQ_Flag = 0: Q Priority
     Vt_filt::X,
     Ip_cmd::X,
     Iq_cmd::X,
@@ -122,7 +122,7 @@ end
 
 function current_limit_logic(
     inner_control::PSY.RECurrentControlB,
-    ::Type{Base.RefValue{1}}, #PQ_Flag = 1: P Priority
+    ::Val{1}, #PQ_Flag = 1: P Priority
     Vt_filt::X,
     Ip_cmd::X,
     Iq_cmd::X,

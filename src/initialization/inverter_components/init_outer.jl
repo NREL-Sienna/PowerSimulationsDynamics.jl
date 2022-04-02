@@ -231,13 +231,13 @@ function initialize_outer!(
     #    return v.value
     #end
 
-    V_R = inner_vars[Vr_inv_var]
-    V_I = inner_vars[Vi_inv_var]
-    I_R = inner_vars[Ir_inv_var]
-    I_I = inner_vars[Ii_inv_var]
-    V_t = sqrt(V_R^2 + V_I^2)
-    p_elec_out = I_R * V_R + I_I * V_I
-    q_elec_out = -I_I * V_R + I_R * V_I
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
+    Ir_cnv = inner_vars[Ir_cnv_var]
+    Ii_cnv = inner_vars[Ii_cnv_var]
+    V_t = sqrt(Vr_cnv^2 + Vi_cnv^2)
+    p_elec_out = Ir_cnv * Vr_cnv + Ii_cnv * Vi_cnv
+    q_elec_out = -Ii_cnv * Vr_cnv + Ir_cnv * Vi_cnv
     q_ref = get_Q_ref(dynamic_device)
 
     #Get Outer Controller parameters
@@ -317,7 +317,7 @@ function initialize_outer!(
         R_c = PSY.get_R_c(reactive_power_control)
         X_c = PSY.get_R_c(reactive_power_control)
         VC_Flag = PSY.get_VC_Flag(reactive_power_control)
-        V_reg = sqrt(V_R^2 + V_I^2)
+        V_reg = sqrt(Vr_cnv^2 + Vi_cnv^2)
         # Compute input to the compensated voltage filter
         if VC_Flag == 0
             V_flt_input = V_reg + K_c * q_elec_out
@@ -325,8 +325,8 @@ function initialize_outer!(
             # Calculate compensated voltage: | V_reg - (R_c + jX_c)(I_r + jI_i) |
             V_flt_input = sqrt(
                 V_reg^2 +
-                2 * V_reg * (I_I * X_c - I_R * R_c) +
-                (I_I^2 + I_R^2) * (R_c^2 + X_c^2),
+                2 * V_reg * (Ii_cnv * X_c - Ir_cnv * R_c) +
+                (Ii_cnv^2 + Ir_cnv^2) * (R_c^2 + X_c^2),
             )
         end
         #Update states
@@ -345,7 +345,7 @@ function initialize_outer!(
         R_c = PSY.get_R_c(reactive_power_control)
         X_c = PSY.get_R_c(reactive_power_control)
         VC_Flag = PSY.get_VC_Flag(reactive_power_control)
-        V_reg = sqrt(V_R^2 + V_I^2)
+        V_reg = sqrt(Vr_cnv^2 + Vi_cnv^2)
         # Compute input to the compensated voltage filter
         if VC_Flag == 0
             V_flt_input = V_reg + K_c * q_elec_out
@@ -353,8 +353,8 @@ function initialize_outer!(
             # Calculate compensated voltage: | V_reg - (R_c + jX_c)(I_r + jI_i) |
             V_flt_input = sqrt(
                 V_reg^2 +
-                2 * V_reg * (I_I * X_c - I_R * R_c) +
-                (I_I^2 + I_R^2) * (R_c^2 + X_c^2),
+                2 * V_reg * (Ii_cnv * X_c - Ir_cnv * R_c) +
+                (Ii_cnv^2 + Ir_cnv^2) * (R_c^2 + X_c^2),
             )
         end
         #Update states

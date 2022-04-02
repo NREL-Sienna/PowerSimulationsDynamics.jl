@@ -16,6 +16,7 @@ function mass_matrix_pss_entries!(
     mass_matrix[global_index[:x_p5], global_index[:x_p5]] = PSY.get_T2(pss)
     mass_matrix[global_index[:x_p6], global_index[:x_p6]] = PSY.get_T4(pss)
     mass_matrix[global_index[:x_p7], global_index[:x_p7]] = PSY.get_T6(pss)
+    return
 end
 
 #####################################################
@@ -23,7 +24,7 @@ end
 #####################################################
 
 function get_pss_input_signal(
-    ::Type{Base.RefValue{1}},
+    ::Val{1},
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
@@ -38,7 +39,7 @@ function get_pss_input_signal(
 end
 
 function get_pss_input_signal(
-    ::Type{Base.RefValue{2}},
+    ::Val{2},
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
@@ -49,7 +50,7 @@ function get_pss_input_signal(
 end
 
 function get_pss_input_signal(
-    ::Type{Base.RefValue{3}},
+    ::Val{3},
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
@@ -61,7 +62,7 @@ function get_pss_input_signal(
 end
 
 function get_pss_input_signal(
-    ::Type{Base.RefValue{4}},
+    ::Val{4},
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
@@ -72,7 +73,7 @@ function get_pss_input_signal(
 end
 
 function get_pss_input_signal(
-    ::Type{Base.RefValue{5}},
+    ::Val{5},
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
@@ -84,7 +85,7 @@ function get_pss_input_signal(
 end
 
 function get_pss_input_signal(
-    ::Type{Base.RefValue{6}},
+    ::Val{6},
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
@@ -127,7 +128,7 @@ function mdl_pss_ode!(
 
     #Get Input Signal
     u = get_pss_input_signal(
-        Base.RefValue{PSY.get_input_code(pss)},
+        Val(PSY.get_input_code(pss)),
         device_states,
         inner_vars,
         ω_sys,

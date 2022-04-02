@@ -263,6 +263,7 @@ function initialize_avr!(
     avr = PSY.get_avr(dynamic_device)
     Ta_Tb = PSY.get_Ta_Tb(avr)
     K = PSY.get_K(avr)
+    V_min, V_max = PSY.get_V_lim(avr)
 
     #States of AVRTypeI are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr
@@ -282,6 +283,12 @@ function initialize_avr!(
         @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
+        if (sol_x0[2] >= V_max + BOUNDS_TOLERANCE) ||
+           (sol_x0[2] <= V_min - BOUNDS_TOLERANCE)
+            @error(
+                "Vr limits for AVR in $(PSY.get_name(dynamic_device)) (Vr = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min.  Consider updating the operating point."
+            )
+        end
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
         set_V_ref(dynamic_device, sol_x0[1])
