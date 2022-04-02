@@ -135,6 +135,11 @@ function mdl_pss_ode!(
         dynamic_device,
     )
 
+
+    external_ix = get_input_port_ix(dynamic_device, M)
+    ω = device_states[external_ix[2]]
+
+
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.IEEEST)
 
@@ -225,14 +230,11 @@ function mdl_pss_ode!(
     #Remote bus control not supported
 
     #Get Input Signal - this model uses speed deviation as input
-    u = get_pss_input_signal(
-        Val{1}, # speed deviation only
-        device_states,
-        inner_vars,
-        ω_sys,
-        dynamic_device,
-    )
-
+    
+    external_ix = get_input_port_ix(dynamic_device, M) 
+    ω = device_states[external_ix[1]] # get machine speed
+    u = ω - 1.0
+    
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.STAB1)
 
