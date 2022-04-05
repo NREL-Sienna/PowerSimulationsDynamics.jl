@@ -236,6 +236,32 @@ function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
     return container
 end
 
+function _wrap_loads_aux(sys::PSY.System, lookup::Dict{Int, Int})
+    # This needs to change if we implement dynamic load models
+    static_loads =
+        PSY.get_components(PSY.ElectricLoad, sys, x -> !isa(x, PSY.FixedAdmittance))
+    map_bus_load = Dict{PSY.Bus, Vector{PSY.ElectricLoad}}()
+    for ld in static_loads
+        if PSY.get_dynamic_injector(ld) !== nothing || !(PSY.get_available(ld))
+            continue
+        end
+        bus = PSY.get_bus(ld)
+        # Optimize this dictionary push
+        push!(get!(map_bus_load, bus, PSY.ElectricLoad[]), ld)
+    end
+    return _construct_zip_wrapper(lookup, map_bus_load)
+end
+
+function _construct_zip_wrapper(lookup::Dict{Int, Int}, map_bus_load::Dict{PSY.Bus, Vector{PSY.ElectricLoad}})
+    container = Vector{ZIPLoadWrapper}(undef, length(map_bus_load))
+    for (ix, (bus, loads)) in enumerate(map_bus_loads)
+        bus_n = PSY.get_number(bus)
+        bus_ix = lookup[bus_n]
+        container[ix] = ZIPLoadWrapper(bus, loads, bus_ix)
+    end
+    return container
+end
+
 function _get_ybus(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
     dyn_lines = PSY.get_components(PSY.DynamicBranch, sys)
