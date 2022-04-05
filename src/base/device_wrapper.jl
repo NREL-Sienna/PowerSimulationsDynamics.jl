@@ -271,6 +271,56 @@ function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.ElectricLoad}
     )
 end
 
+struct ZIPLoadWrapper
+    bus::PSY.Bus
+    V_ref::Base.RefValue{Float64}
+    θ_ref::Base.RefValue{Float64}
+    P_power::Base.RefValue{Float64}
+    P_current::Base.RefValue{Float64}
+    P_impedance::Base.RefValue{Float64}
+    Q_power::Base.RefValue{Float64}
+    Q_current::Base.RefValue{Float64}
+    Q_impedance::Base.RefValue{Float64}
+    bus_ix::Int
+end
+
+function ZIPLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix::Int)
+    P_power = 0.0
+    P_current = 0.0
+    P_impedance = 0.0
+    Q_power = 0.0
+    Q_current = 0.0
+    Q_impedance = 0.0
+
+    for ld in loads
+        if PSY.get_model(ld) == PSY.LoadModels.ConstantPower
+            P_power += PSY.get_active_power(ld)
+            Q_power += PSY.get_reactive_power(ld)
+        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
+            P_current += PSY.get_active_power(ld)
+            Q_current += PSY.get_reactive_power(ld)
+        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
+            P_impedance += PSY.get_active_power(ld)
+            Q_impedance += PSY.get_reactive_power(ld)
+        else
+            error("Not supported load in $(PSY.get_number(bus)) named $(PSY.get_name(ld))")
+        end
+    end
+
+    return ZIPLoadWrapper(
+        bus,
+        Base.Ref(PSY.get_magnitude(bus)),
+        Base.Ref(PSY.get_angle(bus)),
+        Base.Ref(P_power),
+        Base.Ref(P_current),
+        Base.Ref(P_impedance),
+        Base.Ref(Q_power),
+        Base.Ref(Q_current),
+        Base.Ref(Q_impedance),
+        bus_ix,
+    )
+end
+
 # TODO: something smart to forward fields
 get_device(wrapper::StaticWrapper) = wrapper.device
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
