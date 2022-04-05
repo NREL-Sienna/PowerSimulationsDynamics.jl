@@ -1,9 +1,10 @@
-function mdl_Zload!(
+function mdl_static_load!(
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
     current_i::AbstractArray{T},
     static_device::PSY.PowerLoad,
+    ::ConstantPower,
 ) where {T <: ACCEPTED_REAL_TYPES}
     #Load squared voltage magnitude at steady state
     Vmag_sq = PSY.get_magnitude(PSY.get_bus(static_device))^2

@@ -93,7 +93,7 @@ function device!(
         current_r .= zero(T)
         current_i .= zero(T)
     else
-        mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device.device)
+        mdl_static_load!(voltage_r, voltage_i, current_r, current_i, device.device, U())
     end
     return
 end
