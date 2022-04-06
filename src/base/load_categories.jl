@@ -2,6 +2,7 @@ abstract type LoadCategory end
 struct ConstantCurrent <: LoadCategory end
 struct ConstantImpedance <: LoadCategory end
 struct ConstantPower <: LoadCategory end
+struct ZIPLoad <: LoadCategory end
 
 const LOAD_MAP = Dict(
     PSY.LoadModels.ConstantCurrent => ConstantCurrent,
