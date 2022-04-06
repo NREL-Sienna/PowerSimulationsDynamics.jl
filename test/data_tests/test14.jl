@@ -45,6 +45,10 @@ for g in get_components(Generator, threebus_sys)
     end
 end
 
+for l in get_components(PSY.PowerLoad, threebus_sys)
+    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+end
+
 #Create Ybus_Fault
 fault_branches = deepcopy(collect(get_components(Branch, threebus_sys)))
 for br in fault_branches

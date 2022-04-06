@@ -88,6 +88,9 @@ end
     ## Create threebus system with more dyn lines ##
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
+    for l in get_components(PSY.PowerLoad, threebus_sys_dyns)
+        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    end
     add_source_to_ref(threebus_sys_dyns)
 
     dyn_branch12 =
@@ -164,6 +167,9 @@ end
     dyr_file_dir =
         joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBus_GENROU_SEXS.dyr")
     sys = System(threebus_file_dir, dyr_file_dir)
+    for l in get_components(PSY.PowerLoad, sys)
+        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    end
     x0_test = zeros(23)
     x0_test[1:6] .= 1.0
     #Initialize System from given initial condition
@@ -258,6 +264,9 @@ end
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys = System(three_bus_file_dir, runchecks = false)
     add_source_to_ref(threebus_sys)
+    for l in get_components(PSY.PowerLoad, threebus_sys)
+        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    end
     # Attach dyn devices
     for g in get_components(Generator, threebus_sys)
         if get_number(get_bus(g)) == 102
@@ -321,6 +330,9 @@ end
 @testset "Test Generation perturbations callback affects" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys = System(three_bus_file_dir, runchecks = false)
+    for l in get_components(PSY.PowerLoad, threebus_sys)
+        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    end
     add_source_to_ref(threebus_sys)
     # Attach dyn devices
     for g in get_components(Generator, threebus_sys)
@@ -370,6 +382,9 @@ end
 @testset "Test Load perturbations callback affects" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys = System(three_bus_file_dir, runchecks = false)
+    for l in get_components(PSY.PowerLoad, threebus_sys)
+        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    end
     add_source_to_ref(threebus_sys)
     # Attach dyn devices
     for g in get_components(Generator, threebus_sys)
@@ -395,14 +410,18 @@ end
     ltrip_affect_f = PSID.get_affect(inputs, threebus_sys, load_trip)
 
     lref_affect_f(integrator_for_test)
-    @test PSID.get_P_ref(inputs.static_loads[1]) == 10.0
+    @test PSID.get_P_impedance(inputs.static_loads[1]) == 10.0
     ltrip_affect_f(integrator_for_test)
-    @test PSID.get_connection_status(inputs.static_loads[3]) == 0.0
+    @test PSID.get_P_impedance(inputs.static_loads[3]) == 0.0
+    @test PSID.get_Q_impedance(inputs.static_loads[3]) == 0.0
 end
 
 @testset "Global Index" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
+    for l in get_components(PSY.PowerLoad, threebus_sys_dyns)
+        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    end
     add_source_to_ref(threebus_sys_dyns)
 
     dyn_branch12 =
@@ -440,6 +459,9 @@ end
         joinpath(TEST_FILES_DIR, "data_tests/240busWECC_2018_PSS.dyr"),
         bus_name_formatter = x -> string(strip(x["name"])) * "-" * string(x["index"]),
     )
+    for l in get_components(PSY.PowerLoad, sys)
+        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    end
     sim = Simulation(
         ResidualModel,
         sys, #system

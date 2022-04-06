@@ -44,3 +44,7 @@ for g in get_components(Generator, threebus_sys)
         add_component!(threebus_sys, case_inv, g)
     end
 end
+
+for l in get_components(PSY.PowerLoad, threebus_sys)
+    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+end

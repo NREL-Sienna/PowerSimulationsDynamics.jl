@@ -33,3 +33,7 @@ add_component!(sys, case_gen, gen)
 source = [s for s in get_components(Source, sys)][1]
 pvs = pvs_simple(source)
 add_component!(sys, pvs, source)
+
+for l in get_components(PSY.PowerLoad, sys)
+    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+end
