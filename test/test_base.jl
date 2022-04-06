@@ -410,10 +410,12 @@ end
     ltrip_affect_f = PSID.get_affect(inputs, threebus_sys, load_trip)
 
     lref_affect_f(integrator_for_test)
-    @test PSID.get_P_impedance(inputs.static_loads[1]) == 10.0
+    zip_load1 = first(filter(x -> PSY.get_name(x) == "BUS 1", inputs.static_loads))
+    @test PSID.get_P_impedance(zip_load1) == 10.0
     ltrip_affect_f(integrator_for_test)
-    @test PSID.get_P_impedance(inputs.static_loads[3]) == 0.0
-    @test PSID.get_Q_impedance(inputs.static_loads[3]) == 0.0
+    zip_load2 = first(filter(x -> PSY.get_name(x) == "BUS 2", inputs.static_loads))
+    @test PSID.get_P_impedance(zip_load2) == 0.0
+    @test PSID.get_Q_impedance(zip_load2) == 0.0
 end
 
 @testset "Global Index" begin
