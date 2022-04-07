@@ -1,0 +1,72 @@
+┌ Info: 2022-04-07T06:45:27.554 [3043:1]: Validating connectivity with Goderya algorithm
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:308
+┌ Info: 2022-04-07T06:45:27.887 [3043:1]: The System has no islands
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:254
+┌ Debug: 2022-04-07T06:45:27.888 [3043:1]: System doesn't contain Dynamic Branches
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:210
+┌ Debug: 2022-04-07T06:45:28.128 [3043:1]: Wrapping generator-102-1
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:151
+┌ Debug: 2022-04-07T06:45:28.197 [3043:1]: ix_range=5:6 ode_range=1:2 inner_vars_range= 1:9
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_inputs.jl:160
+┌ Debug: 2022-04-07T06:45:30.249 [3043:1]: Using default mass matrix entries TGFixed
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/tg_models.jl:6
+┌ Debug: 2022-04-07T06:45:30.249 [3043:1]: Using default mass matrix entries PSSFixed
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/pss_models.jl:6
+┌ Debug: 2022-04-07T06:45:30.249 [3043:1]: Using default mass matrix entries AVRFixed
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/avr_models.jl:6
+┌ Debug: 2022-04-07T06:45:30.249 [3043:1]: Using default mass matrix entries BaseMachine
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/machine_models.jl:6
+┌ Debug: 2022-04-07T06:45:30.249 [3043:1]: Using default mass matrix entries SingleMass
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/shaft_models.jl:6
+┌ Info: 2022-04-07T06:45:30.570 [3043:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:70
+┌ Debug: 2022-04-07T06:45:30.588 [3043:1]: Simulation Inputs Created
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:221
+┌ Info: 2022-04-07T06:45:30.588 [3043:1]: Pre-Initializing Simulation States
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:263
+┌ Debug: 2022-04-07T06:45:30.588 [3043:1]: Start state intialization routine
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:161
+┌ Info: 2022-04-07T06:45:30.589 [3043:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/base.jl:346
+┌ Info: 2022-04-07T06:45:30.589 [3043:1]: Validating connectivity with Goderya algorithm
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:308
+┌ Info: 2022-04-07T06:45:30.589 [3043:1]: The System has no islands
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:254
+┌ Debug: 2022-04-07T06:45:32.284 [3043:1]: Reactive Power Distribution BUS 2
+└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/SXykU/src/post_processing.jl:238
+┌ Debug: 2022-04-07T06:45:32.391 [3043:1]: Only one generator in the bus
+└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/SXykU/src/post_processing.jl:243
+┌ Info: 2022-04-07T06:45:32.522 [3043:1]: PowerFlow solve converged, the results have been stored in the system
+└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/SXykU/src/nlsolve_powerflow.jl:45
+┌ Info: 2022-04-07T06:45:32.522 [3043:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/base.jl:346
+┌ Debug: 2022-04-07T06:45:32.522 [3043:1]: Updating bus voltage magnitude and angle to match power flow result
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:20
+┌ Debug: 2022-04-07T06:45:32.534 [3043:1]: BUS 1 V_r = 1.05, V_i = 0.0
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:26
+┌ Debug: 2022-04-07T06:45:32.534 [3043:1]: BUS 2 V_r = 1.0397274193633474, V_i = 0.023809523809476176
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:26
+┌ Debug: 2022-04-07T06:45:32.534 [3043:1]: Updating Source internal voltage magnitude and angle
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:32
+┌ Debug: 2022-04-07T06:45:36.562 [3043:1]: Updating Dynamic Injection Component Initial Guess
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:75
+┌ Debug: 2022-04-07T06:45:36.575 [3043:1]: Initializing generator-102-1 - DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:84
+┌ Debug: 2022-04-07T06:45:38.118 [3043:1]: δ
+│   residual[ix] = 0.0
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:65
+┌ Debug: 2022-04-07T06:45:38.159 [3043:1]: ω
+│   residual[ix] = -1.5500095912412842e-14
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:65
+┌ Debug: 2022-04-07T06:45:38.222 [3043:1]: nothing
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:91
+┌ Debug: 2022-04-07T06:45:38.222 [3043:1]: No Dynamic Branches in the system
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:176
+┌ Debug: 2022-04-07T06:45:38.458 [3043:1]: injection ode size = 2 branches ode size = 0
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/caches.jl:25
+┌ Error: 2022-04-07T06:45:40.664 [3043:1]: ResidualModel failed to build
+│   exception = (TypeError(Symbol("keyword argument"), :sparse_retrieve_loop, Int64, 0.0), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007f0ed93864e8, Ptr{Nothing} @0x00007f0ed9386553, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0ed931ffa7, Ptr{Nothing} @0x00007f0ed9322297, Ptr{Nothing} @0x00007f0ed93224e6, Ptr{Nothing} @0x00007f0ed93224ff, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f1b7861e8, Ptr{Nothing} @0x00007f0ed92bcc76, Ptr{Nothing} @0x00007f0ed92be367, Ptr{Nothing} @0x00007f0ed92be4c9, Ptr{Nothing} @0x00007f0ed92be555, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f2ff3ae95, Ptr{Nothing} @0x00007f0f2ff3a90d, Ptr{Nothing} @0x00007f0f2ff3b6d1, Ptr{Nothing} @0x00007f0f2ff3c2f7, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__quick_start_guide at statement 1, Ptr{Nothing} @0x00007f0f2ff597a3, Ptr{Nothing} @0x00007f0f2ff599e4, Ptr{Nothing} @0x00007f0f2ff5b629, Ptr{Nothing} @0x00007f0f19ba0867, Ptr{Nothing} @0x00007f0f19ba0b6e, Ptr{Nothing} @0x00007f0f19ba155e, Ptr{Nothing} @0x00007f0f19ba1bff, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f1b7861e8, Ptr{Nothing} @0x00007f0f19ba03ee, Ptr{Nothing} @0x00007f0f19ba05ba, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f19b9f300, Ptr{Nothing} @0x00007f0f19b9f361, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f19b9c079, Ptr{Nothing} @0x00007f0f19b9cf2c, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f2ff2e158, Ptr{Nothing} @0x00007f0f19b67aab, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f19b63c50, Ptr{Nothing} @0x00007f0f19b6487f, Ptr{Nothing} @0x00007f0f19b64a9e, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f19b2954b, Ptr{Nothing} @0x00007f0f19b29720, Ptr{Nothing} @0x00007f0f19b2e273, Ptr{Nothing} @0x00007f0f19b2e2ed, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f2ff3ae95, Ptr{Nothing} @0x00007f0f2ff3a90d, Ptr{Nothing} @0x00007f0f2ff3b6d1, Ptr{Nothing} @0x00007f0f2ff3c2f7, Base.InterpreterIP in top-level CodeInfo for Main at statement 50, Ptr{Nothing} @0x00007f0f2ff597a3, Ptr{Nothing} @0x00007f0f2ff599e4, Ptr{Nothing} @0x00007f0f2ff5b629, Ptr{Nothing} @0x00007f0f1c09083a, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f1c18035a, Ptr{Nothing} @0x00007f0f1bc9dc15, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f1c20664b, Ptr{Nothing} @0x00007f0f1bcc00f7, Ptr{Nothing} @0x00007f0f1bcc0268, Ptr{Nothing} @0x00007f0f2ff1be09, Ptr{Nothing} @0x00007f0f2ff7f2d5, Ptr{Nothing} @0x00007f0f2ff7fc7c, Ptr{Nothing} @0x00000000004007d8, Ptr{Nothing} @0x00007f0f30b060b2, Ptr{Nothing} @0x0000000000400808])
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:409
+┌ Debug: 2022-04-07T06:46:04.602 [3043:1]: status before execute
+│   sim.status = BUILD_FAILED
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:464
