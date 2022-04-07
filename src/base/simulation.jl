@@ -100,7 +100,7 @@ Builds the simulation object and conducts the indexing process. The original sys
     - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used.
 - `system_to_file::Bool` : Default `false`. Serializes the initialized system
 - `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
-- `file_level::Logging` : Default `Logging.Debug`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
+- `file_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
 - `disable_timer_output::Bool` : Default `false`. Allows the user to display timer information about the construction and initilization of the Simulation.
 """
 function Simulation!(
@@ -121,8 +121,8 @@ function Simulation!(
         initialize_simulation = get(kwargs, :initialize_simulation, true),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
-        console_level = get(kwargs, :console_level, Logging.Warn),
-        file_level = get(kwargs, :file_level, Logging.Debug),
+        console_level = get(kwargs, :console_level, Logging.Info),
+        file_level = get(kwargs, :file_level, Logging.Info),
     )
 
     build!(sim; kwargs...)
@@ -157,7 +157,7 @@ Builds the simulation object and conducts the indexing process. The initial cond
     - `ReferenceBus` will use the frequency state of a Dynamic Generator (rotor speed) or Dynamic Inverter (virtual speed) connected to the Reference Bus (defined in the Power Flow data) as the network frequency. If multiple devices are connected to such bus, the device with larger base power will be used as a reference. If a Voltage Source is connected to the Reference Bus, then a `ConstantFrequency` model will be used.
 - `system_to_file::Bool` : Default `false`. Serializes the initialized system
 - `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
-- `file_level::Logging` : Default `Logging.Debug`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
+- `file_level::Logging` : Default `Logging.Info`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
 - `disable_timer_output::Bool` : Default `false`. Allows the user to display timer information about the construction and initilization of the Simulation.
 """
 function Simulation(
@@ -179,8 +179,8 @@ function Simulation(
         initialize_simulation = get(kwargs, :initialize_simulation, true),
         simulation_folder = simulation_folder,
         perturbations = perturbations,
-        console_level = get(kwargs, :console_level, Logging.Warn),
-        file_level = get(kwargs, :file_level, Logging.Debug),
+        console_level = get(kwargs, :console_level, Logging.Info),
+        file_level = get(kwargs, :file_level, Logging.Info),
     )
     build!(sim; kwargs...)
     if get(kwargs, :system_to_file, false)
@@ -276,10 +276,20 @@ function _pre_initialize_simulation!(sim::Simulation)
     return
 end
 
-function _get_jacobian(sim::Simulation{T}) where {T <: SimulationModel}
+function _get_jacobian(sim::Simulation{ResidualModel})
     inputs = get_simulation_inputs(sim)
     x0_init = get_initial_conditions(sim)
-    return JacobianFunctionWrapper(T(inputs, x0_init, JacobianCache), x0_init)
+    return JacobianFunctionWrapper(
+        ResidualModel(inputs, x0_init, JacobianCache),
+        x0_init;
+        sparse_retrieve_loop = 0,
+    )
+end
+
+function _get_jacobian(sim::Simulation{MassMatrixModel})
+    inputs = get_simulation_inputs(sim)
+    x0_init = get_initial_conditions(sim)
+    return JacobianFunctionWrapper(MassMatrixModel(inputs, x0_init, JacobianCache), x0_init)
 end
 
 function _build_perturbations!(sim::Simulation)
@@ -318,7 +328,6 @@ function _get_diffeq_problem(
             model;
             jac = jacobian,
             tgrad = (dT, u, p, t) -> dT .= false,
-            # Currently commented for Sundials compatibility
             jac_prototype = jacobian.Jv,
         ),
         dx0,
