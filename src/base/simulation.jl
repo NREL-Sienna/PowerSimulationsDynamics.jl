@@ -318,7 +318,6 @@ function _get_diffeq_problem(
             model;
             jac = jacobian,
             tgrad = (dT, u, p, t) -> dT .= false,
-            # Currently commented for Sundials compatibility
             jac_prototype = jacobian.Jv,
         ),
         dx0,
