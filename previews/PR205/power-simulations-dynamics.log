@@ -1,21 +1,26 @@
-┌ Info: 2022-04-07T15:20:20.066 [2813:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2022-04-07T18:22:45.673 [2832:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:308
-┌ Info: 2022-04-07T15:20:20.310 [2813:1]: The System has no islands
+┌ Info: 2022-04-07T18:22:45.906 [2832:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:254
-┌ Info: 2022-04-07T15:20:22.252 [2813:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
+┌ Info: 2022-04-07T18:22:47.671 [2832:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:70
-┌ Info: 2022-04-07T15:20:22.265 [2813:1]: Pre-Initializing Simulation States
+┌ Info: 2022-04-07T18:22:47.685 [2832:1]: Pre-Initializing Simulation States
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:263
-┌ Info: 2022-04-07T15:20:22.265 [2813:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+┌ Info: 2022-04-07T18:22:47.685 [2832:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/base.jl:346
-┌ Info: 2022-04-07T15:20:22.265 [2813:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2022-04-07T18:22:47.685 [2832:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:308
-┌ Info: 2022-04-07T15:20:22.265 [2813:1]: The System has no islands
+┌ Info: 2022-04-07T18:22:47.685 [2832:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:254
-┌ Info: 2022-04-07T15:20:23.715 [2813:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2022-04-07T18:22:49.188 [2832:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerFlows /home/runner/.julia/packages/PowerFlows/SXykU/src/nlsolve_powerflow.jl:45
-┌ Info: 2022-04-07T15:20:23.716 [2813:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Info: 2022-04-07T18:22:49.188 [2832:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/base.jl:346
-┌ Error: 2022-04-07T15:20:28.407 [2813:1]: ResidualModel failed to build
-│   exception = (UndefVarError(:T), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007f8af57db47f, Ptr{Nothing} @0x00007f8af58781a1, Ptr{Nothing} @0x00007f8a9f8e5406, Ptr{Nothing} @0x00007f8a9f8e73a0, Ptr{Nothing} @0x00007f8a9f8edd66, Ptr{Nothing} @0x00007f8a9f8edd7f, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8ae10c61e8, Ptr{Nothing} @0x00007f8a9f882656, Ptr{Nothing} @0x00007f8a9f8832d1, Ptr{Nothing} @0x00007f8a9f883439, Ptr{Nothing} @0x00007f8a9f8834c5, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8af587ae95, Ptr{Nothing} @0x00007f8af587a90d, Ptr{Nothing} @0x00007f8af587b6d1, Ptr{Nothing} @0x00007f8af587c2f7, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__quick_start_guide at statement 1, Ptr{Nothing} @0x00007f8af58997a3, Ptr{Nothing} @0x00007f8af58999e4, Ptr{Nothing} @0x00007f8af589b629, Ptr{Nothing} @0x00007f8adf5016b7, Ptr{Nothing} @0x00007f8adf5019be, Ptr{Nothing} @0x00007f8adf5023ae, Ptr{Nothing} @0x00007f8adf502a4f, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8ae10c61e8, Ptr{Nothing} @0x00007f8adf50123e, Ptr{Nothing} @0x00007f8adf50140a, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8adf500150, Ptr{Nothing} @0x00007f8adf5001b1, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8adf4fce89, Ptr{Nothing} @0x00007f8adf4fdd7c, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8af586e158, Ptr{Nothing} @0x00007f8adf4c892b, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8adf4c4ad0, Ptr{Nothing} @0x00007f8adf4c56ff, Ptr{Nothing} @0x00007f8adf4c591e, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8adf489bdb, Ptr{Nothing} @0x00007f8adf48a060, Ptr{Nothing} @0x00007f8adf48f101, Ptr{Nothing} @0x00007f8adf48f17d, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8af587ae95, Ptr{Nothing} @0x00007f8af587a90d, Ptr{Nothing} @0x00007f8af587b6d1, Ptr{Nothing} @0x00007f8af587c2f7, Base.InterpreterIP in top-level CodeInfo for Main at statement 50, Ptr{Nothing} @0x00007f8af58997a3, Ptr{Nothing} @0x00007f8af58999e4, Ptr{Nothing} @0x00007f8af589b629, Ptr{Nothing} @0x00007f8ae19d083a, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8ae1ac035a, Ptr{Nothing} @0x00007f8ae15ddc15, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8ae1b4664b, Ptr{Nothing} @0x00007f8ae16000f7, Ptr{Nothing} @0x00007f8ae1600268, Ptr{Nothing} @0x00007f8af585be09, Ptr{Nothing} @0x00007f8af58bf2d5, Ptr{Nothing} @0x00007f8af58bfc7c, Ptr{Nothing} @0x00000000004007d8, Ptr{Nothing} @0x00007f8af64460b2, Ptr{Nothing} @0x0000000000400808])
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:418
+┌ Info: 2022-04-07T18:23:00.818 [2832:1]: Residual from initial guess: max = 4.2092551666428335e-11 at 4, total = 9.411131735555515e-11
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:97
+┌ Info: 2022-04-07T18:23:00.886 [2832:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:65
+┌ Info: 2022-04-07T18:23:00.886 [2832:1]: Attaching Perturbations
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:296
+┌ Info: 2022-04-07T18:23:01.475 [2832:1]: Simulations status = BUILT
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:415
