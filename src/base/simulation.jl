@@ -276,10 +276,20 @@ function _pre_initialize_simulation!(sim::Simulation)
     return
 end
 
-function _get_jacobian(sim::Simulation{T}) where {T <: SimulationModel}
+function _get_jacobian(sim::Simulation{ResidualModel})
     inputs = get_simulation_inputs(sim)
     x0_init = get_initial_conditions(sim)
-    return JacobianFunctionWrapper(T(inputs, x0_init, JacobianCache), x0_init; sparse_retrieve_loop = 0)
+    return JacobianFunctionWrapper(
+        T(inputs, x0_init, JacobianCache),
+        x0_init;
+        sparse_retrieve_loop = 0,
+    )
+end
+
+function _get_jacobian(sim::Simulation{MassMatrixModel})
+    inputs = get_simulation_inputs(sim)
+    x0_init = get_initial_conditions(sim)
+    return JacobianFunctionWrapper(T(inputs, x0_init, JacobianCache), x0_init)
 end
 
 function _build_perturbations!(sim::Simulation)
