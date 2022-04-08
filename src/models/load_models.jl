@@ -1,38 +1,3 @@
-# We should remove this one
-function mdl_static_load!(
-    voltage_r::T,
-    voltage_i::T,
-    current_r::AbstractArray{T},
-    current_i::AbstractArray{T},
-    static_device::StaticWrapper{PSY.PowerLoad, U},
-    ::ConstantPower,
-) where {T <: ACCEPTED_REAL_TYPES, U <: LoadCategory}
-    #Load squared voltage magnitude at steady state
-    Vmag_sq = PSY.get_magnitude(PSY.get_bus(static_device.device))^2
-    # Should be:
-    # Vmag_sq = get_V_ref(static_device)
-    #Vmag_sq = 1.0
-
-    #Load device parameters
-    #P = get_P_ref(static_device)
-    #Q = get_Q_ref(static_device)
-    P = PSY.get_active_power(static_device)
-    Q = PSY.get_reactive_power(static_device)
-
-    #Compute impedance and load: Z = |V|^2/conj(S)
-    #Z_load =  Vmag_sq/(P-Q*1im) #in pu
-    #I = -(voltage_r[1] + voltage_i[1]*1im)/Z_load #in pu flowing out
-    #current_r[1] += real(I)
-    #current_i[1] += imag(I)
-
-    #Update current
-    #This model creates an equivalent RL/RC circuit based on steady state voltage
-    current_r[1] += -(1.0 / Vmag_sq) * (voltage_r * P + voltage_i * Q) #in system pu flowing out
-    current_i[1] += -(1.0 / Vmag_sq) * (voltage_i * P - voltage_r * Q) #in system pu flowing out
-
-    return
-end
-
 """
 Model for ZIP Load model given by:
 
@@ -57,13 +22,12 @@ Ip_re =  (V_r * P_power + V_i * Q_power) / V^2
 Ip_im =  (V_i * P_power - V_r * Q_power) / V^2
 
 """
-function mdl_static_load!(
+function mdl_zip_load!(
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
     current_i::AbstractArray{T},
     wrapper::ZIPLoadWrapper,
-    ::ZIPLoad,
 ) where {T <: ACCEPTED_REAL_TYPES}
     # Read power flow voltages
     #V0_mag_inv = 1.0 / get_V_ref(wrapper)
