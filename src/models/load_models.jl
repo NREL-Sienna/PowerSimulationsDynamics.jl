@@ -41,7 +41,7 @@ function mdl_zip_load!(
     P_power = get_P_power(wrapper)
     P_current = get_P_current(wrapper)
     P_impedance = get_P_impedance(wrapper)
-    Q_power = get_P_power(wrapper)
+    Q_power = get_Q_power(wrapper)
     Q_current = get_Q_current(wrapper)
     Q_impedance = get_Q_impedance(wrapper)
 
