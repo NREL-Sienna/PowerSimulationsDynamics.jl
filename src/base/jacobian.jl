@@ -89,7 +89,7 @@ function JacobianFunctionWrapper(
     m!::SystemModel{ResidualModel},
     x0::Vector{Float64};
     # Improve the heuristic to do sparsity detection
-    sparse_retrieve_loop::Int = max(3, length(x0) ÷ 1),
+    sparse_retrieve_loop::Int = max(3, length(x0) ÷ 100),
 )
     n = length(x0)
     m_ = @closure (residual, x) -> m!(residual, zeros(n), x, nothing, 0.0)
