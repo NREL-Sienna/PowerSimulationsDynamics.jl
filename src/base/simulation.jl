@@ -281,7 +281,7 @@ function _get_jacobian(sim::Simulation{ResidualModel})
     x0_init = get_initial_conditions(sim)
     return JacobianFunctionWrapper(
         ResidualModel(inputs, x0_init, JacobianCache),
-        x0_init;
+        x0_init,
         # sparse_retrieve_loop = 0,
     )
 end
