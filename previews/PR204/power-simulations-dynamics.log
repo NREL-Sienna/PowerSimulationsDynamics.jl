@@ -1,26 +1,26 @@
-┌ Info: 2022-04-08T02:42:30.094 [3026:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2022-04-08T22:23:03.214 [2859:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:308
-┌ Info: 2022-04-08T02:42:30.786 [3026:1]: The System has no islands
+┌ Info: 2022-04-08T22:23:03.515 [2859:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:254
-┌ Info: 2022-04-08T02:42:32.977 [3026:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
+┌ Info: 2022-04-08T22:23:05.847 [2859:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:70
-┌ Info: 2022-04-08T02:42:32.990 [3026:1]: Pre-Initializing Simulation States
+┌ Info: 2022-04-08T22:23:05.861 [2859:1]: Pre-Initializing Simulation States
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:263
-┌ Info: 2022-04-08T02:42:32.990 [3026:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+┌ Info: 2022-04-08T22:23:05.861 [2859:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/base.jl:346
-┌ Info: 2022-04-08T02:42:32.990 [3026:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2022-04-08T22:23:05.861 [2859:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:308
-┌ Info: 2022-04-08T02:42:32.991 [3026:1]: The System has no islands
+┌ Info: 2022-04-08T22:23:05.861 [2859:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:254
-┌ Info: 2022-04-08T02:42:34.790 [3026:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2022-04-08T22:23:07.696 [2859:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerFlows /home/runner/.julia/packages/PowerFlows/SXykU/src/nlsolve_powerflow.jl:45
-┌ Info: 2022-04-08T02:42:34.791 [3026:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Info: 2022-04-08T22:23:07.696 [2859:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/base.jl:346
-┌ Info: 2022-04-08T02:42:49.691 [3026:1]: Residual from initial guess: max = 4.2092551666428335e-11 at 4, total = 9.411131735555515e-11
+┌ Info: 2022-04-08T22:23:22.633 [2859:1]: Residual from initial guess: max = 4.2092551666428335e-11 at 4, total = 9.411131735555515e-11
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:97
-┌ Info: 2022-04-08T02:42:49.759 [3026:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+┌ Info: 2022-04-08T22:23:22.696 [2859:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:65
-┌ Info: 2022-04-08T02:42:49.759 [3026:1]: Attaching Perturbations
+┌ Info: 2022-04-08T22:23:22.697 [2859:1]: Attaching Perturbations
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:296
-┌ Info: 2022-04-08T02:42:50.482 [3026:1]: Simulations status = BUILT
+┌ Info: 2022-04-08T22:23:23.317 [2859:1]: Simulations status = BUILT
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:415
