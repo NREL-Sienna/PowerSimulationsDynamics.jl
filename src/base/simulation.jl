@@ -282,7 +282,7 @@ function _get_jacobian(sim::Simulation{ResidualModel})
     return JacobianFunctionWrapper(
         ResidualModel(inputs, x0_init, JacobianCache),
         x0_init;
-        sparse_retrieve_loop = 0,
+        # sparse_retrieve_loop = 0,
     )
 end
 
@@ -480,6 +480,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
     else
         callbacks = SciMLBase.CallbackSet((), tuple(sim.callbacks...))
     end
+
     solution,
     time_log[:timed_solve_time],
     time_log[:solve_bytes_alloc],
@@ -487,9 +488,10 @@ function _execute!(sim::Simulation, solver; kwargs...)
         sim.problem,
         solver;
         callback = callbacks,
-        tstops = sim.tstops,
+        tstops = !isempty(sim.tstops) ? [sim.tstops[1] ÷ 2, sim.tstops...] : [],
         progress = get(kwargs, :enable_progress_bar, _prog_meter_enabled()),
         progress_steps = 1,
+        advance_to_tstop = !isempty(sim.tstops),
         kwargs...,
     )
     if solution.retcode == :Success
