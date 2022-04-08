@@ -108,7 +108,7 @@ function device!(
     device::ZIPLoadWrapper,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    mdl_static_load!(voltage_r, voltage_i, current_r, current_i, device, ZIPLoad())
+    mdl_zip_load!(voltage_r, voltage_i, current_r, current_i, device)
     return
 end
 
