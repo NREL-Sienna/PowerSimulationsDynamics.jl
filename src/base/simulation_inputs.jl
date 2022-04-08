@@ -216,6 +216,9 @@ function _wrap_static_injectors(sys::PSY.System, lookup::Dict{Int, Int})
     static_injection_data = get_injection_without_dynamics(sys)
     container = Vector{StaticWrapper}(undef, length(static_injection_data))
     for (ix, ld) in enumerate(static_injection_data)
+        if isa(ld, PSY.FixedAdmittance)
+            continue
+        end
         bus_n = PSY.get_number(PSY.get_bus(ld))
         bus_ix = lookup[bus_n]
         container[ix] = StaticWrapper(ld, bus_ix)

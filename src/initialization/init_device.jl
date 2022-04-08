@@ -50,15 +50,7 @@ function initialize_dynamic_device!(
     return device_states
 end
 
-function initialize_static_device!(
-    ::StaticWrapper{PSY.PowerLoad, T},
-) where {T <: LoadCategory}
-    return
-end
-
-function initialize_static_device!(
-    ::StaticWrapper{PSY.FixedAdmittance, T},
-) where {T <: LoadCategory}
+function initialize_static_device!(::ZIPLoadWrapper)
     return
 end
 

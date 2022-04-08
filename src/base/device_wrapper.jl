@@ -318,14 +318,14 @@ function ZIPLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix::I
 
     return ZIPLoadWrapper(
         bus,
-        Base.Ref(PSY.get_magnitude(bus)),
-        Base.Ref(PSY.get_angle(bus)),
-        Base.Ref(P_power),
-        Base.Ref(P_current),
-        Base.Ref(P_impedance),
-        Base.Ref(Q_power),
-        Base.Ref(Q_current),
-        Base.Ref(Q_impedance),
+        PSY.get_magnitude(bus),
+        PSY.get_angle(bus),
+        P_power,
+        P_current,
+        P_impedance,
+        Q_power,
+        Q_current,
+        Q_impedance,
         bus_ix,
     )
 end
