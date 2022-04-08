@@ -1,37 +1,26 @@
-┌ Info: 2022-04-08T02:18:48.435 [3038:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2022-04-08T02:20:00.243 [3032:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:308
-┌ Info: 2022-04-08T02:18:48.742 [3038:1]: The System has no islands
+┌ Info: 2022-04-08T02:20:00.830 [3032:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:254
-┌ Info: 2022-04-08T02:18:51.268 [3038:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
+┌ Info: 2022-04-08T02:20:02.562 [3032:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:70
-┌ Info: 2022-04-08T02:18:51.283 [3038:1]: Pre-Initializing Simulation States
+┌ Info: 2022-04-08T02:20:02.574 [3032:1]: Pre-Initializing Simulation States
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:263
-┌ Info: 2022-04-08T02:18:51.283 [3038:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+┌ Info: 2022-04-08T02:20:02.574 [3032:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/base.jl:346
-┌ Info: 2022-04-08T02:18:51.283 [3038:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2022-04-08T02:20:02.574 [3032:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:308
-┌ Info: 2022-04-08T02:18:51.283 [3038:1]: The System has no islands
+┌ Info: 2022-04-08T02:20:02.574 [3032:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/utils/network_calculations/ybus_calculations.jl:254
-┌ Info: 2022-04-08T02:18:53.229 [3038:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2022-04-08T02:20:04.007 [3032:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerFlows /home/runner/.julia/packages/PowerFlows/SXykU/src/nlsolve_powerflow.jl:45
-┌ Info: 2022-04-08T02:18:53.229 [3038:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Info: 2022-04-08T02:20:04.007 [3032:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/PPZ5R/src/base.jl:346
-┌ Info: 2022-04-08T02:19:09.820 [3038:1]: Residual from initial guess: max = 2.360000000040973 at 3, total = 2.360000000094111
+┌ Info: 2022-04-08T02:20:15.810 [3032:1]: Residual from initial guess: max = 4.2092551666428335e-11 at 4, total = 9.411131735555515e-11
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:97
-┌ Warning: 2022-04-08T02:19:10.928 [3038:1]: Initialization non-linear solve convergence failed, initial conditions do not meet conditions for an stable equilibrium.
-│ Attempting again with reduced numeric tolerance and using another solver
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:69
-┌ Warning: 2022-04-08T02:19:10.967 [3038:1]: Initialization non-linear solve convergence failed, initial conditions do not meet conditions for an stable equilibrium.
-│ Attempting again with reduced numeric tolerance and using another solver
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:69
-┌ Warning: 2022-04-08T02:19:10.968 [3038:1]: Initialization non-linear solve convergence failed, initial conditions do not meet conditions for an stable equilibrium.
-│ Attempting again with reduced numeric tolerance and using another solver
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:69
-┌ Warning: 2022-04-08T02:19:10.969 [3038:1]: Initialization non-linear solve convergence failed, initial conditions do not meet conditions for an stable equilibrium.
-│ Attempting again with reduced numeric tolerance and using another solver
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:69
-┌ Error: 2022-04-08T02:19:10.999 [3038:1]: Invalid initial condition values ["Voltage entry 3", "Voltage entry 4"]
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:148
-┌ Error: 2022-04-08T02:19:13.023 [3038:1]: ResidualModel failed to build
-│   exception = (ErrorException("Initial conditions refinement failed to find a valid initial condition. Run show_states_initial_value on your simulation"), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007f58c3cb912e, Ptr{Nothing} @0x00007f5879ea5a78, Ptr{Nothing} @0x00007f5879ea5b6f, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f5871692739, Ptr{Nothing} @0x00007f5871696566, Ptr{Nothing} @0x00007f587169657f, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58c38931e8, Ptr{Nothing} @0x00007f587162a6e6, Ptr{Nothing} @0x00007f587162b361, Ptr{Nothing} @0x00007f587162b4c9, Ptr{Nothing} @0x00007f587162b555, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58d8047e95, Ptr{Nothing} @0x00007f58d804790d, Ptr{Nothing} @0x00007f58d80486d1, Ptr{Nothing} @0x00007f58d80492f7, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__quick_start_guide at statement 1, Ptr{Nothing} @0x00007f58d80667a3, Ptr{Nothing} @0x00007f58d80669e4, Ptr{Nothing} @0x00007f58d8068629, Ptr{Nothing} @0x00007f58c1cad707, Ptr{Nothing} @0x00007f58c1cada0e, Ptr{Nothing} @0x00007f58c1cae3fe, Ptr{Nothing} @0x00007f58c1caea9f, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58c38931e8, Ptr{Nothing} @0x00007f58c1cad28e, Ptr{Nothing} @0x00007f58c1cad45a, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58c1cac1a0, Ptr{Nothing} @0x00007f58c1cac201, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58c1ca8eea, Ptr{Nothing} @0x00007f58c1ca9dcc, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58d803b158, Ptr{Nothing} @0x00007f58c1c74a4b, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58c1c71380, Ptr{Nothing} @0x00007f58c1c7181f, Ptr{Nothing} @0x00007f58c1c71a3e, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58c1c370eb, Ptr{Nothing} @0x00007f58c1c373f0, Ptr{Nothing} @0x00007f58c1c3b293, Ptr{Nothing} @0x00007f58c1c3b30d, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58d8047e95, Ptr{Nothing} @0x00007f58d804790d, Ptr{Nothing} @0x00007f58d80486d1, Ptr{Nothing} @0x00007f58d80492f7, Base.InterpreterIP in top-level CodeInfo for Main at statement 50, Ptr{Nothing} @0x00007f58d80667a3, Ptr{Nothing} @0x00007f58d80669e4, Ptr{Nothing} @0x00007f58d8068629, Ptr{Nothing} @0x00007f58c419d83a, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58c428d35a, Ptr{Nothing} @0x00007f58c3daac15, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58c431364b, Ptr{Nothing} @0x00007f58c3dcd0f7, Ptr{Nothing} @0x00007f58c3dcd268, Ptr{Nothing} @0x00007f58d8028e09, Ptr{Nothing} @0x00007f58d808c2d5, Ptr{Nothing} @0x00007f58d808cc7c, Ptr{Nothing} @0x00000000004007d8, Ptr{Nothing} @0x00007f58d8c130b2, Ptr{Nothing} @0x0000000000400808])
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:418
+┌ Info: 2022-04-08T02:20:15.861 [3032:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:65
+┌ Info: 2022-04-08T02:20:15.861 [3032:1]: Attaching Perturbations
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:296
+┌ Info: 2022-04-08T02:20:16.432 [3032:1]: Simulations status = BUILT
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:415
