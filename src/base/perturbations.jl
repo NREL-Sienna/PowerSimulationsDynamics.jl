@@ -572,7 +572,6 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
     else
         Q_change = ref_value - Q_old
     end
-    # TODO: Change ConstantImpedance and ConstantPower
     if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
         return (integrator) -> begin
             wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
@@ -580,6 +579,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
             Q_impedance = get_Q_impedance(wrapped_zip)
             set_P_impedance!(wrapped_zip, P_impedance + P_change)
             set_Q_impedance!(wrapped_zip, Q_impedance + Q_change)
+            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
             return
         end
     elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
@@ -589,6 +589,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
             Q_current = get_Q_current(wrapped_zip)
             set_P_current!(wrapped_zip, P_current + P_change)
             set_Q_current!(wrapped_zip, Q_current + Q_change)
+            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
             return
         end
     elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
@@ -598,10 +599,10 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
             Q_power = get_Q_power(wrapped_zip)
             set_P_power!(wrapped_zip, P_power + P_change)
             set_Q_power!(wrapped_zip, Q_power + Q_change)
+            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
             return
         end
     end
-    @info "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
     return
 end
 
@@ -628,7 +629,6 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
     ld = pert.device
     P_trip = PSY.get_active_power(ld)
     Q_trip = PSY.get_reactive_power(ld)
-    # TODO: Change ConstantImpedance and ConstantPower
     if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
         return (integrator) -> begin
             wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
@@ -636,6 +636,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
             Q_impedance = get_Q_impedance(wrapped_zip)
             set_P_impedance!(wrapped_zip, P_impedance - P_trip)
             set_Q_impedance!(wrapped_zip, Q_impedance - Q_trip)
+            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
             return
         end
     elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
@@ -645,6 +646,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
             Q_current = get_Q_current(wrapped_zip)
             set_P_current!(wrapped_zip, P_current - P_trip)
             set_Q_current!(wrapped_zip, Q_current - Q_trip)
+            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
             return
         end
     elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
@@ -654,10 +656,10 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
             Q_power = get_Q_power(wrapped_zip)
             set_P_power!(wrapped_zip, P_power - P_trip)
             set_Q_power!(wrapped_zip, Q_power - Q_trip)
+            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
             return
         end
     end
-    @info "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
     return
 end
 
