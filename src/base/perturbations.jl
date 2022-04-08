@@ -673,7 +673,7 @@ function _find_zip_load_ix(inputs::SimulationInputs, device::PSY.PowerLoad)
             "Device $(typeof(device))-$(PSY.get_name(device)) not found in the simulation inputs",
         )
     else
-        IS.@assert_op length(wrapped_device_ixs) > 1
+        IS.@assert_op length(wrapped_device_ixs) == 1
     end
     return wrapped_device_ixs[1]
 end
