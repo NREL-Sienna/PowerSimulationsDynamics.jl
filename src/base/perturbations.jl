@@ -298,7 +298,7 @@ This allows the user to perform branch modifications, three phase faults (with i
 # Arguments:
 
 - `time::Float64` : Defines when the Network Switch will happen. This time should be inside the time span considered in the Simulation
-- `ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}` : Complex admittance matrix 
+- `ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}` : Complex admittance matrix
 """
 mutable struct NetworkSwitch <: Perturbation
     time::Float64
@@ -482,7 +482,7 @@ end
         device::PowerSystems.DynamicInjection
     end
 
-A `GeneratorTrip` allows to disconnect a Dynamic Generation unit from the system at a specified time. 
+A `GeneratorTrip` allows to disconnect a Dynamic Generation unit from the system at a specified time.
 
 # Arguments:
 
@@ -612,7 +612,7 @@ end
         device::PowerSystems.ElectricLoad
     end
 
-A `LoadTrip` allows the user to disconnect a load from the system. 
+A `LoadTrip` allows the user to disconnect a load from the system.
 
 # Arguments:
 
@@ -672,6 +672,8 @@ function _find_zip_load_ix(inputs::SimulationInputs, device::PSY.PowerLoad)
         error(
             "Device $(typeof(device))-$(PSY.get_name(device)) not found in the simulation inputs",
         )
+    else
+        IS.@assert_op length(wrapped_device_ixs) > 1
     end
     return wrapped_device_ixs[1]
 end
