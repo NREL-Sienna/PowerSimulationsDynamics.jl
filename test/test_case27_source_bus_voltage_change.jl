@@ -22,7 +22,7 @@ tspan = (0.0, 20.0);
 case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 
 # Define Fault using Callbacks
-V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.V_source_index, 1.1)
+V_source_change = SourceBusVoltageChange(1.0, case_source, :V_ref, 1.02)
 
 @testset "Test 27 Source Bus Voltage Magnitude Perturbation ResidualModel" begin
     path = (joinpath(pwd(), "test-27"))
@@ -97,7 +97,7 @@ tspan = (0.0, 20.0);
 case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 
 #Define Fault using Callbacks
-V_source_change = SourceBusVoltageChange(1.0, case_source, PSID.θ_source_index, 0.1)
+V_source_change = SourceBusVoltageChange(1.0, case_source, :θ_ref, 0.1)
 
 @testset "Test 27 Source Bus Voltage Angle Perturbation ResidualModel" begin
     path = (joinpath(pwd(), "test-27"))

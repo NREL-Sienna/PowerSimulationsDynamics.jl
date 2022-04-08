@@ -445,7 +445,7 @@ end
     mutable struct SourceBusVoltageChange <: Perturbation
         time::Float64
         device::PSY.Source
-        signal_index::Int
+        signal::Symbol
         ref_value::Float64
     end
 
@@ -455,23 +455,29 @@ A `SourceBusVoltageChange` allows to change the reference setpoint provided by a
 
 - `time::Float64` : Defines when the Control Reference Change will happen. This time should be inside the time span considered in the Simulation
 - `device::Type{<:PowerSystems.Source}` : Device modified
-- `signal::Int` : determines which reference setpoint will be modified. The accepted signals are:
-    - `1`: Modifies the internal voltage magnitude reference setpoint.
-    - `2`: Modifies the internal voltage angle reference setpoint.
+- `signal::Symbol` : determines which reference setpoint will be modified. The accepted signals are:
+    - :V_ref Modifies the internal voltage magnitude reference setpoint.
+    - :θ_ref  Modifies the internal voltage angle reference setpoint.
 - `ref_value::Float64` : User defined value for setpoint reference.
 """
 mutable struct SourceBusVoltageChange <: Perturbation
     time::Float64
     device::PSY.Source
-    signal_index::Int
+    signal::Symbol
     ref_value::Float64
 end
 
-function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVoltageChange)
-    wrapped_device_ix = _find_device_index(inputs, pert.device)
+function PSID.get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVoltageChange)
+    wrapped_device_ix = PSID._find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
-        set_V_ref(wrapped_device, pert.ref_value)
+        if pert.signal == :V_ref
+            set_V_ref(wrapped_device, pert.ref_value)
+        elseif pert.signal == :θ_ref
+            set_θ_ref(wrapped_device, pert.ref_value)
+        else 
+            error("Signal $signal not accepted as a control reference change in SourceBus")
+        end
         return
     end
 end
