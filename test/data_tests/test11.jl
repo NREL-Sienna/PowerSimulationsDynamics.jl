@@ -63,3 +63,7 @@ for br in fault_branches2
     end
 end
 Ybus_fault = Ybus(sys3).data;
+
+for l in get_components(PSY.PowerLoad, threebus_sys)
+    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+end

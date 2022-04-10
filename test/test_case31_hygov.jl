@@ -17,6 +17,9 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file, dyr_file)
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         # Define Simulation Problem
         sim = Simulation!(
@@ -78,6 +81,9 @@ end
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file, dyr_file)
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         # Define Simulation Problem
         sim = Simulation!(
@@ -142,6 +148,9 @@ end
             joinpath(TEST_FILES_DIR, "data_tests/11BUS_KUNDUR.raw"),
             joinpath(TEST_FILES_DIR, "data_tests/11BUS_KUNDUR_B.dyr"),
         )
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         gen_static = get_component(ThermalStandard, sys, "generator-1-1")
         gen_dynamic = get_dynamic_injector(gen_static)

@@ -1,8 +1,11 @@
-@testset "Test 32 9-Bus Machine Onlu System" begin
+@testset "Test 32 9-Bus Machine Only System" begin
     path = (joinpath(pwd(), "test-9Bus-system"))
     !isdir(path) && mkdir(path)
     try
         sys = System(joinpath(TEST_FILES_DIR, "data_tests/9BusSystem.json"))
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         gen_static = get_component(ThermalStandard, sys, "generator-2-1")
         gen_dynamic = get_dynamic_injector(gen_static)

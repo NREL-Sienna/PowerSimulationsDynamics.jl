@@ -23,6 +23,10 @@ function inv_darco(static_device)
     ) #pss
 end
 
+for l in get_components(PSY.PowerLoad, omib_sys)
+    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+end
+
 #Attach dynamic generator. Currently use PSS/e format based on bus #.
 device = [g for g in get_components(Generator, omib_sys)][1]
 case_inv = inv_darco(device)

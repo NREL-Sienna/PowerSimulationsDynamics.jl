@@ -25,6 +25,10 @@ function dyn_gen_genrou(generator)
     ) #pss
 end
 
+for l in get_components(PSY.PowerLoad, sys)
+    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+end
+
 #Add GENROU to System
 g = get_component(ThermalStandard, sys, "generator-102-1")
 dyn_gen = dyn_gen_genrou(g)

@@ -36,6 +36,9 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
     try
         sys = System(threebus_file_dir)
         add_source_to_ref(sys)
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         for g in get_components(Generator, sys)
             case_gen = inv_generic_renewable(g, F_Flag)
@@ -106,6 +109,9 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
     try
         sys = System(threebus_file_dir)
         add_source_to_ref(sys)
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         for g in get_components(Generator, sys)
             case_gen = inv_generic_renewable(g, F_Flag)
@@ -245,6 +251,9 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         # Define Simulation Problem
         sim = Simulation!(
@@ -308,6 +317,9 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         # Define Simulation Problem
         sim = Simulation!(

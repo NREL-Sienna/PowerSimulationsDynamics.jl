@@ -85,16 +85,10 @@ function device!(
     current_i::AbstractArray{T},
     ::AbstractArray{T},
     ::AbstractArray{T},
-    device::StaticWrapper{PSY.PowerLoad, U},
+    device::ZIPLoadWrapper,
     t,
-) where {T <: ACCEPTED_REAL_TYPES, U <: LoadCategory}
-    # For now model all loads as constant impedance
-    if get_connection_status(device) < 1.0
-        current_r .= zero(T)
-        current_i .= zero(T)
-    else
-        mdl_Zload!(voltage_r, voltage_i, current_r, current_i, device.device)
-    end
+) where {T <: ACCEPTED_REAL_TYPES}
+    mdl_zip_load!(voltage_r, voltage_i, current_r, current_i, device)
     return
 end
 
