@@ -467,8 +467,8 @@ mutable struct SourceBusVoltageChange <: Perturbation
     ref_value::Float64
 end
 
-function PSID.get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVoltageChange)
-    wrapped_device_ix = PSID._find_device_index(inputs, pert.device)
+function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVoltageChange)
+    wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_static_injectors(integrator.p)[wrapped_device_ix]
         if pert.signal == :V_ref
