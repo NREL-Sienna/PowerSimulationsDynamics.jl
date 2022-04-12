@@ -475,7 +475,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVolta
             set_V_ref(wrapped_device, pert.ref_value)
         elseif pert.signal == :θ_ref
             set_θ_ref(wrapped_device, pert.ref_value)
-        else 
+        else
             error("Signal $signal not accepted as a control reference change in SourceBus")
         end
         return
