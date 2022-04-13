@@ -23,7 +23,7 @@ function _calculate_forwardiff_jacobian(
 )
     var_count = get_variable_count(sim.inputs)
     dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    sysf! =  (out, x) -> system_implicit!(
+    sysf! = (out, x) -> system_implicit!(
         out,            #output of the function
         dx0,            #derivatives equal to zero
         x,              #states
@@ -40,7 +40,7 @@ function _calculate_forwardiff_jacobian(
     x_eval::Vector{Float64},
 )
     var_count = get_variable_count(sim.inputs)
-    sysf! =  (dx, x) -> system_mass_matrix!(
+    sysf! = (dx, x) -> system_mass_matrix!(
         dx,            #derivatives equal to zero
         x,              #states
         sim.inputs,     #Parameters

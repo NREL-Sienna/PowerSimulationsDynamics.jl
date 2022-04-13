@@ -305,7 +305,7 @@ function _build_perturbations!(sim::Simulation)
     tstops = Vector{Float64}(undef, perturbations_count)
     for (ix, pert) in enumerate(perturbations)
         @debug pert
-        condition =  (x, t, integrator) -> t in [pert.time]
+        condition = (x, t, integrator) -> t in [pert.time]
         affect = get_affect(inputs, get_system(sim), pert)
         callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
         tstops[ix] = pert.time
