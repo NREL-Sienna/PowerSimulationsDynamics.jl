@@ -44,6 +44,9 @@ function test_gensal_implicit(dyr_file, csv_file, init_cond, eigs_value)
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         # Define Simulation Problem
         sim = Simulation!(
@@ -107,6 +110,9 @@ function test_gensal_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
 
         # Define Simulation Problem
         sim = Simulation!(

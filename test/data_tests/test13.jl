@@ -34,6 +34,10 @@ function dyn_gen_simple_avr(generator)
     ) #pss
 end
 
+for l in get_components(PSY.PowerLoad, threebus_sys)
+    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+end
+
 # Add dynamic generators to the system (each gen is linked through a static one)
 for g in get_components(Generator, threebus_sys)
     if get_number(get_bus(g)) == 102

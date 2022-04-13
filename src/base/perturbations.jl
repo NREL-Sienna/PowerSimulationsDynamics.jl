@@ -298,7 +298,7 @@ This allows the user to perform branch modifications, three phase faults (with i
 # Arguments:
 
 - `time::Float64` : Defines when the Network Switch will happen. This time should be inside the time span considered in the Simulation
-- `ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}` : Complex admittance matrix 
+- `ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int}` : Complex admittance matrix
 """
 mutable struct NetworkSwitch <: Perturbation
     time::Float64
@@ -482,7 +482,7 @@ end
         device::PowerSystems.DynamicInjection
     end
 
-A `GeneratorTrip` allows to disconnect a Dynamic Generation unit from the system at a specified time. 
+A `GeneratorTrip` allows to disconnect a Dynamic Generation unit from the system at a specified time.
 
 # Arguments:
 
@@ -559,13 +559,51 @@ function _find_device_index(inputs::SimulationInputs, device::PSY.ElectricLoad)
 end
 
 function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
-    wrapped_device_ix = _find_device_index(inputs, pert.device)
-    return (integrator) -> begin
-        wrapped_device = get_static_loads(integrator.p)[wrapped_device_ix]
-        @debug "Changing $(PSY.get_name(wrapped_device)) $(pert.signal) to $(pert.ref_value)"
-        getfield(wrapped_device, pert.signal)[] = pert.ref_value
-        return
+    wrapped_device_ix = _find_zip_load_ix(inputs, pert.device)
+    ld = pert.device
+    P_old = PSY.get_active_power(ld)
+    Q_old = PSY.get_reactive_power(ld)
+    ref_value = pert.ref_value
+    signal = pert.signal
+    P_change = 0.0
+    Q_change = 0.0
+    if signal == :P_ref
+        P_change = ref_value - P_old
+    else
+        Q_change = ref_value - Q_old
     end
+    if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
+        return (integrator) -> begin
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            P_impedance = get_P_impedance(wrapped_zip)
+            Q_impedance = get_Q_impedance(wrapped_zip)
+            set_P_impedance!(wrapped_zip, P_impedance + P_change)
+            set_Q_impedance!(wrapped_zip, Q_impedance + Q_change)
+            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
+            return
+        end
+    elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
+        return (integrator) -> begin
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            P_current = get_P_current(wrapped_zip)
+            Q_current = get_Q_current(wrapped_zip)
+            set_P_current!(wrapped_zip, P_current + P_change)
+            set_Q_current!(wrapped_zip, Q_current + Q_change)
+            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
+            return
+        end
+    elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
+        return (integrator) -> begin
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            P_power = get_P_power(wrapped_zip)
+            Q_power = get_Q_power(wrapped_zip)
+            set_P_power!(wrapped_zip, P_power + P_change)
+            set_Q_power!(wrapped_zip, Q_power + Q_change)
+            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
+            return
+        end
+    end
+    return
 end
 
 """
@@ -574,7 +612,7 @@ end
         device::PowerSystems.ElectricLoad
     end
 
-A `LoadTrip` allows the user to disconnect a load from the system. 
+A `LoadTrip` allows the user to disconnect a load from the system.
 
 # Arguments:
 
@@ -587,11 +625,55 @@ mutable struct LoadTrip <: Perturbation
 end
 
 function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
-    wrapped_device_ix = _find_device_index(inputs, pert.device)
-    return (integrator) -> begin
-        wrapped_device = get_static_loads(integrator.p)[wrapped_device_ix]
-        @info "Changing connection status $(PSY.get_name(wrapped_device))"
-        set_connection_status(wrapped_device, 0)
-        return
+    wrapped_device_ix = _find_zip_load_ix(inputs, pert.device)
+    ld = pert.device
+    P_trip = PSY.get_active_power(ld)
+    Q_trip = PSY.get_reactive_power(ld)
+    if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
+        return (integrator) -> begin
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            P_impedance = get_P_impedance(wrapped_zip)
+            Q_impedance = get_Q_impedance(wrapped_zip)
+            set_P_impedance!(wrapped_zip, P_impedance - P_trip)
+            set_Q_impedance!(wrapped_zip, Q_impedance - Q_trip)
+            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+            return
+        end
+    elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
+        return (integrator) -> begin
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            P_current = get_P_current(wrapped_zip)
+            Q_current = get_Q_current(wrapped_zip)
+            set_P_current!(wrapped_zip, P_current - P_trip)
+            set_Q_current!(wrapped_zip, Q_current - Q_trip)
+            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+            return
+        end
+    elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
+        return (integrator) -> begin
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            P_power = get_P_power(wrapped_zip)
+            Q_power = get_Q_power(wrapped_zip)
+            set_P_power!(wrapped_zip, P_power - P_trip)
+            set_Q_power!(wrapped_zip, Q_power - Q_trip)
+            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+            return
+        end
     end
+    return
+end
+
+function _find_zip_load_ix(inputs::SimulationInputs, device::PSY.PowerLoad)
+    wrapped_devices = get_static_loads(inputs)
+    bus_affected = PSY.get_bus(device)
+    wrapped_device_ixs =
+        findall(x -> PSY.get_name(x) == PSY.get_name(bus_affected), wrapped_devices)
+    if isempty(wrapped_device_ixs)
+        error(
+            "Device $(typeof(device))-$(PSY.get_name(device)) not found in the simulation inputs",
+        )
+    else
+        IS.@assert_op length(wrapped_device_ixs) == 1
+    end
+    return wrapped_device_ixs[1]
 end
