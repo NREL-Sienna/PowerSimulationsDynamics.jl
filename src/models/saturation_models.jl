@@ -22,6 +22,23 @@ function saturation_function(
     return Sat_B * x^Sat_A
 end
 
+function genqec_saturation_function(machine::PSY.GENQEC, ::Val{0}, x::ACCEPTED_REAL_TYPES)
+   Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
+   return Sat_B * x^Sat_A
+end
+
+function genqec_saturation_function(machine::PSY.GENQEC, ::Val{1}, x::ACCEPTED_REAL_TYPES)
+   Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
+   return Sat_B * (x - Sat_A)^2 /x
+end
+
+function genqec_saturation_function(machine::PSY.GENQEC, ::Val{2}, x::ACCEPTED_REAL_TYPES)
+   Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
+   return Sat_B * (x - Sat_A)^2
+end
+
+
+
 function rectifier_function(I::Float64)
     if I <= 0.0
         return 1.0
