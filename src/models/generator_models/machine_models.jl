@@ -784,7 +784,7 @@ function mdl_machine_ode!(
     ψ_g = 1.0/ω * sqrt((V_tI+R*I_I+Xl*I_R)^2 + (V_tR+R*I_R-Xl*I_I)^2)
 
     # Compute saturation and saturated reactances
-    Se = saturation_function(machine, ψ_g)
+    Se = genqec_saturation_function(machine, Val(sat_flag), ψg)
 
     Xd_ppsat = Xl + (Xd_pp-Xl)/(1+Se)
     Xq_ppsat = Xl + (Xq_pp-Xl)/(1+Se)

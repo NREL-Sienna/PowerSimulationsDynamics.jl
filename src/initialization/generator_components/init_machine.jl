@@ -1001,24 +1001,11 @@ function initialize_mach_shaft!(
     γ_d2 = PSY.get_γ_d2(machine)
     
 
-    # Define saturation function 
-
-    if sat_flag == 1
-        function sat_func(machine::PSY.GENQEC, x::ACCEPTED_REAL_TYPES)
-            Sat_A, Sat_B = PSY.get_exponential_saturation(Se)
-            return Sat_B * x^Sat_A
-        end
-    else
-        function sat_func(machine::PSY.GENQEC, x::ACCEPTED_REAL_TYPES)
-            Sat_A, Sat_B = PSY.get_quadratic_saturation(Se)
-            return Sat_B * (x - Sat_A)^2 / x
-        end
-    end
-
+ 
     ## Voltage behind the leakage reactance
     Vl = V + (R + Xl * 1im) * I
     ψg0 = abs(Vl) # initial airgap flux
-    Se0 = sat_func(machine, ψg0)   # to be updated 
+    Se0 = genqec_saturation_function(machine, Val(sat_flag), ψg0)
     
     ## Saturated reactances
 
