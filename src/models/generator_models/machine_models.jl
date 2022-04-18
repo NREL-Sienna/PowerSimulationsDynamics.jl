@@ -737,6 +737,9 @@ function mdl_machine_ode!(
     ed_p = internal_states[2]
     ψd_p = internal_states[3]
     ψq_p = internal_states[4]
+    I_d = internal_states[5] # alebraic
+    I_q = internal_states[6] # algebraic
+    Se = internal_states[7] # algebraic
 
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(dynamic_device, M)
@@ -772,48 +775,40 @@ function mdl_machine_ode!(
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
 
-    #Additional Fluxes
+    # Computation of Fluxes
     
     ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψd_p 
     ψq_pp = - γ_q1 * ed_p - γ_q2 * (Xq_p - Xl) * ψq_p 
     
-    # Get available currents and convert to machine base
-    I_R = current_r[1] * (Sbase / basepower)
-    I_I = current_i[1] * (Sbase / basepower)
-    
-    ψ_g = 1.0/ω * sqrt((V_tI+R*I_I+Xl*I_R)^2 + (V_tR+R*I_R-Xl*I_I)^2)
+    # Airgap flux
+    ψ_dg = ψd_pp - (Xd_pp-Xl)/(1+Se)*I_d
+    ψ_qg = ψq_pp - (Xq_pp-Xl)/(1+Se)*I_q 
+    ψg = sqrt(ψ_dg^2+ψ_qg^2)
 
-    # Compute saturation and saturated reactances
-    Se = genqec_saturation_function(machine, Val(sat_flag), ψg)
+    # Compute  saturated reactances
 
     Xd_ppsat = Xl + (Xd_pp-Xl)/(1+Se)
     Xq_ppsat = Xl + (Xq_pp-Xl)/(1+Se)
 
-
-    #Currents
-    I_d =
-        (1.0 / (R^2 + ω^2 * Xd_ppsat * Xq_ppsat)) *
-        (-R * (V_dq[1] + ω*ψq_pp) - ω*Xq_ppsat * (V_dq[2] -ω*ψd_pp))
-   
-    I_q =
-        (1.0 / (R^2 + ω^2 * Xd_ppsat * Xq_ppsat)) * 
-        (-R * (V_dq[2] - ω*ψd_pp) + ω*Xd_ppsat * (V_dq[1] +ω*ψq_pp))
-    
-    Xad_Ifd = (1.0+Se)/(1.0-Kw*I_d) * (eq_p + (Xd - Xd_p) * (I_d/(1.0+Se) + γ_d2 * (eq_p - ψd_p - (Xd_p - Xl)* I_d/(1.0+Se))))
+    #Field current computation
+    KwId = clamp(Kw*I_d,-0.4,0.4)
+    Xad_Ifd = (1.0+Se)/(1.0-KwId) * (eq_p + (Xd - Xd_p) * (I_d/(1.0+Se) + γ_d2 * (eq_p - ψd_p - (Xd_p - Xl)* I_d/(1.0+Se))))
 
     Xaq_I1q = (-ed_p + (Xq - Xq_p) * (I_q/(1.0+Se) - γ_q2 * (ed_p - ψq_p + (Xq_p - Xl)* I_q/(1.0+Se))))
 
     # Electric torque
     ψd = ψd_pp - Xd_ppsat*I_d
     ψq = ψq_pp - Xq_ppsat*I_q 
-
     τ_e = ψd*I_q - ψq*I_d 
-    
+   
     #Compute ODEs
-    output_ode[local_ix[1]] = (1.0 / Td0_p) * (Vf - Xad_Ifd)                        # eq_p
-    output_ode[local_ix[2]] = (1.0+Se) / Tq0_p * (Xaq_I1q)                            # ed_p
+    output_ode[local_ix[1]] = (1.0 / Td0_p) * (Vf - Xad_Ifd)      # eq_p
+    output_ode[local_ix[2]] = (1.0+Se) / Tq0_p * (Xaq_I1q)        # ed_p
     output_ode[local_ix[3]] = (1.0+Se) / Td0_pp * (-ψd_p + eq_p - (Xd_p - Xl) * I_d/(1.0+Se))   # ψd_p
     output_ode[local_ix[4]] = (1.0+Se) / Tq0_pp * (-ψq_p + ed_p + (Xq_p - Xl) * I_q/(1.0+Se))   # ψq_p
+    output_ode[local_ix[5]] = -V_dq[1] - R*I_d - ω*ψq_pp + ω*Xq_ppsat*I_q
+    output_ode[local_ix[6]] = -V_dq[2] - R*I_q + ω*ψd_pp - ω*Xd_ppsat*I_d
+    output_ode[local_ix[7]] = -Se + genqec_saturation_function(machine, Val(sat_flag), ψg)
 
     #Update inner_vars
     inner_vars[τe_var] = τ_e

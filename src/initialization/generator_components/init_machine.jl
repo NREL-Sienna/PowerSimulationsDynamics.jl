@@ -986,10 +986,6 @@ function initialize_mach_shaft!(
     
     sat_flag = PSY.get_sat_flag(machine)
     R = PSY.get_R(machine)
-    Td0_p = PSY.get_Td0_p(machine)
-    Tq0_p = PSY.get_Tq0_p(machine)
-    Td0_pp = PSY.get_Td0_pp(machine)
-    Tq0_pp = PSY.get_Tq0_pp(machine)
     Xd = PSY.get_Xd(machine)
     Xq = PSY.get_Xq(machine)
     Xd_p = PSY.get_Xd_p(machine)
@@ -1001,7 +997,6 @@ function initialize_mach_shaft!(
     γ_d2 = PSY.get_γ_d2(machine)
     
 
- 
     ## Voltage behind the leakage reactance
     Vl = V + (R + Xl * 1im) * I
     ψg0 = abs(Vl) # initial airgap flux
@@ -1037,10 +1032,11 @@ function initialize_mach_shaft!(
 
     ## External Variables
     τm0 = ψ_d0 * I_q0 - ψ_q0 * I_d0
-    
-    Xad_Ifd0 = (1.0+Se0)/(1.0-Kw*I_d0)*(eq_p0+(Xd-Xd_p)*(I_d0/(1.0+Se0)+γ_d2*(eq_p0-ψd_p0-(Xd_p-Xl)*I_d0/(1.0+Se0))))
 
-    Vf0 = Xad_Ifd0   
+    KwId = clamp(Kw*I_d0,-0.4,0.4)
+    Xad_Ifd0 = (1.0+Se0)/(1.0-KwId)*(eq_p0+(Xd-Xd_p)*(I_d0/(1.0+Se0)+γ_d2*(eq_p0-ψd_p0-(Xd_p-Xl)*I_d0/(1.0+Se0))))
+
+    Vf0 = Xad_Ifd0  # field voltage in exciter base
 
     #Update terminal voltages
     inner_vars[VR_gen_var] = V_R
@@ -1064,6 +1060,9 @@ function initialize_mach_shaft!(
     machine_states[2] = ed_p0
     machine_states[3] = ψd_p0
     machine_states[4] = ψq_p0
+    machine_states[5] = I_d0
+    machine_states[6] = I_q0
+    machine_states[7] = Se0
 end
 
 
