@@ -136,3 +136,37 @@ function initialize_pss!(
 
 end
 =#
+
+function initialize_pss!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.STAB1}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
+    #Get Signal Input Integer
+    pss = PSY.get_pss(dynamic_device)
+    
+
+    #Obtain PSS States
+    pss_ix = get_local_state_ix(dynamic_device, typeof(pss))
+    pss_states = @view device_states[pss_ix]
+
+    
+    #Compute steady-state values
+    x_p1 = 0.0
+    x_p2 = 0.0
+    x_p3 = 0.0
+    
+    #Compute PSS output signal
+    V_pss = 0.0
+
+    #Update Inner Vars
+    inner_vars[V_pss_var] = V_pss
+
+    #Update States
+    pss_states[1] = x_p1
+    pss_states[2] = x_p2
+    pss_states[3] = x_p3
+
+    return
+end

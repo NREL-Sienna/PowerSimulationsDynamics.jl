@@ -716,6 +716,114 @@ function mdl_machine_ode!(
     return
 end
 
+function mdl_machine_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.GENQEC, S, A, TG, P}},
+    ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    Sbase = get_system_base_power(dynamic_device)
+    f0 = get_system_base_frequency(dynamic_device)
+
+    #Obtain indices for component w/r to device
+    machine = PSY.get_machine(dynamic_device)
+    local_ix = get_local_state_ix(dynamic_device, M)
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    eq_p = internal_states[1]
+    ed_p = internal_states[2]
+    ψd_p = internal_states[3]
+    ψq_p = internal_states[4]
+    I_d = internal_states[5] # alebraic
+    I_q = internal_states[6] # algebraic
+    Se = internal_states[7] # algebraic
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(dynamic_device, M)
+    δ = device_states[external_ix[1]]
+    ω = device_states[external_ix[2]] 
+
+    #Obtain inner variables for component
+    V_tR = inner_vars[VR_gen_var]
+    V_tI = inner_vars[VI_gen_var]
+    Vf = inner_vars[Vf_var] #E_fd: Field voltage
+
+    #Get parameters
+    sat_flag = PSY.get_sat_flag(machine)
+    R = PSY.get_R(machine)
+    Td0_p = PSY.get_Td0_p(machine)
+    Td0_pp = PSY.get_Td0_pp(machine)
+    Tq0_p = PSY.get_Tq0_p(machine)
+    Tq0_pp = PSY.get_Tq0_pp(machine)
+    Xd = PSY.get_Xd(machine)
+    Xq = PSY.get_Xq(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xq_p = PSY.get_Xq_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = PSY.get_Xq_pp(machine)
+    Xl = PSY.get_Xl(machine)
+    Kw = PSY.get_Kw(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+    γ_q2 = PSY.get_γ_q2(machine)
+    basepower = PSY.get_base_power(dynamic_device)
+
+    #RI to dq transformation
+    V_dq = ri_dq(δ) * [V_tR; V_tI]
+
+    # Computation of Fluxes
+    
+    ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψd_p 
+    ψq_pp = - γ_q1 * ed_p - γ_q2 * (Xq_p - Xl) * ψq_p 
+    
+    # Airgap flux
+    ψ_dg = ψd_pp - (Xd_pp-Xl)/(1+Se)*I_d
+    ψ_qg = ψq_pp - (Xq_pp-Xl)/(1+Se)*I_q 
+    ψg = sqrt(ψ_dg^2+ψ_qg^2)
+
+    # Compute  saturated reactances
+
+    Xd_ppsat = Xl + (Xd_pp-Xl)/(1+Se)
+    Xq_ppsat = Xl + (Xq_pp-Xl)/(1+Se)
+
+    #Field current computation
+    KwId = clamp(Kw*I_d,-0.4,0.4)
+    Xad_Ifd = (1.0+Se)/(1.0-KwId) * (eq_p + (Xd - Xd_p) * (I_d/(1.0+Se) + γ_d2 * (eq_p - ψd_p - (Xd_p - Xl)* I_d/(1.0+Se))))
+
+    Xaq_I1q = (-ed_p + (Xq - Xq_p) * (I_q/(1.0+Se) - γ_q2 * (ed_p - ψq_p + (Xq_p - Xl)* I_q/(1.0+Se))))
+
+    # Electric torque
+    ψd = ψd_pp - Xd_ppsat*I_d
+    ψq = ψq_pp - Xq_ppsat*I_q 
+    τ_e = ψd*I_q - ψq*I_d 
+   
+    #Compute ODEs
+    output_ode[local_ix[1]] = (1.0 / Td0_p) * (Vf - Xad_Ifd)      # eq_p
+    output_ode[local_ix[2]] = (1.0+Se) / Tq0_p * (Xaq_I1q)        # ed_p
+    output_ode[local_ix[3]] = (1.0+Se) / Td0_pp * (-ψd_p + eq_p - (Xd_p - Xl) * I_d/(1.0+Se))   # ψd_p
+    output_ode[local_ix[4]] = (1.0+Se) / Tq0_pp * (-ψq_p + ed_p + (Xq_p - Xl) * I_q/(1.0+Se))   # ψq_p
+    output_ode[local_ix[5]] = -V_dq[1] - R*I_d - ω*ψq_pp + ω*Xq_ppsat*I_q
+    output_ode[local_ix[6]] = -V_dq[2] - R*I_q + ω*ψd_pp - ω*Xd_ppsat*I_d
+    output_ode[local_ix[7]] = -Se + genqec_saturation_function(machine, Val(sat_flag), ψg)
+
+    #Update inner_vars
+    inner_vars[τe_var] = τ_e
+    inner_vars[Xad_Ifd_var] = Xad_Ifd
+
+    #Compute current from the generator to the grid
+    I_RI = (basepower / Sbase) * dq_ri(δ) * [I_d; I_q]
+
+    #Update current
+    current_r[1] += I_RI[1]
+    current_i[1] += I_RI[2]
+
+    return
+end
+
 #Not already implemented:
 #=
 """

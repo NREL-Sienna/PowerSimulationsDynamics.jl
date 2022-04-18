@@ -958,6 +958,114 @@ function initialize_mach_shaft!(
     return
 end
 
+
+function initialize_mach_shaft!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicGenerator{PSY.GENQEC, S, A, TG, P},
+    },
+    inner_vars::AbstractVector,
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+
+    #PowerFlow Data
+
+    P0 = PSY.get_active_power(static)
+    Q0 = PSY.get_reactive_power(static)
+    Vm = PSY.get_magnitude(PSY.get_bus(static))
+    θ = PSY.get_angle(PSY.get_bus(static))
+    S0 = P0 + Q0 * 1im 
+    V_R = Vm * cos(θ)
+    V_I = Vm * sin(θ)
+    V = V_R + V_I * 1im
+    I = conj(S0 / V) 
+
+
+    #Get parameters
+    machine = PSY.get_machine(dynamic_device)
+    
+    sat_flag = PSY.get_sat_flag(machine)
+    R = PSY.get_R(machine)
+    Xd = PSY.get_Xd(machine)
+    Xq = PSY.get_Xq(machine)
+    Xd_p = PSY.get_Xd_p(machine)
+    Xq_p = PSY.get_Xq_p(machine)
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = PSY.get_Xd_pp(machine)
+    Xl = PSY.get_Xl(machine)
+    Kw = PSY.get_Kw(machine)
+    γ_d2 = PSY.get_γ_d2(machine)
+    
+
+    ## Voltage behind the leakage reactance
+    Vl = V + (R + Xl * 1im) * I
+    ψg0 = abs(Vl) # initial airgap flux
+    Se0 = genqec_saturation_function(machine, Val(sat_flag), ψg0)
+    
+    ## Saturated reactances
+
+    Xd_ppsat = Xl + (Xd_pp-Xl)/(1.0+Se0)
+    Xq_ppsat = Xl + (Xq_pp-Xl)/(1.0+Se0)
+    Xq_sat = Xl + (Xq-Xl)/(1.0+Se0)
+   
+    # Compute initial angle
+    E = V + (R + Xq_sat * 1im) * I
+    δ0 = angle(E)
+
+    ## Currents and voltages in dq
+    I_d0, I_q0 = ri_dq(δ0) * [real(I); imag(I)] 
+    V_d0, V_q0 = ri_dq(δ0) * [V_R; V_I]
+
+    # fluxes
+    
+    ψq_pp0 = -V_d0 + I_q0 * Xq_ppsat - I_d0 * R
+    ψd_pp0 =  V_q0 + I_d0 * Xd_ppsat + I_q0 * R
+    ψ_q0 = ψq_pp0 -  I_q0 * Xq_ppsat
+    ψ_d0 = ψd_pp0 -  I_d0 * Xd_ppsat
+
+    ## initial states
+    
+    ψd_p0 = ψd_pp0 - (Xd_pp-Xl)/(1.0+Se0)*I_d0
+    eq_p0 = ψd_p0 + (Xd_p-Xl)/(1.0+Se0)*I_d0
+    ed_p0 = (Xq - Xq_p)/(1.0+Se0)*I_q0
+    ψq_p0 = ed_p0 + (Xq_p - Xl)/(1.0+Se0)*I_q0
+
+    ## External Variables
+    τm0 = ψ_d0 * I_q0 - ψ_q0 * I_d0
+
+    KwId = clamp(Kw*I_d0,-0.4,0.4)
+    Xad_Ifd0 = (1.0+Se0)/(1.0-KwId)*(eq_p0+(Xd-Xd_p)*(I_d0/(1.0+Se0)+γ_d2*(eq_p0-ψd_p0-(Xd_p-Xl)*I_d0/(1.0+Se0))))
+
+    Vf0 = Xad_Ifd0  # field voltage in exciter base
+
+    #Update terminal voltages
+    inner_vars[VR_gen_var] = V_R
+    inner_vars[VI_gen_var] = V_I
+    #Update δ and ω of Shaft. Works for every Shaft.
+    shaft_ix = get_local_state_ix(dynamic_device, S)
+    shaft_states = @view device_states[shaft_ix]
+    shaft_states[1] = δ0 #δ
+    shaft_states[2] = 1.0 #ω
+    #Update Mechanical and Electrical Torque on Generator
+    inner_vars[τe_var] = τm0
+    inner_vars[τm_var] = τm0
+    #Update Vf for AVR in GENQEC Machine.
+    inner_vars[Vf_var] = Vf0
+    #Update Xad_Ifd for AVR in GENQEC Machine
+    inner_vars[Xad_Ifd_var] = Xad_Ifd0
+    #Update states for Machine
+    machine_ix = get_local_state_ix(dynamic_device, typeof(machine))
+    machine_states = @view device_states[machine_ix]
+    machine_states[1] = eq_p0
+    machine_states[2] = ed_p0
+    machine_states[3] = ψd_p0
+    machine_states[4] = ψq_p0
+    machine_states[5] = I_d0
+    machine_states[6] = I_q0
+    machine_states[7] = Se0
+end
+
+
 #=
 """
 Initialitation of model of 5-state (Kundur) synchronous machine in Julia.
