@@ -258,6 +258,21 @@ end
 # get_bustype is already exported in PSY. So this is named this way to avoid name collisions
 get_bus_category(::StaticWrapper{<:PSY.StaticInjection, U}) where {U} = U
 
+#=
+function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.ExponentialLoad}
+    bus = PSY.get_bus(device)
+    return StaticWrapper{T, #SOMECATEGORY?]}(
+        device,
+        Base.Ref(1.0),
+        Base.Ref(PSY.get_magnitude(bus)),
+        Base.Ref(PSY.get_angle(bus)),
+        Base.Ref(PSY.get_active_power(device)),
+        Base.Ref(PSY.get_reactive_power(device)),
+        bus_ix,
+    )
+end
+=#
+
 # TODO: something smart to forward fields
 get_device(wrapper::StaticWrapper) = wrapper.device
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
