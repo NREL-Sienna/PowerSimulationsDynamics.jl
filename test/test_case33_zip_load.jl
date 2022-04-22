@@ -7,12 +7,6 @@ The fault drop the line connecting the infinite bus and GENROU.
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
-using Revise
-using PowerSystems
-using PowerSimulationsDynamics
-using Sundials
-using Plots
-const PSY = PowerSystems
 
 names = ["Constant Power", "Constant Current", "Constant Impedance"]
 load_models = [
