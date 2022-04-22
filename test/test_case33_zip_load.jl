@@ -8,21 +8,16 @@ The fault drop the line connecting the infinite bus and GENROU.
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-names = ["Constant Power", "Constant Current", "Constant Impedance"]
-load_models = [
-    PSY.LoadModels.ConstantPower,
-    PSY.LoadModels.ConstantCurrent,
-    PSY.LoadModels.ConstantImpedance,
-]
+names = ["Constant Power", "Constant Current"]
+load_models = [PSY.LoadModels.ConstantPower, PSY.LoadModels.ConstantCurrent]
 raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/ThreeBusMulti.raw")
 dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/ThreeBus_GENROU.dyr")
 
 initial_conditions = test33_zipload_x0_init
-eigs_values = [test33_eigvals_constantP, test33_eigvals_constantI, test33_eigvals_constantZ]
+eigs_values = [test33_eigvals_constantP, test33_eigvals_constantI]
 csv_files = [
     joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/TEST_ConstantP.csv"),
     joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/TEST_ConstantI.csv"),
-    joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/TEST_ConstantZ.csv"),
 ]
 
 tspan = (0.0, 20.0)
@@ -70,13 +65,18 @@ function test_zipload_implicit(csv_file, eigs_value, load_model)
         # Obtain data for voltages
         series = get_voltage_magnitude_series(results, 102)
         t_psid = series[1]
-        v_psid = series[2]
+        v2_psid = series[2]
+        _, v3_psid = get_voltage_magnitude_series(results, 103)
 
-        #t_psse, v_psse = get_csv_delta(csv_file)
+        M = get_csv_data(csv_file)
+        t_psse = M[:, 1]
+        v2_psse = M[:, 2]
+        v3_psse = M[:, 4]
 
         # Test Transient Simulation Results
-        #@test LinearAlgebra.norm(v_psid - v_psse, Inf) <= 1e-2
-        #@test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
+        @test LinearAlgebra.norm(v2_psid - v2_psse, Inf) <= 5e-2
+        @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 5e-2
+        @test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -126,13 +126,18 @@ function test_zipload_mass_matrix(csv_file, eigs_value, load_model)
         # Obtain data for voltages
         series = get_voltage_magnitude_series(results, 102)
         t_psid = series[1]
-        v_psid = series[2]
+        v2_psid = series[2]
+        _, v3_psid = get_voltage_magnitude_series(results, 103)
 
-        #t_psse, v_psse = get_csv_delta(csv_file)
+        M = get_csv_data(csv_file)
+        t_psse = M[:, 1]
+        v2_psse = M[:, 2]
+        v3_psse = M[:, 4]
 
         # Test Transient Simulation Results
-        #@test LinearAlgebra.norm(v_psid - v_psse, Inf) <= 1e-2
-        #@test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
+        @test LinearAlgebra.norm(v2_psid - v2_psse, Inf) <= 5e-2
+        @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 5e-2
+        @test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

@@ -283,7 +283,6 @@ function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
     return load_container
 end
 
-
 function _construct_zip_wrapper(
     lookup::Dict{Int, Int},
     map_bus_load::Dict{PSY.Bus, Vector{PSY.ElectricLoad}},
