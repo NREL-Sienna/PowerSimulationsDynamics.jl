@@ -433,19 +433,20 @@ function build!(sim; kwargs...)
         end
     catch e
         @error "Build failed" exception = (e, catch_backtrace())
-        return sim.status
     finally
-        string_buffer = IOBuffer()
-        TimerOutputs.print_timer(
-            string_buffer,
-            BUILD_TIMER,
-            sortby = :firstexec,
-            compact = true,
-        )
-        @info "\n$(String(take!(string_buffer)))\n"
+        if sim.status == BUILT
+            string_buffer = IOBuffer()
+            TimerOutputs.print_timer(
+                string_buffer,
+                BUILD_TIMER,
+                sortby = :firstexec,
+                compact = true,
+            )
+            @info "\n$(String(take!(string_buffer)))\n"
+        end
         close(logger)
     end
-    return
+    return sim.status
 end
 
 function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
@@ -531,7 +532,7 @@ function execute!(sim::Simulation, solver; kwargs...)
         end
     catch e
         @error "Execution failed" exception = (e, catch_backtrace())
-        return sim.status = SIMULATION_FAILED
+        sim.status = SIMULATION_FAILED
     finally
         close(logger)
         return sim.status
