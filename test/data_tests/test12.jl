@@ -51,7 +51,7 @@ end
 #Create Ybus_Fault
 fault_branches = deepcopy(collect(get_components(Branch, threebus_sys)))
 for br in fault_branches
-    if get_name(br) == "BUS 1-BUS 2-i_2"
+    if get_name(br) == "BUS 1-BUS 2-i_1"
         br.r = 4 * br.r
         br.x = 4 * br.x
     end
