@@ -567,6 +567,10 @@ end
 function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
     wrapped_device_ix = _find_zip_load_ix(inputs, pert.device)
     ld = pert.device
+    if !PSY.get_available(ld)
+        @error("Load $(PSY.get_name(ld)) is unavailable. Perturbation ignored")
+        return
+    end
     P_old = PSY.get_active_power(ld)
     Q_old = PSY.get_reactive_power(ld)
     ref_value = pert.ref_value
@@ -578,34 +582,51 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
     else
         Q_change = ref_value - Q_old
     end
-    if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
-        return (integrator) -> begin
-            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-            P_impedance = get_P_impedance(wrapped_zip)
-            Q_impedance = get_Q_impedance(wrapped_zip)
-            set_P_impedance!(wrapped_zip, P_impedance + P_change)
-            set_Q_impedance!(wrapped_zip, Q_impedance + Q_change)
-            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
-            return
+    if isa(ld, PSY.PowerLoad)
+        if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
+            return (integrator) -> begin
+                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+                P_impedance = get_P_impedance(wrapped_zip)
+                Q_impedance = get_Q_impedance(wrapped_zip)
+                set_P_impedance!(wrapped_zip, P_impedance + P_change)
+                set_Q_impedance!(wrapped_zip, Q_impedance + Q_change)
+                @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
+                return
+            end
+        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
+            return (integrator) -> begin
+                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+                P_current = get_P_current(wrapped_zip)
+                Q_current = get_Q_current(wrapped_zip)
+                set_P_current!(wrapped_zip, P_current + P_change)
+                set_Q_current!(wrapped_zip, Q_current + Q_change)
+                @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
+                return
+            end
+        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
+            return (integrator) -> begin
+                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+                P_power = get_P_power(wrapped_zip)
+                Q_power = get_Q_power(wrapped_zip)
+                set_P_power!(wrapped_zip, P_power + P_change)
+                set_Q_power!(wrapped_zip, Q_power + Q_change)
+                @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
+                return
+            end
         end
-    elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
+    elseif isa(ld, PSY.ExponentialLoad)
         return (integrator) -> begin
+            ld_name = PSY.get_name(ld)
             wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-            P_current = get_P_current(wrapped_zip)
-            Q_current = get_Q_current(wrapped_zip)
-            set_P_current!(wrapped_zip, P_current + P_change)
-            set_Q_current!(wrapped_zip, Q_current + Q_change)
-            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
-            return
-        end
-    elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
-        return (integrator) -> begin
-            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-            P_power = get_P_power(wrapped_zip)
-            Q_power = get_Q_power(wrapped_zip)
-            set_P_power!(wrapped_zip, P_power + P_change)
-            set_Q_power!(wrapped_zip, Q_power + Q_change)
-            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
+            exp_names = get_exp_names(wrapped_zip)
+            exp_vects = get_exp_params(wrapped_zip)
+            tuple_ix = exp_names[ld_name]
+            exp_params = exp_vects[tuple_ix]
+            P_exp_old = exp_params.P_exp
+            Q_exp_old = exp_params.Q_exp
+            exp_params.P_exp = P_exp_old + P_change
+            exp_params.Q_exp = Q_exp_old + Q_change
+            @debug "Removing exponential load entry $(ld_name) at wrapper $(PSY.get_name(wrapped_zip))"
             return
         end
     end
