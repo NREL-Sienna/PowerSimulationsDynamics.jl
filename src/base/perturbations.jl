@@ -633,36 +633,58 @@ end
 function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
     wrapped_device_ix = _find_zip_load_ix(inputs, pert.device)
     ld = pert.device
-    P_trip = PSY.get_active_power(ld)
-    Q_trip = PSY.get_reactive_power(ld)
-    if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
-        return (integrator) -> begin
-            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-            P_impedance = get_P_impedance(wrapped_zip)
-            Q_impedance = get_Q_impedance(wrapped_zip)
-            set_P_impedance!(wrapped_zip, P_impedance - P_trip)
-            set_Q_impedance!(wrapped_zip, Q_impedance - Q_trip)
-            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
-            return
+    if !PSY.get_available(ld)
+        @error("Load $(PSY.get_name(ld)) is unavailable. Perturbation ignored")
+        return
+    end
+    if isa(ld, PSY.PowerLoad)
+        P_trip = PSY.get_active_power(ld)
+        Q_trip = PSY.get_reactive_power(ld)
+        if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
+            return (integrator) -> begin
+                PSY.set_available!(ld, false)
+                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+                P_impedance = get_P_impedance(wrapped_zip)
+                Q_impedance = get_Q_impedance(wrapped_zip)
+                set_P_impedance!(wrapped_zip, P_impedance - P_trip)
+                set_Q_impedance!(wrapped_zip, Q_impedance - Q_trip)
+                @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+                return
+            end
+        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
+            return (integrator) -> begin
+                PSY.set_available!(ld, false)
+                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+                P_current = get_P_current(wrapped_zip)
+                Q_current = get_Q_current(wrapped_zip)
+                set_P_current!(wrapped_zip, P_current - P_trip)
+                set_Q_current!(wrapped_zip, Q_current - Q_trip)
+                @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+                return
+            end
+        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
+            return (integrator) -> begin
+                PSY.set_available!(ld, false)
+                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+                P_power = get_P_power(wrapped_zip)
+                Q_power = get_Q_power(wrapped_zip)
+                set_P_power!(wrapped_zip, P_power - P_trip)
+                set_Q_power!(wrapped_zip, Q_power - Q_trip)
+                @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+                return
+            end
         end
-    elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
+    elseif isa(ld, PSY.ExponentialLoad)
         return (integrator) -> begin
+            PSY.set_available!(ld, false)
+            ld_name = PSY.get_name(ld)
             wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-            P_current = get_P_current(wrapped_zip)
-            Q_current = get_Q_current(wrapped_zip)
-            set_P_current!(wrapped_zip, P_current - P_trip)
-            set_Q_current!(wrapped_zip, Q_current - Q_trip)
-            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
-            return
-        end
-    elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
-        return (integrator) -> begin
-            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-            P_power = get_P_power(wrapped_zip)
-            Q_power = get_Q_power(wrapped_zip)
-            set_P_power!(wrapped_zip, P_power - P_trip)
-            set_Q_power!(wrapped_zip, Q_power - Q_trip)
-            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+            exp_names = get_exp_names(wrapped_zip)
+            exp_params = get_exp_params(wrapped_zip)
+            tuple_ix = exp_names[ld_name]
+            deleteat!(exp_params, tuple_ix)
+            delete!(exp_names, ld_name)
+            @debug "Removing exponential load entry $(ld_name) at wrapper $(PSY.get_name(wrapped_zip))"
             return
         end
     end
