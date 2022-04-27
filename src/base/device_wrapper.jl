@@ -284,6 +284,7 @@ mutable struct ExpLoadParams
     Q_exp::Float64
     Q_coeff::Float64
 end
+
 mutable struct StaticLoadWrapper
     bus::PSY.Bus
     V_ref::Float64
@@ -294,7 +295,7 @@ mutable struct StaticLoadWrapper
     Q_power::Float64
     Q_current::Float64
     Q_impedance::Float64
-    exp_params::ExpLoadParams
+    exp_params::Vector{ExpLoadParams}
     exp_names::Dict{String, Int}
     bus_ix::Int
 end
