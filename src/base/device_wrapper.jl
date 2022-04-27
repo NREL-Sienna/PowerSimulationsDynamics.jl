@@ -278,6 +278,12 @@ PSY.get_reactive_power(wrapper::StaticWrapper) = PSY.get_reactive_power(wrapper.
 PSY.get_name(wrapper::StaticWrapper) = PSY.get_name(wrapper.device)
 PSY.get_ext(wrapper::StaticWrapper) = PSY.get_ext(wrapper.device)
 
+mutable struct ExpLoadParams
+    P_exp::Float64
+    P_coeff::Float64
+    Q_exp::Float64
+    Q_coeff::Float64
+end
 mutable struct StaticLoadWrapper
     bus::PSY.Bus
     V_ref::Float64
@@ -288,7 +294,7 @@ mutable struct StaticLoadWrapper
     Q_power::Float64
     Q_current::Float64
     Q_impedance::Float64
-    exp_params::Vector{NamedTuple{(:P_exp, :P_coeff, :Q_exp, :Q_coeff), NTuple{4, Float64}}}
+    exp_params::ExpLoadParams
     exp_names::Dict{String, Int}
     bus_ix::Int
 end
@@ -326,20 +332,16 @@ function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix
 
     # Add Exponential Loads
     exp_loads = filter(x -> isa(x, PSY.ExponentialLoad) && PSY.get_available(x), loads)
-    exp_params =
-        Vector{NamedTuple{(:P_exp, :P_coeff, :Q_exp, :Q_coeff), NTuple{4, Float64}}}(
-            undef,
-            length(exp_loads),
-        )
+    exp_params = Vector{ExpLoadParams}(undef, length(exp_loads))
     dict_names = Dict{String, Int}()
     if !isempty(exp_loads)
         for (ix, ld) in enumerate(exp_loads)
             dict_names[PSY.get_name(ld)] = ix
-            exp_params[ix] = (
-                P_exp = PSY.get_active_power(ld),
-                P_coeff = PSY.get_active_power_coefficient(ld),
-                Q_exp = PSY.get_reactive_power(ld),
-                Q_coeff = PSY.get_reactive_power_coefficient(ld),
+            exp_params[ix] = ExpLoadParams(
+                PSY.get_active_power(ld),
+                PSY.get_active_power_coefficient(ld),
+                PSY.get_reactive_power(ld),
+                PSY.get_reactive_power_coefficient(ld),
             )
         end
     end
