@@ -22,55 +22,10 @@ For constant power it is obtained:
 Ip_re =  (V_r * P_power + V_i * Q_power) / V^2
 Ip_im =  (V_i * P_power - V_r * Q_power) / V^2
 
-"""
-function mdl_zip_load!(
-    voltage_r::T,
-    voltage_i::T,
-    current_r::AbstractArray{T},
-    current_i::AbstractArray{T},
-    wrapper::ZIPLoadWrapper,
-) where {T <: ACCEPTED_REAL_TYPES}
-    # Read power flow voltages
-    #V0_mag_inv = 1.0 / get_V_ref(wrapper)
-    V0_mag_inv = 1.0 / PSY.get_magnitude(PSY.get_bus(wrapper))
-    V0_mag_sq_inv = V0_mag_inv^2
-
-    V_mag_inv = 1.0 / sqrt(voltage_r^2 + voltage_i^2)
-    V_mag_sq_inv = V_mag_inv^2
-
-    # Load device parameters
-    P_power = get_P_power(wrapper)
-    P_current = get_P_current(wrapper)
-    P_impedance = get_P_impedance(wrapper)
-    Q_power = get_Q_power(wrapper)
-    Q_current = get_Q_current(wrapper)
-    Q_impedance = get_Q_impedance(wrapper)
-
-    # Compute currents
-    Iz_re = V0_mag_sq_inv * (voltage_r * P_impedance + voltage_i * Q_impedance)
-    Iz_im = V0_mag_sq_inv * (voltage_i * P_impedance - voltage_r * Q_impedance)
-
-    Ii_re = V0_mag_inv * V_mag_inv * (voltage_r * P_current + voltage_i * Q_current)
-    Ii_im = V0_mag_inv * V_mag_inv * (voltage_i * P_current - voltage_r * Q_current)
-
-    Ip_re = V_mag_sq_inv * (voltage_r * P_power + voltage_i * Q_power)
-    Ip_im = V_mag_sq_inv * (voltage_i * P_power - voltage_r * Q_power)
-
-    # Update current
-    current_r[1] += -(Iz_re + Ii_re + Ip_re) #in system pu flowing out
-    current_i[1] += -(Iz_im + Ii_im + Ip_im) #in system pu flowing out
-
-    return
-end
-
-#= TO IMPLEMENT STRUCT IN PSY
-"""
 Model for Exponential Load model given by:
 
 P_exp = P0 * (V / V0)^α
 Q_exp = Q0 * (V / V0)^β
-
-with V = sqrt(V_r^2 + V_i^2) and V0 the voltage magnitude from the power flow solution
 
 The current taken for the load is computed as:
 I_exp = (P_exp + j Q_exp)^* / (V_r + j V_i)^*
@@ -81,37 +36,64 @@ Ir_exp = V_r * P0 * (V^(α - 2) / V0^α) + V_i * Q0 * (V^(β - 2)/ V0^β)
 Ii_im  = V_i * P0 * (V^(α - 2) / V0^α) - V_r * Q0 * (V^(β - 2)/ V0^β)
 
 """
-function mdl_exponential_load!(
+function mdl_zip_load!(
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
     current_i::AbstractArray{T},
-    wrapper::PSY.ExponentialLoad,
+    wrapper::StaticLoadWrapper,
 ) where {T <: ACCEPTED_REAL_TYPES}
     # Read power flow voltages
     #V0_mag_inv = 1.0 / get_V_ref(wrapper)
     V0_mag_inv = 1.0 / PSY.get_magnitude(PSY.get_bus(wrapper))
+    V0_mag_sq_inv = V0_mag_inv^2
 
     V_mag = sqrt(voltage_r^2 + voltage_i^2)
+    V_mag_inv = 1.0 / V_mag
+    V_mag_sq_inv = V_mag_inv^2
 
     # Load device parameters
-    P0 = get_active_power(wrapper)
-    Q0 = get_reactive_power(wrapper)
-    α = get_active_power_coefficient(wrapper)
-    β = get_reactive_power_coefficient(wrapper)
+    P_power = get_P_power(wrapper)
+    P_current = get_P_current(wrapper)
+    P_impedance = get_P_impedance(wrapper)
+    Q_power = get_Q_power(wrapper)
+    Q_current = get_Q_current(wrapper)
+    Q_impedance = get_Q_impedance(wrapper)
+    exp_params = get_exp_params(wrapper)
+    Ir_exp = zero(T)
+    Ii_exp = zero(T)
 
-    # Compute Auxiliary terms
-    V_coeff_active = V_mag^(α - 2.0) * V0_mag_inv^α
-    V_coeff_reactive = V_mag^(β - 2.0) * V0_mag_inv^β
+    # Compute ZIP currents
+    Iz_re = V0_mag_sq_inv * (voltage_r * P_impedance + voltage_i * Q_impedance)
+    Iz_im = V0_mag_sq_inv * (voltage_i * P_impedance - voltage_r * Q_impedance)
 
-    # Compute currents
-    Ir_exp = voltage_r * P0 * V_coeff_active + voltage_i * Q0 * V_coeff_reactive
-    Ii_exp = voltage_i * P0 * V_coeff_active - voltage_r * Q0 * V_coeff_reactive
+    Ii_re = V0_mag_inv * V_mag_inv * (voltage_r * P_current + voltage_i * Q_current)
+    Ii_im = V0_mag_inv * V_mag_inv * (voltage_i * P_current - voltage_r * Q_current)
 
-    #Update current
-    current_r[1] += -Ir_exp #in system pu flowing out
-    current_i[1] += -Ii_exp #in system pu flowing out
+    Ip_re = V_mag_sq_inv * (voltage_r * P_power + voltage_i * Q_power)
+    Ip_im = V_mag_sq_inv * (voltage_i * P_power - voltage_r * Q_power)
+
+    # Compute Exponential Currents
+    if !isempty(exp_params)
+        for tuple in exp_params
+            P0 = tuple.P_exp
+            α = tuple.P_coeff
+            Q0 = tuple.Q_exp
+            β = tuple.Q_coeff
+
+            # Compute Auxiliary terms
+            V_coeff_active = V_mag^(α - 2.0) * V0_mag_inv^α
+            V_coeff_reactive = V_mag^(β - 2.0) * V0_mag_inv^β
+
+            # Compute currents
+            Ir_exp += voltage_r * P0 * V_coeff_active + voltage_i * Q0 * V_coeff_reactive
+            Ii_exp += voltage_i * P0 * V_coeff_active - voltage_r * Q0 * V_coeff_reactive
+        end
+    end
+
+    # Update current
+    current_r[1] += -(Iz_re + Ii_re + Ip_re + Ir_exp) #in system pu flowing out
+    current_i[1] += -(Iz_im + Ii_im + Ip_im + Ii_exp) #in system pu flowing out
 
     return
 end
-=#
