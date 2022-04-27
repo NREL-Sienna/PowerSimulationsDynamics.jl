@@ -258,21 +258,6 @@ end
 # get_bustype is already exported in PSY. So this is named this way to avoid name collisions
 get_bus_category(::StaticWrapper{<:PSY.StaticInjection, U}) where {U} = U
 
-#=
-function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.ExponentialLoad}
-    bus = PSY.get_bus(device)
-    return StaticWrapper{T, #SOMECATEGORY?]}(
-        device,
-        Base.Ref(1.0),
-        Base.Ref(PSY.get_magnitude(bus)),
-        Base.Ref(PSY.get_angle(bus)),
-        Base.Ref(PSY.get_active_power(device)),
-        Base.Ref(PSY.get_reactive_power(device)),
-        bus_ix,
-    )
-end
-=#
-
 # TODO: something smart to forward fields
 get_device(wrapper::StaticWrapper) = wrapper.device
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
@@ -293,7 +278,7 @@ PSY.get_reactive_power(wrapper::StaticWrapper) = PSY.get_reactive_power(wrapper.
 PSY.get_name(wrapper::StaticWrapper) = PSY.get_name(wrapper.device)
 PSY.get_ext(wrapper::StaticWrapper) = PSY.get_ext(wrapper.device)
 
-mutable struct ZIPLoadWrapper
+mutable struct StaticLoadWrapper
     bus::PSY.Bus
     V_ref::Float64
     θ_ref::Float64
@@ -303,10 +288,12 @@ mutable struct ZIPLoadWrapper
     Q_power::Float64
     Q_current::Float64
     Q_impedance::Float64
+    exp_params::Vector{NamedTuple{(:P_exp, :P_coeff, :Q_exp, :Q_coeff), NTuple{4, Float64}}}
+    exp_names::Dict{String, Int}
     bus_ix::Int
 end
 
-function ZIPLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix::Int)
+function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix::Int)
     P_power = 0.0
     P_current = 0.0
     P_impedance = 0.0
@@ -314,24 +301,50 @@ function ZIPLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix::I
     Q_current = 0.0
     Q_impedance = 0.0
 
+    # Add ZIP Loads
     for ld in loads
-        if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
-            P_impedance += PSY.get_active_power(ld)
-            Q_impedance += PSY.get_reactive_power(ld)
-        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
-            P_current += PSY.get_active_power(ld)
-            Q_current += PSY.get_reactive_power(ld)
-        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
-            P_power += PSY.get_active_power(ld)
-            Q_power += PSY.get_reactive_power(ld)
-        else
-            error(
-                "Not supported load model in $(PSY.get_number(bus)) named $(PSY.get_name(ld))",
+        if isa(ld, PSY.PowerLoad)
+            if PSY.get_available(ld) &&
+               PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
+                P_impedance += PSY.get_active_power(ld)
+                Q_impedance += PSY.get_reactive_power(ld)
+            elseif PSY.get_available(ld) &&
+                   PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
+                P_current += PSY.get_active_power(ld)
+                Q_current += PSY.get_reactive_power(ld)
+            elseif PSY.get_available(ld) &&
+                   PSY.get_model(ld) == PSY.LoadModels.ConstantPower
+                P_power += PSY.get_active_power(ld)
+                Q_power += PSY.get_reactive_power(ld)
+            else
+                error(
+                    "Not supported load model in $(PSY.get_number(bus)) named $(PSY.get_name(ld))",
+                )
+            end
+        end
+    end
+
+    # Add Exponential Loads
+    exp_loads = filter(x -> isa(x, PSY.ExponentialLoad) && PSY.get_available(x), loads)
+    exp_params =
+        Vector{NamedTuple{(:P_exp, :P_coeff, :Q_exp, :Q_coeff), NTuple{4, Float64}}}(
+            undef,
+            length(exp_loads),
+        )
+    dict_names = Dict{String, Int}()
+    if !isempty(exp_loads)
+        for (ix, ld) in enumerate(exp_loads)
+            dict_names[PSY.get_name(ld)] = ix
+            exp_params[ix] = (
+                P_exp = PSY.get_active_power(ld),
+                P_coeff = PSY.get_active_power_coefficient(ld),
+                Q_exp = PSY.get_reactive_power(ld),
+                Q_coeff = PSY.get_reactive_power_coefficient(ld),
             )
         end
     end
 
-    return ZIPLoadWrapper(
+    return StaticLoadWrapper(
         bus,
         PSY.get_magnitude(bus),
         PSY.get_angle(bus),
@@ -341,31 +354,35 @@ function ZIPLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix::I
         Q_power,
         Q_current,
         Q_impedance,
+        exp_params,
+        dict_names,
         bus_ix,
     )
 end
 
-PSY.get_bus(wrapper::ZIPLoadWrapper) = wrapper.bus
-PSY.get_name(wrapper::ZIPLoadWrapper) = PSY.get_name(wrapper.bus)
+PSY.get_bus(wrapper::StaticLoadWrapper) = wrapper.bus
+PSY.get_name(wrapper::StaticLoadWrapper) = PSY.get_name(wrapper.bus)
 
-get_V_ref(wrapper::ZIPLoadWrapper) = wrapper.V_ref
-get_θ_ref(wrapper::ZIPLoadWrapper) = wrapper.θ_ref
-get_P_power(wrapper::ZIPLoadWrapper) = wrapper.P_power
-get_P_current(wrapper::ZIPLoadWrapper) = wrapper.P_current
-get_P_impedance(wrapper::ZIPLoadWrapper) = wrapper.P_impedance
-get_Q_power(wrapper::ZIPLoadWrapper) = wrapper.Q_power
-get_Q_current(wrapper::ZIPLoadWrapper) = wrapper.Q_current
-get_Q_impedance(wrapper::ZIPLoadWrapper) = wrapper.Q_impedance
-get_bus_ix(wrapper::ZIPLoadWrapper) = wrapper.bus_ix
+get_V_ref(wrapper::StaticLoadWrapper) = wrapper.V_ref
+get_θ_ref(wrapper::StaticLoadWrapper) = wrapper.θ_ref
+get_P_power(wrapper::StaticLoadWrapper) = wrapper.P_power
+get_P_current(wrapper::StaticLoadWrapper) = wrapper.P_current
+get_P_impedance(wrapper::StaticLoadWrapper) = wrapper.P_impedance
+get_Q_power(wrapper::StaticLoadWrapper) = wrapper.Q_power
+get_Q_current(wrapper::StaticLoadWrapper) = wrapper.Q_current
+get_Q_impedance(wrapper::StaticLoadWrapper) = wrapper.Q_impedance
+get_exp_params(wrapper::StaticLoadWrapper) = wrapper.exp_params
+get_exp_names(wrapper::StaticLoadWrapper) = wrapper.exp_names
+get_bus_ix(wrapper::StaticLoadWrapper) = wrapper.bus_ix
 
-set_V_ref!(wrapper::ZIPLoadWrapper, val::Float64) = wrapper.V_ref = val
-set_θ_ref!(wrapper::ZIPLoadWrapper, val::Float64) = wrapper.θ_ref = val
-set_P_power!(wrapper::ZIPLoadWrapper, val::Float64) = wrapper.P_power = val
-set_P_current!(wrapper::ZIPLoadWrapper, val::Float64) = wrapper.P_current = val
-set_P_impedance!(wrapper::ZIPLoadWrapper, val::Float64) = wrapper.P_impedance = val
-set_Q_power!(wrapper::ZIPLoadWrapper, val::Float64) = wrapper.Q_power = val
-set_Q_current!(wrapper::ZIPLoadWrapper, val::Float64) = wrapper.Q_current = val
-set_Q_impedance!(wrapper::ZIPLoadWrapper, val::Float64) = wrapper.Q_impedance = val
+set_V_ref!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.V_ref = val
+set_θ_ref!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.θ_ref = val
+set_P_power!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.P_power = val
+set_P_current!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.P_current = val
+set_P_impedance!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.P_impedance = val
+set_Q_power!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_power = val
+set_Q_current!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_current = val
+set_Q_impedance!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_impedance = val
 
 function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, val::Int)
     if val == 0
