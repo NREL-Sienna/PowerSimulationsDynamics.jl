@@ -15,10 +15,10 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/ThreeBus_GENROU.dyr")
 
 initial_conditions = test33_zipload_x0_init
 eigs_values = [test33_eigvals_constantP, test33_eigvals_constantI]
-csv_files = [
-    joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/TEST_ConstantP.csv"),
-    joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/TEST_ConstantI.csv"),
-]
+csv_files = (
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/constantpower.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/constantcurrent.csv"),
+)
 
 tspan = (0.0, 20.0)
 
