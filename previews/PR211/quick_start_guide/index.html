@@ -55,128 +55,31 @@ Dynamic Components
 │ DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed} │ 1   ⋯
 └────────────────────────────────────────────────────────────────────────┴──────
                                                                 1 column omitted</code></pre><p>For more details about loading data and adding more dynamic components check the <a href="https://nrel-siip.github.io/PowerSystems.jl/stable/modeler_guide/system_dynamic_data/">Creating a System with Dynamic devices</a> section of the documentation in <code>PowerSystems.jl</code>.</p><h2 id="Define-the-Simulation"><a class="docs-heading-anchor" href="#Define-the-Simulation">Define the Simulation</a><a id="Define-the-Simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Define-the-Simulation" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; time_span = (0.0, 30.0)</code><code class="nohighlight hljs ansi" style="display:block;">(0.0, 30.0)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; perturbation_trip = BranchTrip(1.0, Line, &quot;BUS 1-BUS 2-i_1&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">BranchTrip(1.0, Line, &quot;BUS 1-BUS 2-i_1&quot;)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim = Simulation!(ResidualModel, omib_sys, pwd(), time_span, perturbation_trip)</code><code class="nohighlight hljs ansi" style="display:block;">[ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
-┌ Error: ResidualModel failed to build
-│   exception =
-│    UndefVarError: device_states not defined
-│    Stacktrace:
-│      [1] mdl_tg_ode!(#unused#::SubArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}, Tuple{Vector{Int64}}, false}, #unused#::SubArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, Base.ReinterpretArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}, false}, Tuple{Vector{Int64}}, false}, inner_vars::SubArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, Base.ReinterpretArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}, false}, Tuple{Vector{Int64}}, false}, ω_sys::ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, device::PowerSimulationsDynamics.DynamicWrapper{DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/generator_models/tg_models.jl:29
-│      [2] device!(device_states::SubArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}, Tuple{Vector{Int64}}, false}, output_ode::SubArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, Base.ReinterpretArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}, false}, Tuple{Vector{Int64}}, false}, voltage_r::ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, voltage_i::ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, current_r::SubArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 0, Base.ReinterpretArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}, false}, Tuple{Int64}, true}, current_i::SubArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 0, Base.ReinterpretArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}, false}, Tuple{Int64}, true}, global_vars::Base.ReinterpretArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}, false}, inner_vars::SubArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, Base.ReinterpretArray{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}, 1, ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}, false}, Tuple{Vector{Int64}}, false}, dynamic_device::PowerSimulationsDynamics.DynamicWrapper{DynamicGenerator{BaseMachine, SingleMass, AVRFixed, TGFixed, PSSFixed}}, t::Float64)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/device.jl:44
-│      [3] system_residual!(out::Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}, dx::Vector{Float64}, x::Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}, inputs::PowerSimulationsDynamics.SimulationInputs, cache::PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}, t::Float64)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/system.jl:71
-│      [4] SystemModel
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/system.jl:36 [inlined]
-│      [5] #65
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:95 [inlined]
-│      [6] vector_mode_dual_eval!(f!::PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, cfg::ForwardDiff.JacobianConfig{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6, Tuple{Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}}}, y::Vector{Float64}, x::Vector{Float64})
-│        @ ForwardDiff ~/.julia/packages/ForwardDiff/pKmp4/src/apiutils.jl:44
-│      [7] vector_mode_jacobian!(result::Matrix{Float64}, f!::PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, y::Vector{Float64}, x::Vector{Float64}, cfg::ForwardDiff.JacobianConfig{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6, Tuple{Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}}})
-│        @ ForwardDiff ~/.julia/packages/ForwardDiff/pKmp4/src/jacobian.jl:176
-│      [8] jacobian!
-│        @ ~/.julia/packages/ForwardDiff/pKmp4/src/jacobian.jl:78 [inlined]
-│      [9] jacobian!
-│        @ ~/.julia/packages/ForwardDiff/pKmp4/src/jacobian.jl:76 [inlined]
-│     [10] (::PowerSimulationsDynamics.var&quot;#66#68&quot;{ForwardDiff.JacobianConfig{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6, Tuple{Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Float64}, Float64, 6}}}}, PowerSimulationsDynamics.var&quot;#65#67&quot;{PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, Int64}, Int64})(Jv::Matrix{Float64}, x::Vector{Float64})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:99
-│     [11] PowerSimulationsDynamics.JacobianFunctionWrapper(m!::PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, x0::Vector{Float64}; sparse_retrieve_loop::Int64)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:107
-│     [12] PowerSimulationsDynamics.JacobianFunctionWrapper(m!::PowerSimulationsDynamics.SystemModel{ResidualModel, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_residual!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_residual!), Float64}, Float64, 6}}}, x0::Vector{Float64})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:94
-│     [13] _get_jacobian(sim::Simulation{ResidualModel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:282
-│     [14] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:401 [inlined]
-│     [15] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/2IJ7m/src/TimerOutput.jl:236 [inlined]
-│     [16] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:400 [inlined]
-│     [17] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/2IJ7m/src/TimerOutput.jl:236 [inlined]
-│     [18] _build!(sim::Simulation{ResidualModel}; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:375
-│     [19] _build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:367 [inlined]
-│     [20] (::PowerSimulationsDynamics.var&quot;#95#96&quot;{Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}}, Simulation{ResidualModel}})()
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:432
-│     [21] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│     [22] with_logger
-│        @ ./logging.jl:623 [inlined]
-│     [23] build!(sim::Simulation{ResidualModel}; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:431
-│     [24] build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:429 [inlined]
-│     [25] Simulation!(::Type{ResidualModel}, system::System, simulation_folder::String, tspan::Tuple{Float64, Float64}, perturbations::Vector{BranchTrip}; kwargs::Base.Pairs{Symbol, Union{}, Tuple{}, NamedTuple{(), Tuple{}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:128
-│     [26] Simulation!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:114 [inlined]
-│     [27] #Simulation!#82
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:64 [inlined]
-│     [28] Simulation!(::Type{ResidualModel}, system::System, simulation_folder::String, tspan::Tuple{Float64, Float64}, perturbation::BranchTrip)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:64
-│     [29] top-level scope
-│        @ REPL[3]:1
-│     [30] eval
-│        @ ./boot.jl:373 [inlined]
-│     [31] #20
-│        @ ~/.julia/packages/Documenter/HmHje/src/Expanders.jl:667 [inlined]
-│     [32] cd(f::Documenter.Expanders.var&quot;#20#22&quot;{Module}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [33] (::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module})()
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/HmHje/src/Expanders.jl:666
-│     [34] (::IOCapture.var&quot;#3#5&quot;{DataType, Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}, Task, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:118
-│     [35] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│     [36] with_logger
-│        @ ./logging.jl:623 [inlined]
-│     [37] capture(f::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool)
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:116
-│     [38] runner(#unused#::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/HmHje/src/Expanders.jl:665
-│     [39] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::Markdown.Code, ::Vararg{Any})
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/HmHje/src/Utilities/Selectors.jl:170
-│     [40] expand(doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/HmHje/src/Expanders.jl:42
-│     [41] runner(#unused#::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Documents.Document)
-│        @ Documenter.Builder ~/.julia/packages/Documenter/HmHje/src/Builder.jl:226
-│     [42] dispatch(#unused#::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Documents.Document)
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/HmHje/src/Utilities/Selectors.jl:170
-│     [43] #2
-│        @ ~/.julia/packages/Documenter/HmHje/src/Documenter.jl:266 [inlined]
-│     [44] cd(f::Documenter.var&quot;#2#3&quot;{Documenter.Documents.Document}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [45] #makedocs#1
-│        @ ~/.julia/packages/Documenter/HmHje/src/Documenter.jl:265 [inlined]
-│     [46] top-level scope
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
-│     [47] include(mod::Module, _path::String)
-│        @ Base ./Base.jl:418
-│     [48] exec_options(opts::Base.JLOptions)
-│        @ Base ./client.jl:292
-│     [49] _start()
-│        @ Base ./client.jl:495
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:418
+Iter     f(x) inf-norm    Step 2-norm 
+------   --------------   --------------
 ┌ Info: 
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     15.6s            1.44GiB    
+│                 Total measured:                     24.1s            1.57GiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    15.3s  100.0%   1.43GiB  100.0%
-│    Build Simulation Inputs                  1    3.98s   25.9%    220MiB   15.1%
-│      Wrap Branches                          1   8.60μs    0.0%      176B    0.0%
-│      Wrap Dynamic Injectors                 1    1.41s    9.2%    112MiB    7.6%
-│      Calculate MM, DAE_vector, Tota...      1    109ms    0.7%   23.4MiB    1.6%
-│      Wrap Static Injectors                  1    237ms    1.5%   5.81MiB    0.4%
-│    Pre-initialization                       1    4.20s   27.4%    207MiB   14.2%
-│      Power Flow solution                    1    1.25s    8.2%   67.0MiB    4.6%
-│      Initialize Static Injectors            1    2.43s   15.8%   74.1MiB    5.1%
-│      Initialize Dynamic Injectors           1    519ms    3.4%   65.6MiB    4.5%
-│    Calculate Jacobian                       1    5.52s   36.0%    875MiB   59.9%
+│  Build Simulation                           1    23.9s  100.0%   1.56GiB  100.0%
+│    Build Simulation Inputs                  1    5.69s   23.8%    220MiB   13.8%
+│      Wrap Branches                          1   13.6μs    0.0%      176B    0.0%
+│      Wrap Dynamic Injectors                 1    2.13s    8.9%    112MiB    7.0%
+│      Calculate MM, DAE_vector, Tota...      1    173ms    0.7%   23.4MiB    1.5%
+│      Wrap Static Injectors                  1    328ms    1.4%   4.98MiB    0.3%
+│    Pre-initialization                       1    6.03s   25.2%    208MiB   13.1%
+│      Power Flow solution                    1    1.77s    7.4%   67.3MiB    4.2%
+│      Initialize Static Injectors            1    3.45s   14.4%   74.1MiB    4.7%
+│      Initialize Dynamic Injectors           1    809ms    3.4%   66.5MiB    4.2%
+│    Calculate Jacobian                       1    8.78s   36.7%   0.98GiB   63.3%
+│    Make Model Function                      1    121ms    0.5%   10.6MiB    0.7%
+│    Initial Condition NLsolve refine...      1    2.60s   10.9%   42.0MiB    2.6%
+│    Build Perturbations                      1    505ms    2.1%   90.3MiB    5.7%
+│    Make DiffEq Problem                      1    183ms    0.8%   13.5MiB    0.8%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -212,67 +115,29 @@ generator-102-1
 ====================
 δ 0.5399
 ω 1.0
-====================</code></pre><h2 id="Obtain-small-signal-results-for-initial-conditions"><a class="docs-heading-anchor" href="#Obtain-small-signal-results-for-initial-conditions">Obtain small signal results for initial conditions</a><a id="Obtain-small-signal-results-for-initial-conditions-1"></a><a class="docs-heading-anchor-permalink" href="#Obtain-small-signal-results-for-initial-conditions" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig = small_signal_analysis(sim)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: device_states not defined</code></pre><p>Show eigenvalues for operating point</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig.eigenvalues</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: small_sig not defined</code></pre><p>Show reduced jacobian for operating point</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig.reduced_jacobian</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: small_sig not defined</code></pre><p>Explore participation factors. In this case for state ω</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     part_factors = small_sig.participation_factors</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: small_sig not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt;     part_factors[&quot;generator-102-1&quot;][:ω]</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: part_factors not defined</code></pre><p>This means that the state ω of the generator at bus 102, participates 50% in eigenvalue 1 and 50% in eigenvalue 2.</p><h2 id="Execute-the-simulation"><a class="docs-heading-anchor" href="#Execute-the-simulation">Execute the simulation</a><a id="Execute-the-simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Execute-the-simulation" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     execute!(sim, IDA(), dtmax = 0.02, saveat = 0.02, enable_progress_bar = false)</code><code class="nohighlight hljs ansi" style="display:block;">┌ Error: Execution failed
-│   exception =
-│    The Simulation status is BUILD_FAILED. Can not continue, correct your inputs and build the simulation again.
-│    Stacktrace:
-│      [1] error(s::String)
-│        @ Base ./error.jl:33
-│      [2] simulation_pre_step!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:453 [inlined]
-│      [3] _execute!(sim::Simulation{ResidualModel}, solver::Sundials.IDA{:Dense, Nothing, Nothing}; kwargs::Base.Pairs{Symbol, Real, Tuple{Symbol, Symbol, Symbol}, NamedTuple{(:dtmax, :saveat, :enable_progress_bar), Tuple{Float64, Float64, Bool}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:474
-│      [4] (::PowerSimulationsDynamics.var&quot;#99#100&quot;{Base.Pairs{Symbol, Real, Tuple{Symbol, Symbol, Symbol}, NamedTuple{(:dtmax, :saveat, :enable_progress_bar), Tuple{Float64, Float64, Bool}}}, Simulation{ResidualModel}, Sundials.IDA{:Dense, Nothing, Nothing}})()
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:530
-│      [5] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│      [6] with_logger
-│        @ ./logging.jl:623 [inlined]
-│      [7] execute!(sim::Simulation{ResidualModel}, solver::Sundials.IDA{:Dense, Nothing, Nothing}; kwargs::Base.Pairs{Symbol, Real, Tuple{Symbol, Symbol, Symbol}, NamedTuple{(:dtmax, :saveat, :enable_progress_bar), Tuple{Float64, Float64, Bool}}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:529
-│      [8] top-level scope
-│        @ REPL[1]:1
-│      [9] eval
-│        @ ./boot.jl:373 [inlined]
-│     [10] #20
-│        @ ~/.julia/packages/Documenter/HmHje/src/Expanders.jl:667 [inlined]
-│     [11] cd(f::Documenter.Expanders.var&quot;#20#22&quot;{Module}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [12] (::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module})()
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/HmHje/src/Expanders.jl:666
-│     [13] (::IOCapture.var&quot;#3#5&quot;{DataType, Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}, Task, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:118
-│     [14] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:511
-│     [15] with_logger
-│        @ ./logging.jl:623 [inlined]
-│     [16] capture(f::Documenter.Expanders.var&quot;#19#21&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool)
-│        @ IOCapture ~/.julia/packages/IOCapture/sXY71/src/IOCapture.jl:116
-│     [17] runner(#unused#::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/HmHje/src/Expanders.jl:665
-│     [18] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::Markdown.Code, ::Vararg{Any})
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/HmHje/src/Utilities/Selectors.jl:170
-│     [19] expand(doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/HmHje/src/Expanders.jl:42
-│     [20] runner(#unused#::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Documents.Document)
-│        @ Documenter.Builder ~/.julia/packages/Documenter/HmHje/src/Builder.jl:226
-│     [21] dispatch(#unused#::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Documents.Document)
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/HmHje/src/Utilities/Selectors.jl:170
-│     [22] #2
-│        @ ~/.julia/packages/Documenter/HmHje/src/Documenter.jl:266 [inlined]
-│     [23] cd(f::Documenter.var&quot;#2#3&quot;{Documenter.Documents.Document}, dir::String)
-│        @ Base.Filesystem ./file.jl:110
-│     [24] #makedocs#1
-│        @ ~/.julia/packages/Documenter/HmHje/src/Documenter.jl:265 [inlined]
-│     [25] top-level scope
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
-│     [26] include(mod::Module, _path::String)
-│        @ Base ./Base.jl:418
-│     [27] exec_options(opts::Base.JLOptions)
-│        @ Base ./client.jl:292
-│     [28] _start()
-│        @ Base ./client.jl:495
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:533
-SIMULATION_FAILED::BUILD_STATUS = 7</code></pre><h2 id="Make-a-plot-of-the-results"><a class="docs-heading-anchor" href="#Make-a-plot-of-the-results">Make a plot of the results</a><a id="Make-a-plot-of-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Make-a-plot-of-the-results" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; results = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; angle = get_state_series(results, (&quot;generator-102-1&quot;, :δ));</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching get_state_series(::Nothing, ::Tuple{String, Symbol})
-Closest candidates are:
-  get_state_series(!Matched::SimulationResults, ::Tuple{String, Symbol}; dt) at ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:188</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/f-plot.svg" alt="plot"/></p><p>If you miss PSS/e&#39;s plotting aesthetics and want something that resembles that, you can use <a href="https://github.com/Evizero/UnicodePlots.jl"><code>UnicodePlots</code></a>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using UnicodePlots</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; unicodeplots()</code><code class="nohighlight hljs ansi" style="display:block;">Plots.UnicodePlotsBackend()</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/unicode.png" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../execute/">Simulation Execution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.16 on <span class="colophon-date" title="Thursday 28 April 2022 01:29">Thursday 28 April 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+====================</code></pre><h2 id="Obtain-small-signal-results-for-initial-conditions"><a class="docs-heading-anchor" href="#Obtain-small-signal-results-for-initial-conditions">Obtain small signal results for initial conditions</a><a id="Obtain-small-signal-results-for-initial-conditions-1"></a><a class="docs-heading-anchor-permalink" href="#Obtain-small-signal-results-for-initial-conditions" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig = small_signal_analysis(sim)</code><code class="nohighlight hljs ansi" style="display:block;">The system is small signal stable</code></pre><p>Show eigenvalues for operating point</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig.eigenvalues</code><code class="nohighlight hljs ansi" style="display:block;">2-element Vector{ComplexF64}:
+ -0.19853875476493013 - 6.977269167903447im
+ -0.19853875476493013 + 6.977269167903447im</code></pre><p>Show reduced jacobian for operating point</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     small_sig.reduced_jacobian</code><code class="nohighlight hljs ansi" style="display:block;">2×2 SparseArrays.SparseMatrixCSC{Float64, Int64} with 3 stored entries:
+   ⋅        376.991
+ -0.129238   -0.397078</code></pre><p>Explore participation factors. In this case for state ω</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     part_factors = small_sig.participation_factors</code><code class="nohighlight hljs ansi" style="display:block;">Dict{String, Dict{Symbol, Array{Float64}}} with 1 entry:
+  &quot;generator-102-1&quot; =&gt; Dict(:ω=&gt;[0.5, 0.5], :δ=&gt;[0.5, 0.5])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt;     part_factors[&quot;generator-102-1&quot;][:ω]</code><code class="nohighlight hljs ansi" style="display:block;">2-element Vector{Float64}:
+ 0.5
+ 0.5</code></pre><p>This means that the state ω of the generator at bus 102, participates 50% in eigenvalue 1 and 50% in eigenvalue 2.</p><h2 id="Execute-the-simulation"><a class="docs-heading-anchor" href="#Execute-the-simulation">Execute the simulation</a><a id="Execute-the-simulation-1"></a><a class="docs-heading-anchor-permalink" href="#Execute-the-simulation" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt;     execute!(sim, IDA(), dtmax = 0.02, saveat = 0.02, enable_progress_bar = false)</code><code class="nohighlight hljs ansi" style="display:block;">┌ Warning: Warning: Unrecognized keyword arguments found. Future versions will error.
+│ The only allowed keyword arguments to `solve` are: 
+│ (:dense, :saveat, :save_idxs, :tstops, :d_discontinuities, :save_everystep, :save_on, :save_start, :save_end, :initialize_save, :adaptive, :abstol, :reltol, :dt, :dtmax, :dtmin, :force_dtmin, :internalnorm, :controller, :gamma, :beta1, :beta2, :qmax, :qmin, :qsteady_min, :qsteady_max, :qoldinit, :failfactor, :calck, :alias_u0, :maxiters, :callback, :isoutofdomain, :unstable_check, :verbose, :merge_callbacks, :progress, :progress_steps, :progress_name, :progress_message, :timeseries_errors, :dense_errors, :calculate_errors, :initializealg, :alg, :save_noise, :delta, :seed, :alg_hints, :kwargshandle, :trajectories, :batch_size, :sensealg, :advance_to_tstop, :stop_at_next_tstop, :default_set, :second_time)
+│ See https://diffeq.sciml.ai/stable/basics/common_solver_opts/ for more details.
+│ 
+│ Set kwargshandle=KeywordArgError for an error message and more details.
+│ Set kwargshandle=KeywordArgSilent to ignore this message.
+└ @ DiffEqBase ~/.julia/packages/DiffEqBase/U3LtB/src/solve.jl:213
+SIMULATION_FINALIZED::BUILD_STATUS = 6</code></pre><h2 id="Make-a-plot-of-the-results"><a class="docs-heading-anchor" href="#Make-a-plot-of-the-results">Make a plot of the results</a><a id="Make-a-plot-of-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Make-a-plot-of-the-results" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; results = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;">Simulation Results Summary
+┌────────────────────────────┬─────────────┐
+│ Property                   │ Value       │
+├────────────────────────────┼─────────────┤
+│ System Base Power [MVA]    │ 100.0       │
+│ System Base Frequency [Hz] │ 60.0        │
+│ Time Span                  │ (0.0, 30.0) │
+│ Total Time Steps           │ 1503        │
+│ Number of States           │ 6           │
+│ Total solve time           │ 6.821692655 │
+└────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; angle = get_state_series(results, (&quot;generator-102-1&quot;, :δ));</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/f-plot.svg" alt="plot"/></p><p>If you miss PSS/e&#39;s plotting aesthetics and want something that resembles that, you can use <a href="https://github.com/Evizero/UnicodePlots.jl"><code>UnicodePlots</code></a>.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using UnicodePlots</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; unicodeplots()</code><code class="nohighlight hljs ansi" style="display:block;">Plots.UnicodePlotsBackend()</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(angle, xlabel = &quot;time&quot;, ylabel = &quot;rotor angle [rad]&quot;, label = &quot;gen-102-1&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../assets/unicode.png" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../">« Welcome Page</a><a class="docs-footer-nextpage" href="../execute/">Simulation Execution »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.16 on <span class="colophon-date" title="Thursday 28 April 2022 02:50">Thursday 28 April 2022</span>. Using Julia version 1.7.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
