@@ -3,9 +3,9 @@ reload(PSSEInterface)
 
 powerflow_file='WECC240_v04_psid_comparison.raw'         
 dynamic_data_file='WECC240_dynamics_UPV_v04_psid.dyr'         
-print '\nInput Files ...'
-print powerflow_file    
-print dynamic_data_file
+print('\nInput Files ...')
+print(powerflow_file)    
+print(dynamic_data_file)
 
 output_dir = '.\\240Bus'        
 
