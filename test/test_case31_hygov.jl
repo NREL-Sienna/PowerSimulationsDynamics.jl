@@ -13,7 +13,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/ThreeBus_HYGOV.dyr")
 csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
 
 @testset "Test 31 HYGOV ResidualModel" begin
-    path = (joinpath(pwd(), "test-psse-gast"))
+    path = (joinpath(pwd(), "test-psse-hygov"))
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file, dyr_file)
@@ -77,7 +77,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
 end
 
 @testset "Test 31 HYGOV MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-psse-gast"))
+    path = (joinpath(pwd(), "test-psse-hygov"))
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file, dyr_file)
