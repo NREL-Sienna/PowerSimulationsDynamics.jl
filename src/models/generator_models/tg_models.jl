@@ -17,7 +17,7 @@ function mass_matrix_tg_entries!(
 end
 
 function mdl_tg_ode!(
-    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
@@ -26,8 +26,9 @@ function mdl_tg_ode!(
 
     #Update inner vars
     P_ref = get_P_ref(device)
+    external_ix = get_input_port_ix(device, PSY.TGTypeI)
     ω = @view device_states[external_ix]
-    inner_vars[τm_var] = P_ref * PSY.get_efficiency(PSY.get_prime_mover(device))/ω[1]
+    inner_vars[τm_var] = P_ref * PSY.get_efficiency(PSY.get_prime_mover(device)) / ω[1]
 
     return
 end
@@ -175,7 +176,7 @@ function mdl_tg_ode!(
     output_ode[local_ix[2]] = dxg2_dt
 
     #Update mechanical torque
-    inner_vars[τm_var] = P_m/ω[1]
+    inner_vars[τm_var] = P_m / ω[1]
 
     return
 end
@@ -232,7 +233,7 @@ function mdl_tg_ode!(
     output_ode[local_ix[3]] = dxg3_dt
 
     #Update mechanical torque
-    inner_vars[τm_var] = P_m/ω[1]
+    inner_vars[τm_var] = P_m / ω[1]
 
     return
 end
@@ -293,6 +294,6 @@ function mdl_tg_ode!(
     output_ode[local_ix[4]] = (1.0 - h) / Tw
 
     #Update mechanical torque
-    inner_vars[τm_var] = ((x_g4 - q_nl) * h * At - D_T * Δω * x_g3)/ω[1]
+    inner_vars[τm_var] = ((x_g4 - q_nl) * h * At - D_T * Δω * x_g3) / ω[1]
     return
 end
