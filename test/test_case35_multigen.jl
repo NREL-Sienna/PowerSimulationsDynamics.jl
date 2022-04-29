@@ -53,6 +53,7 @@ line_trip_csv_file =
             if isa(get_dynamic_injector(g), PSY.DynamicInverter)
                 continue
             end
+            gen_name = get_name(g)
             t, ω = get_state_series(results, (gen_name, :ω))
             ω_psse = M[:, 5 + 5 * (ix - 1)] .+ 1.0
             @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
@@ -102,7 +103,7 @@ end
             if isa(get_dynamic_injector(g), PSY.DynamicInverter)
                 continue
             end
-            @show gen_name = get_name(g)
+            gen_name = get_name(g)
             t, ω = get_state_series(results, (gen_name, :ω))
             ω_psse = M[:, 5 + 5 * (ix - 1)] .+ 1.0
             @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
