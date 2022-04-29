@@ -427,25 +427,25 @@ end
 
 function build!(sim; kwargs...)
     logger = configure_logging(sim, "w")
-    try
-        Logging.with_logger(logger) do
+    Logging.with_logger(logger) do
+        try
             _build!(sim; kwargs...)
+        catch e
+            @error "Build failed" exception = (e, catch_backtrace())
+        finally
+            if sim.status == BUILT
+                string_buffer = IOBuffer()
+                TimerOutputs.print_timer(
+                    string_buffer,
+                    BUILD_TIMER,
+                    sortby = :firstexec,
+                    compact = true,
+                )
+                @info "\n$(String(take!(string_buffer)))\n"
+            end
         end
-    catch e
-        @error "Build failed" exception = (e, catch_backtrace())
-    finally
-        if sim.status == BUILT
-            string_buffer = IOBuffer()
-            TimerOutputs.print_timer(
-                string_buffer,
-                BUILD_TIMER,
-                sortby = :firstexec,
-                compact = true,
-            )
-            @info "\n$(String(take!(string_buffer)))\n"
-        end
-        close(logger)
     end
+    close(logger)
     return sim.status
 end
 
@@ -526,17 +526,16 @@ Solves the time-domain dynamic simulation model.
 """
 function execute!(sim::Simulation, solver; kwargs...)
     logger = configure_logging(sim, "a"; kwargs...)
-    try
-        Logging.with_logger(logger) do
+    Logging.with_logger(logger) do
+        try
             _execute!(sim, solver; kwargs...)
+        catch e
+            @error "Execution failed" exception = (e, catch_backtrace())
+            sim.status = SIMULATION_FAILED
         end
-    catch e
-        @error "Execution failed" exception = (e, catch_backtrace())
-        sim.status = SIMULATION_FAILED
-    finally
-        close(logger)
-        return sim.status
     end
+    close(logger)
+    return sim.status
 end
 
 function read_results(sim::Simulation)
