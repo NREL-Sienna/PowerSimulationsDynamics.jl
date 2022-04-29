@@ -55,7 +55,7 @@ def convert_power_flow():
     err = 0
     not_finished = True
     while err == 0 and not_finished:
-        print 'Init Power Flow\n' 
+        print('Init Power Flow\n') 
         for i in [1,2,3]:  
             err = fnsl([0,0,0,1,1,0,0,0])
             err = fnsl([0,0,0,1,1,0,0,0])
@@ -63,12 +63,12 @@ def convert_power_flow():
         if err != 0:
             raise(Exception("Power Flow solve failed"))                 
             
-        print 'Load and Gen Convertion to constant impedance\n'   
+        print('Load and Gen Convertion to constant impedance\n')   
         err = cong(0)
         for i in [1, 2, 3]:
             err = conl(0,1,i,[0,0],[0.0,100.0,0.0,100.0])
 
-        print 'Matrix Factorize and Current Power Flow solve\n'   
+        print('Matrix Factorize and Current Power Flow solve\n')   
         err = fact()     
         err = tysl(0)
         not_finished = False
@@ -76,17 +76,17 @@ def convert_power_flow():
         raise(Exception("Conversion failed"))
 
 def setup_dynamic_simulation(dynamic_data_file, convergence_tolerance = 0.000100, delta_t = 0.008333, network_solve_max_iters = 25):
-    print 'Load Dynamic data\n'   
+    print('Load Dynamic data\n')   
     err = dyre_new([1,1,1,1], dynamic_data_file,"","","")
     #
-    print 'Setup Simulation\n'   
+    print('Setup Simulation\n')   
     
     err = dynamics_solution_param_2([network_solve_max_iters, _i,_i,_i,_i,_i,_i,_i],[_f, convergence_tolerance, delta_t, _f,_f,_f,_f])
     if err != 0:
         raise(Exception("Dynamics failed to set-up models"))
 
 def setup_output_channels(output, run_name, signals, slack_bus, channel_file='channels.out'):
-    print 'Set-up output Channels\n'   
+    print('Set-up output Channels\n')   
     results_path = os.path.join(output, run_name)
     channel_file = os.path.join(results_path, channel_file)
     
@@ -125,7 +125,7 @@ def setup_output_channels(output, run_name, signals, slack_bus, channel_file='ch
     if ierr != 0:
         raise(Exception("Channels not set for bus quantities"))
     
-    print 'Initialize Simulation\n'   
+    print('Initialize Simulation\n')   
     ierr = strt_2([0, 0], channel_file)
     if ierr != 0:
         raise(Exception("Simulation Initialization failed {}".format(ierr)))
@@ -183,7 +183,7 @@ def run_simulation(fault, tspan = (0.0, 10.0), fault_time = 1.0):
     if fault_time > tspan[1]:
         raise(Exception("Fault Time Larger than end of tspan"))
 
-    print 'Run Simulation\n'   
+    print('Run Simulation\n')   
 
     ierr = run(0, tspan[0], 1000, 1, 1) 
     if ierr != 0:
@@ -205,10 +205,10 @@ def process_results(output, run_name, csv_file, slack_channel, make_plots = True
     set_NaN_python()
     results_path = os.path.join(output, run_name)
     channel_file_path = os.path.join(results_path, channel_file)
-    print '\nProcessing outputs ...'   
-    print "\nReading Channel File {}".format(channel_file_path)
+    print('\nProcessing outputs ...')   
+    print("\nReading Channel File {}".format(channel_file_path))
     chnfobj = dyntools.CHNF(channel_file_path, outvrsn = 0)
-    print '\nChannel File Opened ...'
+    print('\nChannel File Opened ...')
     csv_file_name = os.path.join(results_path, csv_file)
     slack_channel_id_file_name = os.path.join(results_path, "slack_id.txt")
     chnfobj.csvout(csvfile = csv_file_name)
