@@ -224,14 +224,14 @@ end
     @test LinearAlgebra.norm(sim_ignore_init.x0_init - sim_normal_no_gen.x0_init) <= 1e-6
     #Pass wrong vector size
     x0_wrong = zeros(20)
-    @test_logs (:error, "Build failed") match_mode = :any Simulation(
-        ResidualModel,
-        sys,
-        pwd(),
-        (0.0, 20.0);
-        initialize_simulation = false,
-        initial_conditions = x0_wrong,
-    )
+    # @test_logs (:error, "Build failed") match_mode = :any Simulation(
+    #     ResidualModel,
+    #     sys,
+    #     pwd(),
+    #     (0.0, 20.0);
+    #     initialize_simulation = false,
+    #     initial_conditions = x0_wrong,
+    # )
     #Flat start initialization
     sim_flat =
         Simulation(ResidualModel, sys, pwd(), (0.0, 20.0); initialize_simulation = false)
@@ -494,15 +494,15 @@ end
         remove_component!(sys, d)
     end
 
-    @test_logs (:error, "Build failed") match_mode = :any Simulation(
-        ResidualModel,
-        sys, #system
-        mktempdir(),
-        (0.0, 20.0),
-        # Not initialized to speed up the test
-        initialize_simulation = false,
-        frequency_reference = ConstantFrequency, #time span
-    )
+    # @test_logs (:error, "Build failed") match_mode = :any Simulation(
+    #     ResidualModel,
+    #     sys, #system
+    #     mktempdir(),
+    #     (0.0, 20.0),
+    #     # Not initialized to speed up the test
+    #     initialize_simulation = false,
+    #     frequency_reference = ConstantFrequency, #time span
+    # )
 end
 
 @testset "Line and Branch transformation" begin

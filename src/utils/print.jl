@@ -66,6 +66,7 @@ function show_simulation_table(
     val_initialized = sim.initialized ? "Yes" : "No"
     val_model = T == ResidualModel ? "Residual Model" : "Mass Matrix Model"
     table = [
+        "Status" sim.status
         "Simulation Type" val_model
         "Initialized?" val_initialized
         "Multimachine system?" val_multimachine

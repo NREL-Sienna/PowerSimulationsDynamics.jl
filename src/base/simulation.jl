@@ -373,30 +373,31 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     end
 
     TimerOutputs.@timeit BUILD_TIMER "Build Simulation" begin
-        if get(kwargs, :all_branches_dynamic, false)
-            TimerOutputs.@timeit BUILD_TIMER "AC Branch Transform to Dynamic" begin
-                sys = get_system(sim)
-                transform_branches_to_dynamic(sys, PSY.ACBranch)
+        try
+            if get(kwargs, :all_branches_dynamic, false)
+                TimerOutputs.@timeit BUILD_TIMER "AC Branch Transform to Dynamic" begin
+                    sys = get_system(sim)
+                    transform_branches_to_dynamic(sys, PSY.ACBranch)
+                end
+            elseif get(kwargs, :all_lines_dynamic, false)
+                TimerOutputs.@timeit BUILD_TIMER "Line Transform to Dynamic" begin
+                    sys = get_system(sim)
+                    transform_branches_to_dynamic(sys, PSY.Line)
+                end
             end
-        elseif get(kwargs, :all_lines_dynamic, false)
-            TimerOutputs.@timeit BUILD_TIMER "Line Transform to Dynamic" begin
-                sys = get_system(sim)
-                transform_branches_to_dynamic(sys, PSY.Line)
+            TimerOutputs.@timeit BUILD_TIMER "Build Simulation Inputs" begin
+                f_ref = get(kwargs, :frequency_reference, ReferenceBus)
+                _build_inputs!(sim, f_ref)
+                # TODO: Update and store f_ref somewhere.
+                sim.multimachine =
+                    get_global_vars_update_pointers(sim.inputs)[GLOBAL_VAR_SYS_FREQ_INDEX] !=
+                    0
             end
-        end
-        TimerOutputs.@timeit BUILD_TIMER "Build Simulation Inputs" begin
-            f_ref = get(kwargs, :frequency_reference, ReferenceBus)
-            _build_inputs!(sim, f_ref)
-            # TODO: Update and store f_ref somewhere.
-            sim.multimachine =
-                get_global_vars_update_pointers(sim.inputs)[GLOBAL_VAR_SYS_FREQ_INDEX] != 0
-        end
-        TimerOutputs.@timeit BUILD_TIMER "Pre-initialization" begin
-            _pre_initialize_simulation!(sim)
-        end
-        if sim.status != BUILD_FAILED
-            simulation_inputs = get_simulation_inputs(sim)
-            try
+            TimerOutputs.@timeit BUILD_TIMER "Pre-initialization" begin
+                _pre_initialize_simulation!(sim)
+            end
+            if sim.status != BUILD_FAILED
+                simulation_inputs = get_simulation_inputs(sim)
                 TimerOutputs.@timeit BUILD_TIMER "Calculate Jacobian" begin
                     jacobian = _get_jacobian(sim)
                 end
@@ -413,13 +414,13 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                     _get_diffeq_problem(sim, model, jacobian)
                 end
                 @info "Simulations status = $(sim.status)"
-            catch e
-                bt = catch_backtrace()
-                @error "$T failed to build" exception = e, bt
-                sim.status = BUILD_FAILED
+            else
+                @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
             end
-        else
-            @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
+        catch e
+            bt = catch_backtrace()
+            @error "$T failed to build" exception = e, bt
+            sim.status = BUILD_FAILED
         end
     end
     return
@@ -427,25 +428,21 @@ end
 
 function build!(sim; kwargs...)
     logger = configure_logging(sim, "w")
-    try
-        Logging.with_logger(logger) do
-            _build!(sim; kwargs...)
+    Logging.with_logger(logger) do
+        _build!(sim; kwargs...)
+        if sim.status == BUILT
+            string_buffer = IOBuffer()
+            TimerOutputs.print_timer(
+                string_buffer,
+                BUILD_TIMER,
+                sortby = :firstexec,
+                compact = true,
+            )
+            @info "\n$(String(take!(string_buffer)))\n"
         end
-    catch e
-        @error "Build failed" exception = (e, catch_backtrace())
-        return sim.status
-    finally
-        string_buffer = IOBuffer()
-        TimerOutputs.print_timer(
-            string_buffer,
-            BUILD_TIMER,
-            sortby = :firstexec,
-            compact = true,
-        )
-        @info "\n$(String(take!(string_buffer)))\n"
-        close(logger)
     end
-    return
+    close(logger)
+    return sim.status
 end
 
 function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
@@ -525,17 +522,16 @@ Solves the time-domain dynamic simulation model.
 """
 function execute!(sim::Simulation, solver; kwargs...)
     logger = configure_logging(sim, "a"; kwargs...)
-    try
-        Logging.with_logger(logger) do
+    Logging.with_logger(logger) do
+        try
             _execute!(sim, solver; kwargs...)
+        catch e
+            @error "Execution failed" exception = (e, catch_backtrace())
+            sim.status = SIMULATION_FAILED
         end
-    catch e
-        @error "Execution failed" exception = (e, catch_backtrace())
-        return sim.status = SIMULATION_FAILED
-    finally
-        close(logger)
-        return sim.status
     end
+    close(logger)
+    return sim.status
 end
 
 function read_results(sim::Simulation)
