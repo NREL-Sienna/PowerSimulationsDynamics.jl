@@ -390,7 +390,8 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                 _build_inputs!(sim, f_ref)
                 # TODO: Update and store f_ref somewhere.
                 sim.multimachine =
-                    get_global_vars_update_pointers(sim.inputs)[GLOBAL_VAR_SYS_FREQ_INDEX] != 0
+                    get_global_vars_update_pointers(sim.inputs)[GLOBAL_VAR_SYS_FREQ_INDEX] !=
+                    0
             end
             TimerOutputs.@timeit BUILD_TIMER "Pre-initialization" begin
                 _pre_initialize_simulation!(sim)
