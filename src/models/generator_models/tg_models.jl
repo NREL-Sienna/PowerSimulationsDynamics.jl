@@ -17,7 +17,7 @@ function mass_matrix_tg_entries!(
 end
 
 function mdl_tg_ode!(
-    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
@@ -26,7 +26,9 @@ function mdl_tg_ode!(
 
     #Update inner vars
     P_ref = get_P_ref(device)
-    inner_vars[τm_var] = P_ref * PSY.get_efficiency(PSY.get_prime_mover(device))
+    external_ix = get_input_port_ix(device, PSY.TGTypeI)
+    ω = @view device_states[external_ix]
+    inner_vars[τm_var] = P_ref * PSY.get_efficiency(PSY.get_prime_mover(device)) / ω[1]
 
     return
 end
@@ -116,7 +118,7 @@ function mdl_tg_ode!(
 
     #Compute block derivatives
     y_ll1, dxg_dt = lead_lag(inv_R * (ω_ref - ω[1]), xg, 1.0, T1, T2)
-    τ_m = y_ll1 + P_ref / 1.0
+    τ_m = y_ll1 + P_ref # Uses P_ref assuming that τ_m0 = P_ref in SS.
 
     #Compute 1 State TG ODE:
     output_ode[local_ix[1]] = dxg_dt
@@ -167,14 +169,14 @@ function mdl_tg_ode!(
     #Compute block derivatives
     x_g1_sat, dxg1_dt = low_pass_nonwindup(ref_in, x_g1, 1.0, T1, V_min, V_max)
     y_ll, dxg2_dt = lead_lag(x_g1_sat, x_g2, 1.0, T2, T3)
-    τ_m = y_ll - D_T * (ω[1] - 1.0)
+    P_m = y_ll - D_T * (ω[1] - 1.0)
 
     #Compute 2 State TG ODE:
     output_ode[local_ix[1]] = dxg1_dt
     output_ode[local_ix[2]] = dxg2_dt
 
     #Update mechanical torque
-    inner_vars[τm_var] = τ_m
+    inner_vars[τm_var] = P_m / ω[1]
 
     return
 end
@@ -223,7 +225,7 @@ function mdl_tg_ode!(
     _, dxg3_dt = low_pass(x_g2, x_g3, 1.0, T3)
 
     #Compute output torque
-    τ_m = x_g2 - D_turb * (ω[1] - 1.0)
+    P_m = x_g2 - D_turb * (ω[1] - 1.0)
 
     #Compute 1 State TG ODE:
     output_ode[local_ix[1]] = dxg1_dt
@@ -231,7 +233,7 @@ function mdl_tg_ode!(
     output_ode[local_ix[3]] = dxg3_dt
 
     #Update mechanical torque
-    inner_vars[τm_var] = τ_m
+    inner_vars[τm_var] = P_m / ω[1]
 
     return
 end
@@ -292,6 +294,6 @@ function mdl_tg_ode!(
     output_ode[local_ix[4]] = (1.0 - h) / Tw
 
     #Update mechanical torque
-    inner_vars[τm_var] = (x_g4 - q_nl) * h * At - D_T * Δω * x_g3
+    inner_vars[τm_var] = ((x_g4 - q_nl) * h * At - D_T * Δω * x_g3) / ω[1]
     return
 end
