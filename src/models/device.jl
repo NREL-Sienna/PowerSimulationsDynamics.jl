@@ -85,7 +85,7 @@ function device!(
     current_i::AbstractArray{T},
     ::AbstractArray{T},
     ::AbstractArray{T},
-    device::ZIPLoadWrapper,
+    device::StaticLoadWrapper,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     mdl_zip_load!(voltage_r, voltage_i, current_r, current_i, device)

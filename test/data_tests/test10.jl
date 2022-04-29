@@ -51,7 +51,7 @@ sys2 = System(threebus_file_dir, runchecks = false)
 add_source_to_ref(sys2)
 fault_branches = get_components(ACBranch, sys2)
 for br in fault_branches
-    if get_name(br) == "BUS 1-BUS 2-i_2"
+    if get_name(br) == "BUS 1-BUS 2-i_1"
         br.r = 3 * br.r
         br.x = 3 * br.x
         b_new = (from = br.b.from / 3, to = br.b.to / 3)

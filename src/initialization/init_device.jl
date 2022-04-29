@@ -50,7 +50,7 @@ function initialize_dynamic_device!(
     return device_states
 end
 
-function initialize_static_device!(::ZIPLoadWrapper)
+function initialize_static_device!(::StaticLoadWrapper)
     return
 end
 

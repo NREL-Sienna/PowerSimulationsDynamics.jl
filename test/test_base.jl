@@ -94,9 +94,9 @@ end
     add_source_to_ref(threebus_sys_dyns)
 
     dyn_branch12 =
-        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 1-BUS 2-i_2"))
+        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 1-BUS 2-i_1"))
     dyn_branch23 =
-        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 2-BUS 3-i_3"))
+        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 2-BUS 3-i_1"))
 
     add_component!(threebus_sys_dyns, dyn_branch12)
     add_component!(threebus_sys_dyns, dyn_branch23)
@@ -427,9 +427,9 @@ end
     add_source_to_ref(threebus_sys_dyns)
 
     dyn_branch12 =
-        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 1-BUS 2-i_2"))
+        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 1-BUS 2-i_1"))
     dyn_branch23 =
-        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 2-BUS 3-i_3"))
+        DynamicBranch(get_component(Branch, threebus_sys_dyns, "BUS 2-BUS 3-i_1"))
 
     add_component!(threebus_sys_dyns, dyn_branch12)
     add_component!(threebus_sys_dyns, dyn_branch23)
@@ -450,7 +450,7 @@ end
     global_index = PSID.make_global_state_map(sim.inputs)
     @test_throws ErrorException PSID.get_state_from_ix(global_index, 40)
     @test ("V_2", :R) == PSID.get_state_from_ix(global_index, 2)
-    @test ("BUS 2-BUS 3-i_3", :Il_I) == PSID.get_state_from_ix(global_index, 10)
+    @test ("BUS 2-BUS 3-i_1", :Il_I) == PSID.get_state_from_ix(global_index, 10)
     @test ("generator-102-1", :Vr1) == PSID.get_state_from_ix(global_index, 16)
     @test ("generator-103-1", :ε_pll) == PSID.get_state_from_ix(global_index, 30)
 end

@@ -45,7 +45,7 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
             add_component!(sys, case_gen, g)
         end
 
-        Ybus_change = BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2")
+        Ybus_change = BranchTrip(1.0, Line, "BUS 1-BUS 3-i_1")
 
         sim = Simulation(ResidualModel, sys, path, tspan, Ybus_change)
 
@@ -118,7 +118,7 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
             add_component!(sys, case_gen, g)
         end
 
-        Ybus_change = BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2")
+        Ybus_change = BranchTrip(1.0, Line, "BUS 1-BUS 3-i_1")
 
         sim = Simulation(MassMatrixModel, sys, path, tspan, Ybus_change)
 
@@ -261,7 +261,7 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
             sys, #system
             path,
             tspan, #time span
-            BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2"), #Type of Fault
+            BranchTrip(1.0, Line, "BUS 1-BUS 3-i_1"), #Type of Fault
         ) #Type of Fault
 
         # Test Initial Condition
@@ -327,7 +327,7 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
             sys, #system
             path,
             tspan, #time span
-            BranchTrip(1.0, Line, "BUS 1-BUS 3-i_2"), #Type of Fault
+            BranchTrip(1.0, Line, "BUS 1-BUS 3-i_1"), #Type of Fault
         ) #Type of Fault
 
         # Test Initial Condition
