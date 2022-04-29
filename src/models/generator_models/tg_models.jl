@@ -26,9 +26,7 @@ function mdl_tg_ode!(
 
     #Update inner vars
     P_ref = get_P_ref(device)
-    external_ix = get_input_port_ix(device, PSY.TGTypeI)
-    ω = @view device_states[external_ix]
-    inner_vars[τm_var] = P_ref * PSY.get_efficiency(PSY.get_prime_mover(device)) / ω[1]
+    inner_vars[τm_var] = P_ref * PSY.get_efficiency(PSY.get_prime_mover(device))
 
     return
 end
