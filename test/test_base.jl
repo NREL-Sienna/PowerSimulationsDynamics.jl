@@ -494,7 +494,7 @@ end
         remove_component!(sys, d)
     end
 
-    # @test_logs (:error, "failed to build", ) match_mode = :any Simulation(
+    # @test_logs (:error, "Build failed") match_mode = :any Simulation(
     #     ResidualModel,
     #     sys, #system
     #     mktempdir(),
