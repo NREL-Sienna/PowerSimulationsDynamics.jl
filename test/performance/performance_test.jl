@@ -70,7 +70,7 @@ try
         #console_level = Logging.Error,
     ) #Type of Fault
     status =
-        execute!(sim_rodas, Rodas4(), rtol = 1e-9, atol = 1e-9, initializealg = NoInit())
+        execute!(sim_rodas, Rodas4(), rtol = 1e-9, atol = 1e-9)
     if status == PSID.SIMULATION_FINALIZED
         res_rodas = read_results(sim_rodas)
         solve_time = res_rodas.time_log[:timed_solve_time]
