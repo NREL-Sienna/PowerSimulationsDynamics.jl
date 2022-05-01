@@ -139,8 +139,8 @@ function mdl_filter_ode!(
         Ii_filt = (1.0 / Zmag_squared) * ((Vi_cnv - Vi_inv) * rf - (Vr_cnv - Vr_inv) * lf)
     else
         #Obtain converter
-        @assert Vr_cnv == Vr_inv
-        @assert Vi_cnv == Vi_inv
+        IS.@assert_op Vr_cnv == Vr_inv
+        IS.@assert_op Vi_cnv == Vi_inv
         converter = PSY.get_converter(dynamic_device)
         R_source = PSY.get_R_source(converter)
         X_source = PSY.get_X_source(converter)

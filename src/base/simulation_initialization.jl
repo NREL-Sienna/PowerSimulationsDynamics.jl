@@ -108,7 +108,7 @@ function initialize_dynamic_branches!(
             @debug "$(PSY.get_name(br)) -  $(typeof(br))"
             n_states = PSY.get_n_states(br)
             x0_branch = initialize_dynamic_device!(br)
-            @assert length(x0_branch) == n_states
+            IS.@assert_op length(x0_branch) == n_states
             ix_range = get_ix_range(br)
             initial_guess[ix_range] = x0_branch
         end
