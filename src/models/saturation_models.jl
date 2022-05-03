@@ -65,7 +65,7 @@ function output_pss_limiter(
     if V_cl == 0.0 || V_cu == 0.0
         return V_ss
     end
-    if V_cl <= V_ct <= V_cl
+    if V_cl <= V_ct <= V_cu
         return V_ss
     elseif V_ct < V_cl
         return zero(X)
