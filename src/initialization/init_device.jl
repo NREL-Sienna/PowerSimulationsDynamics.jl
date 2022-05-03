@@ -178,7 +178,7 @@ function initialize_dynamic_device!(branch::BranchWrapper)
     V_I_to = Vm_to * sin(θ_to)
     R = PSY.get_r(branch)
     X = PSY.get_x(branch)
-    Zmag = R^2 + X^2
+    Zmag = sqrt(R^2 + X^2)
     #Compute Current
     I_R = R * (V_R_from - V_R_to) / Zmag + X * (V_I_from - V_I_to) / Zmag
     I_I = R * (V_I_from - V_I_to) / Zmag - X * (V_R_from - V_R_to) / Zmag
