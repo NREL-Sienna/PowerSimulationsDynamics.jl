@@ -270,8 +270,8 @@ function mdl_tg_ode!(
     Tr = PSY.get_Tr(tg)
     Tf = PSY.get_Tf(tg)
     Tg = PSY.get_Tg(tg)
-    #Gate velocity limits not implemented
-    #VELM = PSY.get_VELM(tg)
+
+    VELM = PSY.get_VELM(tg)
     G_min, G_max = PSY.get_gate_position_limits(tg)
     Tw = PSY.get_Tw(tg)
     At = PSY.get_At(tg)
@@ -287,7 +287,7 @@ function mdl_tg_ode!(
 
     #Compute 4 States TG ODE:
     output_ode[local_ix[1]] = dxg1_dt
-    output_ode[local_ix[2]] = dxg2_dt
+    output_ode[local_ix[2]] = clamp(dxg2_dt, -VELM, VELM)
     output_ode[local_ix[3]] = dxg3_dt
     output_ode[local_ix[4]] = (1.0 - h) / Tw
 

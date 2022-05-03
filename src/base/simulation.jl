@@ -489,6 +489,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
         progress = get(kwargs, :enable_progress_bar, _prog_meter_enabled()),
         progress_steps = 1,
         advance_to_tstop = !isempty(sim.tstops),
+        initializealg = SciMLBase.NoInit(),
         kwargs...,
     )
     if solution.retcode == :Success
