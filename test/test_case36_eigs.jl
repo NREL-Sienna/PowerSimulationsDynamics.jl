@@ -3,7 +3,8 @@ Validation Eigenvalues with Andes
 This case study defines an 11-bus that uses GENROU, SEXS and TGOV1.
 We compare the obtained eigenvalues with Python based tool ANDES.
 Results are slighty different due to the difference on shaft and
-turbine governor power-torque approximations.
+turbine governor power-torque approximations. Removing the division
+for ω for output torque in TGOV1 model produces exact eigenvalue results.
 """
 
 ##################################################
