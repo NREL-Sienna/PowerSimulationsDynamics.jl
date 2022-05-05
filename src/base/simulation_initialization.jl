@@ -139,7 +139,7 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
         all(isfinite, initial_guess) && continue
         for state in get_global_index(device)
             if state.second ∈ i
-                push!(invalid_initial_guess, "$device - $(p.first)")
+                push!(invalid_initial_guess, "$device - $(state.first)")
             end
         end
     end
