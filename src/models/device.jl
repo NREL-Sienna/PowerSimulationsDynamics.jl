@@ -602,7 +602,7 @@ function device!(
     H = PSY.get_H(device)
     base_power = PSY.get_base_power(device)
     B_sh = PSY.get_B_shunt(device)
-    τ_m0 = PSY.get_τ_ref(shunt)
+    τ_m0 = PSY.get_τ_ref(device)
 
     # Reactances for the model
     X_ad = (1/X_m + 1/X_ls + 1/X_lr)^(-1) # (4.14-17) in Krause
