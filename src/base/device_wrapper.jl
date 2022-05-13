@@ -39,6 +39,26 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
     input_port_mapping::Base.ImmutableDict{Int, Vector{Int}}
 end
 
+function state_port_mappings(
+    dynamic_device::T,
+    device_states,
+) where {T <: Union{PSY.DynamicGenerator, PSY.DynamicInverter}}
+    component_state_mapping = Dict{Int, Vector{Int}}()
+    input_port_mapping = Dict{Int, Vector{Int}}()
+    for c in PSY.get_dynamic_components(dynamic_device)
+        ix = index(typeof(c))
+        component_state_mapping[ix] = _index_local_states(c, device_states)
+        input_port_mapping[ix] = _index_port_mapping!(c, device_states)
+    end
+    return (component_state_mapping, input_port_mapping)
+end
+
+function state_port_mappings(dynamic_device::PSY.DynamicInjection, device_states)
+    component_state_mapping = Dict{Int, Vector{Int}}()
+    input_port_mapping = Dict{Int, Vector{Int}}()
+    return (component_state_mapping, input_port_mapping)
+end
+
 function DynamicWrapper(
     device::T,
     bus_ix::Int,
@@ -51,14 +71,9 @@ function DynamicWrapper(
     dynamic_device = PSY.get_dynamic_injector(device)
     @assert dynamic_device !== nothing
     device_states = PSY.get_states(dynamic_device)
-    component_state_mapping = Dict{Int, Vector{Int}}()
-    input_port_mapping = Dict{Int, Vector{Int}}()
 
-    for c in PSY.get_dynamic_components(dynamic_device)
-        ix = index(typeof(c))
-        component_state_mapping[ix] = _index_local_states(c, device_states)
-        input_port_mapping[ix] = _index_port_mapping!(c, device_states)
-    end
+    component_state_mapping, input_port_mapping =
+        state_port_mappings(dynamic_device, device_states)
 
     return DynamicWrapper{typeof(dynamic_device)}(
         dynamic_device,
@@ -78,7 +93,9 @@ function DynamicWrapper(
         Base.ImmutableDict(
             sort!(device_states .=> ix_range, by = x -> x.second, rev = true)...,
         ),
+        isempty(component_state_mapping) ? Base.InmmutableDict{Int, Vector{Int}}() :
         Base.ImmutableDict(component_state_mapping...),
+        isempty(input_port_mapping) ? Base.InmmutableDict{Int, Vector{Int}}() :
         Base.ImmutableDict(input_port_mapping...),
     )
 end
