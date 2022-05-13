@@ -66,7 +66,6 @@ struct SimulationInputs
                 break
             end
         end
-        IS.@assert_op inner_vars_count > 0
         new(
             wrapped_injectors,
             wrapped_static_injectors,
