@@ -228,13 +228,13 @@ function initialize_dynamic_device!(
     v_qs = V_I
 
     # Reactances for the model
-    X_ad = (1 / X_m + 1 / X_ls + 1 / X_lr)^(-1)
+    X_ad = (1.0 / X_m + 1.0 / X_ls + 1.0 / X_lr)^(-1)
     X_aq = X_ad
 
     # Initial guess for NLSolve (assume B_shunt = 0)
     i_qs0 = I_I
     i_ds0 = I_R
-    B_sh0 = 0
+    B_sh0 = 0.0
     ψ_qs0 = -v_ds + R_s * i_ds0
     ψ_ds0 = v_qs - R_s * i_qs0
     ψ_mq0 = ψ_qs0 - i_qs0 * X_ls
