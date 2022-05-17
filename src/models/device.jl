@@ -555,6 +555,25 @@ function _update_inner_vars!(
     return
 end
 
+function device_mass_matrix_entries!(
+    mass_matrix::AbstractArray,
+    dynamic_device::DynamicWrapper{T},
+) where {T <:
+         Union{PSY.SingleCageInductionMachine, PSY.SimplifiedSingleCageInductionMachine}}
+    global_index = get_global_index(dynamic_device)
+    mass_matrix_induction_entries!(mass_matrix, dynamic_device, global_index)
+    return
+end
+
+function mass_matrix_induction_entries!(
+    mass_matrix,
+    ind::DynamicWrapper{T},
+    global_index::ImmutableDict{Symbol, Int64},
+) where {T <:
+         Union{PSY.SingleCageInductionMachine, PSY.SimplifiedSingleCageInductionMachine}}
+    @debug "Using default mass matrix entries $ind"
+end
+
 """
 Model of 5-state (SingleCageInductionMachine) induction motor in Julia.
 Refer to "Analysis of Electric Machinery and Drive Systems" by Paul Krause,
@@ -569,12 +588,12 @@ function device!(
     current_i::AbstractArray{T},
     global_vars::AbstractArray{T},
     ::AbstractArray{T},
-    dynamic_device::DynamicWrapper{SCIM},
+    dynamic_wrapper::DynamicWrapper{PSY.SingleCageInductionMachine},
     t,
-) where {SCIM  <: PSY.SingleCageInductionMachine, T <: ACCEPTED_REAL_TYPES}
-    Sbase = get_system_base_power(dynamic_device)
-    f0 = get_system_base_frequency(dynamic_device)
-    if get_connection_status(dynamic_device) < 1.0
+) where {T <: ACCEPTED_REAL_TYPES}
+    Sbase = get_system_base_power(dynamic_wrapper)
+    f0 = get_system_base_frequency(dynamic_wrapper)
+    if get_connection_status(dynamic_wrapper) < 1.0
         output_ode .= zero(T)
         return
     end
@@ -583,57 +602,59 @@ function device!(
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
     # get states 
-    ψ_qs = device_states[1] 
-    ψ_ds = device_states[2]  
-    ψ_qr = device_states[3]  
-    ψ_dr = device_states[4]  
-    ωr = device_states[5]  
+    ψ_qs = device_states[1]
+    ψ_ds = device_states[2]
+    ψ_qr = device_states[3]
+    ψ_dr = device_states[4]
+    ωr = device_states[5]
 
     #Get parameters
-
-    R_s =  PSY.get_Rs(device)
-    X_ls = PSY.get_Xs(device)
-    X_m = PSY.get_Xm(device)
-    R_r = PSY.get_Rr(device)
-    X_lr = PSY.get_Xr(device)
-    A = PSY.get_A(device)
-    B = PSY.get_B(device)
-    C= PSY.get_C(device)
-    H = PSY.get_H(device)
-    base_power = PSY.get_base_power(device)
-    B_sh = PSY.get_B_shunt(device)
-    τ_m0 = PSY.get_τ_ref(device)
+    dynamic_device = get_device(dynamic_wrapper)
+    R_s = PSY.get_Rs(dynamic_device)
+    X_ls = PSY.get_Xs(dynamic_device)
+    X_m = PSY.get_Xm(dynamic_device)
+    R_r = PSY.get_Rr(dynamic_device)
+    X_lr = PSY.get_Xr(dynamic_device)
+    A = PSY.get_A(dynamic_device)
+    B = PSY.get_B(dynamic_device)
+    C = PSY.get_C(dynamic_device)
+    H = PSY.get_H(dynamic_device)
+    base_power = PSY.get_base_power(dynamic_device)
+    B_sh = PSY.get_B_shunt(dynamic_device)
+    τ_m0 = PSY.get_τ_ref(dynamic_device)
 
     # Reactances for the model
-    X_ad = (1/X_m + 1/X_ls + 1/X_lr)^(-1) # (4.14-17) in Krause
-    X_aq = X_ad  
+    X_ad = (1 / X_m + 1 / X_ls + 1 / X_lr)^(-1) # (4.14-17) in Krause
+    X_aq = X_ad
 
     # voltages in QD 
-    v_qs = voltage_i  
-    v_ds = voltage_r  
+    v_qs = voltage_i
+    v_ds = voltage_r
     v_qr = 0
     v_dr = 0
 
     #Additional Fluxes 
-    ψ_mq = X_aq * (ψ_qs/X_ls + ψ_qr/X_lr) # (4.14-15) in Krause
-    ψ_md = X_ad * (ψ_ds/X_ls + ψ_dr/X_lr) # (4.14-16) in Krause
+    ψ_mq = X_aq * (ψ_qs / X_ls + ψ_qr / X_lr) # (4.14-15) in Krause
+    ψ_md = X_ad * (ψ_ds / X_ls + ψ_dr / X_lr) # (4.14-16) in Krause
 
     # Stator motor currents in QD 
-    i_qs = 1/X_ls * (ψ_qs - ψ_mq) # (4.14-1) in Krause
-    i_ds = 1/X_ls * (ψ_ds - ψ_md) # (4.14-2) in Krause
+    i_qs = 1 / X_ls * (ψ_qs - ψ_mq) # (4.14-1) in Krause
+    i_ds = 1 / X_ls * (ψ_ds - ψ_md) # (4.14-2) in Krause
 
     # Electric Torque
     τ_e = ψ_ds * i_qs - ψ_qs * i_ds    # (4.14-18) in Krause 
 
     #Compute ODEs
-    output_ode[local_ix[1]] = 2.0 * pi * f0 * (v_qs - sys_ω*ψ_ds - R_s*i_qs)  # (4.14-9) in Krause 
-    output_ode[local_ix[2]] = 2.0 * pi * f0 * (v_ds + sys_ω*ψ_qs - R_s*i_ds) # (4.14-10) in Krause
-    output_ode[local_ix[3]] = 2.0 * pi * f0 * (v_qr - (sys_ω - ωr)*ψ_dr + R_r/X_lr * (ψ_mq - ψ_qr)) # (4.14-12) in Krause
-    output_ode[local_ix[4]] = 2.0 * pi * f0 * (v_dr + (sys_ω - ωr)*ψ_qr + R_r/X_lr * (ψ_md - ψ_dr)) # (4.14-13) in Krause
-    output_ode[local_ix[5]] = 1.0/(2.0*H) * (τ_e - τ_m0 * (A*ωr^2 + B*ωr + C)) # (4.14-19) in Krause and (7.39) in Kundur
+    output_ode[1] = 2.0 * pi * f0 * (v_qs - sys_ω * ψ_ds - R_s * i_qs)  # (4.14-9) in Krause 
+    output_ode[2] = 2.0 * pi * f0 * (v_ds + sys_ω * ψ_qs - R_s * i_ds) # (4.14-10) in Krause
+    output_ode[3] =
+        2.0 * pi * f0 * (v_qr - (sys_ω - ωr) * ψ_dr + R_r / X_lr * (ψ_mq - ψ_qr)) # (4.14-12) in Krause
+    output_ode[4] =
+        2.0 * pi * f0 * (v_dr + (sys_ω - ωr) * ψ_qr + R_r / X_lr * (ψ_md - ψ_dr)) # (4.14-13) in Krause
+    output_ode[5] = 1.0 / (2.0 * H) * (τ_e - τ_m0 * (A * ωr^2 + B * ωr + C)) # (4.14-19) in Krause and (7.39) in Kundur
 
     #Update current
-    current_r[1] -= (base_power/Sbase) * (i_ds - v_qs*B_sh)  # in system base
-    current_i[1] -= (base_power/Sbase) * (i_qs + v_ds*B_sh)  # in system base
+    current_r[1] -= (base_power / Sbase) * (i_ds - v_qs * B_sh)  # in system base
+    current_i[1] -= (base_power / Sbase) * (i_qs + v_ds * B_sh)  # in system base
     return
 end
