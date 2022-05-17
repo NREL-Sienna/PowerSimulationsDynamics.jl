@@ -1,6 +1,8 @@
 get_inner_vars_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.PeriodicVariableSource) = 0
+get_inner_vars_count(::PSY.SingleCageInductionMachine) = 0
+get_inner_vars_count(::PSY.SimplifiedSingleCageInductionMachine) = 0
 
 index(::Type{<:PSY.TurbineGov}) = 1
 index(::Type{<:PSY.PSS}) = 2
@@ -93,9 +95,9 @@ function DynamicWrapper(
         Base.ImmutableDict(
             sort!(device_states .=> ix_range, by = x -> x.second, rev = true)...,
         ),
-        isempty(component_state_mapping) ? Base.InmmutableDict{Int, Vector{Int}}() :
+        isempty(component_state_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
         Base.ImmutableDict(component_state_mapping...),
-        isempty(input_port_mapping) ? Base.InmmutableDict{Int, Vector{Int}}() :
+        isempty(input_port_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
         Base.ImmutableDict(input_port_mapping...),
     )
 end
@@ -213,6 +215,15 @@ PSY.get_freq_estimator(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInvert
     wrapper.device.freq_estimator
 PSY.get_filter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.filter
+
+# PSY overloads of specific Dynamic Injectors
+
+PSY.get_V_ref(wrapper::PSY.SingleCageInductionMachine) = 1.0
+PSY.get_V_ref(wrapper::PSY.SimplifiedSingleCageInductionMachine) = 1.0
+PSY.get_P_ref(wrapper::PSY.SingleCageInductionMachine) = PSY.get_τ_ref(wrapper)
+PSY.get_P_ref(wrapper::PSY.SimplifiedSingleCageInductionMachine) = PSY.get_τ_ref(wrapper)
+PSY.get_ω_ref(wrapper::PSY.SingleCageInductionMachine) = 1.0
+PSY.get_ω_ref(wrapper::PSY.SimplifiedSingleCageInductionMachine) = 1.0
 
 function get_local_state_ix(
     wrapper::DynamicWrapper,
