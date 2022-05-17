@@ -630,8 +630,8 @@ function device!(
     # voltages in QD 
     v_qs = voltage_i
     v_ds = voltage_r
-    v_qr = 0
-    v_dr = 0
+    v_qr = zero(T)
+    v_dr = zero(T)
 
     #Additional Fluxes 
     ψ_mq = X_aq * (ψ_qs / X_ls + ψ_qr / X_lr) # (4.14-15) in Krause
