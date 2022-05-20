@@ -52,6 +52,22 @@ function compute_field_current(
 end
 
 """
+Function to obtain the field voltage time series of a Dynamic Generator model out of the DAE Solution. It receives the simulation inputs,
+the dynamic device and bus voltage. It is dispatched for device type to compute the specific voltage.
+
+"""
+function compute_field_voltage(
+    res::SimulationResults,
+    dynamic_device::G,
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicGenerator}
+
+    #Get AVR
+    avr = PSY.get_avr(dynamic_device)
+    return _field_voltage(avr, PSY.get_name(dynamic_device), res, dt)
+end
+
+"""
 Function to obtain the output current time series of a Classic Machine model out of the DAE Solution. It is dispatched via the machine type.
 
 """
@@ -467,4 +483,52 @@ function _field_current(
             (Xd - Xd_p) * (I_d + γ_d2 * (eq_p[ix] - ψ_kd[ix] - (Xd_p - Xl) * I_d))
     end
     return ts, I_fd
+end
+
+"""
+Function to obtain the field voltage time series of a Dynamic Generator with avrs that have 
+the field voltage as a state. By default it is assumed that the models have that state.
+
+"""
+function _field_voltage(
+    ::A,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+) where {A <: PSY.AVR}
+    return post_proc_state_series(res, (name, :Vf), dt)
+end
+
+"""
+Function to obtain the field voltage time series of a Dynamic Generator with avr AVRFixed.
+
+"""
+function _field_voltage(
+    avr::PSY.AVRFixed,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    Vf0 = PSY.get_Vf(avr)
+    ts, _ = post_proc_state_series(res, (name, :δ), dt)
+    Vf = Vf0 * ones(length(ts))
+    return ts, Vf
+end
+
+"""
+Function to obtain the field voltage time series of a Dynamic Generator with avr ESAC1A.
+
+"""
+function _field_voltage(
+    avr::PSY.ESAC1A,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, Ve = post_proc_state_series(res, (name, :Ve), dt)
+    _, Xad_Ifd = post_proc_field_current_series(res, name, dt)
+    Kc = PSY.get_Kc(avr)
+    I_N = Kc * Xad_Ifd ./ Ve
+    Vf = Ve .* rectifier_function.(I_N)
+    return ts, Vf
 end
