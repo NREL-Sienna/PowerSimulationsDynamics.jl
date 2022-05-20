@@ -16,6 +16,7 @@ get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.PeriodicVariableSource) = 0
 get_inner_vars_count(::PSY.SingleCageInductionMachine) = 0
 get_inner_vars_count(::PSY.SimplifiedSingleCageInductionMachine) = 0
+get_inner_vars_count(::PSY.AggregateDistributedGenerationA) = DERA_INNER_VARS_SIZE
 
 index(::Type{<:PSY.TurbineGov}) = 1
 index(::Type{<:PSY.PSS}) = 2
