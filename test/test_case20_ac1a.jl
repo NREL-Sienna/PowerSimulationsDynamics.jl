@@ -75,11 +75,13 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
         # Obtain data for voltage magnitude at bus 102
         series2 = get_voltage_magnitude_series(results, 102)
         series3 = get_field_current_series(results, "generator-102-1")
+        series4 = get_field_voltage_series(results, "generator-102-1")
         t = series[1]
         δ = series[2]
         V = series2[2]
-        # TODO: Test I_fd with PSSE
+        # TODO: Test I_fd and Vf with PSSE
         I_fd = series3[2]
+        Vf = series4[2]
 
         M = get_csv_data(csv_file)
         t_psse, δ_psse = clean_extra_timestep!(M[:, 1], M[:, 2])
@@ -141,11 +143,13 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         # Obtain data for voltage magnitude at bus 102
         series2 = get_voltage_magnitude_series(results, 102)
         series3 = get_field_current_series(results, "generator-102-1")
+        series4 = get_field_voltage_series(results, "generator-102-1")
         t = series[1]
         δ = series[2]
         V = series2[2]
-        # TODO: Test I_fd with PSSE
+        # TODO: Test I_fd and Vf with PSSE
         I_fd = series3[2]
+        Vf = series4[2]
 
         M = get_csv_data(csv_file)
         t_psse, δ_psse = clean_extra_timestep!(M[:, 1], M[:, 2])
