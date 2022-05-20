@@ -131,13 +131,278 @@ function current_limit_logic(
     else
         local_I = sqrt(local_I)
     end
-    if local_I < Iq_max
+    if local_I < I_max #fixed typo 
         Iq_max = local_I
     else
         Iq_max = I_max
     end
     Iq_min = -Iq_max
     return Ip_min, Ip_max, Iq_min, Iq_max
+end
+
+function current_limit_logic(
+    device::PSY.AggregateDistributedGenerationA,
+    Ip_cmd::X,
+    Iq_cmd::X,
+) where {X <: ACCEPTED_REAL_TYPES}
+    PQ_Flag = PSY.get_PQ_Flag(device)
+    Gen_Flag = PSY.get_Gen_Flag(device)
+    I_max = PSY.get_I_max(device)
+
+    if PQ_Flag == 1  # P Priority 
+        Ip_max = I_max
+        local_I = I_max^2 - Ip_cmd^2
+        if local_I < 0
+            local_I = 0
+        else
+            local_I = sqrt(local_I)
+        end
+        if local_I < I_max
+            Iq_max = local_I
+        else
+            Iq_max = I_max
+        end
+    elseif PQ_Flag == 0     #Q Priority  
+        Iq_max = I_max
+        local_I = I_max^2 - Iq_cmd^2
+        if local_I < 0
+            local_I = 0
+        else
+            local_I = sqrt(local_I)
+        end
+        if local_I < I_max
+            Ip_max = local_I
+        else
+            Ip_max = I_max
+        end
+    else
+        @error "Unsupported value of PQ_Flag"
+    end
+    if Gen_Flag == 1
+        Ip_min = 0
+    elseif Gen_Flag == 0
+        Ip_min = -Ip_max
+    else
+        @error "Unsupported value of Gen_Flag"
+    end
+    Iq_min = -Iq_max
+    return Ip_min, Ip_max, Iq_min, Iq_max
+end
+
+function voltage_trip_logic!(
+    inner_vars::AbstractArray{X},
+    device::PSY.AggregateDistributedGenerationA,
+    Vmeas::X,
+    t,
+) where {X <: ACCEPTED_REAL_TYPES}
+    #Read parameters
+    Vtrip_Flag = PSY.get_Vtrip_Flag(device)
+    (tvl0, vl0), (tvl1, vl1) = PSY.get_vl_pnts(device)
+    (tvh0, vh0), (tvh1, vh1) = PSY.get_vh_pnts(device)
+    Vrfrac = PSY.get_Vrfrac(device)
+
+    if Vtrip_Flag == 0
+        return 1.0
+    end
+
+    #Read inner vars 
+    Vmin = inner_vars[Vmin_var]
+    Vmax = inner_vars[Vmax_var]
+    TimeBelowVl1 = inner_vars[TimeBelowVl1_var]
+    TimeAboveVh1 = inner_vars[TimeAboveVh1_var]
+    TimeBelowVl0 = inner_vars[TimeBelowVl0_var]
+    TimeAboveVh0 = inner_vars[TimeAboveVh0_var]
+    ActiveTimerVl1 = inner_vars[ActiveTimerVl1_var]
+    ActiveTimerVh1 = inner_vars[ActiveTimerVh1_var]
+    ActiveFracLow = inner_vars[ActiveFracLow_var]
+    ActiveFracHigh = inner_vars[ActiveFracHigh_var]
+    ActiveTimerVl0 = inner_vars[ActiveTimerVl0_var]
+    ActiveTimerVh0 = inner_vars[ActiveTimerVh0_var]
+    ActiveTripLow = inner_vars[ActiveTripLow_var]
+    ActiveTripHigh = inner_vars[ActiveTripHigh_var]
+
+    #TODO - should this happen in init_device and be stored in ext, or OK to implement here?
+    if t == 0
+        Vmin = vl1
+        Vmax = vh1
+    end
+
+    #Starting Timers for Low Voltage 
+    if Vmeas >= vl1
+        ActiveTimerVl1 = 0
+    elseif ActiveTimerVl1 == 0
+        ActiveTimerVl1 = 1
+        TimeBelowVl1 = t
+    end
+    if Vmeas >= vl0
+        ActiveTimerVl0 = 0
+    elseif ActiveTimerVl0 == 0
+        ActiveTimerVl0 = 1
+        TimeBelowVl0 = t
+    end
+
+    #Starting Timers for High Voltage
+    if Vmeas <= vh1
+        ActiveTimerVh1 = 0
+    elseif ActiveTimerVh1 == 0
+        ActiveTimerVh1 = 1
+        TimeAboveVh1 = t
+    end
+    if Vmeas <= vh0
+        ActiveTimerVh0 = 0
+    elseif ActiveTimerVh0 == 0
+        ActiveTimerVh0 = 1
+        TimeAboveVh0 = t
+    end
+
+    #Use timers to see if on fractional restart curve 
+    if (ActiveFracLow == 0) && (ActiveTimerVl1 == 1) && ((t - TimeBelowVl1) >= tvl1)
+        ActiveFracLow = 1
+    end
+    if (ActiveFracHigh == 0) && (ActiveTimerVh1 == 1) && ((t - TimeAboveVh1) >= tvh1)
+        ActiveFracHigh = 1
+    end
+
+    #Use timers to see if completely tripped
+    if (ActiveTripLow == 0) && (ActiveTimerVl0 == 1) && ((t - TimeBelowVl0) >= tvl0)
+        ActiveTripLow = 1
+    end
+    if (ActiveTripHigh == 0) && (ActiveTimerVh0 == 1) && ((t - TimeAboveVh0) >= tvh0)
+        ActiveTripHigh = 1
+    end
+
+    #Keep track of the minimum and maximum voltages
+    if (Vmin > Vmeas) && (ActiveFracLow == 1)
+        Vmin = Vmeas
+        if Vmin < vl0
+            Vmin = vl0
+        end
+    end
+    if (Vmax < Vmeas) && (ActiveFracHigh == 1)
+        Vmax = Vmeas
+        if Vmax > vh0
+            Vmax = vh0
+        end
+    end
+
+    #Calculate the low voltage multiplier
+    if (Vmeas <= vl0) || (ActiveTripLow == 1)
+        Vlmult = 0.0
+    elseif (Vmeas <= vl1) && (Vmeas > Vmin) && (ActiveFracLow == 1)
+        Vlmult = ((Vmin - vl0) + Vrfrac * (Vmeas - Vmin)) / (vl1 - vl0)
+    elseif (Vmeas <= vl1)
+        Vlmult = (Vmeas - vl0) / (vl1 - vl0)
+    elseif (ActiveFracLow == 0)
+        Vlmult = 1.0
+    else
+        Vlmult = ((Vmin - vl0) + Vrfrac * (vl1 - Vmin)) / (vl1 - vl0)
+    end
+    #Calculate the high voltage multiplier 
+    if (Vmeas >= vh0) || (ActiveTripHigh == 1)
+        Vhmult = 0.0
+    elseif (Vmeas >= vh1) && (Vmeas < Vmax) && (ActiveFracHigh == 1)
+        Vhmult = ((Vmax - vh0) + Vrfrac * (Vmeas - Vmax)) / (vh1 - vh0)
+    elseif (Vmeas >= vh1)
+        Vhmult = (Vmeas - vh0) / (vh1 - vh0)
+    elseif (ActiveFracHigh == 0)
+        Vhmult = 1.0
+    else
+        Vhmult = ((Vmax - vh0) + Vrfrac * (vh1 - Vmax)) / (vh1 - vh0)
+    end
+
+    Mult = Vlmult * Vhmult
+    #Update all the inner vars 
+    inner_vars[Vmin_var] = Vmin
+    inner_vars[Vmax_var] = Vmax
+    inner_vars[TimeBelowVl1_var] = TimeBelowVl1
+    inner_vars[TimeAboveVh1_var] = TimeAboveVh1
+    inner_vars[TimeBelowVl0_var] = TimeBelowVl0
+    inner_vars[TimeAboveVh0_var] = TimeAboveVh0
+    inner_vars[ActiveTimerVl1_var] = ActiveTimerVl1
+    inner_vars[ActiveTimerVh1_var] = ActiveTimerVh1
+    inner_vars[ActiveFracLow_var] = ActiveFracLow
+    inner_vars[ActiveFracHigh_var] = ActiveFracHigh
+    inner_vars[ActiveTimerVl0_var] = ActiveTimerVl0
+    inner_vars[ActiveTimerVh0_var] = ActiveTimerVh0
+    inner_vars[ActiveTripLow_var] = ActiveTripLow
+    inner_vars[ActiveTripHigh_var] = ActiveTripHigh
+
+    return Mult
+end
+
+function frequency_trip_logic!(
+    inner_vars::AbstractArray{X},
+    device::PSY.AggregateDistributedGenerationA,
+    Fmeas::X,
+    Vt::X,
+    t,
+) where {X <: ACCEPTED_REAL_TYPES}
+
+    #Read parameters
+    fl = PSY.get_fl(device)
+    fh = PSY.get_fh(device)
+    tfl = PSY.get_tfl(device)
+    tfh = PSY.get_tfh(device)
+    Vpr = PSY.get_Vpr(device)
+    Ftrip_Flag = PSY.get_Ftrip_Flag(device)
+
+    if Ftrip_Flag == 0
+        return 1.0
+    end
+
+    #Read inner vars 
+    TimeBelowFl = inner_vars[TimeBelowFl_var]
+    TimeAboveFh = inner_vars[TimeAboveFh_var]
+    ActiveTimerFl = inner_vars[ActiveTimerFl_var]
+    ActiveTimerFh = inner_vars[ActiveTimerFh_var]
+    ActiveTripFLow = inner_vars[ActiveTripFLow_var]
+    ActiveTripFHigh = inner_vars[ActiveTripFHigh_var]
+
+    #Calculate Frelay 
+    if Vt > Vpr
+        Frelay = Fmeas
+    else
+         Frelay = 1.0 
+    end 
+
+    #Start timers 
+    if Frelay >= fl
+        ActiveTimerFl = 0
+    elseif ActiveTimerFl == 0
+        ActiveTimerFl = 1
+        TimeBelowFl = t
+    end
+    if Frelay <= fh
+        ActiveTimerFh = 0
+    elseif ActiveTimerFh == 0
+        ActiveTimerFh = 1
+        TimeAboveFh = t
+    end
+
+    #Use timers to see if tripped 
+    if (ActiveTripFLow == 0) && (ActiveTimerFl == 1) && ((t - TimeBelowFl) >= tfl)
+        ActiveTripFLow = 1
+    end
+    if (ActiveTripFHigh == 0) && (ActiveTimerFh == 1) && ((t - TimeAboveFh) >= tfh)
+        ActiveTripFHigh = 1
+    end
+
+    #Calculate Fmult 
+    if (ActiveTripFLow == 1) || (ActiveTripFHigh == 1)
+        Fmult = 0.0 
+    else 
+        Fmult = 1.0 
+    end  
+
+    #Update inner vars 
+    inner_vars[TimeBelowFl_var] = TimeBelowFl
+    inner_vars[TimeAboveFh_var] = TimeAboveFh
+    inner_vars[ActiveTimerFl_var] = ActiveTimerFl
+    inner_vars[ActiveTimerFh_var] = ActiveTimerFh
+    inner_vars[ActiveTripFLow_var] = ActiveTripFLow
+    inner_vars[ActiveTripFHigh_var] = ActiveTripFHigh
+
+    return Fmult
 end
 
 function get_LVPL_gain(
