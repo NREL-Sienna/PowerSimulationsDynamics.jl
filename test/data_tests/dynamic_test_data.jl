@@ -476,6 +476,51 @@ converter_regca() = RenewableEnergyConverterTypeA(
 
 filt_current() = RLFilter(rf = 0.0, lf = 0.0)
 
+#Parameters from (Ma, 2020)
+dera(generator) = AggregateDistributedGenerationA(
+    name = get_name(generator),
+    Pf_Flag = 1,
+    Freq_Flag = 0,
+    PQ_Flag = 0,
+    Gen_Flag = 1,
+    Vtrip_Flag = 1,
+    Ftrip_Flag = 1,
+    T_rv = 0.02,
+    Trf = 0.02,
+    dbd_pnts = (-99, 99),
+    K_qv = 5.0,
+    Tp = 0.02,
+    T_iq = 0.02,
+    D_dn = 20,
+    D_up = 0,
+    fdbd_pnts = (-0.0006, 0.0006),
+    fe_lim = (min = -99, max = 99),
+    P_lim = (min = 0.0, max = 1.1),
+    dP_lim = (min = -0.5, max = 0.5),
+    Tpord = 0.02,
+    Kpg = 0.1,
+    Kig = 10.0,
+    I_max = 1.2,
+    vl_pnts = [(0.16, 0.95), (0.16, 1.0)],  #[(0.16, 0.44), (0.16, 0.49)],
+    vh_pnts = [(0.16, 1.2), (0.16, 1.15)],
+    Vrfrac = 0.7,
+    fl = 0.0, #not specified in (Ma,2020)
+    fh = 2.0, #not specified in (Ma,2020)
+    tfl = 99.0, #not specified in (Ma,2020)
+    tfh = 99.0, #not specified in (Ma,2020)
+    Tg = 0.02,
+    rrpwr = 99.0, #not specified in (Ma, 2020)
+    Tv = 0.02,
+    Vpr = 0.8,
+    Iq_lim = (min = -1.0, max = 1.0),
+    V_ref = 0.0,
+    Pfa_ref = 0,
+    Q_ref = 0,
+    P_ref = 0,
+    base_power = 0,
+    ext = Dict{String, Any}(),
+)
+
 ####### Loads ########
 
 Ind_Motor(load) = PSY.SingleCageInductionMachine(
