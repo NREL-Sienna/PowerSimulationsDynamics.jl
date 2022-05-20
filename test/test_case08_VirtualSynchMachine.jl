@@ -65,6 +65,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
         # Should return zeros and a warning
         series3 = get_field_current_series(results, "generator-102-1")
+        series4 = get_field_voltage_series(results, "generator-102-1")
 
         # Obtain PSCAD benchmark data
         M = get_csv_data(csv_file)
