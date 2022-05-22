@@ -236,7 +236,7 @@ avr_type2() = AVRTypeII(
     0.0,
 ) #Be - 2nd ceiling coefficient
 
-avr_exst0() = PSY.EXST1(
+avr_exst1() = PSY.EXST1(
     Tr = 0.01,
     Vi_lim = (-5.0,5.0),
     Tc = 10.0,
