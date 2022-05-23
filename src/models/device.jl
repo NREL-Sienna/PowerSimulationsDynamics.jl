@@ -558,8 +558,9 @@ end
 function device_mass_matrix_entries!(
     mass_matrix::AbstractArray,
     dynamic_device::DynamicWrapper{T},
-) where {T <:
-         Union{PSY.SingleCageInductionMachine, PSY.SimplifiedSingleCageInductionMachine}}
+) where {
+    T <: Union{PSY.SingleCageInductionMachine, PSY.SimplifiedSingleCageInductionMachine},
+}
     global_index = get_global_index(dynamic_device)
     mass_matrix_induction_entries!(mass_matrix, dynamic_device, global_index)
     return
@@ -569,8 +570,9 @@ function mass_matrix_induction_entries!(
     mass_matrix,
     ind::DynamicWrapper{T},
     global_index::ImmutableDict{Symbol, Int64},
-) where {T <:
-         Union{PSY.SingleCageInductionMachine, PSY.SimplifiedSingleCageInductionMachine}}
+) where {
+    T <: Union{PSY.SingleCageInductionMachine, PSY.SimplifiedSingleCageInductionMachine},
+}
     @debug "Using default mass matrix entries $ind"
 end
 
