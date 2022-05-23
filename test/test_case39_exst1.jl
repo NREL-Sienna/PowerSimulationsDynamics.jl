@@ -1,58 +1,26 @@
 """
 Test for AVR model : EXST1 available in PSS/e
-This case study defines a four bus system with an infinite bus in 1, 
+This case study defines a four bus system with an infinite bus in 1,
 a GENSAL in bus 2 and a constant impedance load in bus 3
 The GENSAL machine has the EXST1 and a HYGOV.
 The disturbance is the outage of one line between buses 1 and 4
 """
+##################################################
+############### LOAD DATA ########################
+##################################################
+
+include(joinpath(TEST_FILES_DIR, "data_tests/test39.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXST1/TVC_System_32.raw")
-dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXST1/TVC_System.dyr")
 csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//EXST1/results_PSSe.csv")
 
 @testset "Test 39 EXST1 ResidualModel" begin
-    path = (joinpath(pwd(), "test-psse-exst1"))
+    path = joinpath(pwd(), "test-psse-exst1")
     !isdir(path) && mkdir(path)
     try
-        sys = System(raw_file, dyr_file)
-        source = first(get_components(Source, sys))
-        PSY.set_X_th!(source, 0.01)
-
-        for l in get_components(PSY.PowerLoad, sys)
-            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
-        end
-
-        gen = first(get_components(Generator, sys))
-        dynamic_injector = get_dynamic_injector(gen)
-
-        for g in get_components(Generator, sys)
-            #Find the generator at bus 2
-            if get_number(get_bus(g)) == 2
-                gen = g
-                dynamic_injector = get_dynamic_injector(g)
-            end
-        end
-
-        machine = deepcopy(get_machine(dynamic_injector))
-        shaft = deepcopy(get_shaft(dynamic_injector))
-        tg = deepcopy(get_prime_mover(dynamic_injector))
-        pss = deepcopy(get_pss(dynamic_injector))
-        avr = deepcopy(get_avr(dynamic_injector))
-
-        new_dynamic_injector = DynamicGenerator(
-            name = get_name(gen),
-            machine = machine,
-            shaft = shaft,
-            avr = avr_exst1(),
-            prime_mover = tg,
-            ω_ref = 1.0,
-            pss = pss,
-        )
-
         # Define Simulation Problem
         sim = Simulation(
             ResidualModel,
@@ -63,13 +31,13 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//EXST1/results_PSSe.csv")
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test39_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
-        @test (diff[1] < 1e-3)
+        @test diff_val[1] < 1e-3
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
