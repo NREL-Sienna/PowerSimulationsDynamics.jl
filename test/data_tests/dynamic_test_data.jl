@@ -493,11 +493,11 @@ filt_current() = RLFilter(rf = 0.0, lf = 0.0)
 
 Ind_Motor(load) = PSY.SingleCageInductionMachine(
     name = PSY.get_name(load),
-    Rs = 0.013,
-    Rr = 0.009,
-    Xs = 0.067,
-    Xr = 0.17,
-    Xm = 3.8,
+    R_s = 0.013,
+    R_r = 0.009,
+    X_s = 0.067,
+    X_r = 0.17,
+    X_m = 3.8,
     H = 1.5,
     A = 1.0,
     B = 0.0,
