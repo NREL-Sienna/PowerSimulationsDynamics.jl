@@ -200,11 +200,11 @@ function initialize_dynamic_device!(
 
     # Get parameters
     dynamic_device = get_device(dynamic_wrapper)
-    R_s = PSY.get_Rs(dynamic_device)
-    X_ls = PSY.get_Xs(dynamic_device)
-    X_m = PSY.get_Xm(dynamic_device)
-    R_r = PSY.get_Rr(dynamic_device)
-    X_lr = PSY.get_Xr(dynamic_device)
+    R_s = PSY.get_R_s(dynamic_device)
+    X_ls = PSY.get_X_ls(dynamic_device)
+    X_m = PSY.get_X_m(dynamic_device)
+    R_r = PSY.get_R_r(dynamic_device)
+    X_lr = PSY.get_X_lr(dynamic_device)
     A = PSY.get_A(dynamic_device)
     B = PSY.get_B(dynamic_device)
     C = PSY.get_C(dynamic_device)
@@ -264,8 +264,8 @@ function initialize_dynamic_device!(
         out[4] = v_ds + ψ_qs - R_s * i_ds #
         out[5] = -ψ_mq + X_aq * (ψ_qs / X_ls + ψ_qr / X_lr) # dψ_qs/dt = 0
         out[6] = -ψ_md + X_ad * (ψ_ds / X_ls + ψ_dr / X_lr) # dψ_ds/dt = 0
-        out[7] = -(1 - ωr) * ψ_dr + R_r / X_lr * (ψ_mq - ψ_qr) # dψ_qr/dt = 0
-        out[8] = (1 - ωr) * ψ_qr + R_r / X_lr * (ψ_md - ψ_dr) # dψ_dr/dt = 0
+        out[7] = -(1.0 - ωr) * ψ_dr + R_r / X_lr * (ψ_mq - ψ_qr) # dψ_qr/dt = 0
+        out[8] = (1.0 - ωr) * ψ_qr + R_r / X_lr * (ψ_md - ψ_dr) # dψ_dr/dt = 0
         out[9] = ψ_ds * i_qs - ψ_qs * i_ds - τ_m0 * (A * ωr^2 + B * ωr + C) # dωr/dt = 0
     end
     sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
@@ -282,7 +282,7 @@ function initialize_dynamic_device!(
         PSY.set_B_shunt!(dynamic_device, sol_x0[3]) # B_sh
         #set_B_shunt(dynamic_device, sol_x0[3]) # B_sh
         PSY.set_τ_ref!(dynamic_device, sol_x0[9]) # τ_m0
-        #set_τ_ref(dynamic_device, sol_x0[9]) # τ_m0
+        set_P_ref(dynamic_wrapper, sol_x0[9]) # τ_m0
     end
     return device_states
 end
