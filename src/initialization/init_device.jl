@@ -89,7 +89,7 @@ function initialize_static_device!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        V_internal = hypot(sol_x0[1] + sol_x0[2])
+        V_internal = hypot(sol_x0[1], sol_x0[2])
         θ_internal = atan(sol_x0[2], sol_x0[1])
         PSY.set_internal_voltage!(device.device, V_internal)
         PSY.set_internal_angle!(device.device, θ_internal)
@@ -137,7 +137,7 @@ function initialize_dynamic_device!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        V_internal = hypot(sol_x0[1] + sol_x0[2])
+        V_internal = hypot(sol_x0[1], sol_x0[2])
         θ_internal = atan(sol_x0[2], sol_x0[1])
 
         V_internal_freqs = 0.0
