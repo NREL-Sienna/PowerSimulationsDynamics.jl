@@ -31,7 +31,7 @@ for gen in get_components(ThermalStandard, sys)
             ω_ref = 1.0,
             pss = pss,
         )
-    set_dynamic_injector!(gen, nothing)
-    add_component!(sys, new_dynamic_injector, gen)
+        set_dynamic_injector!(gen, nothing)
+        add_component!(sys, new_dynamic_injector, gen)
     end
 end
