@@ -71,16 +71,16 @@ function initialize_static_device!(
     I_I = imag(I)
     R_th = PSY.get_R_th(device.device)
     X_th = PSY.get_X_th(device.device)
-    Zmag = R_th^2 + X_th^2
+    Zmag_sq_inv = 1 / (R_th^2 + X_th^2)
 
     function f!(out, x)
         V_R_internal = x[1]
         V_I_internal = x[2]
 
         out[1] =
-            R_th * (V_R_internal - V_R) / Zmag + X_th * (V_I_internal - V_I) / Zmag - I_R
+            Zmag_sq_inv * (R_th * (V_R_internal - V_R) + X_th * (V_I_internal - V_I)) - I_R
         out[2] =
-            R_th * (V_I_internal - V_I) / Zmag - X_th * (V_R_internal - V_R) / Zmag - I_I
+            Zmag_sq_inv * (R_th * (V_I_internal - V_I) - X_th * (V_R_internal - V_R)) - I_I
     end
     x0 = [V_R, V_I]
     sol = NLsolve.nlsolve(f!, x0)
@@ -120,15 +120,15 @@ function initialize_dynamic_device!(
     I_I = imag(I)
     R_th = PSY.get_R_th(source)
     X_th = PSY.get_X_th(source)
-    Zmag = R_th^2 + X_th^2
+    Zmag_sq_inv = 1 / (R_th^2 + X_th^2)
     function f!(out, x)
         V_R_internal = x[1]
         V_I_internal = x[2]
 
         out[1] =
-            R_th * (V_R_internal - V_R) / Zmag + X_th * (V_I_internal - V_I) / Zmag - I_R
+            Zmag_sq_inv * (R_th * (V_R_internal - V_R) + X_th * (V_I_internal - V_I)) - I_R
         out[2] =
-            R_th * (V_I_internal - V_I) / Zmag - X_th * (V_R_internal - V_R) / Zmag - I_I
+            Zmag_sq_inv * (R_th * (V_I_internal - V_I) - X_th * (V_R_internal - V_R)) - I_I
     end
     x0 = [V_R, V_I]
     sol = NLsolve.nlsolve(f!, x0)
