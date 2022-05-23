@@ -95,7 +95,7 @@ function initialize_pss!(
     V_R = inner_vars[VR_gen_var]
     V_I = inner_vars[VI_gen_var]
     #To do: Figure out how to compensate terminal voltage
-    V_ct = sqrt(V_R^2 + V_I^2)
+    V_ct = hypot(V_R, V_I)
 
     #Compute PSS output signal
     V_pss = output_pss_limiter(V_ss, V_ct, V_cl, V_cu)

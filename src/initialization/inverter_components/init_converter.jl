@@ -34,7 +34,7 @@ function initialize_converter!(
     bus = PSY.get_bus(static)
     bus_angle = PSY.get_angle(bus)
     @assert isapprox(θ, bus_angle)
-    V_t = sqrt(V_R^2 + V_I^2)
+    V_t = hypot(V_R, V_I)
     Iq_external = inner_vars[Ii_cnv_var]
     Ip_external = inner_vars[Ir_cnv_var]
     #Reference Transformation

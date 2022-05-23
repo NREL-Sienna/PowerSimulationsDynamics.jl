@@ -351,7 +351,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     V_ref = get_V_ref(dynamic_device)
 
     #Obtain regulated voltage (assumed to be terminal voltage)
-    V_reg = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
+    V_reg = hypot(inner_vars[Vr_inv_var], inner_vars[Vi_inv_var])
     I_R = inner_vars[Ir_inv_var]
     I_I = inner_vars[Ii_inv_var]
 
@@ -457,7 +457,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     V_ref = get_V_ref(dynamic_device)
 
     #Obtain regulated voltage (assumed to be terminal voltage)
-    V_reg = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
+    V_reg = hypot(inner_vars[Vr_inv_var], inner_vars[Vi_inv_var])
     I_R = inner_vars[Ir_inv_var]
     I_I = inner_vars[Ii_inv_var]
 

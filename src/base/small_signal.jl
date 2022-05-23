@@ -127,7 +127,7 @@ function _get_damping(
             isnothing(ix) && continue
             eigen_val = eigen_vals[ix]
             damping_results[device_name][state] =
-                -1 * real(eigen_val) / sqrt(real(eigen_val)^2 + imag(eigen_val)^2)
+                -1 * real(eigen_val) / hypot(real(eigen_val), imag(eigen_val))
         end
     end
     return damping_results

@@ -10,8 +10,8 @@ function get_init_values_for_comparison(sim::Simulation)
         bus_ix = PSID.get_lookup(sim.inputs)[bus_n]
         V_R[bus_ix] = sim.x0_init[bus_ix]
         V_I[bus_ix] = sim.x0_init[bus_ix + bus_size]
-        Vm[bus_ix] = sqrt(V_R[bus_ix]^2 + V_I[bus_ix]^2)
-        θ[bus_ix] = angle(V_R[bus_ix] + V_I[bus_ix] * 1im)
+        Vm[bus_ix] = hypot(V_R[bus_ix], V_I[bus_ix])
+        θ[bus_ix] = atan(V_I[bus_ix], V_R[bus_ix])
     end
     results =
         Dict{String, Vector{Float64}}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)

@@ -24,8 +24,8 @@ function show_states_initial_value(sim::Simulation)
         bus_ix = PSID.get_lookup(sim.inputs)[bus_n]
         V_R = sim.x0_init[bus_ix]
         V_I = sim.x0_init[bus_ix + bus_size]
-        Vm = sqrt(V_R^2 + V_I^2)
-        θ = angle(V_R + V_I * 1im)
+        Vm = hypot(V_R, V_I)
+        θ = atan(V_I, V_R)
         print("Vm ", round(Vm, digits = 4), "\n")
         print("θ ", round(θ, digits = 4), "\n")
         println("====================")

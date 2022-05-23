@@ -646,7 +646,7 @@ function initialize_mach_shaft!(
         V_dq = ri_dq(δ) * [V_R; V_I]
         ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
         ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
-        ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+        ψ_pp = hypot(ψd_pp, ψq_pp)
         I_d =
             (1.0 / (R^2 + Xq_pp * Xd_pp)) *
             (-R * (V_dq[1] - ψq_pp) + Xq_pp * (-V_dq[2] + ψd_pp))
@@ -908,7 +908,7 @@ function initialize_mach_shaft!(
         V_d, V_q = ri_dq(δ) * [V_R; V_I]
         #Additional Fluxes
         ψd_pp = γ_d1 * eq_p + γ_q1 * ψ_kd
-        ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+        ψ_pp = hypot(ψd_pp, ψq_pp)
 
         I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d - ψq_pp) + Xq_pp * (-V_q + ψd_pp))
         I_q = (1.0 / (R^2 + Xd_pp^2)) * (Xd_pp * (V_d - ψq_pp) + R * (-V_q + ψd_pp))

@@ -235,7 +235,7 @@ function initialize_outer!(
     Vi_cnv = inner_vars[Vi_cnv_var]
     Ir_cnv = inner_vars[Ir_cnv_var]
     Ii_cnv = inner_vars[Ii_cnv_var]
-    V_t = sqrt(Vr_cnv^2 + Vi_cnv^2)
+    V_t = hypot(Vr_cnv, Vi_cnv)
     p_elec_out = Ir_cnv * Vr_cnv + Ii_cnv * Vi_cnv
     q_elec_out = -Ii_cnv * Vr_cnv + Ir_cnv * Vi_cnv
     q_ref = get_Q_ref(dynamic_device)
@@ -317,7 +317,7 @@ function initialize_outer!(
         R_c = PSY.get_R_c(reactive_power_control)
         X_c = PSY.get_R_c(reactive_power_control)
         VC_Flag = PSY.get_VC_Flag(reactive_power_control)
-        V_reg = sqrt(Vr_cnv^2 + Vi_cnv^2)
+        V_reg = hypot(Vr_cnv, Vi_cnv)
         # Compute input to the compensated voltage filter
         if VC_Flag == 0
             V_flt_input = V_reg + K_c * q_elec_out
@@ -345,7 +345,7 @@ function initialize_outer!(
         R_c = PSY.get_R_c(reactive_power_control)
         X_c = PSY.get_R_c(reactive_power_control)
         VC_Flag = PSY.get_VC_Flag(reactive_power_control)
-        V_reg = sqrt(Vr_cnv^2 + Vi_cnv^2)
+        V_reg = hypot(Vr_cnv, Vi_cnv)
         # Compute input to the compensated voltage filter
         if VC_Flag == 0
             V_flt_input = V_reg + K_c * q_elec_out

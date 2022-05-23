@@ -307,7 +307,7 @@ function _update_inner_vars!(
     #Additional Fluxes
     ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
     ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
-    ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+    ψ_pp = hypot(ψd_pp, ψq_pp)
     #Currents
     I_d =
         (1.0 / (R^2 + Xq_pp * Xd_pp)) *
@@ -417,7 +417,7 @@ function _update_inner_vars!(
 
     #Additional Fluxes
     ψd_pp = γ_d1 * eq_p + γ_q1 * ψ_kd
-    ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+    ψ_pp = hypot(ψd_pp, ψq_pp)
 
     #Currents
     I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d - ψq_pp) + Xq_pp * (-V_q + ψd_pp))
@@ -463,7 +463,7 @@ function _update_inner_vars!(
 }
     V_R = inner_vars[Vr_inv_var]
     V_I = inner_vars[Vi_inv_var]
-    V_t = sqrt(V_R^2 + V_I^2)
+    V_t = hypot(V_R, V_I)
     θ = atan(V_I, V_R)
 
     #Get Converter parameters
@@ -603,7 +603,7 @@ function device!(
     # get speed of system's reference frame
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
-    # get states 
+    # get states
     ψ_qs = device_states[1]
     ψ_ds = device_states[2]
     ψ_qr = device_states[3]
@@ -629,25 +629,25 @@ function device!(
     X_ad = (1 / X_m + 1 / X_ls + 1 / X_lr)^(-1) # (4.14-17) in Krause
     X_aq = X_ad
 
-    # voltages in QD 
+    # voltages in QD
     v_qs = voltage_i
     v_ds = voltage_r
     v_qr = zero(T)
     v_dr = zero(T)
 
-    #Additional Fluxes 
+    #Additional Fluxes
     ψ_mq = X_aq * (ψ_qs / X_ls + ψ_qr / X_lr) # (4.14-15) in Krause
     ψ_md = X_ad * (ψ_ds / X_ls + ψ_dr / X_lr) # (4.14-16) in Krause
 
-    # Stator motor currents in QD 
+    # Stator motor currents in QD
     i_qs = 1 / X_ls * (ψ_qs - ψ_mq) # (4.14-1) in Krause
     i_ds = 1 / X_ls * (ψ_ds - ψ_md) # (4.14-2) in Krause
 
     # Electric Torque
-    τ_e = ψ_ds * i_qs - ψ_qs * i_ds    # (4.14-18) in Krause 
+    τ_e = ψ_ds * i_qs - ψ_qs * i_ds    # (4.14-18) in Krause
 
     #Compute ODEs
-    output_ode[1] = 2.0 * pi * f0 * (v_qs - sys_ω * ψ_ds - R_s * i_qs)  # (4.14-9) in Krause 
+    output_ode[1] = 2.0 * pi * f0 * (v_qs - sys_ω * ψ_ds - R_s * i_qs)  # (4.14-9) in Krause
     output_ode[2] = 2.0 * pi * f0 * (v_ds + sys_ω * ψ_qs - R_s * i_ds) # (4.14-10) in Krause
     output_ode[3] =
         2.0 * pi * f0 * (v_qr - (sys_ω - ωr) * ψ_dr + R_r / X_lr * (ψ_mq - ψ_qr)) # (4.14-12) in Krause

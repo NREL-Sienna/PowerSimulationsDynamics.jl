@@ -23,7 +23,7 @@ function initialize_avr!(
     #In AVRFixed, V_ref is used as Vf
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    Vm = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
     #V_ref = Vm
     #Set Vf state equals to Vf0
     avr_ix = get_local_state_ix(dynamic_device, PSY.AVRSimple)
@@ -45,7 +45,7 @@ function initialize_avr!(
     #Obtain Vf0 solved from Machine
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    Vm = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -98,7 +98,7 @@ function initialize_avr!(
     #Obtain Vf0 solved from Machine
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    Vm = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -167,7 +167,7 @@ function initialize_avr!(
     #Obtain I_fd obtained from Machine:
     Xad_Ifd0 = inner_vars[Xad_Ifd_var]
     #Obtain measured terminal voltage
-    Vm0 = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    Vm0 = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -270,7 +270,7 @@ function initialize_avr!(
     #Obtain Vf0 solved from Machine
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    Vm = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
@@ -322,8 +322,8 @@ function initialize_avr!(
     #Obtain Vf0 solved from Machine
     Vf0 = inner_vars[Vf_var]
     #Obtain measured terminal voltage
-    Vt = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
-    #Obtain field winding current 
+    Vt = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
+    #Obtain field winding current
     Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base (for the available generator models)
 
     #Get parameters
@@ -336,7 +336,7 @@ function initialize_avr!(
     Kc = PSY.get_Kc(avr)
     Vr_min, Vr_max = PSY.get_Vr_lim(avr)
 
-    # Check limits to field voltage 
+    # Check limits to field voltage
     if (Vt * Vr_min - Kc * Ifd > Vf0) || (Vf0 > Vt * Vr_max - Kc * Ifd)
         @error(
             "Field Voltage for AVR in $(PSY.get_name(dynamic_device)) is $(Vf0) pu, which is outside its limits.  Consider updating the operating point."

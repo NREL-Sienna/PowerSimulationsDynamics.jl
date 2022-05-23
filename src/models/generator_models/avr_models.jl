@@ -59,7 +59,7 @@ function mdl_avr_ode!(
     Vf = internal_states[1]
 
     #Define external states for device
-    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    V_th = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
 
     #Get Parameters
     Kv = PSY.get_Kv(PSY.get_avr(dynamic_device))
@@ -94,7 +94,7 @@ function mdl_avr_ode!(
     Vm = internal_states[4]
 
     #Define external states for device
-    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    V_th = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
@@ -152,7 +152,7 @@ function mdl_avr_ode!(
     Vm = internal_states[4]
 
     #Define external states for device
-    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    V_th = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
@@ -216,7 +216,7 @@ function mdl_avr_ode!(
     Vr3 = internal_states[5]
 
     #Define external states for device
-    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    V_th = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
     Vs = inner_vars[V_pss_var]
     Xad_Ifd = inner_vars[Xad_Ifd_var]
 
@@ -285,7 +285,7 @@ function mdl_avr_ode!(
     Vr = internal_states[2]
 
     #Define external states for device
-    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    V_th = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var])
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
@@ -333,9 +333,9 @@ function mdl_avr_ode!(
     Vfb = internal_states[4]
 
     #Define external states for device
-    Vt = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2) # machine's terminal voltage
-    Vs = inner_vars[V_pss_var] # PSS output 
-    Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base 
+    Vt = hypot(inner_vars[VR_gen_var], inner_vars[VI_gen_var]) # machine's terminal voltage
+    Vs = inner_vars[V_pss_var] # PSS output
+    Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)

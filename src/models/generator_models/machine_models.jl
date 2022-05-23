@@ -518,7 +518,7 @@ function mdl_machine_ode!(
     #Additional Fluxes
     ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
     ψd_pp = γ_d1 * eq_p + γ_d2 * (Xd_p - Xl) * ψ_kd
-    ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+    ψ_pp = hypot(ψd_pp, ψq_pp)
     #Currents
     I_d =
         (1.0 / (R^2 + Xq_pp * Xd_pp)) *
@@ -686,7 +686,7 @@ function mdl_machine_ode!(
 
     #Additional Fluxes
     ψd_pp = γ_d1 * eq_p + γ_q1 * ψ_kd
-    ψ_pp = sqrt(ψd_pp^2 + ψq_pp^2)
+    ψ_pp = hypot(ψd_pp + ψq_pp)
 
     #Currents
     I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d - ψq_pp) + Xq_pp * (-V_q + ψd_pp))

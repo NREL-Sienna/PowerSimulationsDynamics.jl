@@ -373,7 +373,7 @@ function show_states_initial_value(res::SimulationResults)
         bus_ix = get_bus_lookup(res)[bus_n]
         V_R = x0_init[bus_ix]
         V_I = x0_init[bus_ix + bus_size]
-        Vm = sqrt(V_R^2 + V_I^2)
+        Vm = hypot(V_R, V_I)
         θ = angle(V_R + V_I * 1im)
         print("Vm ", round(Vm, digits = 4), "\n")
         print("θ ", round(θ, digits = 4), "\n")

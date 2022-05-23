@@ -89,7 +89,7 @@ function initialize_static_device!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
+        V_internal = hypot(sol_x0[1] + sol_x0[2])
         θ_internal = atan(sol_x0[2], sol_x0[1])
         PSY.set_internal_voltage!(device.device, V_internal)
         PSY.set_internal_angle!(device.device, θ_internal)
@@ -137,7 +137,7 @@ function initialize_dynamic_device!(
     else
         sol_x0 = sol.zero
         #Update terminal voltages
-        V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
+        V_internal = hypot(sol_x0[1] + sol_x0[2])
         θ_internal = atan(sol_x0[2], sol_x0[1])
 
         V_internal_freqs = 0.0
@@ -245,7 +245,7 @@ function initialize_dynamic_device!(
     τ_m00 = P0 / ωr0
     x0 = [i_qs0, i_ds0, B_sh0, ψ_qs0, ψ_ds0, ψ_qr0, ψ_dr0, ωr0, τ_m00]
 
-    # 
+    #
     function f!(out, x)
         i_qs = x[1]
         i_ds = x[2]
@@ -260,7 +260,7 @@ function initialize_dynamic_device!(
         ψ_md = ψ_ds - i_ds * X_ls
         out[1] = -I_R + i_ds - V_I * B_sh # network interface
         out[2] = -I_I + i_qs + V_R * B_sh # network interface
-        out[3] = v_qs - ψ_ds - R_s * i_qs # 
+        out[3] = v_qs - ψ_ds - R_s * i_qs #
         out[4] = v_ds + ψ_qs - R_s * i_ds #
         out[5] = -ψ_mq + X_aq * (ψ_qs / X_ls + ψ_qr / X_lr) # dψ_qs/dt = 0
         out[6] = -ψ_md + X_ad * (ψ_ds / X_ls + ψ_dr / X_lr) # dψ_ds/dt = 0

@@ -240,7 +240,7 @@ function initialize_inner!(
     # Obtain inner variables for component
     Vr_cnv = inner_vars[Vr_cnv_var]
     Vi_cnv = inner_vars[Vi_cnv_var]
-    V_t = sqrt(Vr_cnv^2 + Vi_cnv^2)
+    V_t = hypot(Vr_cnv, Vi_cnv)
     Iq_cmd = inner_vars[Iq_ic_var]
     Ip_oc = inner_vars[Id_oc_var]
     Iq_oc = inner_vars[Iq_oc_var]

@@ -81,7 +81,7 @@ function get_pss_input_signal(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     V_R = inner_vars[VR_gen_var]
     V_I = inner_vars[VI_gen_var]
-    return sqrt(V_R^2 + V_I^2)
+    return hypot(V_R, V_I)
 end
 
 function get_pss_input_signal(
@@ -204,7 +204,7 @@ function mdl_pss_ode!(
     V_R = inner_vars[VR_gen_var]
     V_I = inner_vars[VI_gen_var]
     #To do: Figure out how to compensate terminal voltage
-    V_ct = sqrt(V_R^2 + V_I^2)
+    V_ct = hypot(V_R, V_I)
 
     #Compute PSS output signal and update inner vars
     inner_vars[V_pss_var] = output_pss_limiter(V_ss, V_ct, V_cl, V_cu)
@@ -229,7 +229,7 @@ inner_vars,
     ω = @view device_states[external_ix]
 
     #Define external inner vars for component
-    V_th = sqrt(get_inner_vars(dynamic_device)[VR_gen_var]^2 + get_inner_vars(dynamic_device)[VI_gen_var]^2)
+    V_th = hypot(get_inner_vars(dynamic_device)[VR_gen_var], get_inner_vars(dynamic_device)[VI_gen_var])
     τe = get_inner_vars(dynamic_device)[τe_var]
 
     #Get parameters

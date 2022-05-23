@@ -201,9 +201,9 @@ function read_initial_conditions(sim::Simulation)
         bus_ix = get_lookup(simulation_inputs)[bus_n]
         V_R[bus_n] = get_initial_conditions(sim)[bus_ix]
         V_I[bus_n] = get_initial_conditions(sim)[bus_ix + bus_size]
-        Vm[bus_n] = sqrt(
-            get_initial_conditions(sim)[bus_ix]^2 +
-            get_initial_conditions(sim)[bus_ix + bus_size]^2,
+        Vm[bus_n] = hypot(
+            get_initial_conditions(sim)[bus_ix],
+            get_initial_conditions(sim)[bus_ix + bus_size],
         )
         θ[bus_n] = atan(
             get_initial_conditions(sim)[bus_ix + bus_size],
