@@ -489,6 +489,21 @@ converter_regca() = RenewableEnergyConverterTypeA(
 
 filt_current() = RLFilter(rf = 0.0, lf = 0.0)
 
+####### Loads ########
+
+Ind_Motor(load) = PSY.SingleCageInductionMachine(
+    name = PSY.get_name(load),
+    Rs = 0.013,
+    Rr = 0.009,
+    Xs = 0.067,
+    Xr = 0.17,
+    Xm = 3.8,
+    H = 1.5,
+    A = 1.0,
+    B = 0.0,
+    base_power = 1000,
+)
+
 ####### Devices #######
 
 function dyn_gen_second_order(generator)
