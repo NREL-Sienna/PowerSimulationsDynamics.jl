@@ -1,6 +1,6 @@
 """
 Test InductionMotor model:
-This case study defines a four bus system with an infinite bus in 1, 
+This case study defines a four bus system with an infinite bus in 1,
 a GENSAL in bus 2, and the (5th order model) induction motor in bus 3
 The GENSAL machine has a SEXS and a HYGOV.
 The disturbance is the outage of one line between buses 1 and 4
@@ -16,7 +16,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "data_tests/TVC_System_motor.dyr")
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-@testset "Test 5th_order Ind. Motor" begin
+@testset "Test 37 5th_order Ind. Motor" begin
     path = (joinpath(pwd(), "test-ind-mot_5th"))
     !isdir(path) && mkdir(path)
     try
@@ -26,7 +26,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "data_tests/TVC_System_motor.dyr")
         # Create Simulation with Constant Power
         sim_P = Simulation(ResidualModel, sys, path, time_span, perturbation_trip)
 
-        # Motor parameters 
+        # Motor parameters
         load = first(get_components(PSY.PowerLoad, sys))
         # Include the induction motor
         dynamic_injector = Ind_Motor(load)
@@ -67,7 +67,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "data_tests/TVC_System_motor.dyr")
     end
 end
 
-@testset "Test 5th_order Ind. Motor" begin
+@testset "Test 37 5th_order Ind. Motor" begin
     path = (joinpath(pwd(), "test-ind-mot_5th"))
     !isdir(path) && mkdir(path)
     try
@@ -77,7 +77,7 @@ end
         # Create Simulation with Constant Power
         sim_P = Simulation(MassMatrixModel, sys, path, time_span, perturbation_trip)
 
-        # Motor parameters 
+        # Motor parameters
         load = first(get_components(PSY.PowerLoad, sys))
         # Include the induction motor
         dynamic_injector = Ind_Motor(load)
