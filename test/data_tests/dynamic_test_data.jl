@@ -495,13 +495,13 @@ Ind_Motor(load) = PSY.SingleCageInductionMachine(
     name = PSY.get_name(load),
     R_s = 0.013,
     R_r = 0.009,
-    X_s = 0.067,
-    X_r = 0.17,
+    X_ls = 0.067,
+    X_lr = 0.17,
     X_m = 3.8,
     H = 1.5,
     A = 1.0,
     B = 0.0,
-    base_power = 1000,
+    base_power = 1000.0,
 )
 
 ####### Devices #######

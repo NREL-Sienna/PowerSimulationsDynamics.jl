@@ -612,11 +612,11 @@ function device!(
 
     #Get parameters
     dynamic_device = get_device(dynamic_wrapper)
-    R_s = PSY.get_Rs(dynamic_device)
-    X_ls = PSY.get_Xs(dynamic_device)
-    X_m = PSY.get_Xm(dynamic_device)
-    R_r = PSY.get_Rr(dynamic_device)
-    X_lr = PSY.get_Xr(dynamic_device)
+    R_s = PSY.get_R_s(dynamic_device)
+    X_ls = PSY.get_X_ls(dynamic_device)
+    X_m = PSY.get_X_m(dynamic_device)
+    R_r = PSY.get_R_r(dynamic_device)
+    X_lr = PSY.get_X_lr(dynamic_device)
     A = PSY.get_A(dynamic_device)
     B = PSY.get_B(dynamic_device)
     C = PSY.get_C(dynamic_device)
@@ -626,7 +626,7 @@ function device!(
     τ_m0 = PSY.get_τ_ref(dynamic_device)
 
     # Reactances for the model
-    X_ad = (1 / X_m + 1 / X_ls + 1 / X_lr)^(-1) # (4.14-17) in Krause
+    X_ad = (1.0 / X_m + 1.0 / X_ls + 1.0 / X_lr)^(-1) # (4.14-17) in Krause
     X_aq = X_ad
 
     # voltages in QD 
