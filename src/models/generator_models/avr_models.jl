@@ -28,7 +28,6 @@ function mass_matrix_avr_entries!(
     return
 end
 
-
 function mdl_avr_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -313,19 +312,18 @@ function mdl_avr_ode!(
     return
 end
 
-
 function mdl_avr_ode!(
     device_states::AbstractArray,
     output_ode::AbstractArray,
     inner_vars::AbstractArray,
-    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}}, 
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
     V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(dynamic_device, PSY.EXST1) 
+    local_ix = get_local_state_ix(dynamic_device, PSY.EXST1)
 
     #Define inner states for component
     internal_states = @view device_states[local_ix]
@@ -357,18 +355,19 @@ function mdl_avr_ode!(
 
     # Compute block derivatives
     _, dVm_dt = low_pass_mass_matrix(Vt, Vm, 1.0, Tr)
-    y_hp , dVfb_dt = high_pass(Vr,Vfb,Kf,Tf)
-    y_ll, dVrll_dt = lead_lag_mass_matrix(clamp(V_ref-Vm-y_hp,Vi_min,Vi_max),Vrll,1.0,Tc,Tb)
-    _, dVr_dt = low_pass_mass_matrix(y_ll,Vr,Ka,Ta)
-    
+    y_hp, dVfb_dt = high_pass(Vr, Vfb, Kf, Tf)
+    y_ll, dVrll_dt =
+        lead_lag_mass_matrix(clamp(V_ref - Vm - y_hp, Vi_min, Vi_max), Vrll, 1.0, Tc, Tb)
+    _, dVr_dt = low_pass_mass_matrix(y_ll, Vr, Ka, Ta)
+
     #Compute 4 States AVR ODE:
-    output_ode[local_ix[1]] = dVm_dt 
-    output_ode[local_ix[2]] = dVrll_dt 
-    output_ode[local_ix[3]] = dVr_dt 
-    output_ode[local_ix[4]] = dVfb_dt 
+    output_ode[local_ix[1]] = dVm_dt
+    output_ode[local_ix[2]] = dVrll_dt
+    output_ode[local_ix[3]] = dVr_dt
+    output_ode[local_ix[4]] = dVfb_dt
 
     #Update inner_vars
-    Vf = clamp(Vr,Vt*Vr_min-Kc*Ifd,Vt*Vr_max-Kc*Ifd) 
+    Vf = clamp(Vr, Vt * Vr_min - Kc * Ifd, Vt * Vr_max - Kc * Ifd)
     inner_vars[Vf_var] = Vf
     return
 end

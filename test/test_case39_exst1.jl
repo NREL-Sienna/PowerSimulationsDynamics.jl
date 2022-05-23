@@ -14,7 +14,6 @@ raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXST1/TVC_System_32.raw")
 dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXST1/TVC_System.dyr")
 csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//EXST1/results_PSSe.csv")
 
-
 @testset "Test 39 EXST1 ResidualModel" begin
     path = (joinpath(pwd(), "test-psse-exst1"))
     !isdir(path) && mkdir(path)
@@ -44,8 +43,15 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//EXST1/results_PSSe.csv")
         pss = deepcopy(get_pss(dynamic_injector))
         avr = deepcopy(get_avr(dynamic_injector))
 
-        new_dynamic_injector = DynamicGenerator(name = get_name(gen), machine = machine, shaft=shaft, avr = avr_exst1(), prime_mover = tg, ω_ref = 1.0, pss = pss)
-
+        new_dynamic_injector = DynamicGenerator(
+            name = get_name(gen),
+            machine = machine,
+            shaft = shaft,
+            avr = avr_exst1(),
+            prime_mover = tg,
+            ω_ref = 1.0,
+            pss = pss,
+        )
 
         # Define Simulation Problem
         sim = Simulation(
@@ -55,8 +61,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//EXST1/results_PSSe.csv")
             (0.0, 20.0), #time span
             BranchTrip(1.0, Line, "BUS1-BUS4-i_1"), #Type of Fault
         )
-        
-    
+
         # Test Initial Condition
         diff = [0.0]
         res = get_init_values_for_comparison(sim)
@@ -83,20 +88,17 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//EXST1/results_PSSe.csv")
 
         t_psid, v2_psid = get_voltage_magnitude_series(results, 2)
         _, v3_psid = get_voltage_magnitude_series(results, 3)
-        _, ω_psid = get_state_series(results, ("generator-2-1", :ω));
+        _, ω_psid = get_state_series(results, ("generator-2-1", :ω))
 
-         
         # Obtain PSSE results
         M = get_csv_data(csv_file)
-        t_psse = M[:, 1] 
-        v1_psse = M[:, 2] 
+        t_psse = M[:, 1]
+        v1_psse = M[:, 2]
         v2_psse = M[:, 3]
-        v3_psse = M[:, 4] 
-        v4_psse = M[:, 5] 
+        v3_psse = M[:, 4]
+        v4_psse = M[:, 5]
         ω_psse = M[:, 6] .+ 1.0
         efd_psse = M[:, 7]
-
-      
 
         # Test Transient Simulation Results
 
@@ -105,11 +107,8 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//EXST1/results_PSSe.csv")
         @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 1e-3
         @test LinearAlgebra.norm(ω_psid - ω_psse, Inf) <= 1e-3
 
-   
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
     end
 end
-
-
