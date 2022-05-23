@@ -180,8 +180,8 @@ function initialize_dynamic_device!(branch::BranchWrapper)
     X = PSY.get_x(branch)
     Zmag_sq = R^2 + X^2
     #Compute Current
-    I_R = R * (V_R_from - V_R_to) / Zmag + X * (V_I_from - V_I_to) / Zmag_sq
-    I_I = R * (V_I_from - V_I_to) / Zmag - X * (V_R_from - V_R_to) / Zmag_sq
+    I_R = R * (V_R_from - V_R_to) / Zmag_sq + X * (V_I_from - V_I_to) / Zmag_sq
+    I_I = R * (V_I_from - V_I_to) / Zmag_sq - X * (V_R_from - V_R_to) / Zmag_sq
     #Update Current
     device_states[1] = I_R
     device_states[2] = I_I
