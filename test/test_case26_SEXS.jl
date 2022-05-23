@@ -77,6 +77,9 @@ function test_sexs_implicit(dyr_file, csv_file, init_cond, eigs_value)
         t = series[1]
         δ = series[2]
         V = series2[2]
+        # TODO: Test Vf with PSSE
+        series4 = get_field_voltage_series(results, "generator-102-1")
+        Vf = series4[2]
 
         # TODO: Get PSSE CSV files and enable tests
 
@@ -142,6 +145,9 @@ function test_sexs_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         t = series[1]
         δ = series[2]
         V = series2[2]
+        # TODO: Test Vf with PSSE
+        series4 = get_field_voltage_series(results, "generator-102-1")
+        Vf = series4[2]
 
         # TODO: Get PSSE CSV files and enable tests
 
