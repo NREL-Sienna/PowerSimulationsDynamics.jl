@@ -309,3 +309,51 @@ function initialize_avr!(
         avr_states[2] = sol_x0[2] #Vr
     end
 end
+
+function initialize_avr!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain Vf0 solved from Machine
+    Vf0 = inner_vars[Vf_var]
+    #Obtain measured terminal voltage
+    Vt = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    #Obtain field winding current 
+    Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base (for the available generator models)
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    Ka = PSY.get_Ka(avr)
+    Kf = PSY.get_Kf(avr)
+    Tf = PSY.get_Tf(avr)
+    Tc = PSY.get_Tc(avr)
+    Tb = PSY.get_Tb(avr)
+    Kc = PSY.get_Kc(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+
+    # Check limits to field voltage 
+    if (Vt * Vr_min - Kc * Ifd > Vf0) || (Vf0 > Vt * Vr_max - Kc * Ifd)
+        @error(
+            "Field Voltage for AVR in $(PSY.get_name(dynamic_device)) is $(Vf0) pu, which is outside its limits.  Consider updating the operating point."
+        )
+    end
+
+    #Update V_ref
+    Vref0 = Vt + Vf0 / Ka
+
+    PSY.set_V_ref!(avr, Vref0)
+    set_V_ref(dynamic_device, Vref0)
+
+    #States of EXST1_PTI are Vm, Vll, Vr, Vfb
+
+    #Update AVR states
+    avr_ix = get_local_state_ix(dynamic_device, PSY.EXST1)
+    avr_states = @view device_states[avr_ix]
+    avr_states[1] = Vt
+    avr_states[2] = (1.0 - Tc / Tb) * Vf0 / Ka
+    avr_states[3] = Vf0
+    avr_states[4] = -Kf / Tf * Vf0
+    return
+end

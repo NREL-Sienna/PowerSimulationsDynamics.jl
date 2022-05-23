@@ -17,6 +17,17 @@ function mass_matrix_avr_entries!(
     return
 end
 
+function mass_matrix_avr_entries!(
+    mass_matrix,
+    avr::PSY.EXST1,
+    global_index::Base.ImmutableDict{Symbol, Int64},
+)
+    mass_matrix[global_index[:Vm], global_index[:Vm]] = PSY.get_Tr(avr)
+    mass_matrix[global_index[:Vrll], global_index[:Vrll]] = PSY.get_Tb(avr)
+    mass_matrix[global_index[:Vr], global_index[:Vr]] = PSY.get_Ta(avr)
+    return
+end
+
 function mdl_avr_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -298,5 +309,65 @@ function mdl_avr_ode!(
     #Update inner_vars
     inner_vars[Vf_var] = Vf
 
+    return
+end
+
+function mdl_avr_ode!(
+    device_states::AbstractArray,
+    output_ode::AbstractArray,
+    inner_vars::AbstractArray,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+
+    #Obtain references
+    V0_ref = get_V_ref(dynamic_device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, PSY.EXST1)
+
+    #Define inner states for component
+    internal_states = @view device_states[local_ix]
+    Vm = internal_states[1]
+    Vrll = internal_states[2]
+    Vr = internal_states[3]
+    Vfb = internal_states[4]
+
+    #Define external states for device
+    Vt = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2) # machine's terminal voltage
+    Vs = inner_vars[V_pss_var] # PSS output 
+    Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base 
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    Tr = PSY.get_Tr(avr)
+    Vi_min, Vi_max = PSY.get_Vi_lim(avr)
+    Tc = PSY.get_Tc(avr)
+    Tb = PSY.get_Tb(avr)
+    Ka = PSY.get_Ka(avr)
+    Ta = PSY.get_Ta(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    Kc = PSY.get_Kc(avr)
+    Kf = PSY.get_Kf(avr)
+    Tf = PSY.get_Tf(avr)
+
+    #Compute auxiliary parameters
+    V_ref = V0_ref + Vs
+
+    # Compute block derivatives
+    _, dVm_dt = low_pass_mass_matrix(Vt, Vm, 1.0, Tr)
+    y_hp, dVfb_dt = high_pass(Vr, Vfb, Kf, Tf)
+    y_ll, dVrll_dt =
+        lead_lag_mass_matrix(clamp(V_ref - Vm - y_hp, Vi_min, Vi_max), Vrll, 1.0, Tc, Tb)
+    _, dVr_dt = low_pass_mass_matrix(y_ll, Vr, Ka, Ta)
+
+    #Compute 4 States AVR ODE:
+    output_ode[local_ix[1]] = dVm_dt
+    output_ode[local_ix[2]] = dVrll_dt
+    output_ode[local_ix[3]] = dVr_dt
+    output_ode[local_ix[4]] = dVfb_dt
+
+    #Update inner_vars
+    Vf = clamp(Vr, Vt * Vr_min - Kc * Ifd, Vt * Vr_max - Kc * Ifd)
+    inner_vars[Vf_var] = Vf
     return
 end

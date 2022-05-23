@@ -38,12 +38,12 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, :V_ref, 1.02)
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diff_val[1] < 1e-3)
 
         # Solve problem
         execute!(sim, IDA(), dtmax = 0.02)
@@ -71,12 +71,12 @@ end
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diff_val[1] < 1e-3)
 
         # Solve problem
         execute!(sim, Rodas4(), dtmax = 0.02)
@@ -113,12 +113,12 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, :θ_ref, 0.1)
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diff_val[1] < 1e-3)
 
         # Solve problem
         execute!(sim, IDA(), dtmax = 0.02)
@@ -145,12 +145,12 @@ end
         )
 
         # Test Initial Condition
-        diff = [0.0]
+        diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
         for (k, v) in test09_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
+            diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
-        @test (diff[1] < 1e-3)
+        @test (diff_val[1] < 1e-3)
 
         # Solve problem
         execute!(sim, Rodas4(), dtmax = 0.02)

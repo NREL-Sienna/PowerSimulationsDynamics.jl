@@ -19,10 +19,10 @@ solver_list = [
     #:Band Requires jac_upper, jac_lower
     :LapackDense,
     #:LapackBand Requires jac_upper, jac_lower,
-    :GMRES,
-    :BCG,
-    :PCG,
-    :TFQMR,
+    # :GMRES,
+    # :BCG,
+    # :PCG,
+    # :TFQMR,
     :KLU,
 ]
 
@@ -42,27 +42,16 @@ function test_sundials(solver)
         #Define Simulation Problem
         sim = Simulation!(
             ResidualModel,
-            path,
             threebus_sys, #system
+            path,
             tspan, #time span
             Ybus_change, #Type of Fault
         )
 
-        #Obtain small signal results for initial conditions
-        small_sig = small_signal_analysis(sim)
-
         #Solve problem
-        @info "$(solver)" @time execute!(sim, IDA(linear_solver = solver);)
-
-        #Obtain data for voltages
-        series = get_voltage_magnitude_series(results, 102)
-        diff = [0.0]
-        res = get_init_values_for_comparison(sim)
-        for (k, v) in test10_x0_init
-            diff[1] += LinearAlgebra.norm(res[k] - v)
-        end
-        @test (diff[1] < 1e-3)
-        @test res.solution.retcode == :Success
+        @info "$(solver)" @time execute!(sim, IDA(linear_solver = solver))
+        results = read_results(sim)
+        @test results.solution.retcode == :Success
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
