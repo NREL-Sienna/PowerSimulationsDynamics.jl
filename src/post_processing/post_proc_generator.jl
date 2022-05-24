@@ -516,11 +516,11 @@ function _field_voltage(
 end
 
 """
-Function to obtain the field voltage time series of a Dynamic Generator with avr ESAC1A.
+Function to obtain the field voltage time series of a Dynamic Generator with avr ESAC1A and EXAC1.
 
 """
 function _field_voltage(
-    avr::PSY.ESAC1A,
+    avr::Union{PSY.ESAC1A, PSY.EXAC1},
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64},
