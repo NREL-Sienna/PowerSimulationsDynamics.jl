@@ -407,12 +407,6 @@ function mdl_avr_ode!(
     Ve = internal_states[4]
     Vr3 = internal_states[5]
 
-    #Limit Ve
-    y_min = 0.0
-    y_max = Inf
-    
-    Ve = clamp(Ve, y_min, y_max)
-
     #Define external states for device
     V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2) # machine's terminal voltage
     Vs = inner_vars[V_pss_var] # PSS output 
@@ -439,29 +433,21 @@ function mdl_avr_ode!(
     I_N = Kc * Xad_Ifd / Ve
     V_FE = Kd * Xad_Ifd + Ke * Ve + Se * Ve
     Vf = Ve * rectifier_function(I_N)
-    
+
     #Compute block derivatives
     _, dVm_dt = low_pass_mass_matrix(V_th, Vm, 1.0, Tr)
     V_F, dVr3_dt = high_pass(V_FE, Vr3, Kf, Tf)
     V_in = V_ref + Vs - Vm - V_F
     y_ll, dVr1_dt = lead_lag_mass_matrix(V_in, Vr1, 1.0, Tc, Tb)
     y_Vr, dVr2_dt = low_pass_nonwindup_mass_matrix(y_ll, Vr2, Ka, Ta, Vr_min, Vr_max)
-
-    u = y_Vr - V_FE
-    y = Ve
-    K = 1.0
-    T = Te
-
-    dydt_scaled = K * u
-    binary_logic = ((y >= y_max) && (dydt_scaled > 0)) || ((y <= y_min) && (dydt_scaled < 0)) ? 0.0 : 1.0
-    dVe_dt = (1.0 / T) * binary_logic*dydt_scaled
+    _, dVe_dt = integrator_nonwindup(y_Vr - V_FE, Ve, 1.0, Te, 0.0, Inf)
 
     #Compute 4 States AVR ODE:
     output_ode[local_ix[1]] = dVm_dt
     output_ode[local_ix[2]] = dVr1_dt
     output_ode[local_ix[3]] = dVr2_dt
     output_ode[local_ix[4]] = dVe_dt
-    output_ode[local_ix[5]] = dVr3_dt 
+    output_ode[local_ix[5]] = dVr3_dt
 
     #Update inner_vars
     inner_vars[Vf_var] = Vf
