@@ -15,7 +15,7 @@ function low_pass_modified_mass_matrix(
     y::V,
     K::Float64,
     K_den::W,
-    T::Float64,
+    ::Float64,
 ) where {V <: ACCEPTED_REAL_TYPES, W <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
     return y, K * u - K_den * y
 end
@@ -75,7 +75,7 @@ function low_pass_nonwindup_mass_matrix(
     u::Z,
     y::V,
     K::Float64,
-    T::Float64,
+    ::Float64,
     y_min::Float64,
     y_max::Float64,
 ) where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
@@ -304,7 +304,7 @@ function integrator_windup_mass_matrix(
     u::Z,
     y::V,
     K::Float64,
-    T::Float64,
+    ::Float64,
     y_min::Float64,
     y_max::Float64,
 ) where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
@@ -343,7 +343,7 @@ function integrator_nonwindup_mass_matrix(
     u::Z,
     y::V,
     K::Float64,
-    T::Float64,
+    ::Float64,
     y_min::Float64,
     y_max::Float64,
 ) where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
