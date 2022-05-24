@@ -376,19 +376,14 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Tr = PSY.get_Tr(avr)
     Tb = PSY.get_Tb(avr)
     Tc = PSY.get_Tc(avr)
     Ka = PSY.get_Ka(avr)
-    Ta = PSY.get_Ta(avr)
-    Te = PSY.get_Te(avr)
     Kf = PSY.get_Kf(avr)
     Tf = PSY.get_Tf(avr)
     Kc = PSY.get_Kc(avr)
     Kd = PSY.get_Kd(avr)
     Ke = PSY.get_Ke(avr)
-    E1, E2 = PSY.get_E_sat(avr)
-    SE1, SE2 = PSY.get_Se(avr)
     Vr_min, Vr_max = PSY.get_Vr_lim(avr)
 
     #Solve Ve from rectifier function
@@ -415,9 +410,9 @@ function initialize_avr!(
     end
     Vr3 = -(Kf / Tf) * VFE
     Tc_Tb_ratio = Tb <= eps() ? 0.0 : Tc / Tb
-    Vr1 = (1 - Tc_Tb_ratio) * (VFE/Ka)
+    Vr1 = (1 - Tc_Tb_ratio) * (VFE / Ka)
     Vm = Vt0
-    Vref0 = Vt0 + VFE/Ka
+    Vref0 = Vt0 + VFE / Ka
 
     #Update V_ref
     PSY.set_V_ref!(avr, Vref0)
