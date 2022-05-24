@@ -36,7 +36,10 @@ function rectifier_function(I::Float64)
     end
 end
 
-function saturation_function(avr::PSY.ESAC1A, x::ACCEPTED_REAL_TYPES)
+function saturation_function(
+    avr::Union{PSY.ESAC1A, PSY.EXAC1},
+    x::ACCEPTED_REAL_TYPES
+)
     Sat_A, Sat_B = PSY.get_saturation_coeffs(avr)
     return Sat_B * (x - Sat_A)^2 / x
 end
