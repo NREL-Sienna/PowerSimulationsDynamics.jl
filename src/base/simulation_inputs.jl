@@ -263,7 +263,7 @@ function _get_ybus(sys::PSY.System)
         lookup = Ybus_.lookup[1]
         ybus_rectangular = transform_ybus_to_rectangular(ybus)
         for br in dyn_lines
-            ybus_update!(ybus_rectangular, br, lookup, -1.0)
+            ybus_update!(ybus_rectangular, br.branch, lookup, -1.0)
         end
     else
         ybus_rectangular =

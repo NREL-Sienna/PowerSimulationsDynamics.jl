@@ -143,7 +143,7 @@ end
 
 function ybus_update!(
     ybus::SparseArrays.SparseMatrixCSC{Float64, Int},
-    b::PSY.ACBranch,
+    b::PSY.Line,
     num_bus::Dict{Int, Int},
     mult::Float64,
 )
@@ -158,6 +158,43 @@ function ybus_update!(
     Y11_imag = mult * (imag(Y_l) + PSY.get_b(b).from)
     Y22_real = mult * real(Y_l)
     Y22_imag = mult * (imag(Y_l) + PSY.get_b(b).to)
+    Y12_real = Y21_real = -mult * real(Y_l)
+    Y12_imag = Y21_imag = -mult * imag(Y_l)
+
+    _record_change!(
+        ybus,
+        bus_from_no,
+        bus_to_no,
+        n_buses,
+        Y11_real,
+        Y11_imag,
+        Y22_real,
+        Y22_imag,
+        Y12_real,
+        Y21_real,
+        Y12_imag,
+        Y21_imag,
+    )
+    return
+end
+
+function ybus_update!(
+    ybus::SparseArrays.SparseMatrixCSC{Float64, Int},
+    b::PSY.Transformer2W,
+    num_bus::Dict{Int, Int},
+    mult::Float64,
+)
+    arc = PSY.get_arc(b)
+    bus_from_no = num_bus[PSY.get_number(arc.from)]
+    bus_to_no = num_bus[arc.to.number]
+    n_buses = length(num_bus)
+
+    Y_l = (1 / (PSY.get_r(b) + PSY.get_x(b) * 1im))
+
+    Y11_real = mult * real(Y_l)
+    Y11_imag = mult * imag(Y_l)
+    Y22_real = mult * real(Y_l)
+    Y22_imag = mult * (imag(Y_l) + PSY.get_primary_shunt(b))
     Y12_real = Y21_real = -mult * real(Y_l)
     Y12_imag = Y21_imag = -mult * imag(Y_l)
 
