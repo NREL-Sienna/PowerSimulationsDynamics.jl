@@ -94,3 +94,24 @@ f(I_N) &= \left\{\begin{array}{cl}
 ```
 
 on which ``X_{ad}I_{fd}`` is the field current coming from the generator and ``V_{h}`` is the terminal voltage, and ``A,B`` are the saturation coefficients computed using the ``E_1, E_2, S_e(E_1), S_e(E_2)`` data.
+
+## Simplified Excitation System ```[SEXS]```
+
+The model for the 2 states excitation system SEXS:
+
+```math
+\begin{align}
+\dot{V}_f &= \frac{1}{T_e} (V_{LL} - V_f) \tag{5a} \\
+\dot{V}_r &= \frac{1}{T_b} \left[\left(1 - \frac{T_a}{T_b}\right) V_{in} - V_r \right] \tag{5b}
+\end{align}
+```
+
+with
+```math
+\begin{align*}
+V_{in} &= V_{ref} + V_s - V_h \\
+V_{LL} &= V_r + \frac{T_a}{T_b}V_{in} \\
+\end{align*}
+```
+
+on which ``V_h`` is the terminal voltage and ``V_s`` is the PSS output signal.

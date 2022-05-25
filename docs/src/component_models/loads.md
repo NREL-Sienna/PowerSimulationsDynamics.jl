@@ -92,4 +92,38 @@ I_\text{exp}^\text{im}  &= V_i \cdot P_0 \cdot \frac{V^{\alpha - 2}}{V_0^\alpha}
 ### 5th-order Single Cage Induction Machine ```[SingleCageInductionMachine]```
 
 The following model is used to model a 5th-order induction machine with a quadratic relationship speed-torque.
+Refer to "Analysis of Electric Machinery and Drive Systems" by Paul Krause, Oleg Wasynczuk and Scott Sudhoff for the equations derivation
 
+```math
+\begin{align}
+\dot{\psi}_{qs} &= \Omega_b (v_{qs} - \omega_\text{sys} \psi_{ds} - R_s i_{qs}) \\
+\dot{\psi}_{ds} &= \Omega_b (v_{ds} + \omega_\text{sys} \psi_{qs} - R_s i_{ds}) \\
+\dot{\psi}_{qr} &= \Omega_b \left(v_{qr} - (\omega_\text{sys} - \omega_r) \psi_{dr} + \frac{R_r}{X_{lr}} (\psi_{mq} - \psi_{qr})\right) \\
+\dot{\psi}_{dr} &= \Omega_b \left(v_{dr} + (\omega_\text{sys} - \omega_r) \psi_{qr} + \frac{R_r}{X_{lr}} (\psi_{md} - \psi_{dr})\right) \\
+\dot{\omega}_r &= \frac{1}{2H} (\tau_e - \tau_{m0}(A \omega_r^2 + B \omega_r + C))
+\end{align}
+```
+
+where:
+
+```math
+\begin{align}
+X_{ad} = X_{aq} &= \left(\frac{1}{X_m} + \frac{1}{X_{ls}} + \frac{1}{X_{lr}}\right)^{-1} \\
+v_{qs} &= V_i^\text{bus} \\
+v_{ds} &= V_r^\text{bus} \\
+v_{qr} = v_{dr} &= 0 \\
+\psi_{mq} &= X_{aq} \left(\frac{\psi_{qs}}{X_{ls}}+ \frac{\psi_{qr}}{X_{lr}}\right) \\
+\psi_{md} &= X_{ad} \left(\frac{\psi_{ds}}{X_{ls}}+ \frac{\psi_{dr}}{X_{lr}}\right) \\
+i_{qs} &= \frac{1}{X_{ls}} (\psi_{qs} - \psi_{mq}) \\
+i_{ds} &= \frac{1}{X_{ls}} (\psi_{ds} - \psi_{md}) \\
+\tau_e &= \psi_{ds} i_{qs} - \psi_{qs} i_{ds} 
+\end{align}
+```
+
+Finally, the withdrawed current from the bus is:
+```math
+\begin{align}
+I_r = \left(\frac{S_\text{motor}}{S_\text{base}}\right) (i_{ds} - v_{qs} B_{sh}) \\
+I_i = \left(\frac{S_\text{motor}}{S_\text{base}}\right) (i_{qs} + v_{ds} B_{sh}) 
+\end{align}
+```
