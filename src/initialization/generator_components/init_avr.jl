@@ -360,3 +360,73 @@ function initialize_avr!(
     avr_states[4] = -Kf / Tf * Vf0
     return
 end
+
+function initialize_avr!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXAC1, TG, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain Vf0 solved from Machine
+    Vf0 = inner_vars[Vf_var]
+    #Obtain measured terminal voltage
+    Vt0 = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    #Obtain field winding current
+    Ifd0 = inner_vars[Xad_Ifd_var]
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    Tb = PSY.get_Tb(avr)
+    Tc = PSY.get_Tc(avr)
+    Ka = PSY.get_Ka(avr)
+    Kf = PSY.get_Kf(avr)
+    Tf = PSY.get_Tf(avr)
+    Kc = PSY.get_Kc(avr)
+    Kd = PSY.get_Kd(avr)
+    Ke = PSY.get_Ke(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+
+    #Solve Ve from rectifier function
+    function f_Ve!(out, x)
+        Ve = x[1]
+        IN = Kc * Ifd0 / Ve
+
+        out[1] = Vf0 - Ve * rectifier_function(IN)
+    end
+    x0 = [10.0] # initial guess for Ve
+    sol = NLsolve.nlsolve(f_Ve!, x0)
+    if !NLsolve.converged(sol)
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+    else
+        sol_x0 = sol.zero
+        Ve = sol_x0[1]
+        IN = Kc * Ifd0 / Ve
+    end
+    Se = saturation_function(avr, Ve) #To do saturation function
+    VFE = Kd * Ifd0 + Ke * Ve + Se * Ve
+    Vr2 = VFE
+    if (Vr2 > Vr_max) || (Vr2 < Vr_min)
+        @error("Regulator Voltage V_R = $(Vr2) outside the limits")
+    end
+    Vr3 = -(Kf / Tf) * VFE
+    Tc_Tb_ratio = Tb <= eps() ? 0.0 : Tc / Tb
+    Vr1 = (1 - Tc_Tb_ratio) * (VFE / Ka)
+    Vm = Vt0
+    Vref0 = Vt0 + VFE / Ka
+
+    #Update V_ref
+    PSY.set_V_ref!(avr, Vref0)
+    set_V_ref(dynamic_device, Vref0)
+
+    #States of EXAC1 are Vm, Vr1, Vr2, Ve, Vr3
+
+    #Update AVR states
+    avr_ix = get_local_state_ix(dynamic_device, typeof(avr))
+    avr_states = @view device_states[avr_ix]
+    avr_states[1] = Vm  #Vm
+    avr_states[2] = Vr1 #Vr1
+    avr_states[3] = Vr2 #Vr2
+    avr_states[4] = Ve  #Ve
+    avr_states[5] = Vr3 #Vr3
+    return
+end

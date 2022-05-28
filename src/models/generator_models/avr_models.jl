@@ -28,6 +28,17 @@ function mass_matrix_avr_entries!(
     return
 end
 
+function mass_matrix_avr_entries!(
+    mass_matrix,
+    avr::PSY.EXAC1,
+    global_index::Base.ImmutableDict{Symbol, Int64},
+)
+    mass_matrix[global_index[:Vm], global_index[:Vm]] = PSY.get_Tr(avr)
+    mass_matrix[global_index[:Vr1], global_index[:Vr1]] = PSY.get_Tb(avr)
+    mass_matrix[global_index[:Vr2], global_index[:Vr2]] = PSY.get_Ta(avr)
+    return
+end
+
 function mdl_avr_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -368,6 +379,77 @@ function mdl_avr_ode!(
 
     #Update inner_vars
     Vf = clamp(Vr, Vt * Vr_min - Kc * Ifd, Vt * Vr_max - Kc * Ifd)
+    inner_vars[Vf_var] = Vf
+    return
+end
+
+function mdl_avr_ode!(
+    device_states::AbstractArray,
+    output_ode::AbstractArray,
+    inner_vars::AbstractArray,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXAC1, TG, P}},
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+
+    #Obtain references
+    V_ref = get_V_ref(dynamic_device)
+
+    #Obtain avr
+    avr = PSY.get_avr(dynamic_device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, typeof(avr))
+
+    #Define inner states for component
+    internal_states = @view device_states[local_ix]
+    Vm = internal_states[1]
+    Vr1 = internal_states[2]
+    Vr2 = internal_states[3]
+    Ve = internal_states[4]
+    Vr3 = internal_states[5]
+
+    #Define external states for device
+    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2) # machine's terminal voltage
+    Vs = inner_vars[V_pss_var] # PSS output 
+    Xad_Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base
+
+    #Get parameters
+    Tr = PSY.get_Tr(avr)
+    Tb = PSY.get_Tb(avr)
+    Tc = PSY.get_Tc(avr)
+    Ka = PSY.get_Ka(avr)
+    Ta = PSY.get_Ta(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    Te = PSY.get_Te(avr) # Te > 0
+    Kf = PSY.get_Kf(avr)
+    Tf = PSY.get_Tf(avr) # Tf > 0
+    Kc = PSY.get_Kc(avr)
+    Kd = PSY.get_Kd(avr)
+    Ke = PSY.get_Ke(avr)
+
+    #Obtain saturation
+    Se = saturation_function(avr, Ve)
+
+    #Compute auxiliary parameters
+    I_N = Kc * Xad_Ifd / Ve
+    V_FE = Kd * Xad_Ifd + Ke * Ve + Se * Ve
+    Vf = Ve * rectifier_function(I_N)
+
+    #Compute block derivatives
+    _, dVm_dt = low_pass_mass_matrix(V_th, Vm, 1.0, Tr)
+    V_F, dVr3_dt = high_pass(V_FE, Vr3, Kf, Tf)
+    V_in = V_ref + Vs - Vm - V_F
+    y_ll, dVr1_dt = lead_lag_mass_matrix(V_in, Vr1, 1.0, Tc, Tb)
+    y_Vr, dVr2_dt = low_pass_nonwindup_mass_matrix(y_ll, Vr2, Ka, Ta, Vr_min, Vr_max)
+    _, dVe_dt = integrator_nonwindup(y_Vr - V_FE, Ve, 1.0, Te, 0.0, Inf)
+
+    #Compute 4 States AVR ODE:
+    output_ode[local_ix[1]] = dVm_dt
+    output_ode[local_ix[2]] = dVr1_dt
+    output_ode[local_ix[3]] = dVr2_dt
+    output_ode[local_ix[4]] = dVe_dt
+    output_ode[local_ix[5]] = dVr3_dt
+
+    #Update inner_vars
     inner_vars[Vf_var] = Vf
     return
 end
