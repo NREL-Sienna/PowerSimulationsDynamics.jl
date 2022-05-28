@@ -504,6 +504,19 @@ Ind_Motor(load) = PSY.SingleCageInductionMachine(
     base_power = 1000.0,
 )
 
+Ind_Motor3rd(load) = PSY.SimplifiedSingleCageInductionMachine(
+    name = PSY.get_name(load),
+    R_s = 0.013,
+    R_r = 0.009,
+    X_ls = 0.067,
+    X_lr = 0.17,
+    X_m = 3.8,
+    H = 1.5,
+    A = 1.0,
+    B = 0.0,
+    base_power = 1000.0,
+)
+
 ####### Devices #######
 
 function dyn_gen_second_order(generator)
