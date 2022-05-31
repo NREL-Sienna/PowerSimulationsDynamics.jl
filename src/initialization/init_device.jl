@@ -202,13 +202,14 @@ function initialize_dynamic_device!(
     dynamic_device = get_device(dynamic_wrapper)
     R_s = PSY.get_R_s(dynamic_device)
     X_ls = PSY.get_X_ls(dynamic_device)
-    X_m = PSY.get_X_m(dynamic_device)
     R_r = PSY.get_R_r(dynamic_device)
     X_lr = PSY.get_X_lr(dynamic_device)
     A = PSY.get_A(dynamic_device)
     B = PSY.get_B(dynamic_device)
     C = PSY.get_C(dynamic_device)
     base_power = PSY.get_base_power(dynamic_device)
+    X_ad = PSY.get_X_ad(dynamic_device)
+    X_aq = PSY.get_X_aq(dynamic_device)
 
     #PowerFlow Data
     P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
@@ -226,10 +227,6 @@ function initialize_dynamic_device!(
     # voltages in qd reference frame
     v_ds = V_R
     v_qs = V_I
-
-    # Reactances for the model
-    X_ad = (1.0 / X_m + 1.0 / X_ls + 1.0 / X_lr)^(-1)
-    X_aq = X_ad
 
     # Initial guess for NLSolve (assume B_shunt = 0)
     i_qs0 = I_I

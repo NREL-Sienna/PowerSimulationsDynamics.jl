@@ -9,18 +9,20 @@ The disturbance is the outage of one line between buses 1 and 4
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test39.jl"))
-
-##################################################
-############### SOLVE PROBLEM ####################
-##################################################
-
-csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//EXST1/results_PSSe.csv")
+raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXST1/TVC_System_32.raw")
+dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXST1/TVC_System.dyr")
+csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXST1/results_PSSe.csv")
 
 @testset "Test 39 EXST1 ResidualModel" begin
     path = joinpath(pwd(), "test-psse-exst1")
     !isdir(path) && mkdir(path)
     try
+        # Define system
+        sys = System(raw_file, dyr_file)
+        for l in get_components(PSY.PowerLoad, sys)
+            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        end
+
         # Define Simulation Problem
         sim = Simulation(
             ResidualModel,
