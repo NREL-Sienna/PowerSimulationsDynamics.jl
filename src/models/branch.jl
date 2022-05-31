@@ -11,7 +11,7 @@ function branch!(
     current_i_to::AbstractArray{T},
     branch::BranchWrapper,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    mdl_line_ode!(
+    mdl_branch_ode!(
         device_states,
         output_ode,
         voltage_r_from,
