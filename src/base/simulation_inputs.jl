@@ -314,13 +314,20 @@ function _make_DAE_vector(mass_matrix::AbstractArray, var_count::Int, n_buses::I
     return DAE_vector
 end
 
+function _get_shunt_values(br::PSY.Line)
+    return PSY.get_b(br).from, PSY.get_b(br).to
+end
+
+function _get_shunt_values(::Union{PSY.TapTransformer, PSY.Transformer2W})
+    return 0.0, 0.0
+end
+
 function _make_total_shunts(wrapped_branches, n_buses::Int)
     shunts = SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2 * n_buses, 2 * n_buses))
     for br in wrapped_branches
         bus_ix_from = get_bus_ix_from(br)
         bus_ix_to = get_bus_ix_to(br)
-        b_from = PSY.get_b(br).from
-        b_to = PSY.get_b(br).to
+        b_from, b_to = _get_shunt_values(br.branch.branch)
         shunts[bus_ix_from, bus_ix_from + n_buses] += b_from
         shunts[bus_ix_to, bus_ix_to + n_buses] += b_to
         shunts[bus_ix_from + n_buses, bus_ix_from] -= b_from
