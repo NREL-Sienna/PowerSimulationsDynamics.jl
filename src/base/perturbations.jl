@@ -55,6 +55,14 @@ function _get_branch_for_perturbation(
     if perturbation.branch_type == PSY.DynamicBranch
         error("DynamicBranch is not supported currently with perturbation $T")
     end
+
+    if length(PSY.get_components(perturbation.branch_type, sys)) < 1
+        error(
+            "The system does not contain branches type $(perturbation.branch_type). \\
+      If used all_branches_dynamic or all_lines_dynamic make sure the branch $(perturbation.branch_name) was not converted",
+        )
+    end
+
     branch = PSY.get_component(perturbation.branch_type, sys, perturbation.branch_name)
     if branch === nothing || !PSY.get_available(branch)
         throw(
@@ -192,9 +200,9 @@ function ybus_update!(
     Y_l = (1 / (PSY.get_r(b) + PSY.get_x(b) * 1im))
 
     Y11_real = mult * real(Y_l)
-    Y11_imag = mult * imag(Y_l)
+    Y11_imag = mult * imag(Y_l) - PSY.get_primary_shunt(b)
     Y22_real = mult * real(Y_l)
-    Y22_imag = mult * (imag(Y_l) + PSY.get_primary_shunt(b))
+    Y22_imag = mult * imag(Y_l)
     Y12_real = Y21_real = -mult * real(Y_l)
     Y12_imag = Y21_imag = -mult * imag(Y_l)
 
@@ -231,10 +239,10 @@ function ybus_update!(
 
     Y11 = (Y_t * c^2)
     Y21 = Y12 = (-Y_t * c)
-    Y22 = Y_t + (1im * b)
+    Y22 = Y_t
 
     Y11_real = mult * real(Y11)
-    Y11_imag = mult * imag(Y12)
+    Y11_imag = mult * imag(Y12) - b
     Y22_real = mult * real(Y22)
     Y22_imag = mult * imag(Y22)
     Y12_real = -mult * real(Y12)
@@ -280,7 +288,7 @@ function ybus_update!(
     Y22 = Y_t
 
     Y11_real = mult * real(Y11)
-    Y11_imag = mult * imag(Y12)
+    Y11_imag = mult * imag(Y12) - b
     Y22_real = mult * real(Y22)
     Y22_imag = mult * imag(Y22)
     Y12_real = -mult * real(Y12)
