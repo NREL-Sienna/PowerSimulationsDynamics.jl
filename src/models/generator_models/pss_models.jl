@@ -211,6 +211,61 @@ function mdl_pss_ode!(
     return
 end
 
+function mdl_pss_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.STAB1}},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
+
+    #Get Signal Input Integer
+    pss = PSY.get_pss(dynamic_device)
+
+    # Get Input Signal - only speed deviation for STAB1
+    external_ix = get_input_port_ix(dynamic_device, PSY.STAB1) 
+    ω = device_states[external_ix[1]] # get machine speed
+    u = ω - 1.0
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, PSY.STAB1)
+
+    #Define inner states for component
+    internal_states = @view device_states[local_ix]
+    x_p1 = internal_states[1] # state for washout filter
+    x_p2 = internal_states[2] # state for Lead Lag 1
+    x_p3 = internal_states[3] # state for Lead Lag 2
+  
+    # Get Parameters
+    KT = PSY.get_KT(pss)
+    T = PSY.get_T(pss)
+    T1T3 = PSY.get_T1T3(pss)
+    T3 = PSY.get_T3(pss)
+    T2T4 = PSY.get_T2T4(pss)
+    T4 = PSY.get_T4(pss)
+    H_lim = PSY.get_H_lim(pss)
+    
+    K = T * KT
+    T1 = T3*T1T3
+    T2 = T4*T2T4
+
+    # Compute block derivatives
+
+    y_hp, dxp1_dt = high_pass(u,x_p1,K,T) 
+    y_LL1, dxp2_dt = lead_lag(y_hp,x_p2,1.0,T1,T3) 
+    y_LL2, dxp3_dt = lead_lag(y_LL1,x_p3,1.0,T2,T4) 
+
+    #Compute 3 states PSS ODE
+    output_ode[local_ix[1]] = dxp1_dt
+    output_ode[local_ix[2]] = dxp2_dt
+    output_ode[local_ix[3]] = dxp3_dt
+  
+    #Compute and update output signal
+    V_ss = clamp(y_LL2, -H_lim, H_lim)
+    inner_vars[V_pss_var] = V_ss 
+    return
+end
+
 #Currently not working properly.
 #=
 function mdl_pss_ode!(
