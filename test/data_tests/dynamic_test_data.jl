@@ -181,6 +181,16 @@ shaft_fivemass() = FiveMassShaft(
 
 pss_none() = PSSFixed(0.0)
 
+pss_stab1() = PSY.STAB1(
+    KT = 6.0,
+    T = 1.5,
+    T1T3 = 13.3,
+    T3 = 0.0447,
+    T2T4 = 13.3,
+    T4 = 0.0447,
+    H_lim = 0.2,
+)
+
 ######## TG Data #########
 
 tg_none() = TGFixed(1.0) #eff
@@ -492,6 +502,19 @@ filt_current() = RLFilter(rf = 0.0, lf = 0.0)
 ####### Loads ########
 
 Ind_Motor(load) = PSY.SingleCageInductionMachine(
+    name = PSY.get_name(load),
+    R_s = 0.013,
+    R_r = 0.009,
+    X_ls = 0.067,
+    X_lr = 0.17,
+    X_m = 3.8,
+    H = 1.5,
+    A = 1.0,
+    B = 0.0,
+    base_power = 1000.0,
+)
+
+Ind_Motor3rd(load) = PSY.SimplifiedSingleCageInductionMachine(
     name = PSY.get_name(load),
     R_s = 0.013,
     R_r = 0.009,

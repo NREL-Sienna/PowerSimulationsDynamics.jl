@@ -156,6 +156,7 @@ include("post_processing/post_proc_common.jl")
 include("post_processing/post_proc_generator.jl")
 include("post_processing/post_proc_inverter.jl")
 include("post_processing/post_proc_results.jl")
+include("post_processing/post_proc_loads.jl")
 
 #Utils
 include("utils/psy_utils.jl")
