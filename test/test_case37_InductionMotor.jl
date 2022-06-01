@@ -61,6 +61,8 @@ dyr_file = joinpath(TEST_FILES_DIR, "data_tests/TVC_System_motor.dyr")
         results = read_results(sim)
 
         # No comparison since model is not available in other tools
+        power = get_activepower_series(results, PSY.get_name(load))
+        rpower = get_reactivepower_series(results, PSY.get_name(load))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -112,6 +114,8 @@ end
         results = read_results(sim)
 
         # No comparison since model is not available in other tools
+        power = get_activepower_series(results, PSY.get_name(load))
+        rpower = get_reactivepower_series(results, PSY.get_name(load))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
