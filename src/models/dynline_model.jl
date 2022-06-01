@@ -51,8 +51,8 @@ function mdl_transformer_Lshape_ode!(
     Ishunt_i = device_states[3]
     output_ode[1] = (ω_b / L) * ((voltage_r_from - voltage_r_to) - (R * Il_r - L * Il_i))
     output_ode[2] = (ω_b / L) * ((voltage_i_from - voltage_i_to) - (R * Il_i + L * Il_r))
-    output_ode[3] = (ω_b / shunt) * voltage_i_from + L * Ishunt_i
-    output_ode[4] = (ω_b / shunt) * voltage_i_to - L * Ishunt_r
+    output_ode[3] = (ω_b / shunt) * voltage_r_from + L * Ishunt_i
+    output_ode[4] = (ω_b / shunt) * voltage_i_from - L * Ishunt_r
 
     current_r_from[1] -= (Il_r + Ishunt_r)
     current_i_from[1] -= (Il_r + Ishunt_i)
