@@ -181,6 +181,16 @@ shaft_fivemass() = FiveMassShaft(
 
 pss_none() = PSSFixed(0.0)
 
+pss_stab1() = PSY.STAB1(
+    KT = 6.0,
+    T = 1.5,
+    T1T3 = 13.3,
+    T3 = 0.0447,
+    T2T4 = 13.3,
+    T4 = 0.0447,
+    H_lim = 0.2
+)
+
 ######## TG Data #########
 
 tg_none() = TGFixed(1.0) #eff
