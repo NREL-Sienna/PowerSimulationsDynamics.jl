@@ -658,7 +658,6 @@ function device!(
     return
 end
 
-
 """
 Model of 3-state (SimplifiedSingleCageInductionMachine) induction motor in Julia.
 Based on the 3rd order model derived in Prabha Kundur's Book and the
@@ -714,8 +713,16 @@ function device!(
     v_dr = zero(T)
 
     # Stator and rotor currents in QD 
-    i_qs = 1/(R_s^2 + (sys_ω*X_p)^2) * ((R_s * v_qs - sys_ω*X_p * v_ds) - (R_s * sys_ω*X_m/X_rr * ψ_dr + sys_ω*X_p * sys_ω*X_m/X_rr * ψ_qr))
-    i_ds = 1/(R_s^2 + (sys_ω*X_p)^2) * ((R_s * v_ds + sys_ω*X_p * v_qs) - (-R_s * sys_ω*X_m/X_rr * ψ_qr + sys_ω*X_p * sys_ω*X_m/X_rr * ψ_dr))
+    i_qs =
+        1 / (R_s^2 + (sys_ω * X_p)^2) * (
+            (R_s * v_qs - sys_ω * X_p * v_ds) -
+            (R_s * sys_ω * X_m / X_rr * ψ_dr + sys_ω * X_p * sys_ω * X_m / X_rr * ψ_qr)
+        )
+    i_ds =
+        1 / (R_s^2 + (sys_ω * X_p)^2) * (
+            (R_s * v_ds + sys_ω * X_p * v_qs) -
+            (-R_s * sys_ω * X_m / X_rr * ψ_qr + sys_ω * X_p * sys_ω * X_m / X_rr * ψ_dr)
+        )
     i_qr = (ψ_qr - X_m * i_qs) / X_rr # derived from 4th row of (4.5.37) in Krause
     i_dr = (ψ_dr - X_m * i_ds) / X_rr # # derived from 5th row of (4.5.37) in Krause
 
@@ -723,10 +730,8 @@ function device!(
     τ_e = ψ_qr * i_dr - ψ_dr * i_qr     # (4.8-6) in Krause 
 
     #Compute ODEs
-    output_ode[1] =
-        2.0 * pi * f0 * (v_qr - (sys_ω - ωr) * ψ_dr - R_r * i_qr) # (4.5-25) in Krause
-    output_ode[2] =
-        2.0 * pi * f0 * (v_dr + (sys_ω - ωr) * ψ_qr - R_r * i_dr) # (4.5-26) in Krause
+    output_ode[1] = 2.0 * pi * f0 * (v_qr - (sys_ω - ωr) * ψ_dr - R_r * i_qr) # (4.5-25) in Krause
+    output_ode[2] = 2.0 * pi * f0 * (v_dr + (sys_ω - ωr) * ψ_qr - R_r * i_dr) # (4.5-26) in Krause
     output_ode[3] = 1.0 / (2.0 * H) * (τ_e - τ_m0 * (A * ωr^2 + B * ωr + C)) # (4.14-19) in Krause and (7.39) in Kundur
 
     #Update current

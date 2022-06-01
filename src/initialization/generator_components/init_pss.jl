@@ -114,7 +114,6 @@ function initialize_pss!(
     return
 end
 
-
 function initialize_pss!(
     device_states,
     static::PSY.StaticInjection,
@@ -123,7 +122,7 @@ function initialize_pss!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
     #Get Signal Input Integer
     pss = PSY.get_pss(dynamic_device)
-    
+
     #Obtain PSS States
     pss_ix = get_local_state_ix(dynamic_device, typeof(pss))
     pss_states = @view device_states[pss_ix]
@@ -132,7 +131,7 @@ function initialize_pss!(
     x_p1 = 0.0
     x_p2 = 0.0
     x_p3 = 0.0
-    
+
     #Compute PSS output signal
     V_pss = 0.0
 

@@ -5,7 +5,6 @@ const PSY = PowerSystems
 raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/STAB1/OMIB_SSS.raw")
 dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/STAB1/OMIB_SSS.dyr")
 
-
 for gen in get_components(ThermalStandard, sys)
     #Find the generator at bus 1
     if get_number(get_bus(gen)) == 1

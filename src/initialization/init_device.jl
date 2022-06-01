@@ -284,7 +284,6 @@ function initialize_dynamic_device!(
     return device_states
 end
 
-
 function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.SimplifiedSingleCageInductionMachine},
     device::PSY.StaticInjection,
@@ -331,10 +330,10 @@ function initialize_dynamic_device!(
     B_sh0 = 0.0
     ψ_qs0 = -v_ds + R_s * i_ds0
     ψ_ds0 = v_qs - R_s * i_qs0
-    ψ_qr0 = X_rr/X_m*(ψ_qs0 -i_qs0*X_p)
-    ψ_dr0 = X_rr/X_m*(ψ_ds0 -i_ds0*X_p)
-    i_qr0 = (ψ_qr0 -X_m*i_qs0)/X_rr
-    i_dr0 = (ψ_dr0 -X_m*i_ds0)/X_rr
+    ψ_qr0 = X_rr / X_m * (ψ_qs0 - i_qs0 * X_p)
+    ψ_dr0 = X_rr / X_m * (ψ_ds0 - i_ds0 * X_p)
+    i_qr0 = (ψ_qr0 - X_m * i_qs0) / X_rr
+    i_dr0 = (ψ_dr0 - X_m * i_ds0) / X_rr
     ωr0 = 0.98 # good guess for ind. motor
     τ_m00 = P0 / ωr0
     x0 = [i_qs0, i_ds0, i_qr0, i_dr0, B_sh0, ψ_qs0, ψ_ds0, ψ_qr0, ψ_dr0, ωr0, τ_m00]
@@ -352,15 +351,15 @@ function initialize_dynamic_device!(
         ψ_dr = x[9]
         ωr = x[10]
         τ_m0 = x[11]
-      
+
         out[1] = -I_R + i_ds - V_I * B_sh # network interface
         out[2] = -I_I + i_qs + V_R * B_sh # network interface
         out[3] = v_qs - ψ_ds - R_s * i_qs # dψ_qs/dt = 0
         out[4] = v_ds + ψ_qs - R_s * i_ds # dψ_ds/dt = 0
-        out[5] = -ψ_qs + X_ss*i_qs + X_m*i_qr
-        out[6] = -ψ_ds + X_ss*i_ds + X_m*i_dr
-        out[7] = -ψ_qr + X_rr*i_qr + X_m*i_qs
-        out[8] = -ψ_dr + X_rr*i_dr + X_m*i_ds
+        out[5] = -ψ_qs + X_ss * i_qs + X_m * i_qr
+        out[6] = -ψ_ds + X_ss * i_ds + X_m * i_dr
+        out[7] = -ψ_qr + X_rr * i_qr + X_m * i_qs
+        out[8] = -ψ_dr + X_rr * i_dr + X_m * i_ds
         out[9] = -(1.0 - ωr) * ψ_dr - R_r * i_qr # dψ_qr/dt = 0
         out[10] = (1.0 - ωr) * ψ_qr - R_r * i_dr # dψ_dr/dt = 0
         out[11] = ψ_qr * i_dr - ψ_dr * i_qr - τ_m0 * (A * ωr^2 + B * ωr + C) # dωr/dt = 0

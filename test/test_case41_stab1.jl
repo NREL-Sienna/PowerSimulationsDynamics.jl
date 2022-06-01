@@ -30,19 +30,19 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//STAB1/results_PSSe.csv")
         for g in get_components(Generator, sys)
             #Find the generator at bus 1
             if get_number(get_bus(g)) == 1
-                 gen = g
+                gen = g
                 dynamic_injector = get_dynamic_injector(g)
             end
         end
 
         perturbation = ControlReferenceChange(1.0, dynamic_injector, :V_ref, 1.0472)
-        
+
         sim = Simulation(
             ResidualModel,
-            sys, 
+            sys,
             path,
             (0.0, 20.0), #time span
-            perturbation, 
+            perturbation,
         )
 
         # Test Initial Condition
@@ -75,8 +75,8 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//STAB1/results_PSSe.csv")
         # Obtain PSSE results
         M = get_csv_data(csv_file)
 
-        t_psse = M[:, 1] 
-        v1_psse = M[:, 2] 
+        t_psse = M[:, 1]
+        v1_psse = M[:, 2]
         ω_psse = M[:, 3] .+ 1.0
 
         # Test Transient Simulation Results
