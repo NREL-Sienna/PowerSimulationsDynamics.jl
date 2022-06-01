@@ -657,3 +657,80 @@ function device!(
     current_i[1] -= (base_power / Sbase) * (i_qs + v_ds * B_sh)  # in system base
     return
 end
+
+
+"""
+Model of 3-state (SimplifiedSingleCageInductionMachine) induction motor in Julia.
+Based on the 3rd order model derived in Prabha Kundur's Book and the
+equations in "Analysis of Electric Machinery and Drive Systems" by Paul Krause,
+Oleg Wasynczuk and Scott Sudhoff.
+"""
+function device!(
+    device_states::AbstractArray{T},
+    output_ode::AbstractArray{T},
+    voltage_r::T,
+    voltage_i::T,
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    global_vars::AbstractArray{T},
+    ::AbstractArray{T},
+    dynamic_wrapper::DynamicWrapper{PSY.SimplifiedSingleCageInductionMachine},
+    t,
+) where {T <: ACCEPTED_REAL_TYPES}
+    Sbase = get_system_base_power(dynamic_wrapper)
+    f0 = get_system_base_frequency(dynamic_wrapper)
+    if get_connection_status(dynamic_wrapper) < 1.0
+        output_ode .= zero(T)
+        return
+    end
+
+    # get speed of system's reference frame
+    sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
+
+    # get states 
+    ψ_qr = device_states[1]
+    ψ_dr = device_states[2]
+    ωr = device_states[3]
+
+    #Get parameters
+    dynamic_device = get_device(dynamic_wrapper)
+    R_s = PSY.get_R_s(dynamic_device)
+    X_m = PSY.get_X_m(dynamic_device)
+    R_r = PSY.get_R_r(dynamic_device)
+    A = PSY.get_A(dynamic_device)
+    B = PSY.get_B(dynamic_device)
+    C = PSY.get_C(dynamic_device)
+    H = PSY.get_H(dynamic_device)
+    base_power = PSY.get_base_power(dynamic_device)
+    B_sh = PSY.get_B_shunt(dynamic_device)
+    τ_m0 = PSY.get_τ_ref(dynamic_device)
+    X_rr = PSY.get_X_rr(dynamic_device)
+    X_p = PSY.get_X_p(dynamic_device)
+
+    # voltages in QD 
+    v_qs = voltage_i
+    v_ds = voltage_r
+    v_qr = zero(T)
+    v_dr = zero(T)
+
+    # Stator and rotor currents in QD 
+    i_qs = 1/(R_s^2 + (sys_ω*X_p)^2) * ((R_s * v_qs - sys_ω*X_p * v_ds) - (R_s * sys_ω*X_m/X_rr * ψ_dr + sys_ω*X_p * sys_ω*X_m/X_rr * ψ_qr))
+    i_ds = 1/(R_s^2 + (sys_ω*X_p)^2) * ((R_s * v_ds + sys_ω*X_p * v_qs) - (-R_s * sys_ω*X_m/X_rr * ψ_qr + sys_ω*X_p * sys_ω*X_m/X_rr * ψ_dr))
+    i_qr = (ψ_qr - X_m * i_qs) / X_rr # derived from 4th row of (4.5.37) in Krause
+    i_dr = (ψ_dr - X_m * i_ds) / X_rr # # derived from 5th row of (4.5.37) in Krause
+
+    # Electric Torque
+    τ_e = ψ_qr * i_dr - ψ_dr * i_qr     # (4.8-6) in Krause 
+
+    #Compute ODEs
+    output_ode[1] =
+        2.0 * pi * f0 * (v_qr - (sys_ω - ωr) * ψ_dr - R_r * i_qr) # (4.5-25) in Krause
+    output_ode[2] =
+        2.0 * pi * f0 * (v_dr + (sys_ω - ωr) * ψ_qr - R_r * i_dr) # (4.5-26) in Krause
+    output_ode[3] = 1.0 / (2.0 * H) * (τ_e - τ_m0 * (A * ωr^2 + B * ωr + C)) # (4.14-19) in Krause and (7.39) in Kundur
+
+    #Update current
+    current_r[1] -= (base_power / Sbase) * (i_ds - v_qs * B_sh)  # in system base
+    current_i[1] -= (base_power / Sbase) * (i_qs + v_ds * B_sh)  # in system base
+    return
+end
