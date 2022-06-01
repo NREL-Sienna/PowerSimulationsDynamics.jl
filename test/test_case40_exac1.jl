@@ -9,7 +9,13 @@ The disturbance is the outage of one line between buses 1 and 4
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test40.jl"))
+raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXAC1/TVC_System_32.raw")
+dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXAC1/TVC_System.dyr")
+
+sys = System(raw_file, dyr_file)
+for l in get_components(PSY.PowerLoad, sys)
+    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+end
 
 ##################################################
 ############### SOLVE PROBLEM ####################
