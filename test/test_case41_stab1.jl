@@ -97,8 +97,6 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//STAB1/results_PSSe.csv")
     end
 end
 
-
-
 @testset "Test 41 STAB1 MassMatrixModel" begin
     path = joinpath(pwd(), "test-psse-stab1")
     !isdir(path) && mkdir(path)
