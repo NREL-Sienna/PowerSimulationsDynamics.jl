@@ -122,7 +122,13 @@ function device_mass_matrix_entries!(
         PSY.get_converter(dynamic_device),
         global_index,
     )
-    mass_matrix_filter_entries!(mass_matrix, PSY.get_filter(dynamic_device), global_index)
+    f0 = get_system_base_frequency(dynamic_device)
+    mass_matrix_filter_entries!(
+        mass_matrix,
+        PSY.get_filter(dynamic_device),
+        global_index,
+        f0,
+    )
     return
 end
 

@@ -148,7 +148,7 @@ end
         if !entry
             @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] == 0
         elseif entry
-            @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] == 1
+            @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] > 0
         else
             @test false
         end
