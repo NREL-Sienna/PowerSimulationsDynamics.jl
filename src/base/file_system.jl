@@ -1,5 +1,5 @@
 function check_folder(folder::String)
-    !isdir(folder) && throw(IS.ConflictingInputsError("Specified folder is not valid"))
+    !isdir(folder) && throw(IS.ConflictingInputsError("Specified folder $folder is not valid"))
     try
         mkdir(joinpath(folder, "fake"))
         rm(joinpath(folder, "fake"))
