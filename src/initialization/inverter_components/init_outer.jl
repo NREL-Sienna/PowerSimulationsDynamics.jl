@@ -221,26 +221,28 @@ function initialize_outer!(
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
 }
-    #function get_value_I(v::Float64)
-    #    return v
-    #end
-    #function get_value_I(v::Int)
-    #    return v
-    #end
-    #function get_value_I(v::ForwardDiff.Dual)
-    #    return v.value
-    #end
-
-    Vr_cnv = inner_vars[Vr_cnv_var]
-    Vi_cnv = inner_vars[Vi_cnv_var]
-    Ir_cnv = inner_vars[Ir_cnv_var]
-    Ii_cnv = inner_vars[Ii_cnv_var]
+    # Read inner vars
+    Vr_cnv = inner_vars[Vr_filter_var]
+    Vi_cnv = inner_vars[Vi_filter_var]
+    Ir_cnv = inner_vars[Ir_filter_var]
+    Ii_cnv = inner_vars[Ii_filter_var]
     V_t = sqrt(Vr_cnv^2 + Vi_cnv^2)
+
     p_elec_out = Ir_cnv * Vr_cnv + Ii_cnv * Vi_cnv
     q_elec_out = -Ii_cnv * Vr_cnv + Ir_cnv * Vi_cnv
-    q_ref = get_Q_ref(dynamic_device)
+    
+    ## Set references
+    Vm = V_t
+    PSY.set_Q_ref!(PSY.get_converter(dynamic_device), q_elec_out)
+    set_Q_ref(dynamic_device, q_elec_out)
+    PSY.set_Q_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), q_elec_out)
+    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    set_P_ref(dynamic_device, p_elec_out)
+    PSY.set_V_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Vm)
+    set_V_ref(dynamic_device, Vm)
 
     #Get Outer Controller parameters
+    q_ref = get_Q_ref(dynamic_device)
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power(outer_control)
     Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag

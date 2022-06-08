@@ -70,9 +70,14 @@ function initialize_filter!(
         #Update Converter voltages
         inner_vars[Vr_cnv_var] = sol_x0[1]
         inner_vars[Vi_cnv_var] = sol_x0[2]
+        inner_vars[Ir_cnv_var] = sol_x0[3]
+        inner_vars[Ii_cnv_var] = sol_x0[4]
         #Update filter voltages
         inner_vars[Vr_filter_var] = sol_x0[5]
         inner_vars[Vi_filter_var] = sol_x0[6]
+        #Update filter currents
+        inner_vars[Ir_filter_var] = I_R
+        inner_vars[Ii_filter_var] = I_I
         #Update states
         filter_ix = get_local_state_ix(dynamic_device, PSY.LCLFilter)
         filter_states = @view device_states[filter_ix]
@@ -133,30 +138,15 @@ function initialize_filter!(
     V_cnv = V + (rf + lf * 1im) * I
     I_aux = V_cnv / (R_source + X_source * 1im)
     I_cnv = I + I_aux
-    S_cnv = V_cnv * conj(I_cnv)
-    Q_cnv = imag(S_cnv)
-    P_cnv = real(S_cnv)
-
-    # For Debugging later
-    V_cnv_pq = V_cnv * exp(-1.0im * θ)
-    I_cnv_pq = I_cnv * exp(-1.0im * θ)
-    IS.@assert_op Q_cnv ≈ -abs(V_cnv_pq) * imag(I_cnv_pq)
-    IS.@assert_op P_cnv ≈ abs(V_cnv_pq) * real(I_cnv_pq)
-    IS.@assert_op P_cnv ≈ P0
-
-    # Update Control References
-    PSY.set_Q_ref!(PSY.get_converter(dynamic_device), Q_cnv)
-    set_Q_ref(dynamic_device, Q_cnv)
-    PSY.set_Q_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Q_cnv)
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), P_cnv)
-    set_P_ref(dynamic_device, P_cnv)
-    PSY.set_V_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Vm)
-    set_V_ref(dynamic_device, Vm)
 
     #Update converter currents and voltages
     inner_vars[Vr_cnv_var] = real(V_cnv)
     inner_vars[Vi_cnv_var] = imag(V_cnv)
+    inner_vars[Vr_filter_var] = real(V_cnv)
+    inner_vars[Vi_filter_var] = imag(V_cnv)
     inner_vars[Ir_cnv_var] = real(I_cnv)
     inner_vars[Ii_cnv_var] = imag(I_cnv)
+    inner_vars[Ir_filter_var] = real(I_cnv)
+    inner_vars[Ii_filter_var] = imag(I_cnv)
     return
 end
