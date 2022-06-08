@@ -50,8 +50,8 @@ function mdl_converter_ode!(
     P <: PSY.FrequencyEstimator,
 }
     #Obtain inner variables for component
-    V_R = inner_vars[Vr_inv_var]
-    V_I = inner_vars[Vi_inv_var]
+    V_R = inner_vars[Vr_filter_var]
+    V_I = inner_vars[Vi_filter_var]
     V_t = sqrt(V_R^2 + V_I^2)
     θ = atan(V_I, V_R)
     Ip_cmd = inner_vars[Id_ic_var]
@@ -157,5 +157,97 @@ function mdl_converter_ode!(
     inner_vars[Ii_cnv_var] = Ii_cnv
     inner_vars[Vr_cnv_var] = Vr_cnv
     inner_vars[Vi_cnv_var] = Vi_cnv
+    return
+end
+
+
+function mdl_converter_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{PSY.RenewableEnergyVoltageConverterTypeA, O, IC, DC, P, PSY.LCLFilter},
+    },
+) where {
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+}
+    #Obtain inner variables for component
+    V_R = inner_vars[Vr_filter_var]
+    V_I = inner_vars[Vi_filter_var]
+    V_t = sqrt(V_R^2 + V_I^2)
+    θ = atan(V_I, V_R)
+    Ip_cmd = inner_vars[Id_ic_var]
+    Iq_cmd = inner_vars[Iq_ic_var]
+
+    #Get Converter parameters
+    converter = PSY.get_converter(dynamic_device)
+    T_g = PSY.get_T_g(converter)
+    Rrpwr = PSY.get_Rrpwr(converter)
+    Brkpt = PSY.get_Brkpt(converter)
+    Zerox = PSY.get_Zerox(converter)
+    Lvpl1 = PSY.get_Lvpl1(converter)
+    Vo_lim = PSY.get_Vo_lim(converter)
+    Lv_pnt0, Lv_pnt1 = PSY.get_Lv_pnts(converter)
+    # Io_lim = PSY.get_Io_lim(converter)
+    T_fltr = PSY.get_T_fltr(converter)
+    K_hv = PSY.get_K_hv(converter)
+    Iqr_min, Iqr_max = PSY.get_Iqr_lims(converter)
+    Lvpl_sw = PSY.get_Lvpl_sw(converter)
+    Q_ref = PSY.get_Q_ref(converter)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyVoltageConverterTypeA)
+    #Define internal states for Converter
+    internal_states = @view device_states[local_ix]
+    Ip = internal_states[1]
+    Iq = internal_states[2]
+    Vmeas = internal_states[3]
+
+    # Compute additional variables
+    # Active Power Part
+    #Update Ip ramp limits
+    Rp_up = Ip >= 0 ? Rrpwr : Inf
+    Rp_dn = Ip >= 0 ? -Inf : -Rrpwr
+    #Saturate Ip if LVPL is active
+    Ip_sat = Ip
+    Ip_binary = 1.0
+    if Lvpl_sw == 1
+        LVPL = get_LVPL_gain(Vmeas, Zerox, Brkpt, Lvpl1)
+        Ip_sat = Ip <= LVPL ? Ip : LVPL
+        Ip_binary = Ip <= LVPL ? 1.0 : 0.0
+    end
+    Ip_in = clamp(Ip_cmd - Ip_sat, Rp_dn, Rp_up)
+    #Get Low Voltage Active Current Management Gain
+    G_lv = get_LV_current_gain(V_t, Lv_pnt0, Lv_pnt1)
+
+    # Reactive Power Part
+    #Update Iq ramp limits
+    Rq_up = Q_ref >= 0 ? Iqr_max : Inf
+    Rq_dn = Q_ref >= 0 ? -Inf : Iqr_min
+    Iq_in = clamp(Iq_cmd - Iq, Rq_dn, Rq_up)
+    Iq_extra = max(K_hv * (V_t - Vo_lim), 0.0)
+    Id_cnv = G_lv * Ip_sat
+    Iq_cnv = -Iq - Iq_extra
+    # Voltage Calculation
+    filt = PSY.get_filter(dynamic_device)
+    rf = PSY.get_rf(filt)
+    lf = PSY.get_lf(filt)
+    Eq_calc = Iq_cnv * rf + Id_cnv * lf
+    Ed_calc = V_t + Id_cnv * rf - Iq_cnv * lf
+    #Reference Transformation
+    Er_cnv = Ed_calc * cos(θ) - Eq_calc * sin(θ)
+    Ei_cnv = Ed_calc * sin(θ) + Eq_calc * cos(θ)
+
+    #Update ODEs
+    output_ode[local_ix[1]] = Ip_binary * (1.0 / T_g) * Ip_in #(Ip_cmd - Ip)
+    output_ode[local_ix[2]] = (1.0 / T_g) * Iq_in # (Iq_cmd - Iq)
+    output_ode[local_ix[3]] = (1.0 / T_fltr) * (V_t - Vmeas)
+
+    #Update inner_vars
+    inner_vars[Vr_cnv_var] = Er_cnv
+    inner_vars[Vi_cnv_var] = Ei_cnv
     return
 end

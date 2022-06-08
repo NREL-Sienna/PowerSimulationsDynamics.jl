@@ -556,8 +556,47 @@ function _update_inner_vars!(
     inner_vars[Ii_cnv_var] = Ii_cnv
     inner_vars[Vr_cnv_var] = Vr_cnv
     inner_vars[Vi_cnv_var] = Vi_cnv
+    inner_vars[Vr_filter_var] = Vr_cnv
+    inner_vars[Vi_filter_var] = Vi_cnv
+    inner_vars[Ir_filter_var] = Ir_cnv
+    inner_vars[Ii_filter_var] = Ii_cnv
     inner_vars[Ir_inv_var] = Ir_filt
     inner_vars[Ii_inv_var] = Ii_filt
+    return
+end
+
+function _update_inner_vars!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{PSY.RenewableEnergyVoltageConverterTypeA, O, IC, DC, P, PSY.LCLFilter},
+    },
+) where {
+    O <: PSY.OuterControl,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+}
+    filter_ix = get_local_state_ix(dynamic_device, PSY.LCLFilter)
+    filter_states = @view device_states[filter_ix]
+    Ir_cnv = filter_states[1]
+    Ii_cnv = filter_states[2]
+    Vr_filter = filter_states[3]
+    Vi_filter = filter_states[4]
+    Ir_filter = filter_states[5]
+    Ii_filter = filter_states[6]
+
+    #Update inner_vars
+    inner_vars[Ir_cnv_var] = Ir_cnv
+    inner_vars[Ii_cnv_var] = Ii_cnv
+    inner_vars[Vr_filter_var] = Vr_filter
+    inner_vars[Vi_filter_var] = Vi_filter
+    inner_vars[Ir_inv_var] = Ir_filter
+    inner_vars[Ii_inv_var] = Ii_filter
+    inner_vars[Ir_filter_var] = Ir_filter
+    inner_vars[Ii_filter_var] = Ii_filter
     return
 end
 

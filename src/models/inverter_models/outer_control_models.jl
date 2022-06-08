@@ -820,13 +820,19 @@ function mdl_outer_ode!(
             PSY.ReactiveRenewableControllerAB,
         },
     )
-    Vt_filt = device_states[external_ix[1]]
+    inner_ctrl = PSY.get_inner_control(dynamic_device)
+    inner_ctrl_ix = get_local_state_ix(
+        dynamic_device,
+        typeof(inner_ctrl)
+    )
+    inner_ctrl_states = @view device_states[inner_ctrl_ix]
+    Vt_filt = inner_ctrl_states[1]
 
     #Monitoring power from other branch not supported.
-    Vr_cnv = inner_vars[Vr_cnv_var]
-    Vi_cnv = inner_vars[Vi_cnv_var]
-    Ir_cnv = inner_vars[Ir_cnv_var]
-    Ii_cnv = inner_vars[Ii_cnv_var]
+    Vr_cnv = inner_vars[Vr_filter_var]
+    Vi_cnv = inner_vars[Vi_filter_var]
+    Ir_cnv = inner_vars[Ir_filter_var]
+    Ii_cnv = inner_vars[Ii_filter_var]
     p_elec_out = Ir_cnv * Vr_cnv + Ii_cnv * Vi_cnv
     q_elec_out = -Ii_cnv * Vr_cnv + Ir_cnv * Vi_cnv
 
