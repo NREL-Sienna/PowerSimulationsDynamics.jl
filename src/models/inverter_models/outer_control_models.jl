@@ -821,20 +821,23 @@ function mdl_outer_ode!(
         },
     )
     inner_ctrl = PSY.get_inner_control(dynamic_device)
-    inner_ctrl_ix = get_local_state_ix(
-        dynamic_device,
-        typeof(inner_ctrl)
-    )
+    inner_ctrl_ix = get_local_state_ix(dynamic_device, typeof(inner_ctrl))
     inner_ctrl_states = @view device_states[inner_ctrl_ix]
     Vt_filt = inner_ctrl_states[1]
 
     #Monitoring power from other branch not supported.
-    Vr_cnv = inner_vars[Vr_filter_var]
-    Vi_cnv = inner_vars[Vi_filter_var]
-    Ir_cnv = inner_vars[Ir_filter_var]
-    Ii_cnv = inner_vars[Ii_filter_var]
-    p_elec_out = Ir_cnv * Vr_cnv + Ii_cnv * Vi_cnv
-    q_elec_out = -Ii_cnv * Vr_cnv + Ir_cnv * Vi_cnv
+    Vr_filter = inner_vars[Vr_filter_var]
+    Vi_filter = inner_vars[Vi_filter_var]
+    Ir_filter = inner_vars[Ir_filter_var]
+    Ii_filter = inner_vars[Ii_filter_var]
+    p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
+
+    Ir_cnv = inner_vars[Ir_cnv_var]
+    Ii_cnv = inner_vars[Ii_cnv_var]
+    Ir_cap = Ir_filter - Ir_cnv
+    Ii_cap = Ii_filter - Ii_cnv
+    Q_cap = -Ii_cap * Vr_filter + Ir_cap * Vi_filter
+    q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter - Q_cap
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)

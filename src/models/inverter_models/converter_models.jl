@@ -160,13 +160,19 @@ function mdl_converter_ode!(
     return
 end
 
-
 function mdl_converter_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{PSY.RenewableEnergyVoltageConverterTypeA, O, IC, DC, P, PSY.LCLFilter},
+        PSY.DynamicInverter{
+            PSY.RenewableEnergyVoltageConverterTypeA,
+            O,
+            IC,
+            DC,
+            P,
+            PSY.LCLFilter,
+        },
     },
 ) where {
     O <: PSY.OuterControl,
