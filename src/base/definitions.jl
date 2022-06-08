@@ -73,15 +73,17 @@ Inverter Inner Vars:
     Iq_ic_var = 12
     Ir_cnv_var = 13
     Ii_cnv_var = 14
-    Ir_inv_var = 15
-    Ii_inv_var = 16
-    ω_oc_var = 17
-    θ_oc_var = 18
-    Vr_inv_var = 19
-    Vi_inv_var = 20
-    Vr_cnv_var = 21
-    Vi_cnv_var = 22
-    P_ES_var = 23
+    Ir_filter_var = 15
+    Ii_filter_var = 16
+    Ir_inv_var = 17
+    Ii_inv_var = 18
+    ω_oc_var = 19
+    θ_oc_var = 20
+    Vr_inv_var = 21
+    Vi_inv_var = 22
+    Vr_cnv_var = 23
+    Vi_cnv_var = 24
+    P_ES_var = 25
 end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
@@ -103,7 +105,7 @@ const MAPPING_DICT = Dict{String, OrderedDict{Symbol, Int}}
 const DEVICE_INTERNAL_MAPPING = Base.ImmutableDict{Int, Vector{Int}}
 
 const GEN_INNER_VARS_SIZE = 9
-const INV_INNER_VARS_SIZE = 23
+const INV_INNER_VARS_SIZE = 25
 const PVS_INNER_VARS_SIZE = 0
 const VOLTAGE_DIVISION_LOWER_BOUND = 0.01
 
