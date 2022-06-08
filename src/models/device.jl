@@ -571,7 +571,14 @@ function _update_inner_vars!(
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{PSY.RenewableEnergyVoltageConverterTypeA, O, IC, DC, P, PSY.LCLFilter},
+        PSY.DynamicInverter{
+            PSY.RenewableEnergyVoltageConverterTypeA,
+            O,
+            IC,
+            DC,
+            P,
+            PSY.LCLFilter,
+        },
     },
 ) where {
     O <: PSY.OuterControl,
