@@ -67,7 +67,6 @@ function initialize_converter!(
     return
 end
 
-
 function initialize_converter!(
     device_states,
     static::PSY.StaticInjection,
@@ -87,8 +86,8 @@ function initialize_converter!(
     Vi_filter = inner_vars[Vi_filter_var]
     θ = atan(Vi_filter, Vr_filter)
     V_t = sqrt(Vr_filter^2 + Vi_filter^2)
-    Iq_external = inner_vars[Ii_filter_var]
-    Ip_external = inner_vars[Ir_filter_var]
+    Iq_external = inner_vars[Ii_cnv_var]
+    Ip_external = inner_vars[Ir_cnv_var]
     #Reference Transformation
     Ip = Ip_external * cos(-θ) - Iq_external * sin(-θ)
     Iq = Ip_external * sin(-θ) + Iq_external * cos(-θ)
@@ -106,7 +105,8 @@ function initialize_converter!(
     end
 
     #Update converter states
-    converter_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyVoltageConverterTypeA)
+    converter_ix =
+        get_local_state_ix(dynamic_device, PSY.RenewableEnergyVoltageConverterTypeA)
     converter_states = @view device_states[converter_ix]
     converter_states[1] = Ip #Ip_cnv
     converter_states[2] = -Iq #Iq_cnv
