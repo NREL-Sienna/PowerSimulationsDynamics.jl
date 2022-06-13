@@ -64,15 +64,14 @@ end
 
 function DynamicWrapper(
     device::T,
+    dynamic_device::D,
     bus_ix::Int,
     ix_range,
     ode_range,
     inner_var_range,
     sys_base_power,
     sys_base_freq,
-) where {T <: PSY.Device}
-    dynamic_device = PSY.get_dynamic_injector(device)
-    @assert dynamic_device !== nothing
+) where {T <: PSY.StaticInjection, D <: PSY.DynamicInjection}
     device_states = PSY.get_states(dynamic_device)
 
     component_state_mapping, input_port_mapping =
@@ -106,15 +105,14 @@ end
 
 function DynamicWrapper(
     device::PSY.Source,
+    dynamic_device::D,
     bus_ix::Int,
     ix_range,
     ode_range,
     inner_var_range,
     sys_base_power,
     sys_base_freq,
-)
-    dynamic_device = PSY.get_dynamic_injector(device)
-    @assert dynamic_device !== nothing
+) where {D <: PSY.DynamicInjection}
     device_states = PSY.get_states(dynamic_device)
     IS.@assert_op PSY.get_X_th(dynamic_device) == PSY.get_X_th(device)
     IS.@assert_op PSY.get_R_th(dynamic_device) == PSY.get_R_th(device)
