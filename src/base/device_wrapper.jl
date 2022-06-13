@@ -39,6 +39,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
     global_index::Base.ImmutableDict{Symbol, Int}
     component_state_mapping::Base.ImmutableDict{Int, Vector{Int}}
     input_port_mapping::Base.ImmutableDict{Int, Vector{Int}}
+    ext::Dict{String, Any}
 end
 
 function state_port_mappings(
@@ -99,6 +100,7 @@ function DynamicWrapper(
         Base.ImmutableDict(component_state_mapping...),
         isempty(input_port_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
         Base.ImmutableDict(input_port_mapping...),
+        Dict{String, Any}(),
     )
 end
 
@@ -135,6 +137,7 @@ function DynamicWrapper(
         Base.ImmutableDict(Dict(device_states .=> ix_range)...),
         Base.ImmutableDict{Int, Vector{Int}}(),
         Base.ImmutableDict{Int, Vector{Int}}(),
+        Dict{String, Any}(),
     )
 end
 
@@ -171,6 +174,7 @@ get_bus_ix(wrapper::DynamicWrapper) = wrapper.bus_ix
 get_global_index(wrapper::DynamicWrapper) = wrapper.global_index
 get_component_state_mapping(wrapper::DynamicWrapper) = wrapper.component_state_mapping
 get_input_port_mapping(wrapper::DynamicWrapper) = wrapper.input_port_mapping
+get_ext(wrapper::DynamicWrapper) = wrapper.ext
 
 get_system_base_power(wrapper::DynamicWrapper) = wrapper.system_base_power
 get_system_base_frequency(wrapper::DynamicWrapper) = wrapper.system_base_frequency
