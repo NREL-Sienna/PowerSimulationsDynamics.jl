@@ -157,8 +157,11 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         inner_vars_range =
             range(inner_vars_count, length = get_inner_vars_count(dynamic_device))
         @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range"
+        dynamic_device = PSY.get_dynamic_injector(device)
+        @assert dynamic_device !== nothing
         wrapped_injector[ix] = DynamicWrapper(
             device,
+            dynamic_device,
             bus_ix,
             ix_range,
             ode_range,
