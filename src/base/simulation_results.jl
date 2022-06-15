@@ -67,7 +67,22 @@ function post_proc_voltage_current_series(
     solution = res.solution
     device = PSY.get_component(PSY.StaticInjection, system, name)
     if isnothing(device)
-        error("Device $(name) not found in the system")
+        # Temporal solution. This will change once we redo the API
+        branch = PSY.get_component(PSY.ACBranch, system, name)
+        if isnothing(branch)
+            error("Device or Branch $(name) not found in the system")
+        end
+        bus_from_number = PSY.get_number(PSY.get_from(PSY.get_arc(branch)))
+        bus_to_number = PSY.get_number(PSY.get_to(PSY.get_arc(branch)))
+        bus_from_ix = get(bus_lookup, bus_from_number, -1)
+        bus_to_ix = get(bus_lookup, bus_to_number, -1)
+        ts, V_R_from, V_I_from =
+            post_proc_voltage_series(solution, bus_from_ix, n_buses, dt)
+        _, V_R_to, V_I_to = post_proc_voltage_series(solution, bus_to_ix, n_buses, dt)
+        r = PSY.get_r(branch)
+        x = PSY.get_x(branch)
+        I_flow = ((V_R_from + V_I_from * 1im) - (V_R_to + V_I_to * 1im)) ./ (r + x * 1im)
+        return ts, V_R_from, V_I_from, real.(I_flow), imag.(I_flow)
     end
     bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
     ts, V_R, V_I = post_proc_voltage_series(solution, bus_ix, n_buses, dt)
