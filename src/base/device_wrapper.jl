@@ -1,3 +1,16 @@
+function isvalid_device(
+    device::PSY.DynamicGenerator{M, S, A, TG, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    if M == PSY.BaseMachine && A != PSY.AVRFixed
+        error("Device $(PSY.get_name(device)) uses a BaseMachine model with an AVR")
+    end
+    return
+end
+
+function isvalid_device(::PSY.DynamicInjection)
+    return
+end
+
 get_inner_vars_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.PeriodicVariableSource) = 0
@@ -40,6 +53,50 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
     component_state_mapping::Base.ImmutableDict{Int, Vector{Int}}
     input_port_mapping::Base.ImmutableDict{Int, Vector{Int}}
     ext::Dict{String, Any}
+
+    function DynamicWrapper(
+        device::T,
+        system_base_power::Float64,
+        system_base_frequency::Float64,
+        static_type::Type{<:PSY.StaticInjection},
+        bus_category::Type{<:BusCategory},
+        connection_status::Base.RefValue{Float64},
+        V_ref::Base.RefValue{Float64},
+        ω_ref::Base.RefValue{Float64},
+        P_ref::Base.RefValue{Float64},
+        Q_ref::Base.RefValue{Float64},
+        inner_vars_index,
+        ix_range,
+        ode_range,
+        bus_ix::Int,
+        global_index::Base.ImmutableDict{Symbol, Int},
+        component_state_mapping::Base.ImmutableDict{Int, Vector{Int}},
+        input_port_mapping::Base.ImmutableDict{Int, Vector{Int}},
+        ext::Dict{String, Any},
+    ) where {T <: PSY.DynamicInjection}
+        isvalid_device(device)
+
+        new{T}(
+            device,
+            system_base_power,
+            system_base_frequency,
+            static_type,
+            bus_category,
+            connection_status,
+            V_ref,
+            ω_ref,
+            P_ref,
+            Q_ref,
+            Vector{Int}(inner_vars_index),
+            Vector{Int}(ix_range),
+            Vector{Int}(ode_range),
+            bus_ix,
+            global_index,
+            component_state_mapping,
+            input_port_mapping,
+            ext,
+        )
+    end
 end
 
 function state_port_mappings(
@@ -77,7 +134,7 @@ function DynamicWrapper(
     component_state_mapping, input_port_mapping =
         state_port_mappings(dynamic_device, device_states)
 
-    return DynamicWrapper{typeof(dynamic_device)}(
+    return DynamicWrapper(
         dynamic_device,
         sys_base_power,
         sys_base_freq,
@@ -117,7 +174,7 @@ function DynamicWrapper(
     IS.@assert_op PSY.get_X_th(dynamic_device) == PSY.get_X_th(device)
     IS.@assert_op PSY.get_R_th(dynamic_device) == PSY.get_R_th(device)
 
-    return DynamicWrapper{typeof(dynamic_device)}(
+    return DynamicWrapper(
         dynamic_device,
         sys_base_power,
         sys_base_freq,
