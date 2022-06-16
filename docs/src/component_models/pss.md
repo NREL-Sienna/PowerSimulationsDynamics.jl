@@ -44,3 +44,24 @@ V_s &= \text{clamp}(y_{out}, \text{Ls}_\text{min}, \text{Ls}_\text{max})
 ```
 
 on which ``u`` is the input signal to the PSS, that depends on the flag. Currently, rotor speed, electric torque, mechanical torque and voltage magnitude are supported inputs.
+
+## STAB1 PSS ```[STAB1]```
+
+The 3rd-order PSS model is:
+
+```math
+\begin{align}
+T \dot{x}_1 &= K \omega - x_1 \tag{3a} \\
+T_3\dot{x}_2 &= \left(1 - \frac{T_1}{T_3}\right) x_1 - x_2 \tag{3b} \\
+T_4\dot{x}_3 &= \left(1 - \frac{T_2}{T_4}\right) y_{LL} - x_2 \tag{3c} \\
+\end{align}
+```
+
+with
+```math
+\begin{align*}
+y_{LL} = x_2 + \frac{T_1}{T_3} x_1 \\
+y_{out} = x_3 +  \frac{T_2}{T_4} y_{LL} \\
+V_s =  \text{clamp}(y_{out}, -H_{lim}, H_{lim})
+\end{align*}
+```
