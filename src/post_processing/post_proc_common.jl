@@ -33,3 +33,24 @@ function get_state_from_ix(global_index::MAPPING_DICT, idx::Int)
     end
     error("State with index $(idx) not found in the global index")
 end
+
+function _obtain_shunt_current(
+    branch::B,
+    V_R_from,
+    V_I_from,
+    V_R_to,
+    V_I_to,
+) where {B <: PSY.Branch}
+    error(
+        "Current branch $(PSY.get_name(branch)) of type $(typeof(branch)) is not supported for this calculation",
+    )
+end
+
+function _obtain_shunt_current(branch::PSY.Line, V_R_from, V_I_from, V_R_to, V_I_to)
+    b_from, b_to = PSY.get_b(branch)
+    z_from = 1.0 / (b_from * 1im)
+    z_to = 1.0 / (b_to * 1im)
+    I_shunt_from = (0.0 - (V_R_from + V_I_from * 1im)) / z_from
+    I_shunt_to = (0.0 - (V_R_to + V_I_to * 1im)) / z_to
+    return real.(I_shunt_from), imag.(I_shunt_from), real.(I_shunt_to), imag.(I_shunt_to)
+end
