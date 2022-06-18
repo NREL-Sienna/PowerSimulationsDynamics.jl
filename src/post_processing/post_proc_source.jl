@@ -25,7 +25,6 @@ function post_proc_source_voltage_current_series(
 
     R_th = PSY.get_R_th(source)
     X_th = PSY.get_X_th(source)
-    
     Z_sq = R_th^2 + X_th^2
 
     bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
