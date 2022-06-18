@@ -5,7 +5,7 @@ Function to obtain voltage and output currents for a source. It receives the sim
 
 function post_proc_source_voltage_current_series(
     res::SimulationResults;
-    dt=nothing,
+    dt = nothing,
 )::NTuple{5, Vector{Float64}}
     system = PSID.get_system(res)
     bus_lookup = PSID.get_bus_lookup(res)
