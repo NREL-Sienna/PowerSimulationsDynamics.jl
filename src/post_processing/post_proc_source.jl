@@ -17,8 +17,8 @@ function post_proc_source_voltage_current_series(
         error("Device $(name) not found in the system")
     end
 
-    Vt_sim = get_state_series(res, (source.name, :Vt), dt=dt)
-    θt_sim = get_state_series(res, (source.name, :θt), dt=dt)
+    Vt_sim = get_state_series(res, (source.name, :Vt), dt = dt)
+    θt_sim = get_state_series(res, (source.name, :θt), dt = dt)
 
     Vs_R = Vt_sim[2] .* cos.(θt_sim[2])
     Vs_I = Vt_sim[2] .* sin.(θt_sim[2])
