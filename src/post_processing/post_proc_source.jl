@@ -7,8 +7,8 @@ function post_proc_source_voltage_current_series(
     res::SimulationResults;
     dt = nothing,
 )::NTuple{5, Vector{Float64}}
-    system = PSID.get_system(res)
-    bus_lookup = PSID.get_bus_lookup(res)
+    system = get_system(res)
+    bus_lookup = get_bus_lookup(res)
     n_buses = length(bus_lookup)
     solution = res.solution
     source = collect(PSY.get_components(PSY.Source, system))[1]
