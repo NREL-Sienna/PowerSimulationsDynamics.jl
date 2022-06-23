@@ -42,7 +42,7 @@ or the last branch of such filter.
 
 ## Reduced Order Phase-Locked Loop (PLL) ```[ReducedOrderPLL]```
 
-The following equations presents a simplified PLL used to estimate the frequency and PLL angle of the grid. The model assumes that the voltage in the d-axis is always zero (i.e. locked) and hence it does not model it. With that the equations are given by:
+The following equations presents a simplified PLL used to estimate the frequency and PLL angle of the grid. The model attempts to steer the voltage in the q-axis to zero (i.e. lock the q-axis to zero) using a PI controller. With that the equations are given by:
 
 ```math
 \begin{align}
