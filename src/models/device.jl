@@ -937,4 +937,3 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     #TODO - implement model for Freq_Flag = 1 
     @error "Model not yet implemented for Freq_Flag = 1"
 end
-
