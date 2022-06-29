@@ -409,11 +409,11 @@ function initialize_dynamic_device!(
     Vmeas = Vm
     Fmeas = 1.0
     Freq_ref = 1.0
-    Mult = voltage_trip_logic!(initial_inner_vars, dynamic_device, Vmeas, 0.0)
+    Mult = 1.0
     Ip_cmd = Ip / Mult
     Iq_cmd = Iq / Mult
     Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(dynamic_device, Ip_cmd, Iq_cmd)
-
+    @warn Ip_min, Ip_max, Iq_min, Iq_max
     if Ip_cmd >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_cmd
         @error(
             "Inverter $(PSY.get_name(static)) active current $(Ip_cmd) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
