@@ -726,14 +726,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    #Obtain Global Vars 
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
-    #Calculate key values 
     Vt = sqrt(voltage_r^2 + voltage_i^2)
-
-    #Obtain Inner Vars 
-    Ip_cmd = inner_vars[Ip_cmd_var] #TODO - this just gets 0, but we need a value of Ip_cmd to calculate current limits 
-    Iq_cmd = inner_vars[Iq_cmd_var]
 
     #Obtain References (from wrapper and device)
     Pfa_ref = PSY.get_Pfa_ref(get_device(dynamic_device))
@@ -744,11 +738,6 @@ function _mdl_ode_AggregateDistributedGenerationA!(
 
     #Get flags  
     Pf_Flag = PSY.get_Pf_Flag(get_device(dynamic_device))
-    #Freq_Flag = PSY.get_Freq_Flag(get_device(dynamic_device))
-    #PQ_Flag = PSY.get_PQ_Flag(get_device(dynamic_device)) (used in current logic)
-    #Gen_Flag = PSY.get_Gen_Flag(get_device(dynamic_device)) used in current logic)
-    #Vtrip_Flag = PSY.get_Vtrip_Flag(get_device(dynamic_device)) (used in voltage logic)
-    #Ftrip_Flag = PSY.get_Ftrip_Flag(get_device(dynamic_device)) (used in frequency logic)
 
     #Get device states 
     Vmeas = device_states[1]
@@ -758,6 +747,9 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Mult = device_states[5]
     Fmeas = device_states[6]
     Ip = device_states[7]
+
+    Ip_cmd = Ip
+    Iq_cmd = Iq 
 
     #Get parameters 
     T_rv = PSY.get_T_rv(get_device(dynamic_device))
@@ -775,16 +767,10 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     #Tpord = PSY.get_Tpord(get_device(dynamic_device))  (not used unles FreqFlag=1)
     #Kpg = PSY.get_Kpg(get_device(dynamic_device)) (not used unles FreqFlag=1)
     #Kig = PSY.get_Kig(get_device(dynamic_device)) (not used unles FreqFlag=1)
-    #I_max = PSY.get_I_max(get_device(dynamic_device))   #used in current limit logic 
 
-    #fl = PSY.get_fl(get_device(dynamic_device)) #used in frequency logic
-    #fh = PSY.get_fh(get_device(dynamic_device)) #used in frequency logic
-    #tfl = PSY.get_tfl(get_device(dynamic_device)) #used in frequency logic
-    #tfh = PSY.get_tfh(get_device(dynamic_device)) #used in frequency logic
     Tg = PSY.get_Tg(get_device(dynamic_device))
     rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
     Tv = PSY.get_Tv(get_device(dynamic_device))
-    #Vpr = PSY.get_Vpr(get_device(dynamic_device))   #used in frequency trip logic 
     Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
 
     #STATE Vmeas 
@@ -813,9 +799,9 @@ function _mdl_ode_AggregateDistributedGenerationA!(
         ) * Mult
     _, dIq_dt = low_pass(Iq_input, Iq, 1.0, Tg)
 
-    #STATE Mult
-    VMult = voltage_trip_logic!(inner_vars, get_device(dynamic_device), Vmeas, t)
-    FMult = frequency_trip_logic!(inner_vars, get_device(dynamic_device), Fmeas, Vt, t)   #TODO - implement 
+    #TODO - include a warning in the dynamic wrapper that the voltage and frequency tripping has not been implemented. 
+    VMult = 1.0 
+    FMult = 1.0 
     _, dMult_dt = low_pass(VMult * FMult, Mult, 1.0, Tv)
 
     #STATE Fmeas 
@@ -830,7 +816,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     end
 
     #STATE Ip
-    Ip_input = clamp(P_ref / max(V_ref, 0.01), Ip_min, Ip_max) * Mult
+    Ip_input = clamp(P_ref / max(Vmeas, 0.01), Ip_min, Ip_max) * Mult
     _, dIp_dt = low_pass_nonwindup_ramp_limits(Ip_input, Ip, 1.0, Tg, -Inf, Inf, Rdown, Rup)
 
     #STATE Pmeas

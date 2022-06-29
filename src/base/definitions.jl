@@ -86,51 +86,6 @@ end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
 
-"""
-DERA Inner Vars:
-* `Vmin_var` :: 
-* `Vmax_var` :: 
-* `TimeBelowVl1_var` :: 
-* `TimeAboveVh1_var` ::
-* `TimeBelowVl0_var` :: 
-* `TimeAboveVh0_var` ::
-* `ActiveTimerVl1_var` :: 
-* `ActiveTimerVh1_var` :: 
-* `ActiveFracLow_var` ::
-* `ActiveFracHigh_var` ::  
-* `ActiveTimerVl0_var` ::
-* `ActiveTimerVh0_var` :: 
-* `ActiveTripHigh_var` :: 
-* `Ip_cmd_var` :: 
-* `Iq_cmd_var` :: 
-"""
-@enum dera_inner_vars begin
-    Vmin_var = 1
-    Vmax_var = 2
-    TimeBelowVl1_var = 3
-    TimeAboveVh1_var = 4
-    TimeBelowVl0_var = 5
-    TimeAboveVh0_var = 6
-    ActiveTimerVl1_var = 7
-    ActiveTimerVh1_var = 8
-    ActiveFracLow_var = 9
-    ActiveFracHigh_var = 10
-    ActiveTimerVl0_var = 11
-    ActiveTimerVh0_var = 12
-    ActiveTripLow_var = 13
-    ActiveTripHigh_var = 14     #end of voltage trip vars 
-    TimeBelowFl_var = 15        #start of frequency trip vars 
-    TimeAboveFh_var = 16
-    ActiveTimerFl_var = 17
-    ActiveTimerFh_var = 18
-    ActiveTripFLow_var = 19
-    ActiveTripFHigh_var = 20
-    Ip_cmd_var = 21
-    Iq_cmd_var = 22
-end
-
-Base.to_index(ix::dera_inner_vars) = Int(ix)
-
 @enum dq_ref begin
     d = 1
     q = 2
