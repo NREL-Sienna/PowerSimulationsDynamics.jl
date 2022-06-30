@@ -500,10 +500,10 @@ converter_regca() = RenewableEnergyConverterTypeA(
 filt_current() = RLFilter(rf = 0.0, lf = 0.0)
 
 #Parameters from (Ma, 2020)
-dera(generator) = AggregateDistributedGenerationA(
+dera(generator, freq_flag) = AggregateDistributedGenerationA(
     name = get_name(generator),
     Pf_Flag = 1,
-    Freq_Flag = 0,
+    Freq_Flag = freq_flag,
     PQ_Flag = 0,
     Gen_Flag = 1,
     Vtrip_Flag = 1,

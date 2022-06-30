@@ -395,7 +395,6 @@ function initialize_dynamic_device!(
     Vm = PSY.get_magnitude(PSY.get_bus(static))
     θ = PSY.get_angle(PSY.get_bus(static))
     S0 = P0 + Q0 * 1im
-    @warn Vm, θ, P0, Q0
 
     V_R = Vm * cos(θ)
     V_I = Vm * sin(θ)
@@ -413,7 +412,6 @@ function initialize_dynamic_device!(
     Ip_cmd = Ip / Mult
     Iq_cmd = Iq / Mult
     Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(dynamic_device, Ip_cmd, Iq_cmd)
-    @warn Ip_min, Ip_max, Iq_min, Iq_max
     if Ip_cmd >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_cmd
         @error(
             "Inverter $(PSY.get_name(static)) active current $(Ip_cmd) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
@@ -430,9 +428,8 @@ function initialize_dynamic_device!(
     dPord = Pord
     Pmeas = Pord
     Q_V = Iq_cmd
-    pfaref = atan(Q0 / P0)              #TODO set both correctly, don't worry about flag value
-    Qref = Iq_cmd * max(Vmeas, 0.01)    #set both correctly, don't worry about flag value 
-    @warn Vmeas, Pmeas, Q_V, Iq, Mult, Fmeas, Ip
+    pfaref = atan(Q0 / P0)
+    Qref = Iq_cmd * max(Vmeas, 0.01)
     Freq_Flag = PSY.get_Freq_Flag(dynamic_device)
     if Freq_Flag == 0
         Pref = dPord
@@ -444,15 +441,15 @@ function initialize_dynamic_device!(
         device_states[6] = Fmeas
         device_states[7] = Ip
     elseif Freq_Flag == 1
-        #Set PowerPI for PI controller active (TODO )
-        #Set Pref for PI controller active (TODO )
+        Pref = Pmeas
+        PowerPI = dPord
         device_states[1] = Vmeas
         device_states[2] = Pmeas
         device_states[3] = Q_V
         device_states[4] = Iq
         device_states[5] = Mult
         device_states[6] = Fmeas
-        device_states[7] = 1.0 #PowerPI # TODO 
+        device_states[7] = PowerPI
         device_states[8] = dPord
         device_states[9] = Pord
         device_states[10] = Ip

@@ -162,6 +162,48 @@ function DynamicWrapper(
 end
 
 function DynamicWrapper(
+    device::PSY.ThermalStandard,
+    dynamic_device::PSY.AggregateDistributedGenerationA,
+    bus_ix::Int,
+    ix_range,
+    ode_range,
+    inner_var_range,
+    sys_base_power,
+    sys_base_freq,
+)
+    device_states = PSY.get_states(dynamic_device)
+
+    component_state_mapping, input_port_mapping =
+        state_port_mappings(dynamic_device, device_states)
+    @warn "Under/over voltage tripping and under/over frequency tripping are not yet implemented for AggregateDistributedGenerationA!"
+
+    return DynamicWrapper(
+        dynamic_device,
+        sys_base_power,
+        sys_base_freq,
+        PSY.ThermalStandard,
+        BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
+        Base.Ref(1.0),
+        Base.Ref(PSY.get_V_ref(dynamic_device)),
+        Base.Ref(PSY.get_ω_ref(dynamic_device)),
+        Base.Ref(PSY.get_P_ref(dynamic_device)),
+        Base.Ref(PSY.get_reactive_power(device)),
+        inner_var_range,
+        ix_range,
+        ode_range,
+        bus_ix,
+        Base.ImmutableDict(
+            sort!(device_states .=> ix_range, by = x -> x.second, rev = true)...,
+        ),
+        isempty(component_state_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
+        Base.ImmutableDict(component_state_mapping...),
+        isempty(input_port_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
+        Base.ImmutableDict(input_port_mapping...),
+        Dict{String, Any}(),
+    )
+end
+
+function DynamicWrapper(
     device::PSY.Source,
     dynamic_device::D,
     bus_ix::Int,

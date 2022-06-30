@@ -658,7 +658,6 @@ function device!(
     return
 end
 
-
 """
 Model of 3-state (SimplifiedSingleCageInductionMachine) induction motor in Julia.
 Based on the 3rd order model derived in Prabha Kundur's Book and the
@@ -750,7 +749,6 @@ function device_mass_matrix_entries!(
     return
 end
 
-#TODO - non default mass matrix entries (ask)
 function mass_matrix_dera_entries!(
     mass_matrix,
     dera::DynamicWrapper{PSY.AggregateDistributedGenerationA},
@@ -814,7 +812,6 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     P_ref = get_P_ref(dynamic_device)
     Q_ref = get_Q_ref(dynamic_device)
     V_ref = get_V_ref(dynamic_device)
-    #ω_ref = get_ω_ref(dynamic_device) (not used unles FreqFlag=1)
 
     #Get flags  
     Pf_Flag = PSY.get_Pf_Flag(get_device(dynamic_device))
@@ -829,7 +826,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Ip = device_states[7]
 
     Ip_cmd = Ip
-    Iq_cmd = Iq 
+    Iq_cmd = Iq
 
     #Get parameters 
     T_rv = PSY.get_T_rv(get_device(dynamic_device))
@@ -838,15 +835,6 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     K_qv = PSY.get_K_qv(get_device(dynamic_device))
     Tp = PSY.get_Tp(get_device(dynamic_device))
     T_iq = PSY.get_T_iq(get_device(dynamic_device))
-    #D_dn = PSY.get_D_dn(get_device(dynamic_device)) (not used unles FreqFlag=1)
-    #D_up = PSY.get_D_up(get_device(dynamic_device)) (not used unles FreqFlag=1)
-    #(fdbd1, fdbd2) = PSY.get_fdbd_pnts(get_device(dynamic_device)) (not used unles FreqFlag=1)
-    #fe_lim = PSY.get_fe_lim(get_device(dynamic_device)) (not used unles FreqFlag=1)
-    #P_lim = PSY.get_P_lim(get_device(dynamic_device)) (not used unles FreqFlag=1)
-    #dP_lim = PSY.get_dP_lim(get_device(dynamic_device)) (not used unles FreqFlag=1)
-    #Tpord = PSY.get_Tpord(get_device(dynamic_device))  (not used unles FreqFlag=1)
-    #Kpg = PSY.get_Kpg(get_device(dynamic_device)) (not used unles FreqFlag=1)
-    #Kig = PSY.get_Kig(get_device(dynamic_device)) (not used unles FreqFlag=1)
 
     Tg = PSY.get_Tg(get_device(dynamic_device))
     rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
@@ -879,9 +867,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
         ) * Mult
     _, dIq_dt = low_pass(Iq_input, Iq, 1.0, Tg)
 
-    #TODO - include a warning in the dynamic wrapper that the voltage and frequency tripping has not been implemented. 
-    VMult = 1.0 
-    FMult = 1.0 
+    VMult = 1.0
+    FMult = 1.0
     _, dMult_dt = low_pass(VMult * FMult, Mult, 1.0, Tv)
 
     #STATE Fmeas 
@@ -934,6 +921,143 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    #TODO - implement model for Freq_Flag = 1 
-    @error "Model not yet implemented for Freq_Flag = 1"
+    sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
+    Vt = sqrt(voltage_r^2 + voltage_i^2)
+
+    #Obtain References (from wrapper and device)
+    Pfa_ref = PSY.get_Pfa_ref(get_device(dynamic_device))
+    P_ref = get_P_ref(dynamic_device)
+    Q_ref = get_Q_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
+
+    #Get flags  
+    Pf_Flag = PSY.get_Pf_Flag(get_device(dynamic_device))
+
+    #Get device states 
+    Vmeas = device_states[1]
+    Pmeas = device_states[2]
+    Q_V = device_states[3]
+    Iq = device_states[4]
+    Mult = device_states[5]
+    Fmeas = device_states[6]
+    PowerPI = device_states[7]
+    dPord = device_states[8]
+    Pord = device_states[9]
+    Ip = device_states[10]
+
+    Ip_cmd = Ip
+    Iq_cmd = Iq
+
+    #Get parameters 
+    T_rv = PSY.get_T_rv(get_device(dynamic_device))
+    Trf = PSY.get_Trf(get_device(dynamic_device))
+    (dbd1, dbd2) = PSY.get_dbd_pnts(get_device(dynamic_device))
+    K_qv = PSY.get_K_qv(get_device(dynamic_device))
+    Tp = PSY.get_Tp(get_device(dynamic_device))
+    T_iq = PSY.get_T_iq(get_device(dynamic_device))
+    D_dn = PSY.get_D_dn(get_device(dynamic_device))
+    D_up = PSY.get_D_up(get_device(dynamic_device))
+    (fdbd1, fdbd2) = PSY.get_fdbd_pnts(get_device(dynamic_device))
+    fe_lim = PSY.get_fe_lim(get_device(dynamic_device))
+    P_lim = PSY.get_P_lim(get_device(dynamic_device))
+    dP_lim = PSY.get_dP_lim(get_device(dynamic_device))
+    Tpord = PSY.get_Tpord(get_device(dynamic_device))
+    Kpg = PSY.get_Kpg(get_device(dynamic_device))
+    Kig = PSY.get_Kig(get_device(dynamic_device))
+
+    Tg = PSY.get_Tg(get_device(dynamic_device))
+    rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
+    Tv = PSY.get_Tv(get_device(dynamic_device))
+    Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
+
+    #STATE Vmeas 
+    _, dVmeas_dt = low_pass(Vt, Vmeas, 1.0, T_rv)
+    #STATE Q_V
+    if Pf_Flag == 1
+        _, dQ_V_dt = low_pass(tan(Pfa_ref) * Pmeas / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+    elseif Pf_Flag == 0
+        _, dQ_V_dt = low_pass(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+    else
+        @error "Unsupported value of PQ_Flag"
+    end
+
+    #STATE Iq 
+    Ip_min, Ip_max, Iq_min, Iq_max =
+        current_limit_logic(get_device(dynamic_device), Ip_cmd, Iq_cmd)
+    Iq_input =
+        clamp(
+            clamp(
+                deadband_function(V_ref - Vmeas, dbd1, dbd2) * K_qv,
+                Iq_lim[:min],
+                Iq_lim[:max],
+            ) + Q_V,
+            Iq_min,
+            Iq_max,
+        ) * Mult
+    _, dIq_dt = low_pass(Iq_input, Iq, 1.0, Tg)
+
+    VMult = 1.0
+    FMult = 1.0
+    _, dMult_dt = low_pass(VMult * FMult, Mult, 1.0, Tv)
+
+    #STATE Fmeas 
+    _, dFmeas_dt = low_pass(sys_ω, Fmeas, 1.0, Trf)
+
+    if Ip >= 0
+        Rup = abs(rrpwr)
+        Rdown = -Inf
+    else
+        Rdown = -abs(rrpwr)
+        Rup = Inf
+    end
+
+    #STATE Ip
+    Ip_input = clamp(P_ref / max(Vmeas, 0.01), Ip_min, Ip_max) * Mult
+    _, dIp_dt = low_pass_nonwindup_ramp_limits(Ip_input, Ip, 1.0, Tg, -Inf, Inf, Rdown, Rup)
+
+    #STATE Pmeas
+    _, dPmeas_dt = low_pass(P_ref, Pmeas, 1.0, Tp)
+
+    #STATE PowerPI
+    PowerPI_input = clamp(
+        min(deadband_function(ω_ref - Fmeas, fdbd1, fdbd2) * D_dn, 0.0) +
+        max(deadband_function(ω_ref - Fmeas, fdbd1, fdbd2) * D_up, 0.0) - Pmeas + P_ref,
+        fe_lim[:min],
+        fe_lim[:max],
+    )
+    _, dPowerPI_dt =
+        pi_block_nonwindup(PowerPI_input, PowerPI, Kpg, Kig, P_lim[:min], P_lim[:max])
+
+    #STATE dPord
+    if dPowerPI_dt > dP_lim[:max]
+        ddPord_dt = dP_lim[:max]
+    elseif dPowerPI_dt < dP_lim[:min]
+        ddPord_dt = dP_lim[:min]
+    else
+        ddPord_dt = dPowerPI_dt
+    end
+
+    #State Pord
+    _, dPord_dt = low_pass_nonwindup(dPord, Pord, 1.0, Tpord, P_lim[:min], P_lim[:max])
+
+    #Update ODEs 
+    output_ode[1] = dVmeas_dt
+    output_ode[2] = dPmeas_dt
+    output_ode[3] = dQ_V_dt
+    output_ode[4] = dIq_dt
+    output_ode[5] = dMult_dt
+    output_ode[6] = dFmeas_dt
+    output_ode[7] = dPowerPI_dt
+    output_ode[8] = ddPord_dt
+    output_ode[9] = dPord_dt
+    output_ode[10] = dIp_dt
+
+    #Calculate output current 
+    θ = atan(voltage_i / voltage_r)
+    Iq_neg = -Iq
+    I_r = real(complex(Ip, Iq_neg) * exp(im * θ))
+    I_i = imag(complex(Ip, Iq_neg) * exp(im * θ))
+    current_r[1] = I_r
+    current_i[1] = I_i
 end
