@@ -386,7 +386,7 @@ function initialize_dynamic_device!(
     static::PSY.StaticInjection,
     initial_inner_vars::AbstractVector,
 )
-    device_states = zeros(PSY.get_n_states(dynamic_wrapper))    #TODO ask -- why does this method work with the wrapper in stead of the device? 
+    device_states = zeros(PSY.get_n_states(dynamic_wrapper))
     dynamic_device = get_device(dynamic_wrapper)
 
     #Get PowerFlow Data

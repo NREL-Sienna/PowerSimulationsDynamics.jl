@@ -754,7 +754,21 @@ function mass_matrix_dera_entries!(
     dera::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     global_index::ImmutableDict{Symbol, Int64},
 )
-    @debug "Using default mass matrix entries $dera"
+    Freq_Flag = PSY.get_Freq_Flag(get_device(dynamic_device))
+    if Freq_Flag == 1
+        mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(dera)
+        mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(dera)
+        mass_matrix[global_index[:Q_V], global_index[:Q_V]] = PSY.get_T_iq(dera)
+        mass_matrix[global_index[:Mult], global_index[:Mult]] = PSY.get_Tv(dera)
+        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_T_rf(dera)
+        mass_matrix[global_index[:Pord], global_index[:Pord]] = PSY.get_Tpord(dera)
+    else
+        mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(dera)
+        mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(dera)
+        mass_matrix[global_index[:Q_V], global_index[:Q_V]] = PSY.get_T_iq(dera)
+        mass_matrix[global_index[:Mult], global_index[:Mult]] = PSY.get_Tv(dera)
+        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_T_rf(dera)
+    end
 end
 
 function device!(
@@ -842,12 +856,13 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
 
     #STATE Vmeas 
-    _, dVmeas_dt = low_pass(Vt, Vmeas, 1.0, T_rv)
+    _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
     #STATE Q_V
     if Pf_Flag == 1
-        _, dQ_V_dt = low_pass(tan(Pfa_ref) * Pmeas / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+        _, dQ_V_dt =
+            low_pass_mass_matrix(tan(Pfa_ref) * Pmeas / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
     elseif Pf_Flag == 0
-        _, dQ_V_dt = low_pass(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+        _, dQ_V_dt = low_pass_mass_matrix(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
     else
         @error @error "Unsupported value of PQ_Flag"
     end
@@ -869,10 +884,10 @@ function _mdl_ode_AggregateDistributedGenerationA!(
 
     VMult = 1.0
     FMult = 1.0
-    _, dMult_dt = low_pass(VMult * FMult, Mult, 1.0, Tv)
+    _, dMult_dt = low_pass_mass_matrix(VMult * FMult, Mult, 1.0, Tv)
 
     #STATE Fmeas 
-    _, dFmeas_dt = low_pass(sys_ω, Fmeas, 1.0, Trf)
+    _, dFmeas_dt = low_pass_mass_matrix(sys_ω, Fmeas, 1.0, Trf)
 
     if Ip >= 0
         Rup = abs(rrpwr)
@@ -884,10 +899,11 @@ function _mdl_ode_AggregateDistributedGenerationA!(
 
     #STATE Ip
     Ip_input = clamp(P_ref / max(Vmeas, 0.01), Ip_min, Ip_max) * Mult
-    _, dIp_dt = low_pass_nonwindup_ramp_limits(Ip_input, Ip, 1.0, Tg, -Inf, Inf, Rdown, Rup)
+    Ip_limited, dIp_dt =
+        low_pass_nonwindup_ramp_limits(Ip_input, Ip, 1.0, Tg, -Inf, Inf, Rdown, Rup)
 
     #STATE Pmeas
-    _, dPmeas_dt = low_pass(P_ref, Pmeas, 1.0, Tp)
+    _, dPmeas_dt = low_pass_mass_matrix(P_ref, Pmeas, 1.0, Tp)
 
     #Update ODEs 
     output_ode[1] = dVmeas_dt
@@ -901,8 +917,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     #Calculate output current 
     θ = atan(voltage_i / voltage_r)
     Iq_neg = -Iq
-    I_r = real(complex(Ip, Iq_neg) * exp(im * θ))
-    I_i = imag(complex(Ip, Iq_neg) * exp(im * θ))
+    I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
+    I_i = imag(complex(Ip_limited, Iq_neg) * exp(im * θ))
     current_r[1] = I_r
     current_i[1] = I_i
 end
@@ -972,12 +988,13 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
 
     #STATE Vmeas 
-    _, dVmeas_dt = low_pass(Vt, Vmeas, 1.0, T_rv)
+    _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
     #STATE Q_V
     if Pf_Flag == 1
-        _, dQ_V_dt = low_pass(tan(Pfa_ref) * Pmeas / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+        _, dQ_V_dt =
+            low_pass_mass_matrix(tan(Pfa_ref) * Pmeas / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
     elseif Pf_Flag == 0
-        _, dQ_V_dt = low_pass(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+        _, dQ_V_dt = low_pass_mass_matrix(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
     else
         @error "Unsupported value of PQ_Flag"
     end
@@ -999,10 +1016,10 @@ function _mdl_ode_AggregateDistributedGenerationA!(
 
     VMult = 1.0
     FMult = 1.0
-    _, dMult_dt = low_pass(VMult * FMult, Mult, 1.0, Tv)
+    _, dMult_dt = low_pass_mass_matrix(VMult * FMult, Mult, 1.0, Tv)
 
     #STATE Fmeas 
-    _, dFmeas_dt = low_pass(sys_ω, Fmeas, 1.0, Trf)
+    _, dFmeas_dt = low_pass_mass_matrix(sys_ω, Fmeas, 1.0, Trf)
 
     if Ip >= 0
         Rup = abs(rrpwr)
@@ -1012,12 +1029,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
         Rup = Inf
     end
 
-    #STATE Ip
-    Ip_input = clamp(P_ref / max(Vmeas, 0.01), Ip_min, Ip_max) * Mult
-    _, dIp_dt = low_pass_nonwindup_ramp_limits(Ip_input, Ip, 1.0, Tg, -Inf, Inf, Rdown, Rup)
-
     #STATE Pmeas
-    _, dPmeas_dt = low_pass(P_ref, Pmeas, 1.0, Tp)
+    _, dPmeas_dt = low_pass_mass_matrix(P_ref, Pmeas, 1.0, Tp)
 
     #STATE PowerPI
     PowerPI_input = clamp(
@@ -1039,7 +1052,13 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     end
 
     #State Pord
-    _, dPord_dt = low_pass_nonwindup(dPord, Pord, 1.0, Tpord, P_lim[:min], P_lim[:max])
+    Pord_limited, dPord_dt =
+        low_pass_nonwindup_mass_matrix(dPord, Pord, 1.0, Tpord, P_lim[:min], P_lim[:max])
+
+    #STATE Ip
+    Ip_input = clamp(Pord_limited / max(Vmeas, 0.01), Ip_min, Ip_max) * Mult
+    Ip_limited, dIp_dt =
+        low_pass_nonwindup_ramp_limits(Ip_input, Ip, 1.0, Tg, -Inf, Inf, Rdown, Rup)
 
     #Update ODEs 
     output_ode[1] = dVmeas_dt
@@ -1056,8 +1075,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     #Calculate output current 
     θ = atan(voltage_i / voltage_r)
     Iq_neg = -Iq
-    I_r = real(complex(Ip, Iq_neg) * exp(im * θ))
-    I_i = imag(complex(Ip, Iq_neg) * exp(im * θ))
+    I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
+    I_i = imag(complex(Ip_limited, Iq_neg) * exp(im * θ))
     current_r[1] = I_r
     current_i[1] = I_i
 end

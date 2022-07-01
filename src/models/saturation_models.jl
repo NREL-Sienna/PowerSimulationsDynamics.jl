@@ -131,7 +131,7 @@ function current_limit_logic(
     else
         local_I = sqrt(local_I)
     end
-    if local_I < I_max #fixed typo 
+    if local_I < I_max
         Iq_max = local_I
     else
         Iq_max = I_max
