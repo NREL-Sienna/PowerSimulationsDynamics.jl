@@ -754,7 +754,7 @@ function mass_matrix_dera_entries!(
     dera::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     global_index::ImmutableDict{Symbol, Int64},
 )
-    Freq_Flag = PSY.get_Freq_Flag(get_device(dynamic_device))
+    Freq_Flag = PSY.get_Freq_Flag(get_device(dera))
     if Freq_Flag == 1
         mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(dera)
         mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(dera)
