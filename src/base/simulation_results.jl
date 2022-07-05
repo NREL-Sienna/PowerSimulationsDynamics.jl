@@ -188,6 +188,35 @@ function post_proc_field_voltage_series(
 end
 
 """
+Function to compute the current flowing through an AC branch through their series element.
+The current is computed through the `from` bus into the `to` bus.
+"""
+function post_proc_branch_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
+    system = get_system(res)
+    bus_lookup = get_bus_lookup(res)
+    n_buses = length(bus_lookup)
+    solution = res.solution
+    branch = PSY.get_component(PSY.ACBranch, system, name)
+    if isnothing(branch)
+        error("Branch $(name) not found in the system")
+    end
+    bus_from_number = PSY.get_number(PSY.get_from(PSY.get_arc(branch)))
+    bus_to_number = PSY.get_number(PSY.get_to(PSY.get_arc(branch)))
+    bus_from_ix = get(bus_lookup, bus_from_number, -1)
+    bus_to_ix = get(bus_lookup, bus_to_number, -1)
+    ts, V_R_from, V_I_from = post_proc_voltage_series(solution, bus_from_ix, n_buses, dt)
+    _, V_R_to, V_I_to = post_proc_voltage_series(solution, bus_to_ix, n_buses, dt)
+    r = PSY.get_r(branch)
+    x = PSY.get_x(branch)
+    I_flow = ((V_R_from + V_I_from * 1im) - (V_R_to + V_I_to * 1im)) ./ (r + x * 1im)
+    return ts, V_R_from, V_I_from, V_R_to, V_I_to, real.(I_flow), imag.(I_flow)
+end
+
+"""
     get_state_series(
         res::SimulationResults,
         ref::Tuple{String, Symbol};
@@ -346,6 +375,116 @@ Function to obtain the field voltage time series of a Dynamic Generator out of t
 """
 function get_field_voltage_series(res::SimulationResults, name::String; dt = nothing)
     return post_proc_field_voltage_series(res, name, dt)
+end
+
+"""
+    get_real_current_branch_flow(
+            res::SimulationResults,
+            name::String,
+    )
+Function to obtain the real current flowing through the series element of a Branch
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified line
+"""
+function get_real_current_branch_flow(res::SimulationResults, name::String; dt = nothing)
+    ts, _, _, _, _, Ir, _ = post_proc_branch_series(res, name, dt)
+    return ts, Ir
+end
+
+"""
+    get_imaginary_current_branch_flow(
+            res::SimulationResults,
+            name::String,
+    )
+Function to obtain the imaginary current flowing through the series element of a Branch
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified line
+"""
+function get_imaginary_current_branch_flow(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+)
+    ts, _, _, _, _, _, Ii = post_proc_branch_series(res, name, dt)
+    return ts, Ii
+end
+
+"""
+    get_activepower_branch_flow(
+            res::SimulationResults,
+            name::String,
+            location::Symbol,
+    )
+Function to obtain the active power flowing through the series element of a Branch.
+The user must specified is the power should be computed in the :from or to :bus, by
+specifying a symbol.
+
+If :from is specified, the power is computed flowing outwards the :from bus.
+If :to is specified, the power is computed flowing into the :to bus.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified line
+- `location::Symbol` : :from or :to to specify a bus
+"""
+function get_activepower_branch_flow(
+    res::SimulationResults,
+    name::String,
+    location::Symbol;
+    dt = nothing,
+)
+    ts, V_R_from, V_I_from, V_R_to, V_I_to, Ir, Ii = post_proc_branch_series(res, name, dt)
+    if location == :from
+        return ts, V_R_from .* Ir + V_I_from .* Ii
+    elseif location == :to
+        return ts, V_R_to .* Ir + V_I_to .* Ii
+    else
+        error("The location symbol $(:location) must be :from or :to to specify the bus.")
+    end
+    return
+end
+
+"""
+    get_reactivepower_branch_flow(
+            res::SimulationResults,
+            name::String,
+            location::Symbol,
+    )
+Function to obtain the reactive power flowing through the series element of a Branch.
+The user must specified is the power should be computed in the :from or to :bus, by
+specifying a symbol.
+
+If :from is specified, the power is computed flowing outwards the :from bus.
+If :to is specified, the power is computed flowing into the :to bus.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified line
+- `location::Symbol` : :from or :to to specify a bus
+"""
+function get_reactivepower_branch_flow(
+    res::SimulationResults,
+    name::String,
+    location::Symbol;
+    dt = nothing,
+)
+    ts, V_R_from, V_I_from, V_R_to, V_I_to, Ir, Ii = post_proc_branch_series(res, name, dt)
+    if location == :from
+        return ts, V_I_from .* Ir - V_R_from .* Ii
+    elseif location == :to
+        return ts, V_I_to .* Ir - V_R_to .* Ii
+    else
+        error("The location symbol $(:location) must be :from or :to to specify the bus.")
+    end
+    return
 end
 
 """
