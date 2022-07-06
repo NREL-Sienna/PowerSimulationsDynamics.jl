@@ -65,6 +65,21 @@ function compute_field_voltage(
 end
 
 """
+Function to obtain the mechanical torque time series of a Dynamic Inverter model out of the DAE Solution. It receives the simulation inputs,
+the dynamic device and bus voltage. It must return nothing since mechanical torque is not used in inverters.
+
+"""
+function compute_mechanical_torque(
+    res::SimulationResults,
+    dynamic_device::G,
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicInverter}
+    @warn("Mechanical torque is not used in inverters. Returning zeros.")
+    _, state = _post_proc_state_series(res.solution, 1, dt)
+    return (nothing, zeros(length(state)))
+end
+
+"""
 Function to obtain the output current time series of a LCL Filter model out of the DAE Solution. It is dispatched via the Filter type.
 
 """

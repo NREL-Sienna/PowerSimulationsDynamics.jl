@@ -188,6 +188,23 @@ function post_proc_field_voltage_series(
 end
 
 """
+Function to compute the mechanical torque output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
+string name of the Dynamic Injection device.
+
+"""
+function post_proc_field_voltage_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
+    system = get_system(res)
+    device = PSY.get_component(PSY.StaticInjection, system, name)
+    dyn_device = PSY.get_dynamic_injector(device)
+    ts, τm = compute_mechanical_torque(res, dyn_device, dt)
+    return ts, τm
+end
+
+"""
     get_state_series(
         res::SimulationResults,
         ref::Tuple{String, Symbol};
@@ -346,6 +363,23 @@ Function to obtain the field voltage time series of a Dynamic Generator out of t
 """
 function get_field_voltage_series(res::SimulationResults, name::String; dt = nothing)
     return post_proc_field_voltage_series(res, name, dt)
+end
+
+"""
+    get_mechanical_torque_series(
+            res::SimulationResults,
+            name::String,
+    )
+
+Function to obtain the mechanical torque time series of the mechanical torque out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
+"""
+function get_mechanical_torque_series(res::SimulationResults, name::String; dt = nothing)
+    return post_proc_mechanical_torque_series(res, name, dt)
 end
 
 """

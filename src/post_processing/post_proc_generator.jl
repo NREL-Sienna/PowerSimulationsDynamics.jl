@@ -68,6 +68,24 @@ function compute_field_voltage(
 end
 
 """
+Function to obtain the mechanical torque time series of a Dynamic Generator model out of the DAE Solution. It receives the simulation inputs,
+the dynamic device and bus voltage. It is dispatched for device type to compute the specific torque.
+
+"""
+function compute_mechanical_torque(
+    res::SimulationResults,
+    dynamic_device::G,
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicGenerator}
+
+    #Get TG
+    tg = PSY.prime_mover(dynamic_device)
+    return _mechanical_torque(tg, PSY.get_name(dynamic_device), res, dt)
+end
+
+
+
+"""
 Function to obtain the output current time series of a Classic Machine model out of the DAE Solution. It is dispatched via the machine type.
 
 """
@@ -531,4 +549,36 @@ function _field_voltage(
     I_N = Kc * Xad_Ifd ./ Ve
     Vf = Ve .* rectifier_function.(I_N)
     return ts, Vf
+end
+
+"""
+Function to obtain the mechanical torque time series of a Dynamic Generator with turbine governors.
+By default it is assumed that the models have not yet implemented yet.
+
+"""
+function _mechanical_torque(
+    ::T,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+) where {T <: PSY.TurbineGov}
+    @warn("Mechanical torque post processing has not implemented for TG type $(T). Returning zeros.")
+    _, state = _post_proc_state_series(res.solution, 1, dt)
+    return (nothing, zeros(length(state)))
+end
+
+
+"""
+Function to obtain the mechanical torque time series of a Dynamic Generator with TGFixed Turbine Governor.
+
+"""
+function _mechanical_torque(
+    tg::PSY.TGFixed,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+) where {T <: PSY.TurbineGov}
+    ts, _ = _post_proc_state_series(res.solution, 1, dt)
+    
+    return (nothing, zeros(length(state)))
 end
