@@ -43,6 +43,7 @@ export get_activepower_series
 export get_reactivepower_series
 export get_field_current_series
 export get_field_voltage_series
+export get_mechanical_torque_series
 export get_setpoints
 export get_solution
 
