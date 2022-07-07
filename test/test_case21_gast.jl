@@ -120,6 +120,8 @@ end
 
         # TODO: Test mechanical torque in PSSE
         _, τm = get_mechanical_torque_series(results, "generator-102-1")
+        _, Ir = get_source_real_current_series(results, "generator-101-1")
+        _, Ii = get_source_imaginary_current_series(results, "generator-101-1")
 
         # Obtain PSSE results
         t_psse, δ_psse = get_csv_delta(csv_file)
