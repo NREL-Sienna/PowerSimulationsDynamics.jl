@@ -550,24 +550,6 @@ function _field_voltage(
 end
 
 """
-Function to obtain the mechanical torque time series of a Dynamic Generator with turbine governors.
-By default it is assumed that the models have not yet implemented yet.
-
-"""
-function _mechanical_torque(
-    ::T,
-    name::String,
-    res::SimulationResults,
-    dt::Union{Nothing, Float64},
-) where {T <: PSY.TurbineGov}
-    @warn(
-        "Mechanical torque post processing has not implemented for TG type $(T). Returning zeros."
-    )
-    _, state = _post_proc_state_series(res.solution, 1, dt)
-    return nothing, zeros(length(state))
-end
-
-"""
 Function to obtain the mechanical torque time series of a Dynamic Generator with TGFixed Turbine Governor.
 
 """
