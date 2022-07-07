@@ -619,7 +619,7 @@ function _mechanical_torque(
     _, ω = post_proc_state_series(res, (name, :ω), dt)
     τm = zeros(length(ts))
     for ix in 1:length(ts)
-        y_ll, _ = lead_lag(inv_R * (ω_ref - ω[ix]), xg, 1.0, T1, T2)
+        y_ll, _ = lead_lag(inv_R * (ω_ref - ω[ix]), xg[ix], 1.0, T1, T2)
         τm[ix] = y_ll + P_ref
     end
     return ts, τm
