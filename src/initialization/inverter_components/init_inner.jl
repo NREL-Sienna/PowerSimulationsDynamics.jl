@@ -238,9 +238,9 @@ function initialize_inner!(
     F <: PSY.Filter,
 }
     # Obtain inner variables for component
-    Vr_cnv = inner_vars[Vr_cnv_var]
-    Vi_cnv = inner_vars[Vi_cnv_var]
-    V_t = sqrt(Vr_cnv^2 + Vi_cnv^2)
+    Vr_filter = inner_vars[Vr_filter_var]
+    Vi_filter = inner_vars[Vi_filter_var]
+    V_t = sqrt(Vr_filter^2 + Vi_filter^2)
     Iq_cmd = inner_vars[Iq_ic_var]
     Ip_oc = inner_vars[Id_oc_var]
     Iq_oc = inner_vars[Iq_oc_var]
