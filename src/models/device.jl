@@ -791,3 +791,344 @@ function device!(
     current_i[1] -= (base_power / Sbase) * (i_qs + v_ds * B_sh)  # in system base
     return
 end
+
+function device_mass_matrix_entries!(
+    mass_matrix::AbstractArray,
+    dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+)
+    global_index = get_global_index(dynamic_device)
+    mass_matrix_dera_entries!(mass_matrix, dynamic_device, global_index)
+    return
+end
+
+function mass_matrix_dera_entries!(
+    mass_matrix,
+    dera::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    global_index::ImmutableDict{Symbol, Int64},
+)
+    Freq_Flag = PSY.get_Freq_Flag(get_device(dera))
+    if Freq_Flag == 1
+        mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(dera)
+        mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(dera)
+        mass_matrix[global_index[:Q_V], global_index[:Q_V]] = PSY.get_T_iq(dera)
+        mass_matrix[global_index[:Mult], global_index[:Mult]] = PSY.get_Tv(dera)
+        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_T_rf(dera)
+        mass_matrix[global_index[:Pord], global_index[:Pord]] = PSY.get_Tpord(dera)
+    else
+        mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(dera)
+        mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(dera)
+        mass_matrix[global_index[:Q_V], global_index[:Q_V]] = PSY.get_T_iq(dera)
+        mass_matrix[global_index[:Mult], global_index[:Mult]] = PSY.get_Tv(dera)
+        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_T_rf(dera)
+    end
+end
+
+function device!(
+    device_states::AbstractArray{T},
+    output_ode::AbstractArray{T},
+    voltage_r::T,
+    voltage_i::T,
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    global_vars::AbstractArray{T},
+    inner_vars::AbstractArray{T},
+    dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    t,
+) where {T <: ACCEPTED_REAL_TYPES}
+    Freq_Flag = PSY.get_Freq_Flag(get_device(dynamic_device))
+    _mdl_ode_AggregateDistributedGenerationA!(
+        device_states,
+        output_ode,
+        Val(Freq_Flag),
+        voltage_r,
+        voltage_i,
+        current_r,
+        current_i,
+        global_vars,
+        inner_vars,
+        dynamic_device,
+        t,
+    )
+    return
+end
+
+#####################################################
+### Auxiliary ODE calculations via Flags dispatch ###
+#####################################################
+
+#Freq_Flag = 0 
+function _mdl_ode_AggregateDistributedGenerationA!(
+    device_states::AbstractArray{T},
+    output_ode::AbstractArray{T},
+    ::Val{0},
+    voltage_r::T,
+    voltage_i::T,
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    global_vars::AbstractArray{T},
+    inner_vars::AbstractArray{T},
+    dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    t,
+) where {T <: ACCEPTED_REAL_TYPES}
+    sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
+    Vt = sqrt(voltage_r^2 + voltage_i^2)
+
+    #Obtain References (from wrapper and device)
+    Pfa_ref = PSY.get_Pfa_ref(get_device(dynamic_device))
+    P_ref = get_P_ref(dynamic_device)
+    Q_ref = get_Q_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+
+    #Get flags  
+    Pf_Flag = PSY.get_Pf_Flag(get_device(dynamic_device))
+
+    #Get device states 
+    Vmeas = device_states[1]
+    Pmeas = device_states[2]
+    Q_V = device_states[3]
+    Iq = device_states[4]
+    Mult = device_states[5]
+    Fmeas = device_states[6]
+    Ip = device_states[7]
+
+    Ip_cmd = Ip
+    Iq_cmd = Iq
+
+    #Get parameters 
+    T_rv = PSY.get_T_rv(get_device(dynamic_device))
+    Trf = PSY.get_Trf(get_device(dynamic_device))
+    (dbd1, dbd2) = PSY.get_dbd_pnts(get_device(dynamic_device))
+    K_qv = PSY.get_K_qv(get_device(dynamic_device))
+    Tp = PSY.get_Tp(get_device(dynamic_device))
+    T_iq = PSY.get_T_iq(get_device(dynamic_device))
+
+    Tg = PSY.get_Tg(get_device(dynamic_device))
+    rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
+    Tv = PSY.get_Tv(get_device(dynamic_device))
+    Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
+
+    #STATE Vmeas 
+    _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
+    #STATE Q_V
+    if Pf_Flag == 1
+        _, dQ_V_dt =
+            low_pass_mass_matrix(tan(Pfa_ref) * Pmeas / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+    elseif Pf_Flag == 0
+        _, dQ_V_dt = low_pass_mass_matrix(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+    else
+        @error @error "Unsupported value of PQ_Flag"
+    end
+
+    #STATE Iq 
+    Ip_min, Ip_max, Iq_min, Iq_max =
+        current_limit_logic(get_device(dynamic_device), Ip_cmd, Iq_cmd)
+    Iq_input =
+        clamp(
+            clamp(
+                deadband_function(V_ref - Vmeas, dbd1, dbd2) * K_qv,
+                Iq_lim[:min],
+                Iq_lim[:max],
+            ) + Q_V,
+            Iq_min,
+            Iq_max,
+        ) * Mult
+    _, dIq_dt = low_pass(Iq_input, Iq, 1.0, Tg)
+
+    VMult = 1.0
+    FMult = 1.0
+    _, dMult_dt = low_pass_mass_matrix(VMult * FMult, Mult, 1.0, Tv)
+
+    #STATE Fmeas 
+    _, dFmeas_dt = low_pass_mass_matrix(sys_ω, Fmeas, 1.0, Trf)
+
+    if Ip >= 0
+        Rup = abs(rrpwr)
+        Rdown = -Inf
+    else
+        Rdown = -abs(rrpwr)
+        Rup = Inf
+    end
+
+    #STATE Ip
+    Ip_input = clamp(P_ref / max(Vmeas, 0.01), Ip_min, Ip_max) * Mult
+    Ip_limited, dIp_dt =
+        low_pass_nonwindup_ramp_limits(Ip_input, Ip, 1.0, Tg, -Inf, Inf, Rdown, Rup)
+
+    #STATE Pmeas
+    _, dPmeas_dt = low_pass_mass_matrix(P_ref, Pmeas, 1.0, Tp)
+
+    #Update ODEs 
+    output_ode[1] = dVmeas_dt
+    output_ode[2] = dPmeas_dt
+    output_ode[3] = dQ_V_dt
+    output_ode[4] = dIq_dt
+    output_ode[5] = dMult_dt
+    output_ode[6] = dFmeas_dt
+    output_ode[7] = dIp_dt
+
+    #Calculate output current 
+    θ = atan(voltage_i / voltage_r)
+    Iq_neg = -Iq
+    I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
+    I_i = imag(complex(Ip_limited, Iq_neg) * exp(im * θ))
+    current_r[1] = I_r
+    current_i[1] = I_i
+end
+
+#Freq_Flag = 1
+function _mdl_ode_AggregateDistributedGenerationA!(
+    device_states::AbstractArray{T},
+    output_ode::AbstractArray{T},
+    ::Val{1},
+    voltage_r::T,
+    voltage_i::T,
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    global_vars::AbstractArray{T},
+    inner_vars::AbstractArray{T},
+    dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    t,
+) where {T <: ACCEPTED_REAL_TYPES}
+    sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
+    Vt = sqrt(voltage_r^2 + voltage_i^2)
+
+    #Obtain References (from wrapper and device)
+    Pfa_ref = PSY.get_Pfa_ref(get_device(dynamic_device))
+    P_ref = get_P_ref(dynamic_device)
+    Q_ref = get_Q_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
+
+    #Get flags  
+    Pf_Flag = PSY.get_Pf_Flag(get_device(dynamic_device))
+
+    #Get device states 
+    Vmeas = device_states[1]
+    Pmeas = device_states[2]
+    Q_V = device_states[3]
+    Iq = device_states[4]
+    Mult = device_states[5]
+    Fmeas = device_states[6]
+    PowerPI = device_states[7]
+    dPord = device_states[8]
+    Pord = device_states[9]
+    Ip = device_states[10]
+
+    Ip_cmd = Ip
+    Iq_cmd = Iq
+
+    #Get parameters 
+    T_rv = PSY.get_T_rv(get_device(dynamic_device))
+    Trf = PSY.get_Trf(get_device(dynamic_device))
+    (dbd1, dbd2) = PSY.get_dbd_pnts(get_device(dynamic_device))
+    K_qv = PSY.get_K_qv(get_device(dynamic_device))
+    Tp = PSY.get_Tp(get_device(dynamic_device))
+    T_iq = PSY.get_T_iq(get_device(dynamic_device))
+    D_dn = PSY.get_D_dn(get_device(dynamic_device))
+    D_up = PSY.get_D_up(get_device(dynamic_device))
+    (fdbd1, fdbd2) = PSY.get_fdbd_pnts(get_device(dynamic_device))
+    fe_lim = PSY.get_fe_lim(get_device(dynamic_device))
+    P_lim = PSY.get_P_lim(get_device(dynamic_device))
+    dP_lim = PSY.get_dP_lim(get_device(dynamic_device))
+    Tpord = PSY.get_Tpord(get_device(dynamic_device))
+    Kpg = PSY.get_Kpg(get_device(dynamic_device))
+    Kig = PSY.get_Kig(get_device(dynamic_device))
+
+    Tg = PSY.get_Tg(get_device(dynamic_device))
+    rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
+    Tv = PSY.get_Tv(get_device(dynamic_device))
+    Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
+
+    #STATE Vmeas 
+    _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
+    #STATE Q_V
+    if Pf_Flag == 1
+        _, dQ_V_dt =
+            low_pass_mass_matrix(tan(Pfa_ref) * Pmeas / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+    elseif Pf_Flag == 0
+        _, dQ_V_dt = low_pass_mass_matrix(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
+    else
+        @error "Unsupported value of PQ_Flag"
+    end
+
+    #STATE Iq 
+    Ip_min, Ip_max, Iq_min, Iq_max =
+        current_limit_logic(get_device(dynamic_device), Ip_cmd, Iq_cmd)
+    Iq_input =
+        clamp(
+            clamp(
+                deadband_function(V_ref - Vmeas, dbd1, dbd2) * K_qv,
+                Iq_lim[:min],
+                Iq_lim[:max],
+            ) + Q_V,
+            Iq_min,
+            Iq_max,
+        ) * Mult
+    _, dIq_dt = low_pass(Iq_input, Iq, 1.0, Tg)
+
+    VMult = 1.0
+    FMult = 1.0
+    _, dMult_dt = low_pass_mass_matrix(VMult * FMult, Mult, 1.0, Tv)
+
+    #STATE Fmeas 
+    _, dFmeas_dt = low_pass_mass_matrix(sys_ω, Fmeas, 1.0, Trf)
+
+    if Ip >= 0
+        Rup = abs(rrpwr)
+        Rdown = -Inf
+    else
+        Rdown = -abs(rrpwr)
+        Rup = Inf
+    end
+
+    #STATE Pmeas
+    _, dPmeas_dt = low_pass_mass_matrix(P_ref, Pmeas, 1.0, Tp)
+
+    #STATE PowerPI
+    PowerPI_input = clamp(
+        min(deadband_function(ω_ref - Fmeas, fdbd1, fdbd2) * D_dn, 0.0) +
+        max(deadband_function(ω_ref - Fmeas, fdbd1, fdbd2) * D_up, 0.0) - Pmeas + P_ref,
+        fe_lim[:min],
+        fe_lim[:max],
+    )
+    _, dPowerPI_dt =
+        pi_block_nonwindup(PowerPI_input, PowerPI, Kpg, Kig, P_lim[:min], P_lim[:max])
+
+    #STATE dPord
+    if dPowerPI_dt > dP_lim[:max]
+        ddPord_dt = dP_lim[:max]
+    elseif dPowerPI_dt < dP_lim[:min]
+        ddPord_dt = dP_lim[:min]
+    else
+        ddPord_dt = dPowerPI_dt
+    end
+
+    #State Pord
+    Pord_limited, dPord_dt =
+        low_pass_nonwindup_mass_matrix(dPord, Pord, 1.0, Tpord, P_lim[:min], P_lim[:max])
+
+    #STATE Ip
+    Ip_input = clamp(Pord_limited / max(Vmeas, 0.01), Ip_min, Ip_max) * Mult
+    Ip_limited, dIp_dt =
+        low_pass_nonwindup_ramp_limits(Ip_input, Ip, 1.0, Tg, -Inf, Inf, Rdown, Rup)
+
+    #Update ODEs 
+    output_ode[1] = dVmeas_dt
+    output_ode[2] = dPmeas_dt
+    output_ode[3] = dQ_V_dt
+    output_ode[4] = dIq_dt
+    output_ode[5] = dMult_dt
+    output_ode[6] = dFmeas_dt
+    output_ode[7] = dPowerPI_dt
+    output_ode[8] = ddPord_dt
+    output_ode[9] = dPord_dt
+    output_ode[10] = dIp_dt
+
+    #Calculate output current 
+    θ = atan(voltage_i / voltage_r)
+    Iq_neg = -Iq
+    I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
+    I_i = imag(complex(Ip_limited, Iq_neg) * exp(im * θ))
+    current_r[1] = I_r
+    current_i[1] = I_i
+end

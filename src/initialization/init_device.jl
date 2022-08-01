@@ -380,3 +380,100 @@ function initialize_dynamic_device!(
     end
     return device_states
 end
+
+function initialize_dynamic_device!(
+    dynamic_wrapper::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    static::PSY.StaticInjection,
+    initial_inner_vars::AbstractVector,
+)
+    device_states = zeros(PSY.get_n_states(dynamic_wrapper))
+    dynamic_device = get_device(dynamic_wrapper)
+
+    #Get PowerFlow Data
+    P0 = PSY.get_active_power(static)
+    Q0 = PSY.get_reactive_power(static)
+    Vm = PSY.get_magnitude(PSY.get_bus(static))
+    θ = PSY.get_angle(PSY.get_bus(static))
+    S0 = P0 + Q0 * 1im
+
+    V_R = Vm * cos(θ)
+    V_I = Vm * sin(θ)
+    V = V_R + V_I * 1im
+    I = conj(S0 / V)
+
+    Ip = real(I * exp(-im * θ))
+    Iq_neg = imag(I * exp(-im * θ))
+    Iq = -Iq_neg
+
+    Vmeas = Vm
+    Fmeas = 1.0
+    Freq_ref = 1.0
+    Mult = 1.0
+    Ip_cmd = Ip / Mult
+    Iq_cmd = Iq / Mult
+    Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(dynamic_device, Ip_cmd, Iq_cmd)
+    if Ip_cmd >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_cmd
+        @error(
+            "Inverter $(PSY.get_name(static)) active current $(Ip_cmd) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
+        )
+    end
+
+    if Iq_cmd >= Iq_max + BOUNDS_TOLERANCE || Iq_min - BOUNDS_TOLERANCE >= Iq_cmd
+        @error(
+            "Inverter $(PSY.get_name(static)) reactive current $(Iq_cmd) out of limits $(Iq_min) $(Iq_max). Check Power Flow or Parameters"
+        )
+    end
+
+    Pord = Ip_cmd * max(Vmeas, 0.01)
+    dPord = Pord
+    Pmeas = Pord
+    Q_V = Iq_cmd
+    pfaref = atan(Q0 / P0)
+    Qref = Iq_cmd * max(Vmeas, 0.01)
+    Freq_Flag = PSY.get_Freq_Flag(dynamic_device)
+    if Freq_Flag == 0
+        Pref = dPord
+        device_states[1] = Vmeas
+        device_states[2] = Pmeas
+        device_states[3] = Q_V
+        device_states[4] = Iq
+        device_states[5] = Mult
+        device_states[6] = Fmeas
+        device_states[7] = Ip
+    elseif Freq_Flag == 1
+        Pref = Pmeas
+        PowerPI = dPord
+        device_states[1] = Vmeas
+        device_states[2] = Pmeas
+        device_states[3] = Q_V
+        device_states[4] = Iq
+        device_states[5] = Mult
+        device_states[6] = Fmeas
+        device_states[7] = PowerPI
+        device_states[8] = dPord
+        device_states[9] = Pord
+        device_states[10] = Ip
+    else
+        @error "Unsupported value of Freq_Flag"
+    end
+
+    #See Note 2 on PSSE Documentation 
+    Vref0 = PSY.get_V_ref(dynamic_device)
+    K_qv = PSY.get_K_qv(dynamic_device)
+    (dbd1, dbd2) = PSY.get_dbd_pnts(dynamic_device)
+    if Vref0 == 0.0
+        Vref = Vmeas
+    elseif dbd1 <= (Vref0 - Vmeas) * K_qv <= dbd2
+        Vref = Vref0
+    else
+        Vref = Vmeas
+    end
+
+    set_P_ref(dynamic_wrapper, Pref)
+    set_Q_ref(dynamic_wrapper, Qref)
+    set_V_ref(dynamic_wrapper, Vref)
+    set_ω_ref(dynamic_wrapper, Freq_ref)
+    PSY.set_Pfa_ref!(dynamic_device, pfaref)
+
+    return device_states
+end
