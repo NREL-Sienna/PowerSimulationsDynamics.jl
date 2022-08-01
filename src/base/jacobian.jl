@@ -56,7 +56,7 @@ function JacobianFunctionWrapper(
     m!::SystemModel{MassMatrixModel},
     x0_guess::Vector{Float64};
     # Improve the heuristic to do sparsity detection
-    sparse_retrieve_loop::Int = 0 #max(3, length(x0_guess) ÷ 100),
+    sparse_retrieve_loop::Int = 0, #max(3, length(x0_guess) ÷ 100),
 )
     x0 = deepcopy(x0_guess)
     n = length(x0)
