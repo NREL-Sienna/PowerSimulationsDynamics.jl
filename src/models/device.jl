@@ -655,7 +655,7 @@ function device!(
     # get speed of system's reference frame
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
-    # get states 
+    # get states
     ψ_qs = device_states[1]
     ψ_ds = device_states[2]
     ψ_qr = device_states[3]
@@ -678,25 +678,25 @@ function device!(
     X_ad = PSY.get_X_ad(dynamic_device)
     X_aq = PSY.get_X_aq(dynamic_device)
 
-    # voltages in QD 
+    # voltages in QD
     v_qs = voltage_i
     v_ds = voltage_r
     v_qr = zero(T)
     v_dr = zero(T)
 
-    #Additional Fluxes 
+    #Additional Fluxes
     ψ_mq = X_aq * (ψ_qs / X_ls + ψ_qr / X_lr) # (4.14-15) in Krause
     ψ_md = X_ad * (ψ_ds / X_ls + ψ_dr / X_lr) # (4.14-16) in Krause
 
-    # Stator motor currents in QD 
+    # Stator motor currents in QD
     i_qs = 1 / X_ls * (ψ_qs - ψ_mq) # (4.14-1) in Krause
     i_ds = 1 / X_ls * (ψ_ds - ψ_md) # (4.14-2) in Krause
 
     # Electric Torque
-    τ_e = ψ_ds * i_qs - ψ_qs * i_ds    # (4.14-18) in Krause 
+    τ_e = ψ_ds * i_qs - ψ_qs * i_ds    # (4.14-18) in Krause
 
     #Compute ODEs
-    output_ode[1] = 2.0 * pi * f0 * (v_qs - sys_ω * ψ_ds - R_s * i_qs)  # (4.14-9) in Krause 
+    output_ode[1] = 2.0 * pi * f0 * (v_qs - sys_ω * ψ_ds - R_s * i_qs)  # (4.14-9) in Krause
     output_ode[2] = 2.0 * pi * f0 * (v_ds + sys_ω * ψ_qs - R_s * i_ds) # (4.14-10) in Krause
     output_ode[3] =
         2.0 * pi * f0 * (v_qr - (sys_ω - ωr) * ψ_dr + R_r / X_lr * (ψ_mq - ψ_qr)) # (4.14-12) in Krause
@@ -738,7 +738,7 @@ function device!(
     # get speed of system's reference frame
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
-    # get states 
+    # get states
     ψ_qr = device_states[1]
     ψ_dr = device_states[2]
     ωr = device_states[3]
@@ -758,13 +758,13 @@ function device!(
     X_rr = PSY.get_X_rr(dynamic_device)
     X_p = PSY.get_X_p(dynamic_device)
 
-    # voltages in QD 
+    # voltages in QD
     v_qs = voltage_i
     v_ds = voltage_r
     v_qr = zero(T)
     v_dr = zero(T)
 
-    # Stator and rotor currents in QD 
+    # Stator and rotor currents in QD
     i_qs =
         1 / (R_s^2 + (sys_ω * X_p)^2) * (
             (R_s * v_qs - sys_ω * X_p * v_ds) -
@@ -779,7 +779,7 @@ function device!(
     i_dr = (ψ_dr - X_m * i_ds) / X_rr # # derived from 5th row of (4.5.37) in Krause
 
     # Electric Torque
-    τ_e = ψ_qr * i_dr - ψ_dr * i_qr     # (4.8-6) in Krause 
+    τ_e = ψ_qr * i_dr - ψ_dr * i_qr     # (4.8-6) in Krause
 
     #Compute ODEs
     output_ode[1] = 2.0 * pi * f0 * (v_qr - (sys_ω - ωr) * ψ_dr - R_r * i_qr) # (4.5-25) in Krause
@@ -806,20 +806,21 @@ function mass_matrix_dera_entries!(
     dera::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     global_index::ImmutableDict{Symbol, Int64},
 )
+    ddera = get_device(dera)
     Freq_Flag = PSY.get_Freq_Flag(get_device(dera))
     if Freq_Flag == 1
-        mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(dera)
-        mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(dera)
-        mass_matrix[global_index[:Q_V], global_index[:Q_V]] = PSY.get_T_iq(dera)
-        mass_matrix[global_index[:Mult], global_index[:Mult]] = PSY.get_Tv(dera)
-        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_T_rf(dera)
-        mass_matrix[global_index[:Pord], global_index[:Pord]] = PSY.get_Tpord(dera)
+        mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(ddera)
+        mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(ddera)
+        mass_matrix[global_index[:Q_V], global_index[:Q_V]] = PSY.get_T_iq(ddera)
+        mass_matrix[global_index[:Mult], global_index[:Mult]] = PSY.get_Tv(ddera)
+        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_Trf(ddera)
+        mass_matrix[global_index[:Pord], global_index[:Pord]] = PSY.get_Tpord(ddera)
     else
-        mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(dera)
-        mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(dera)
-        mass_matrix[global_index[:Q_V], global_index[:Q_V]] = PSY.get_T_iq(dera)
-        mass_matrix[global_index[:Mult], global_index[:Mult]] = PSY.get_Tv(dera)
-        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_T_rf(dera)
+        mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(ddera)
+        mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(ddera)
+        mass_matrix[global_index[:Q_V], global_index[:Q_V]] = PSY.get_T_iq(ddera)
+        mass_matrix[global_index[:Mult], global_index[:Mult]] = PSY.get_Tv(ddera)
+        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_T_rf(ddera)
     end
 end
 
@@ -856,7 +857,7 @@ end
 ### Auxiliary ODE calculations via Flags dispatch ###
 #####################################################
 
-#Freq_Flag = 0 
+#Freq_Flag = 0
 function _mdl_ode_AggregateDistributedGenerationA!(
     device_states::AbstractArray{T},
     output_ode::AbstractArray{T},
@@ -879,10 +880,10 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Q_ref = get_Q_ref(dynamic_device)
     V_ref = get_V_ref(dynamic_device)
 
-    #Get flags  
+    #Get flags
     Pf_Flag = PSY.get_Pf_Flag(get_device(dynamic_device))
 
-    #Get device states 
+    #Get device states
     Vmeas = device_states[1]
     Pmeas = device_states[2]
     Q_V = device_states[3]
@@ -894,7 +895,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Ip_cmd = Ip
     Iq_cmd = Iq
 
-    #Get parameters 
+    #Get parameters
     T_rv = PSY.get_T_rv(get_device(dynamic_device))
     Trf = PSY.get_Trf(get_device(dynamic_device))
     (dbd1, dbd2) = PSY.get_dbd_pnts(get_device(dynamic_device))
@@ -907,7 +908,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Tv = PSY.get_Tv(get_device(dynamic_device))
     Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
 
-    #STATE Vmeas 
+    #STATE Vmeas
     _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
     #STATE Q_V
     if Pf_Flag == 1
@@ -919,7 +920,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
         @error @error "Unsupported value of PQ_Flag"
     end
 
-    #STATE Iq 
+    #STATE Iq
     Ip_min, Ip_max, Iq_min, Iq_max =
         current_limit_logic(get_device(dynamic_device), Ip_cmd, Iq_cmd)
     Iq_input =
@@ -938,7 +939,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     FMult = 1.0
     _, dMult_dt = low_pass_mass_matrix(VMult * FMult, Mult, 1.0, Tv)
 
-    #STATE Fmeas 
+    #STATE Fmeas
     _, dFmeas_dt = low_pass_mass_matrix(sys_ω, Fmeas, 1.0, Trf)
 
     if Ip >= 0
@@ -957,7 +958,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     #STATE Pmeas
     _, dPmeas_dt = low_pass_mass_matrix(P_ref, Pmeas, 1.0, Tp)
 
-    #Update ODEs 
+    #Update ODEs
     output_ode[1] = dVmeas_dt
     output_ode[2] = dPmeas_dt
     output_ode[3] = dQ_V_dt
@@ -966,7 +967,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     output_ode[6] = dFmeas_dt
     output_ode[7] = dIp_dt
 
-    #Calculate output current 
+    #Calculate output current
     θ = atan(voltage_i / voltage_r)
     Iq_neg = -Iq
     I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
@@ -999,10 +1000,10 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     V_ref = get_V_ref(dynamic_device)
     ω_ref = get_ω_ref(dynamic_device)
 
-    #Get flags  
+    #Get flags
     Pf_Flag = PSY.get_Pf_Flag(get_device(dynamic_device))
 
-    #Get device states 
+    #Get device states
     Vmeas = device_states[1]
     Pmeas = device_states[2]
     Q_V = device_states[3]
@@ -1017,7 +1018,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Ip_cmd = Ip
     Iq_cmd = Iq
 
-    #Get parameters 
+    #Get parameters
     T_rv = PSY.get_T_rv(get_device(dynamic_device))
     Trf = PSY.get_Trf(get_device(dynamic_device))
     (dbd1, dbd2) = PSY.get_dbd_pnts(get_device(dynamic_device))
@@ -1039,7 +1040,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Tv = PSY.get_Tv(get_device(dynamic_device))
     Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
 
-    #STATE Vmeas 
+    #STATE Vmeas
     _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
     #STATE Q_V
     if Pf_Flag == 1
@@ -1051,7 +1052,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
         @error "Unsupported value of PQ_Flag"
     end
 
-    #STATE Iq 
+    #STATE Iq
     Ip_min, Ip_max, Iq_min, Iq_max =
         current_limit_logic(get_device(dynamic_device), Ip_cmd, Iq_cmd)
     Iq_input =
@@ -1070,7 +1071,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     FMult = 1.0
     _, dMult_dt = low_pass_mass_matrix(VMult * FMult, Mult, 1.0, Tv)
 
-    #STATE Fmeas 
+    #STATE Fmeas
     _, dFmeas_dt = low_pass_mass_matrix(sys_ω, Fmeas, 1.0, Trf)
 
     if Ip >= 0
@@ -1112,7 +1113,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Ip_limited, dIp_dt =
         low_pass_nonwindup_ramp_limits(Ip_input, Ip, 1.0, Tg, -Inf, Inf, Rdown, Rup)
 
-    #Update ODEs 
+    #Update ODEs
     output_ode[1] = dVmeas_dt
     output_ode[2] = dPmeas_dt
     output_ode[3] = dQ_V_dt
@@ -1124,7 +1125,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     output_ode[9] = dPord_dt
     output_ode[10] = dIp_dt
 
-    #Calculate output current 
+    #Calculate output current
     θ = atan(voltage_i / voltage_r)
     Iq_neg = -Iq
     I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
