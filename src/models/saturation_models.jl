@@ -131,10 +131,59 @@ function current_limit_logic(
     else
         local_I = sqrt(local_I)
     end
-    if local_I < Iq_max
+    if local_I < I_max
         Iq_max = local_I
     else
         Iq_max = I_max
+    end
+    Iq_min = -Iq_max
+    return Ip_min, Ip_max, Iq_min, Iq_max
+end
+
+function current_limit_logic(
+    device::PSY.AggregateDistributedGenerationA,
+    Ip_cmd::X,
+    Iq_cmd::X,
+) where {X <: ACCEPTED_REAL_TYPES}
+    PQ_Flag = PSY.get_PQ_Flag(device)
+    Gen_Flag = PSY.get_Gen_Flag(device)
+    I_max = PSY.get_I_max(device)
+
+    if PQ_Flag == 1  #P Priority 
+        Ip_max = I_max
+        local_I = I_max^2 - Ip_cmd^2
+        if local_I < 0
+            local_I = 0
+        else
+            local_I = sqrt(local_I)
+        end
+        if local_I < I_max
+            Iq_max = local_I
+        else
+            Iq_max = I_max
+        end
+    elseif PQ_Flag == 0     #Q Priority  
+        Iq_max = I_max
+        local_I = I_max^2 - Iq_cmd^2
+        if local_I < 0
+            local_I = 0
+        else
+            local_I = sqrt(local_I)
+        end
+        if local_I < I_max
+            Ip_max = local_I
+        else
+            Ip_max = I_max
+        end
+    else
+        @error "Unsupported value of PQ_Flag"
+    end
+    if Gen_Flag == 1
+        Ip_min = 0
+    elseif Gen_Flag == 0
+        Ip_min = -Ip_max
+    else
+        @error "Unsupported value of Gen_Flag"
     end
     Iq_min = -Iq_max
     return Ip_min, Ip_max, Iq_min, Iq_max

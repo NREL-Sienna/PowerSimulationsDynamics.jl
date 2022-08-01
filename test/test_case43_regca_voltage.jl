@@ -66,7 +66,7 @@ PSY.set_dynamic_injector!(inverter, new_dynamic_injector)
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-@testset "Test 42 REGCA Voltage ResidualModel" begin
+@testset "Test 43 REGCA Voltage ResidualModel" begin
     path = joinpath(pwd(), "test-regca-voltage")
     !isdir(path) && mkdir(path)
     try
@@ -82,7 +82,7 @@ PSY.set_dynamic_injector!(inverter, new_dynamic_injector)
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test42_x0_init
+        for (k, v) in test43_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
@@ -94,7 +94,7 @@ PSY.set_dynamic_injector!(inverter, new_dynamic_injector)
         @test small_sig.stable
 
         # Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test42_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test43_eigvals) < 1e-3
 
         # Solve problem
         @test execute!(sim, IDA(), abstol = 1e-9) == PSID.SIMULATION_FINALIZED
@@ -107,7 +107,7 @@ PSY.set_dynamic_injector!(inverter, new_dynamic_injector)
     end
 end
 
-@testset "Test 42 REGCA Voltage MassMatrixModel" begin
+@testset "Test 43 REGCA Voltage MassMatrixModel" begin
     path = joinpath(pwd(), "test-regca-voltage")
     !isdir(path) && mkdir(path)
     try
@@ -123,7 +123,7 @@ end
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test42_x0_init
+        for (k, v) in test43_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
@@ -135,7 +135,7 @@ end
         @test small_sig.stable
 
         # Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test42_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test43_eigvals) < 1e-3
 
         # Solve problem
         @test execute!(sim, Rodas4(), abstol = 1e-9) == PSID.SIMULATION_FINALIZED
