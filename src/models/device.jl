@@ -820,7 +820,7 @@ function mass_matrix_dera_entries!(
         mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(ddera)
         mass_matrix[global_index[:Q_V], global_index[:Q_V]] = PSY.get_T_iq(ddera)
         mass_matrix[global_index[:Mult], global_index[:Mult]] = PSY.get_Tv(ddera)
-        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_T_rf(ddera)
+        mass_matrix[global_index[:Fmeas], global_index[:Fmeas]] = PSY.get_Trf(ddera)
     end
 end
 
