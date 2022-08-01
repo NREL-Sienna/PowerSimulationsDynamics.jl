@@ -779,7 +779,7 @@ test41_eigvals = [
     -0.001001001001001001 + 0.0im
 ]
 
-test42_eigvals = [
+test43_eigvals = [
     -50.0 + 0.0im
     -50.0 + 0.0im
     -50.0 + 0.0im
