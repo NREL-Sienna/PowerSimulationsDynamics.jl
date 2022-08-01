@@ -2,8 +2,25 @@ function mass_matrix_filter_entries!(
     mass_matrix,
     filt::F,
     global_index::Base.ImmutableDict{Symbol, Int64},
+    f0::Float64,
 ) where {F <: PSY.Filter}
     @debug "Using default mass matrix entries $F"
+    return
+end
+
+function mass_matrix_filter_entries!(
+    mass_matrix,
+    filt::PSY.LCLFilter,
+    global_index::Base.ImmutableDict{Symbol, Int64},
+    f0::Float64,
+)
+    ωb = 2 * pi * f0
+    mass_matrix[global_index[:ir_cnv], global_index[:ir_cnv]] = PSY.get_lf(filt) / ωb
+    mass_matrix[global_index[:ii_cnv], global_index[:ii_cnv]] = PSY.get_lf(filt) / ωb
+    mass_matrix[global_index[:vr_filter], global_index[:vr_filter]] = PSY.get_cf(filt) / ωb
+    mass_matrix[global_index[:vi_filter], global_index[:vi_filter]] = PSY.get_cf(filt) / ωb
+    mass_matrix[global_index[:ir_filter], global_index[:ir_filter]] = PSY.get_lg(filt) / ωb
+    mass_matrix[global_index[:ii_filter], global_index[:ii_filter]] = PSY.get_lg(filt) / ωb
     return
 end
 
@@ -61,33 +78,19 @@ function mdl_filter_ode!(
     #Compute 6 states ODEs (D'Arco EPSR122 Model)
     #Inverter Output Inductor (internal state)
     #𝜕id_c/𝜕t
-    output_ode[local_ix[1]] = (
-        ωb / lf * Vr_cnv - ωb / lf * Vr_filter - ωb * rf / lf * Ir_cnv +
-        ωb * ω_sys * Ii_cnv
-    )
+    output_ode[local_ix[1]] = (Vr_cnv - Vr_filter - rf * Ir_cnv + lf * ω_sys * Ii_cnv)
     #𝜕iq_c/𝜕t
-    output_ode[local_ix[2]] = (
-        ωb / lf * Vi_cnv - ωb / lf * Vi_filter - ωb * rf / lf * Ii_cnv -
-        ωb * ω_sys * Ir_cnv
-    )
+    output_ode[local_ix[2]] = (Vi_cnv - Vi_filter - rf * Ii_cnv - lf * ω_sys * Ir_cnv)
     #LCL Capacitor (internal state)
     #𝜕vd_o/𝜕t
-    output_ode[local_ix[3]] =
-        (ωb / cf * Ir_cnv - ωb / cf * Ir_filter + ωb * ω_sys * Vi_filter)
+    output_ode[local_ix[3]] = (Ir_cnv - Ir_filter + cf * ω_sys * Vi_filter)
     #𝜕vq_o/𝜕t
-    output_ode[local_ix[4]] =
-        (ωb / cf * Ii_cnv - ωb / cf * Ii_filter - ωb * ω_sys * Vr_filter)
+    output_ode[local_ix[4]] = (Ii_cnv - Ii_filter - cf * ω_sys * Vr_filter)
     #Grid Inductance (internal state)
     #𝜕id_o/𝜕t
-    output_ode[local_ix[5]] = (
-        ωb / lg * Vr_filter - ωb / lg * V_tR - ωb * rg / lg * Ir_filter +
-        ωb * ω_sys * Ii_filter
-    )
+    output_ode[local_ix[5]] = (Vr_filter - V_tR - rg * Ir_filter + lg * ω_sys * Ii_filter)
     #𝜕iq_o/𝜕t
-    output_ode[local_ix[6]] = (
-        ωb / lg * Vi_filter - ωb / lg * V_tI - ωb * rg / lg * Ii_filter -
-        ωb * ω_sys * Ir_filter
-    )
+    output_ode[local_ix[6]] = (Vi_filter - V_tI - rg * Ii_filter - lg * ω_sys * Ir_filter)
 
     #Update inner_vars
     inner_vars[Vr_filter_var] = Vr_filter
