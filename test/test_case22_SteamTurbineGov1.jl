@@ -57,6 +57,9 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/TGOV1/TEST_TGOV1.csv")
         t = series[1]
         δ = series[2]
 
+        # TODO: Test mechanical torque in PSSE
+        _, τm = get_mechanical_torque_series(results, "generator-102-1")
+
         # Obtain PSSE results
         t_psse, δ_psse = get_csv_delta(csv_file)
 
@@ -114,6 +117,9 @@ end
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
+
+        # TODO: Test mechanical torque in PSSE
+        _, τm = get_mechanical_torque_series(results, "generator-102-1")
 
         # Obtain PSSE results
         t_psse, δ_psse = get_csv_delta(csv_file)
