@@ -731,14 +731,14 @@ function mdl_outer_ode!(
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power(outer_control)
-    k1 = PSY.get_k1(active_power_control) #Droop Gain
-    ψ = PSY.get_ψ(active_power_control) #Frequency cutoff frequency
+    k1 = PSY.get_k1(active_power_control) 
+    ψ = PSY.get_ψ(active_power_control) 
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
     reactive_power_control = PSY.get_reactive_power(outer_control)
-    k2 = PSY.get_k2(reactive_power_control) #Reactive power droop gain
+    k2 = PSY.get_k2(reactive_power_control) 
 
     #Obtain external parameters
     p_ref = get_P_ref(dynamic_device)
@@ -760,7 +760,7 @@ function mdl_outer_ode!(
     p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
 
-    #Compute Frequency from Droop
+    #Compute Frequency from VOC
     γ = ψ - pi / 2
     ω_oc =
         ω_sys +
@@ -773,7 +773,7 @@ function mdl_outer_ode!(
             k2 * (V_ref^2 - E_oc^2) * E_oc
         )
 
-    #Compute 3 states ODEs
+    #Compute 2 states ODEs
     output_ode[local_ix[1]] = ωb * (ω_oc - ω_sys)
     output_ode[local_ix[2]] = dEoc_dt
 
