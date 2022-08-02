@@ -275,6 +275,7 @@ dc_source_hv() = FixedDCSource(voltage = 1500.0) #Not in the original data, gues
 ###### Filter Data ######
 filt() = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01)
 filt_gfoll() = LCLFilter(lf = 0.009, rf = 0.016, cf = 2.5, lg = 0.002, rg = 0.003)
+filt_voc() = LCLFilter(lf = 0.0196, rf = 0.0139, cf = 0.1086, lg = 0.0196, rg = 0.0139)
 
 ###### PLL Data ######
 pll() = KauraPLL(
@@ -330,6 +331,16 @@ function outer_control_gfoll()
         return ReactivePowerPI(Kp_q = 2.0, Ki_q = 30.0, ωf = 0.132 * 2 * pi * 50.0)
     end
     return OuterControl(active_pi(), reactive_pi())
+end
+
+function outer_voc()
+    function active_voc()
+        return PSY.ActiveVirtualOscillator(k1 = 0.0033, ψ = pi / 4)
+    end
+    function reactive_voc()
+        return PSY.ReactiveVirtualOscillator(k2 = 0.0796)
+    end
+    return OuterControl(active_voc(), reactive_voc())
 end
 
 ######## Inner Control ######
