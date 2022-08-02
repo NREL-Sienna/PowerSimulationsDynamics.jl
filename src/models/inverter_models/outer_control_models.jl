@@ -731,14 +731,14 @@ function mdl_outer_ode!(
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power(outer_control)
-    k1 = PSY.get_k1(active_power_control) 
-    ψ = PSY.get_ψ(active_power_control) 
+    k1 = PSY.get_k1(active_power_control)
+    ψ = PSY.get_ψ(active_power_control)
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
     reactive_power_control = PSY.get_reactive_power(outer_control)
-    k2 = PSY.get_k2(reactive_power_control) 
+    k2 = PSY.get_k2(reactive_power_control)
 
     #Obtain external parameters
     p_ref = get_P_ref(dynamic_device)
