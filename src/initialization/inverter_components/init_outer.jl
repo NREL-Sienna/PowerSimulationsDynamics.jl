@@ -127,6 +127,66 @@ function initialize_outer!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
             C,
+            PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator},
+            IC,
+            DC,
+            P,
+            F,
+        },
+    },
+    inner_vars::AbstractVector,
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator},
+    )
+    Vr_filter = device_states[external_ix[1]]
+    Vi_filter = device_states[external_ix[2]]
+    Ir_filter = device_states[external_ix[3]]
+    Ii_filter = device_states[external_ix[4]]
+
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
+    θ0_oc = atan(Vi_cnv, Vr_cnv)
+
+    #Obtain additional expressions
+    p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
+    q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
+
+    #Update inner_vars
+    inner_vars[P_ES_var] = p_elec_out
+    #Update states
+    outer_ix = get_local_state_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator},
+    )
+    outer_states = @view device_states[outer_ix]
+    outer_states[1] = θ0_oc #θ_oc
+    outer_states[2] = 1.0 # V_ref will be computed in the inner control
+
+    #Update inner vars
+    inner_vars[θ_oc_var] = θ0_oc
+    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
+    set_P_ref(dynamic_device, p_elec_out)
+    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    set_Q_ref(dynamic_device, q_elec_out)
+end
+
+function initialize_outer!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
             PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
             IC,
             DC,

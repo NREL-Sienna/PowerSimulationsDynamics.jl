@@ -121,6 +121,10 @@ function initialize_inner!(
             sol_x0[2],
         )
         inner_vars[V_oc_var] = sol_x0[2]
+        # Update state if OuterControl is VOC
+        if O <: PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator}
+            outer_states[2] = sol_x0[2]
+        end
         #Update Converter modulation
         m0_dq = (ri_dq(sol_x0[1] + pi / 2) * [Vr_cnv0; Vi_cnv0]) ./ Vdc
         inner_vars[md_var] = m0_dq[d]
