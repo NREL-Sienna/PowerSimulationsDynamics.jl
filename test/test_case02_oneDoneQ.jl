@@ -62,6 +62,12 @@ Ybus_change = NetworkSwitch(
         t = series[1]
         δ = series[2]
 
+        # Test Mechanical Torque
+        _, τm = get_mechanical_torque_series(results, "generator-102-1")
+        setpoints = get_setpoints(results)
+        P_ref = setpoints["generator-102-1"]["P_ref"]
+        @test P_ref == τm[1] == τm[end]
+
         # Obtain PSAT benchmark data
         psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test02/Test02_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
@@ -120,6 +126,12 @@ end
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
+
+        # Test Mechanical Torque
+        _, τm = get_mechanical_torque_series(results, "generator-102-1")
+        setpoints = get_setpoints(results)
+        P_ref = setpoints["generator-102-1"]["P_ref"]
+        @test P_ref == τm[1] == τm[end]
 
         # Obtain PSAT benchmark data
         psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test02/Test02_delta.csv")

@@ -290,6 +290,7 @@ dc_source_hv() = FixedDCSource(voltage = 1500.0) #Not in the original data, gues
 ###### Filter Data ######
 filt() = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01)
 filt_gfoll() = LCLFilter(lf = 0.009, rf = 0.016, cf = 2.5, lg = 0.002, rg = 0.003)
+filt_voc() = LCLFilter(lf = 0.0196, rf = 0.0139, cf = 0.1086, lg = 0.0196, rg = 0.0139)
 
 ###### PLL Data ######
 pll() = KauraPLL(
@@ -345,6 +346,16 @@ function outer_control_gfoll()
         return ReactivePowerPI(Kp_q = 2.0, Ki_q = 30.0, ωf = 0.132 * 2 * pi * 50.0)
     end
     return OuterControl(active_pi(), reactive_pi())
+end
+
+function outer_voc()
+    function active_voc()
+        return PSY.ActiveVirtualOscillator(k1 = 0.0033, ψ = pi / 4)
+    end
+    function reactive_voc()
+        return PSY.ReactiveVirtualOscillator(k2 = 0.0796)
+    end
+    return OuterControl(active_voc(), reactive_voc())
 end
 
 ######## Inner Control ######
@@ -513,6 +524,51 @@ converter_regca() = RenewableEnergyConverterTypeA(
 )
 
 filt_current() = RLFilter(rf = 0.0, lf = 0.0)
+
+#Parameters from (Ma, 2020)
+dera(generator, freq_flag) = AggregateDistributedGenerationA(
+    name = get_name(generator),
+    Pf_Flag = 1,
+    Freq_Flag = freq_flag,
+    PQ_Flag = 0,
+    Gen_Flag = 1,
+    Vtrip_Flag = 1,
+    Ftrip_Flag = 1,
+    T_rv = 0.02,
+    Trf = 0.02,
+    dbd_pnts = (-99, 99),
+    K_qv = 5.0,
+    Tp = 0.02,
+    T_iq = 0.02,
+    D_dn = 20,
+    D_up = 0,
+    fdbd_pnts = (-0.0006, 0.0006),
+    fe_lim = (min = -99, max = 99),
+    P_lim = (min = 0.0, max = 1.1),
+    dP_lim = (min = -0.5, max = 0.5),
+    Tpord = 0.02,
+    Kpg = 0.1,
+    Kig = 10.0,
+    I_max = 1.2,
+    vl_pnts = [(0.16, 0.44), (0.16, 0.49)],
+    vh_pnts = [(0.16, 1.2), (0.16, 1.15)],
+    Vrfrac = 0.7,
+    fl = 0.0, #not specified in (Ma,2020)
+    fh = 2.0, #not specified in (Ma,2020)
+    tfl = 99.0, #not specified in (Ma,2020)
+    tfh = 99.0, #not specified in (Ma,2020)
+    Tg = 0.02,
+    rrpwr = 99.0, #not specified in (Ma, 2020)
+    Tv = 0.02,
+    Vpr = 0.8,
+    Iq_lim = (min = -1.0, max = 1.0),
+    V_ref = 0.0,
+    Pfa_ref = 0,
+    Q_ref = 0,
+    P_ref = 0,
+    base_power = 0,
+    ext = Dict{String, Any}(),
+)
 
 ####### Loads ########
 

@@ -63,6 +63,8 @@ Ybus_change = NetworkSwitch(
         results = read_results(sim)
 
         series = get_state_series(results, ("generator-101-1", :ω_oc))
+        series2 = get_mechanical_torque_series(results, "generator-101-1")
+        series3 = get_mechanical_torque_series(results, "generator-102-1")
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -108,6 +110,8 @@ end
         results = read_results(sim)
 
         series = get_state_series(results, ("generator-101-1", :ω_oc))
+        series2 = get_mechanical_torque_series(results, "generator-101-1")
+        series3 = get_mechanical_torque_series(results, "generator-102-1")
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
