@@ -420,7 +420,6 @@ function get_mechanical_torque_series(res::SimulationResults, name::String; dt =
     return post_proc_mechanical_torque_series(res, name, dt)
 end
 
-
 """
     get_real_current_branch_flow(
             res::SimulationResults,
