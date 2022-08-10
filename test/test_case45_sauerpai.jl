@@ -1,5 +1,5 @@
 """
-Case 42:
+Case 45:
 This case study a three bus system with 2 machines (Sauer Pai: 6th order model) and an infinite source.
 The fault drop the connection between buses 1 and 3, eliminating the direct connection between the infinite source
 and the generator located in bus 3. 
@@ -9,20 +9,18 @@ and the generator located in bus 3.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test42.jl"))
+include(joinpath(TEST_FILES_DIR, "data_tests/test45.jl"))
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-# Define Fault: Change of YBus
-Ybus_change = NetworkSwitch(
-    1.0, #change at t = 1.0
-    Ybus_fault,
-) #New YBus
+# Define Fault: Line trip
+PSY.show_components(threebus_sys, Line)
+perturbation = BranchTrip(1.0, Line,  "BUS 1-BUS 2-i_1")
 
-@testset "Test 42 SauerPai ResidualModel" begin
-    path = (joinpath(pwd(), "test-42"))
+@testset "Test 45 SauerPai ResidualModel" begin
+    path = (joinpath(pwd(), "test-45"))
     !isdir(path) && mkdir(path)
     try
         # Define Simulation Problem
@@ -30,8 +28,8 @@ Ybus_change = NetworkSwitch(
             ResidualModel,
             threebus_sys, #system
             path,
-            (0.0, 20.0), #time span
-            Ybus_change, #Type of Fault
+            (0.0, 10.0), #time span
+            perturbation, #Type of Fault
         ) #initial guess
         dict_setpoints = get_setpoints(sim)
 
@@ -41,12 +39,12 @@ Ybus_change = NetworkSwitch(
         end 
         # Test Initial Condition
         diff_val = [0.0]
-        res = get_init_values_for_comparison(sim)
-        for (k, v) in test42_x0_init
+#=         res = get_init_values_for_comparison(sim)
+        for (k, v) in test45_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
-        end
+        end =#
 
-        @test (diff_val[1] < 1e-3)
+        #@test (diff_val[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -54,7 +52,7 @@ Ybus_change = NetworkSwitch(
         @test small_sig.stable
 
         # Test Eigenvalues
-        #@test LinearAlgebra.norm(eigs - test42_eigvals) < 1e-3
+        #@test LinearAlgebra.norm(eigs - test45_eigvals) < 1e-3
 
         # Solve problem
         @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
@@ -62,16 +60,16 @@ Ybus_change = NetworkSwitch(
         results = read_results(sim)
 
         # Obtain data for angles
-        series = get_state_series(results, ("generator-102-1", :δ))
+        series = get_voltage_magnitude_series(results, 101)
         t = series[1]
-        δ = series[2]
-        display(plot(t,δ))
+        V101 = series[2]
+        display(plot(t,V101))
     
         # Should return zeros and a warning
         series3 = get_field_current_series(results, "generator-102-1")
  
         # Obtain PSAT benchmark data
-        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test42/Test42_delta.csv")
+        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test45/Test45_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
 
         # Test Transient Simulation Results
@@ -88,7 +86,7 @@ Ybus_change = NetworkSwitch(
     end
 end
 
-@testset "Test 42 SauerPai MassMatrixModel" begin
+@testset "Test 45 SauerPai MassMatrixModel" begin
     path = (joinpath(pwd(), "test-04"))
     !isdir(path) && mkdir(path)
     try
@@ -104,7 +102,7 @@ end
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test42_x0_init
+        for (k, v) in test45_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
@@ -116,7 +114,7 @@ end
         @test small_sig.stable
 
         # Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test42_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test45_eigvals) < 1e-3
 
         # Solve problem
         @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
@@ -133,7 +131,7 @@ end
         
        
         # Obtain PSAT benchmark data
-        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test42/Test42_delta.csv")
+        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test45/Test45_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
 
         # Test Transient Simulation Results
