@@ -487,7 +487,7 @@ function get_activepower_branch_flow(
     if location == :from
         return ts, V_R_from .* Ir + V_I_from .* Ii
     elseif location == :to
-        return ts, V_R_to .* Ir + V_I_to .* Ii
+        return ts, -(V_R_to .* Ir + V_I_to .* Ii)
     else
         error("The location symbol $(:location) must be :from or :to to specify the bus.")
     end
@@ -523,7 +523,7 @@ function get_reactivepower_branch_flow(
     if location == :from
         return ts, V_I_from .* Ir - V_R_from .* Ii
     elseif location == :to
-        return ts, V_I_to .* Ir - V_R_to .* Ii
+        return ts, -(V_I_to .* Ir - V_R_to .* Ii)
     else
         error("The location symbol $(:location) must be :from or :to to specify the bus.")
     end
