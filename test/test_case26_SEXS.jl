@@ -19,8 +19,8 @@ dyr_files = [
 ]
 
 csv_files = [
-    joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/TEST_SEXS.csv"),
-    joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/TEST_SEXS_noTE.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/SEXS_RESULTS.csv"),
+    joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/SEXS_RESULTS_NoTE.csv"),
 ]
 
 init_conditions = test26_x0_init
@@ -70,32 +70,38 @@ function test_sexs_implicit(dyr_file, csv_file, init_cond, eigs_value)
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        # Obtain data for angles
-        series = get_state_series(results, ("generator-102-1", :δ))
         # Obtain data for voltage magnitude at bus 102
-        series2 = get_voltage_magnitude_series(results, 102)
+        series = get_voltage_magnitude_series(results, 102)
         t = series[1]
-        δ = series[2]
-        V = series2[2]
-        # TODO: Test Vf with PSSE and branch series flows
-        series4 = get_field_voltage_series(results, "generator-102-1")
-        series5 = get_activepower_branch_flow(results, "BUS 1-BUS 3-i_1", :from)
-        series6 = get_reactivepower_branch_flow(results, "BUS 1-BUS 3-i_1", :to)
-        series7 = get_real_current_branch_flow(results, "BUS 1-BUS 3-i_1")
-        series8 = get_imaginary_current_branch_flow(results, "BUS 1-BUS 3-i_1")
-        Vf = series4[2]
+        V = series[2]
+        # Test Vf, τm and branch series flows with PSSE
+        _, P101_103 = get_activepower_branch_flow(results, "BUS 1-BUS 3-i_1", :from)
+        _, Q101_103 = get_reactivepower_branch_flow(results, "BUS 1-BUS 3-i_1", :from)
+        _, P103_101 = get_activepower_branch_flow(results, "BUS 1-BUS 3-i_1", :to)
+        _, Q103_101 = get_reactivepower_branch_flow(results, "BUS 1-BUS 3-i_1", :to)
+        _, Vf = get_field_voltage_series(results, "generator-102-1")
+        _, τm = get_mechanical_torque_series(results, "generator-102-1")
 
         # TODO: Get PSSE CSV files and enable tests
-
-        #M = get_csv_data(csv_file)
-        #t_psse, δ_psse = clean_extra_timestep!(M[:, 1], M[:, 2])
-        #_, V_psse = clean_extra_timestep!(M[:, 1], M[:, 3])
+        M = get_csv_data(csv_file)
+        t_psse = M[:, 1]
+        V_psse = M[:, 2]
+        P101_103_psse = M[:, 3] ./ 100.0 # convert to pu
+        Q101_103_psse = M[:, 4] ./ 100.0 # convert to pu
+        P103_101_psse = M[:, 5] ./ 100.0 # convert to pu
+        Q103_101_psse = M[:, 6] ./ 100.0 # convert to pu
+        Vf_psse = M[:, 7]
+        τm_psse = M[:, 8]
 
         # Test Transient Simulation Results
-        # PSSE results are in Degrees
-        #@test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
-        #@test LinearAlgebra.norm(V - V_psse, Inf) <= 1e-1
-        #@test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
+        @test LinearAlgebra.norm(V - V_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(P101_103 - P101_103_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(Q101_103 - Q101_103_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(P103_101 - P103_101_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(Q103_101 - Q103_101_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(Vf - Vf_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(τm - τm_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -142,28 +148,38 @@ function test_sexs_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
-        # Obtain data for angles
-        series = get_state_series(results, ("generator-102-1", :δ))
         # Obtain data for voltage magnitude at bus 102
-        series2 = get_voltage_magnitude_series(results, 102)
+        series = get_voltage_magnitude_series(results, 102)
         t = series[1]
-        δ = series[2]
-        V = series2[2]
-        # TODO: Test Vf with PSSE
-        series4 = get_field_voltage_series(results, "generator-102-1")
-        Vf = series4[2]
+        V = series[2]
+        # Test Vf, τm and branch series flows with PSSE
+        _, P101_103 = get_activepower_branch_flow(results, "BUS 1-BUS 3-i_1", :from)
+        _, Q101_103 = get_reactivepower_branch_flow(results, "BUS 1-BUS 3-i_1", :from)
+        _, P103_101 = get_activepower_branch_flow(results, "BUS 1-BUS 3-i_1", :to)
+        _, Q103_101 = get_reactivepower_branch_flow(results, "BUS 1-BUS 3-i_1", :to)
+        _, Vf = get_field_voltage_series(results, "generator-102-1")
+        _, τm = get_mechanical_torque_series(results, "generator-102-1")
 
         # TODO: Get PSSE CSV files and enable tests
-
-        #M = get_csv_data(csv_file)
-        #t_psse, δ_psse = clean_extra_timestep!(M[:, 1], M[:, 2])
-        #_, V_psse = clean_extra_timestep!(M[:, 1], M[:, 3])
+        M = get_csv_data(csv_file)
+        t_psse = M[:, 1]
+        V_psse = M[:, 2]
+        P101_103_psse = M[:, 3] ./ 100.0 # convert to pu
+        Q101_103_psse = M[:, 4] ./ 100.0 # convert to pu
+        P103_101_psse = M[:, 5] ./ 100.0 # convert to pu
+        Q103_101_psse = M[:, 6] ./ 100.0 # convert to pu
+        Vf_psse = M[:, 7]
+        τm_psse = M[:, 8]
 
         # Test Transient Simulation Results
-        # PSSE results are in Degrees
-        #@test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
-        #@test LinearAlgebra.norm(V - V_psse, Inf) <= 1e-1
-        #@test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
+        @test LinearAlgebra.norm(V - V_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(P101_103 - P101_103_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(Q101_103 - Q101_103_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(P103_101 - P103_101_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(Q103_101 - Q103_101_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(Vf - Vf_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(τm - τm_psse, Inf) <= 1e-2
+        @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
