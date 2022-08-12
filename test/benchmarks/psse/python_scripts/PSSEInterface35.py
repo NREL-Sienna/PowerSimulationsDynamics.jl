@@ -126,6 +126,19 @@ def setup_output_channels(output, run_name, signals, slack_bus, channel_file='ch
     if ierr != 0:
         raise(Exception("Channels not set for bus quantities"))
 
+    ierr, branch_array = abrnint(-1, _i, _i, 1, 1, ['FROMNUMBER', 'TONUMBER'])
+    ierr, branch_ids = abrnchar(-1, _i, _i, 1, 1, "ID")
+
+    for (ix, id) in enumerate(branch_ids[0]):
+        bus_from = branch_array[0][ix]
+        bus_to = branch_array[1][ix]
+        ierr = branch_p_and_q_channel([-1, -1, -1, bus_from, bus_to], id, )
+        if ierr != 0:
+            raise(Exception("Line channel can't be created {}".format(ierr)))
+        ierr = branch_p_and_q_channel([-1, -1, -1, bus_to, bus_from], id, )
+        if ierr != 0:
+            raise(Exception("Line channel can't be created {}".format(ierr)))
+
     print('Initialize Simulation\n')
     ierr = strt_2([0, 0], channel_file)
     if ierr != 0:
