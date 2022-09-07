@@ -466,6 +466,10 @@ function _prog_meter_enabled()
            (get(ENV, "RUNNING_PSID_TESTS", nothing) != "true")
 end
 
+function _filter_kwargs(kwargs)
+    return Dict(k => v for (k, v) in kwargs if in(k, DIFFEQ_SOLVE_KWARGS))
+end
+
 function _execute!(sim::Simulation, solver; kwargs...)
     @debug "status before execute" sim.status
     simulation_pre_step!(sim, get(kwargs, :reset_simulation, false))
@@ -490,7 +494,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
         progress_steps = 1,
         advance_to_tstop = !isempty(sim.tstops),
         initializealg = SciMLBase.NoInit(),
-        kwargs...,
+        _filter_kwargs(kwargs)...,
     )
     if solution.retcode == :Success
         sim.status = SIMULATION_FINALIZED
