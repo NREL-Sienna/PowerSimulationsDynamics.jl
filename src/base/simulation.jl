@@ -197,6 +197,7 @@ end
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
     sim.inputs = SimulationInputs(T, get_system(sim), sim.frequency_reference)
+    sim.initialized = false
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
@@ -389,7 +390,6 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
             end
             TimerOutputs.@timeit BUILD_TIMER "Build Simulation Inputs" begin
                 _build_inputs!(sim)
-                # TODO: Update and store f_ref somewhere.
                 sim.multimachine =
                     get_global_vars_update_pointers(sim.inputs)[GLOBAL_VAR_SYS_FREQ_INDEX] !=
                     0
