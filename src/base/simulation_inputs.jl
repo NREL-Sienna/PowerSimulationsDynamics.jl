@@ -20,7 +20,7 @@ struct SimulationInputs
 
     function SimulationInputs(
         sys::PSY.System,
-        ::Type{T},
+        ::T,
     ) where {T <: Union{ConstantFrequency, ReferenceBus}}
         n_buses = get_n_buses(sys)
         Ybus, lookup = _get_ybus(sys)

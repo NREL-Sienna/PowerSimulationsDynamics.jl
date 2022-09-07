@@ -14,6 +14,7 @@ mutable struct Simulation{T <: SimulationModel}
     console_level::Base.CoreLogging.LogLevel
     file_level::Base.CoreLogging.LogLevel
     multimachine::Bool
+    frequency_reference::Union{ConstantFrequency, ReferenceBus}
 end
 
 get_system(sim::Simulation) = sim.sys
@@ -31,6 +32,7 @@ function Simulation(
     simulation_folder,
     console_level,
     file_level,
+    frequency_reference,
 ) where {T <: SimulationModel}
     PSY.set_units_base_system!(sys, "DEVICE_BASE")
 
@@ -50,6 +52,7 @@ function Simulation(
         console_level,
         file_level,
         false,
+        frequency_reference,
     )
 end
 
@@ -123,6 +126,7 @@ function Simulation!(
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
         file_level = get(kwargs, :file_level, Logging.Info),
+        frequency_reference = get(kwargs, :frequency_reference, ReferenceBus()),
     )
 
     build!(sim; kwargs...)
@@ -181,6 +185,7 @@ function Simulation(
         perturbations = perturbations,
         console_level = get(kwargs, :console_level, Logging.Warn),
         file_level = get(kwargs, :file_level, Logging.Info),
+        frequency_reference = get(kwargs, :frequency_reference, ReferenceBus()),
     )
     build!(sim; kwargs...)
     if get(kwargs, :system_to_file, false)
@@ -191,7 +196,7 @@ end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
-    sim.inputs = SimulationInputs(T(), get_system(sim), sim.inputs.tspan)
+    sim.inputs = SimulationInputs(T, get_system(sim), sim.frequency_reference)
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
@@ -212,12 +217,9 @@ function configure_logging(sim::Simulation, file_mode; kwargs...)
     )
 end
 
-function _build_inputs!(
-    sim::Simulation{T},
-    frequency_reference,
-) where {T <: SimulationModel}
+function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
-    sim.inputs = SimulationInputs(T, simulation_system, frequency_reference)
+    sim.inputs = SimulationInputs(T, simulation_system, sim.frequency_reference)
     @debug "Simulation Inputs Created"
     return
 end
@@ -386,8 +388,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                 end
             end
             TimerOutputs.@timeit BUILD_TIMER "Build Simulation Inputs" begin
-                f_ref = get(kwargs, :frequency_reference, ReferenceBus)
-                _build_inputs!(sim, f_ref)
+                _build_inputs!(sim)
                 # TODO: Update and store f_ref somewhere.
                 sim.multimachine =
                     get_global_vars_update_pointers(sim.inputs)[GLOBAL_VAR_SYS_FREQ_INDEX] !=
