@@ -30,6 +30,7 @@ end
             (0.0, 30.0), #time span
             Ybus_change;
             system_to_file = true,
+            console_level = Logging.Error,
         )
         @test sim.status == PSID.BUILT
         # Test accessor functions
@@ -64,6 +65,7 @@ end
             (0.0, 30.0), #time span
             Ybus_change;
             system_to_file = true,
+            console_level = Logging.Error,
         )
         @test sim.status == PSID.BUILT
         m_system = System(joinpath(path2, "initialized_system.json"))
@@ -113,7 +115,13 @@ end
     end
 
     # Tests for all Dynamic Lines
-    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir(), (0.0, 10.0))
+    sim = Simulation(
+        ResidualModel,
+        threebus_sys_dyns,
+        mktempdir(),
+        (0.0, 10.0);
+        console_level = Logging.Error,
+    )
     @test sim.status == PSID.BUILT
     sim_inputs = sim.inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
@@ -139,7 +147,13 @@ end
     # Tests for dynamic lines with b = 0
     set_b!(dyn_branch12, (from = 0.0, to = 0.0))
     set_b!(dyn_branch23, (from = 0.0, to = 0.0))
-    sim = Simulation(ResidualModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
+    sim = Simulation(
+        ResidualModel,
+        threebus_sys_dyns,
+        pwd(),
+        (0.0, 10.0);
+        console_level = Logging.Error,
+    )
     @test sim.status == PSID.BUILT
     sim_inputs = sim.inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
@@ -181,6 +195,7 @@ end
         BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1");
         initialize_simulation = false,
         initial_conditions = x0_test,
+        console_level = Logging.Error,
     )
     @test LinearAlgebra.norm(sim.x0_init - x0_test) <= 1e-6
     #Initialize System normally
@@ -189,7 +204,8 @@ end
         sys,
         pwd(),
         (0.0, 20.0),
-        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"),
+        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1");
+        console_level = Logging.Error,
     )
     #Save states without generator at bus 2
     x0 = sim_normal.x0_init
@@ -207,6 +223,7 @@ end
         (0.0, 20.0);
         initialize_simulation = false,
         initial_conditions = x0_no_gen,
+        console_level = Logging.Error,
     )
     @test LinearAlgebra.norm(sim_trip_gen.x0_init - x0_no_gen) <= 1e-6
     #Create Simulation without Gen 2 at steady state
@@ -215,12 +232,19 @@ end
         sys,
         pwd(),
         (0.0, 20.0),
-        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"),
+        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1");
+        console_level = Logging.Error,
     )
     @test length(sim_normal_no_gen.x0_init) == 17
     #Ignore Initial Conditions without passing initialize_simulation = false
-    sim_ignore_init =
-        Simulation(ResidualModel, sys, pwd(), (0.0, 20.0); initial_conditions = x0_no_gen)
+    sim_ignore_init = Simulation(
+        ResidualModel,
+        sys,
+        pwd(),
+        (0.0, 20.0);
+        initial_conditions = x0_no_gen,
+        console_level = Logging.Error,
+    )
     @test LinearAlgebra.norm(sim_ignore_init.x0_init - sim_normal_no_gen.x0_init) <= 1e-6
     #Pass wrong vector size
     x0_wrong = zeros(20)
@@ -230,11 +254,18 @@ end
     #     pwd(),
     #     (0.0, 20.0);
     #     initialize_simulation = false,
-    #     initial_conditions = x0_wrong,
+    #     initial_conditions = x0_wrong;
+    #    console_level = Logging.Error
     # )
     #Flat start initialization
-    sim_flat =
-        Simulation(ResidualModel, sys, pwd(), (0.0, 20.0); initialize_simulation = false)
+    sim_flat = Simulation(
+        ResidualModel,
+        sys,
+        pwd(),
+        (0.0, 20.0);
+        console_level = Logging.Error,
+        initialize_simulation = false,
+    )
     x0_flat = zeros(17)
     x0_flat[1:3] .= 1.0
     @test LinearAlgebra.norm(sim_flat.x0_init - x0_flat) <= 1e-6
@@ -251,7 +282,7 @@ end
     V_i = voltages[3:end]
     ybus_ = PSY.Ybus(omib_sys).data
     I_balance_ybus = -1 * ybus_ * (V_r + V_i .* 1im)
-    inputs = PSID.SimulationInputs(ResidualModel, omib_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, omib_sys, ConstantFrequency())
     I_balance_sim = zeros(4)
     PSID.network_model(inputs, I_balance_sim, voltages)
     for i in 1:2
@@ -280,7 +311,7 @@ end
 
     ybus_original = PSY.Ybus(threebus_sys)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
 
     for i in 1:3, j in 1:3
         complex_ybus = ybus_original.data[i, j]
@@ -351,7 +382,7 @@ end
     cref = ControlReferenceChange(1.0, mach, :P_ref, 10.0)
     ωref = ControlReferenceChange(1.0, inv, :ω_ref, 0.9)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
 
     cref_affect_f = PSID.get_affect(inputs, threebus_sys, cref)
@@ -363,7 +394,7 @@ end
     @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
     @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
 
     mach_trip = PSID.GeneratorTrip(1.0, mach)
@@ -403,7 +434,7 @@ end
     load_val = LoadChange(1.0, load_1, :P_ref, 10.0)
     load_trip = LoadTrip(1.0, load_2)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
 
     lref_affect_f = PSID.get_affect(inputs, threebus_sys, load_val)
@@ -446,7 +477,13 @@ end
     end
 
     # Tests for all Dynamic Lines
-    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir(), (0.0, 10.0))
+    sim = Simulation(
+        ResidualModel,
+        threebus_sys_dyns,
+        mktempdir(),
+        (0.0, 10.0);
+        console_level = Logging.Error,
+    )
     global_index = PSID.make_global_state_map(sim.inputs)
     @test_throws ErrorException PSID.get_state_from_ix(global_index, 40)
     @test ("V_2", :R) == PSID.get_state_from_ix(global_index, 2)
@@ -470,7 +507,8 @@ end
         mktempdir(),
         (0.0, 20.0), #time span
         # Not initialized to speed up the test
-        initialize_simulation = false,
+        initialize_simulation = false;
+        console_level = Logging.Error,
     )
 
     @test PSID.get_global_vars_update_pointers(sim.inputs)[1] != 0
@@ -482,7 +520,8 @@ end
         (0.0, 20.0),
         # Not initialized to speed up the test
         initialize_simulation = false,
-        frequency_reference = ConstantFrequency, #time span
+        frequency_reference = ConstantFrequency(),
+        console_level = Logging.Error, #time span
     )
 
     @test PSID.get_global_vars_update_pointers(sim.inputs)[1] == 0
@@ -501,7 +540,7 @@ end
     #     (0.0, 20.0),
     #     # Not initialized to speed up the test
     #     initialize_simulation = false,
-    #     frequency_reference = ConstantFrequency, #time span
+    #     frequency_reference = ConstantFrequency(), #time span
     # )
 end
 
@@ -514,6 +553,7 @@ end
         mktempdir(),
         (0.0, 30.0); #time span
         all_lines_dynamic = true,
+        console_level = Logging.Error,
     )
     @test sim.status == PSID.BUILT
     inputs = PSID.get_simulation_inputs(sim)
@@ -526,6 +566,7 @@ end
         mktempdir(),
         (0.0, 30.0); #time span
         all_branches_dynamic = true,
+        console_level = Logging.Error,
     )
     @test sim.status == PSID.BUILT
     inputs = PSID.get_simulation_inputs(sim)
@@ -538,6 +579,7 @@ end
         mktempdir(),
         (0.0, 30.0); #time span
         all_lines_dynamic = true,
+        console_level = Logging.Error,
     )
     @test sim.status == PSID.BUILT
     inputs = PSID.get_simulation_inputs(sim)
@@ -585,7 +627,8 @@ end
             omib_sys, #system
             path,
             (0.0, 20.0), #time span
-            Ybus_change,
+            Ybus_change;
+            console_level = Logging.Error,
         )
 
         # Test Initial Condition
