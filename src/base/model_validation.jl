@@ -3,6 +3,8 @@
 
 is_valid(::PSY.DynamicInverter) = nothing
 is_valid(::PSY.DynamicGenerator) = nothing
+is_valid(::PSY.AggregateDistributedGenerationA) = nothing
+is_valid(::PSY.SimplifiedSingleCageInductionMachine) = nothing
 
 function is_valid(
     device::PSY.DynamicGenerator{PSY.BaseMachine, S, PSY.AVRFixed, TG, P},
