@@ -104,16 +104,15 @@ end
 
         # First run
         @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
-        PSID.SIMULATION_FINALIZED
+              PSID.SIMULATION_FINALIZED
         # Second run
         @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
-        PSID.SIMULATION_FINALIZED
+              PSID.SIMULATION_FINALIZED
     finally
         @info("removing test files")
         rm(path1, force = true, recursive = true)
     end
 end
-
 
 @testset "Hybrid Line Indexing" begin
     ## Create threebus system with more dyn lines ##
