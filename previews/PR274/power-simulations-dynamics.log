@@ -1,10 +1,52 @@
-┌ Info: 2022-09-08T03:06:03.816 [2886:1]: Validating connectivity with Goderya algorithm
+┌ Info: 2022-09-08T03:18:12.196 [3063:1]: Validating connectivity with Goderya algorithm
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/DiHwt/src/utils/network_calculations/ybus_calculations.jl:318
-┌ Info: 2022-09-08T03:06:03.895 [2886:1]: The System has no islands
+┌ Info: 2022-09-08T03:18:12.279 [3063:1]: The System has no islands
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/DiHwt/src/utils/network_calculations/ybus_calculations.jl:264
-┌ Error: 2022-09-08T03:06:07.149 [2886:1]: ResidualModel failed to build
-│   exception = (ErrorException("Device generator-102-1 uses a BaseMachine model with an AVR"), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007fbee89b5a6b, Ptr{Nothing} @0x00007fbe9dc33677, Ptr{Nothing} @0x00007fbe9dc336b2, Ptr{Nothing} @0x00007fbe9dc33790, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbe9dc2d697, Ptr{Nothing} @0x00007fbe9dc2d7e3, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbe918c6c88, Ptr{Nothing} @0x00007fbe9dbf106a, Ptr{Nothing} @0x00007fbe9dbf4aba, Ptr{Nothing} @0x00007fbe9dc1822a, Ptr{Nothing} @0x00007fbe9dc228aa, Ptr{Nothing} @0x00007fbe9dc22e6f, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee8df97c7, Ptr{Nothing} @0x00007fbe918669fd, Ptr{Nothing} @0x00007fbe91866b84, Ptr{Nothing} @0x00007fbe91866c15, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbefe440c14, Ptr{Nothing} @0x00007fbefe440657, Ptr{Nothing} @0x00007fbefe441105, Ptr{Nothing} @0x00007fbefe441fa1, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__quick_start_guide at statement 1, Ptr{Nothing} @0x00007fbefe461390, Ptr{Nothing} @0x00007fbefe461f60, Ptr{Nothing} @0x00007fbefe4631ea, Ptr{Nothing} @0x00007fbed4f88dae, Ptr{Nothing} @0x00007fbed4f890ae, Ptr{Nothing} @0x00007fbed4f89a84, Ptr{Nothing} @0x00007fbed4f8a08f, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee8df97c7, Ptr{Nothing} @0x00007fbed4f889b3, Ptr{Nothing} @0x00007fbed4f88b6a, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbed4f87850, Ptr{Nothing} @0x00007fbed4f878b1, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbed4f84880, Ptr{Nothing} @0x00007fbed4f85700, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbefe434780, Ptr{Nothing} @0x00007fbee6a0656b, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee6a02afe, Ptr{Nothing} @0x00007fbee6a036af, Ptr{Nothing} @0x00007fbee6a0389e, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee69c2c15, Ptr{Nothing} @0x00007fbee69c2dc6, Ptr{Nothing} @0x00007fbee69c329c, Ptr{Nothing} @0x00007fbee69c3436, Ptr{Nothing} @0x00007fbee69c349d, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbefe440c14, Ptr{Nothing} @0x00007fbefe440657, Ptr{Nothing} @0x00007fbefe441105, Ptr{Nothing} @0x00007fbefe441fa1, Base.InterpreterIP in top-level CodeInfo for Main at statement 53, Ptr{Nothing} @0x00007fbefe461390, Ptr{Nothing} @0x00007fbefe461f60, Ptr{Nothing} @0x00007fbefe4631ea, Ptr{Nothing} @0x00007fbee908da31, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee90be8e1, Ptr{Nothing} @0x00007fbee897b290, Ptr{Nothing} @0x00007fbee897b2af, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee92d7c7b, Ptr{Nothing} @0x00007fbee8dd59d7, Ptr{Nothing} @0x00007fbee8dd5b08, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbefe489426, Ptr{Nothing} @0x00007fbefe489e6e, Ptr{Nothing} @0x0000000000401068, Ptr{Nothing} @0x00007fbefec2c082, Ptr{Nothing} @0x0000000000401098])
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:421
-┌ Error: 2022-09-08T03:06:15.649 [2886:1]: Execution failed
-│   exception = (ErrorException("The Simulation status is BUILD_FAILED. Can not continue, correct your inputs and build the simulation again."), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007fbee89b5a6b, Ptr{Nothing} @0x00007fbe9dc88cf2, Ptr{Nothing} @0x00007fbe9dc8aa69, Ptr{Nothing} @0x00007fbe9dc8c010, Ptr{Nothing} @0x00007fbe9dc8c895, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee8df97c7, Ptr{Nothing} @0x00007fbe9dc87169, Ptr{Nothing} @0x00007fbe9dc87221, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbefe440c14, Ptr{Nothing} @0x00007fbefe440657, Ptr{Nothing} @0x00007fbefe441105, Ptr{Nothing} @0x00007fbefe441fa1, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__quick_start_guide at statement 6, Ptr{Nothing} @0x00007fbefe461390, Ptr{Nothing} @0x00007fbefe461f60, Ptr{Nothing} @0x00007fbefe4631ea, Ptr{Nothing} @0x00007fbed4f88dae, Ptr{Nothing} @0x00007fbed4f890ae, Ptr{Nothing} @0x00007fbed4f89a84, Ptr{Nothing} @0x00007fbed4f8a08f, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee8df97c7, Ptr{Nothing} @0x00007fbed4f889b3, Ptr{Nothing} @0x00007fbed4f88b6a, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbed4f87850, Ptr{Nothing} @0x00007fbed4f878b1, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbed4f84880, Ptr{Nothing} @0x00007fbed4f85700, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbefe434780, Ptr{Nothing} @0x00007fbee6a0656b, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee6a02afe, Ptr{Nothing} @0x00007fbee6a036af, Ptr{Nothing} @0x00007fbee6a0389e, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee69c2c15, Ptr{Nothing} @0x00007fbee69c2dc6, Ptr{Nothing} @0x00007fbee69c329c, Ptr{Nothing} @0x00007fbee69c3436, Ptr{Nothing} @0x00007fbee69c349d, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbefe440c14, Ptr{Nothing} @0x00007fbefe440657, Ptr{Nothing} @0x00007fbefe441105, Ptr{Nothing} @0x00007fbefe441fa1, Base.InterpreterIP in top-level CodeInfo for Main at statement 53, Ptr{Nothing} @0x00007fbefe461390, Ptr{Nothing} @0x00007fbefe461f60, Ptr{Nothing} @0x00007fbefe4631ea, Ptr{Nothing} @0x00007fbee908da31, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee90be8e1, Ptr{Nothing} @0x00007fbee897b290, Ptr{Nothing} @0x00007fbee897b2af, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbee92d7c7b, Ptr{Nothing} @0x00007fbee8dd59d7, Ptr{Nothing} @0x00007fbee8dd5b08, Ptr{Nothing} @0x00007fbefe423b2d, Ptr{Nothing} @0x00007fbefe489426, Ptr{Nothing} @0x00007fbefe489e6e, Ptr{Nothing} @0x0000000000401068, Ptr{Nothing} @0x00007fbefec2c082, Ptr{Nothing} @0x0000000000401098])
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:534
+┌ Info: 2022-09-08T03:18:14.191 [3063:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:70
+┌ Info: 2022-09-08T03:18:14.199 [3063:1]: Pre-Initializing Simulation States
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:266
+┌ Info: 2022-09-08T03:18:14.199 [3063:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/DiHwt/src/base.jl:351
+┌ Info: 2022-09-08T03:18:14.199 [3063:1]: Validating connectivity with Goderya algorithm
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/DiHwt/src/utils/network_calculations/ybus_calculations.jl:318
+┌ Info: 2022-09-08T03:18:14.199 [3063:1]: The System has no islands
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/DiHwt/src/utils/network_calculations/ybus_calculations.jl:264
+┌ Info: 2022-09-08T03:18:15.773 [3063:1]: PowerFlow solve converged, the results have been stored in the system
+└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/4i4mk/src/nlsolve_powerflow.jl:45
+┌ Info: 2022-09-08T03:18:15.773 [3063:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/DiHwt/src/base.jl:351
+┌ Info: 2022-09-08T03:18:44.655 [3063:1]: Residual from initial guess: max = 4.2092551666428335e-11 at 4, total = 9.411131735555515e-11
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:100
+┌ Info: 2022-09-08T03:18:44.679 [3063:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:68
+┌ Info: 2022-09-08T03:18:44.679 [3063:1]: Attaching Perturbations
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:297
+┌ Info: 2022-09-08T03:18:45.385 [3063:1]: Simulations status = BUILT
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:415
+┌ Info: 2022-09-08T03:18:45.386 [3063:1]: 
+│  ───────────────────────────────────────────────────────────────────────────────
+│                                                      Time          Allocations  
+│                                                ───────────────   ───────────────
+│                 Total measured:                     33.9s            8.49GiB    
+│ 
+│  Section                               ncalls     time    %tot     alloc    %tot
+│  ───────────────────────────────────────────────────────────────────────────────
+│  Build Simulation                           1    33.9s  100.0%   8.49GiB  100.0%
+│    Build Simulation Inputs                  1    2.73s    8.1%    214MiB    2.5%
+│      Wrap Branches                          1   8.30μs    0.0%      176B    0.0%
+│      Wrap Dynamic Injectors                 1    1.56s    4.6%    136MiB    1.6%
+│      Calculate MM, DAE_vector, Tota...      1   88.8ms    0.3%   7.40MiB    0.1%
+│      Wrap Static Injectors                  1    245ms    0.7%   5.30MiB    0.1%
+│    Pre-initialization                       1    16.2s   47.7%   4.35GiB   51.2%
+│      Power Flow solution                    1    1.57s    4.6%   72.6MiB    0.8%
+│      Initialize Static Injectors            1    538ms    1.6%   53.4MiB    0.6%
+│      Initialize Dynamic Injectors           1    14.1s   41.5%   4.22GiB   49.8%
+│    Calculate Jacobian                       1    12.6s   37.1%   3.86GiB   45.5%
+│    Make Model Function                      1   6.15ms    0.0%   2.62KiB    0.0%
+│    Initial Condition NLsolve refine...      1    1.71s    5.1%   35.3MiB    0.4%
+│    Build Perturbations                      1    262ms    0.8%   20.6MiB    0.2%
+│    Make DiffEq Problem                      1    438ms    1.3%   17.1MiB    0.2%
+│  ───────────────────────────────────────────────────────────────────────────────
+│ 
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:440
