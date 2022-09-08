@@ -23,6 +23,7 @@ function _nlsolve_call(
     jacobian::JacobianFunctionWrapper,
     f_tolerance::Float64,
     solver::Symbol,
+    show_trace::Bool,
 )
     df = NLsolve.OnceDifferentiable(
         f_eval,
@@ -38,7 +39,7 @@ function _nlsolve_call(
         ftol = f_tolerance,
         method = solver,
         iterations = MAX_NLSOLVE_INTERATIONS,
-        show_trace = true,
+        show_trace = show_trace,
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
 end
@@ -48,6 +49,7 @@ function _nlsolve_call(
     f_eval::Function,
     f_tolerance::Float64,
     solver::Symbol,
+    show_trace::Bool,
 )
     sys_solve = NLsolve.nlsolve(
         f_eval,
@@ -56,6 +58,7 @@ function _nlsolve_call(
         ftol = f_tolerance,
         iterations = MAX_NLSOLVE_INTERATIONS,
         method = solver,
+        show_trace = show_trace,
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
 end
@@ -140,8 +143,9 @@ function refine_initial_condition!(
         end
         for solv in [:trust_region, :newton]
             @debug "Start NLSolve System Run with $(solv) and F_tol = $tol"
-            sys_solve = _nlsolve_call(initial_guess, f!, jacobian, tol, solv)
-            #sys_solve = _nlsolve_call(initial_guess, f!, tol, solv)
+            show_trace = sim.console_level <= Logging.Info
+            sys_solve = _nlsolve_call(initial_guess, f!, jacobian, tol, solv, show_trace)
+            #sys_solve = _nlsolve_call(initial_guess, f!, tol, solv, show_trace)
             failed(sys_solve) && return BUILD_FAILED
             converged = _convergence_check(sys_solve, tol, solv)
             @debug "Write initial guess vector using $solv with tol = $tol convergence = $converged"

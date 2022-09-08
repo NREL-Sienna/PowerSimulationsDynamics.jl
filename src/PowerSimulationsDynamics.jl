@@ -56,6 +56,7 @@ export get_reactivepower_branch_flow
 export get_frequency_series
 export get_setpoints
 export get_solution
+export is_valid
 
 ####################################### Package Imports ####################################
 import Logging
@@ -112,6 +113,7 @@ include("base/supplemental_accesors.jl")
 include("base/nlsolve_wrapper.jl")
 include("base/simulation_initialization.jl")
 include("base/small_signal.jl")
+include("base/model_validation.jl")
 
 #Common Models
 include("models/branch.jl")
