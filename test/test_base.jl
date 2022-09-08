@@ -251,7 +251,7 @@ end
     V_i = voltages[3:end]
     ybus_ = PSY.Ybus(omib_sys).data
     I_balance_ybus = -1 * ybus_ * (V_r + V_i .* 1im)
-    inputs = PSID.SimulationInputs(ResidualModel, omib_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, omib_sys, ConstantFrequency())
     I_balance_sim = zeros(4)
     PSID.network_model(inputs, I_balance_sim, voltages)
     for i in 1:2
@@ -280,7 +280,7 @@ end
 
     ybus_original = PSY.Ybus(threebus_sys)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
 
     for i in 1:3, j in 1:3
         complex_ybus = ybus_original.data[i, j]
@@ -351,7 +351,7 @@ end
     cref = ControlReferenceChange(1.0, mach, :P_ref, 10.0)
     ωref = ControlReferenceChange(1.0, inv, :ω_ref, 0.9)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
 
     cref_affect_f = PSID.get_affect(inputs, threebus_sys, cref)
@@ -363,7 +363,7 @@ end
     @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
     @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
 
     mach_trip = PSID.GeneratorTrip(1.0, mach)
@@ -403,7 +403,7 @@ end
     load_val = LoadChange(1.0, load_1, :P_ref, 10.0)
     load_trip = LoadTrip(1.0, load_2)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
 
     lref_affect_f = PSID.get_affect(inputs, threebus_sys, load_val)
@@ -482,7 +482,7 @@ end
         (0.0, 20.0),
         # Not initialized to speed up the test
         initialize_simulation = false,
-        frequency_reference = ConstantFrequency, #time span
+        frequency_reference = ConstantFrequency(), #time span
     )
 
     @test PSID.get_global_vars_update_pointers(sim.inputs)[1] == 0
@@ -501,7 +501,7 @@ end
     #     (0.0, 20.0),
     #     # Not initialized to speed up the test
     #     initialize_simulation = false,
-    #     frequency_reference = ConstantFrequency, #time span
+    #     frequency_reference = ConstantFrequency(), #time span
     # )
 end
 
