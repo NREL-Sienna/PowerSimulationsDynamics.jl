@@ -197,7 +197,7 @@ end
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
     sim.inputs = SimulationInputs(T, get_system(sim), sim.frequency_reference)
-    sim.initialized = false
+    sim.status = BUILD_INCOMPLETE
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
@@ -272,7 +272,7 @@ function _pre_initialize_simulation!(sim::Simulation)
         end
     else
         @warn(
-            "No Pre-initialization conducted. If this is unexpected, check the initialization keywords"
+            "Using existing initial conditions value for simulation initialization"
         )
         sim.status = SIMULATION_INITIALIZED
     end
@@ -446,18 +446,19 @@ function build!(sim; kwargs...)
     return sim.status
 end
 
-function simulation_pre_step!(sim::Simulation, reset_sim::Bool)
+function simulation_pre_step!(sim::Simulation)
     if sim.status == BUILD_FAILED
         error(
             "The Simulation status is $(sim.status). Can not continue, correct your inputs and build the simulation again.",
         )
-    elseif sim.status != BUILT && !reset_sim
-        error(
-            "The Simulation status is $(sim.status). Use keyword argument reset_simulation = true",
-        )
+    elseif sim.status == BUILT
+        @debug "Simulation status is $(sim.status)."
+    elseif sim.status == SIMULATION_FINALIZED
+        reset!(sim)
+        @info "The Simulation status is $(sim.status). Resetting the simulation"
+    else
+        error("Simulation status is $(sim.status). Can't continue.")
     end
-
-    reset_sim && reset!(sim)
     return
 end
 
@@ -473,7 +474,7 @@ end
 
 function _execute!(sim::Simulation, solver; kwargs...)
     @debug "status before execute" sim.status
-    simulation_pre_step!(sim, get(kwargs, :reset_simulation, false))
+    simulation_pre_step!(sim)
     sim.status = SIMULATION_STARTED
     time_log = Dict{Symbol, Any}()
     if get(kwargs, :auto_abstol, false)
