@@ -271,9 +271,7 @@ function _pre_initialize_simulation!(sim::Simulation)
             )
         end
     else
-        @warn(
-            "Using existing initial conditions value for simulation initialization"
-        )
+        @warn("Using existing initial conditions value for simulation initialization")
         sim.status = SIMULATION_INITIALIZED
     end
     return
