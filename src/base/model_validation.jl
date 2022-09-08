@@ -1,8 +1,8 @@
 # By default all combinations are valid, if a combination of parameters can't be modeled
 # needs to be added here to dispatch on the invalid dynamic component types.
 
-is_valid(::DynamicInverter) = nothing
-is_valid(::DynamicGenerator) = nothing
+is_valid(::PSY.DynamicInverter) = nothing
+is_valid(::PSY.DynamicGenerator) = nothing
 
 function is_valid(
     device::PSY.DynamicGenerator{PSY.BaseMachine, S, PSY.AVRFixed, TG, P},
