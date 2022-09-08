@@ -7,9 +7,21 @@ is_valid(::PSY.AggregateDistributedGenerationA) = nothing
 is_valid(::PSY.SimplifiedSingleCageInductionMachine) = nothing
 
 function is_valid(
-    device::PSY.DynamicGenerator{PSY.BaseMachine, S, PSY.AVRFixed, TG, P},
-) where {S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    error("Device $(PSY.get_name(device)) uses a BaseMachine model with an AVR")
+    ::PSY.DynamicGenerator{
+        PSY.BaseMachine,
+        <:PSY.Shaft,
+        PSY.AVRFixed,
+        <:PSY.TurbineGov,
+        PSY.PSSFixed,
+    },
+)
+    return nothing
+end
+
+function is_valid(
+    device::PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P},
+) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    error("Device $(PSY.get_name(device)) uses a BaseMachine model with an AVR $A")
     return
 end
 
