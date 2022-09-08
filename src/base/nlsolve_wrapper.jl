@@ -23,7 +23,7 @@ function _nlsolve_call(
     jacobian::JacobianFunctionWrapper,
     f_tolerance::Float64,
     solver::Symbol,
-    show_trace::Bool
+    show_trace::Bool,
 )
     df = NLsolve.OnceDifferentiable(
         f_eval,
@@ -49,7 +49,7 @@ function _nlsolve_call(
     f_eval::Function,
     f_tolerance::Float64,
     solver::Symbol,
-    show_trace::Bool
+    show_trace::Bool,
 )
     sys_solve = NLsolve.nlsolve(
         f_eval,
@@ -58,7 +58,7 @@ function _nlsolve_call(
         ftol = f_tolerance,
         iterations = MAX_NLSOLVE_INTERATIONS,
         method = solver,
-        show_trace = show_trace
+        show_trace = show_trace,
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
 end
