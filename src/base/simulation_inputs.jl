@@ -125,14 +125,22 @@ end
 """
 SimulationInputs build function for MassMatrixModels
 """
-function SimulationInputs(::Type{MassMatrixModel}, sys::PSY.System, frequency_reference)
+function SimulationInputs(
+    ::Type{MassMatrixModel},
+    sys::PSY.System,
+    frequency_reference::Union{ConstantFrequency, ReferenceBus},
+)
     return SimulationInputs(sys, frequency_reference)
 end
 
 """
 SimulationInputs build function for ResidualModels
 """
-function SimulationInputs(::Type{ResidualModel}, sys::PSY.System, frequency_reference)
+function SimulationInputs(
+    ::Type{ResidualModel},
+    sys::PSY.System,
+    frequency_reference::Union{ConstantFrequency, ReferenceBus},
+)
     return SimulationInputs(sys, frequency_reference)
 end
 
