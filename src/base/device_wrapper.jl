@@ -1,16 +1,3 @@
-function isvalid_device(
-    device::PSY.DynamicGenerator{M, S, A, TG, P},
-) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    if M == PSY.BaseMachine && A != PSY.AVRFixed
-        error("Device $(PSY.get_name(device)) uses a BaseMachine model with an AVR")
-    end
-    return
-end
-
-function isvalid_device(::PSY.DynamicInjection)
-    return
-end
-
 get_inner_vars_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.PeriodicVariableSource) = 0
@@ -75,7 +62,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
         input_port_mapping::Base.ImmutableDict{Int, Vector{Int}},
         ext::Dict{String, Any},
     ) where {T <: PSY.DynamicInjection}
-        isvalid_device(device)
+        is_valid(device)
 
         new{T}(
             device,
