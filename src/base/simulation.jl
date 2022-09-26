@@ -114,7 +114,6 @@ function Simulation!(
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
     kwargs...,
 ) where {T <: SimulationModel}
-    check_folder(simulation_folder)
     # Instantiates the Simulation object
     sim = Simulation(
         T,
@@ -172,7 +171,6 @@ function Simulation(
     perturbations::Vector{<:Perturbation} = Vector{Perturbation}();
     kwargs...,
 ) where {T <: SimulationModel}
-    check_folder(simulation_folder)
     simulation_system = deepcopy(system)
     # Instantiates the Simulation object
     sim = Simulation(
