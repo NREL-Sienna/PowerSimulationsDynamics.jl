@@ -55,7 +55,7 @@ with
 \begin{align}
     p_e &= v_ri_r + v_ii_i \tag{2d} \\
     q_e &= v_ii_r - v_ri_i \tag{2e} \\
-    \omega_{\text{olc}} &= \omega_{\text{ref}} + R_p (p_{\text{ref}} - p_e) \tag{2f} \\
+    \omega_{\text{olc}} &= \omega_{\text{ref}} + R_p (p_{\text{ref}} - p_m) \tag{2f} \\
     v_{\text{olc}}^{\text{ref}} &= v_{\text{ref}} + k_q(q_{\text{ref}} - q_m) \tag{2g}
 \end{align}
 ```
