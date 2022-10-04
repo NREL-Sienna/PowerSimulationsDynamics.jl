@@ -52,6 +52,21 @@ machine_marconato() = MarconatoMachine(
     0.0,
 ) #MVABase
 
+machine_sauerpai() = SauerPaiMachine(
+    0.002, # check
+    1.79, #Xd
+    1.71, #Xq
+    0.169, #Xd_p
+    0.228, #Xq_p
+    0.135, #Xd_pp
+    0.2, #Xq_pp
+    0.13,  #Xl 
+    4.3, #Td0_p
+    0.85, #Tq0_p
+    0.032, #Td0_pp
+    0.05, #Tq0_pp
+) #MVABase
+
 machine_anderson() = AndersonFouadMachine(
     0.0, #R
     0.8979, #Xd
