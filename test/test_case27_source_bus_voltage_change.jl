@@ -3,7 +3,6 @@ Case 27:
 This case study a three bus system with 1 machine (One d- One q-: 4th order model), a VSM of 19 states and an infinite source.
 The test changes botht he voltage magnitude and phase angle of the source bus.
 """
-
 ##################################################
 ############### LOAD DATA ########################
 ##################################################
@@ -22,7 +21,7 @@ tspan = (0.0, 20.0);
 case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 
 # Define Fault using Callbacks
-V_source_change = SourceBusVoltageChange(1.0, case_source, :V_ref, 1.02)
+V_source_change = SourceBusVoltageChange(01.0, case_source, :V_ref, 1.2001)
 
 @testset "Test 27 Source Bus Voltage Magnitude Perturbation ResidualModel" begin
     path = (joinpath(pwd(), "test-27"))
@@ -46,11 +45,14 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, :V_ref, 1.02)
         @test (diff_val[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, IDA(), dtmax = 0.02)
+        execute!(sim, IDA())#, dtmax = 0.02)
         results = read_results(sim)
+        #display(results.solution.t)
 
         # Obtain data for angles
         series = get_state_series(results, ("generator-103-1", :θ_oc))
+        series = get_voltage_magnitude_series(results, 101)
+        display(Plots.plot(series))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -79,11 +81,13 @@ end
         @test (diff_val[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, Rodas4(), dtmax = 0.02)
+        execute!(sim, Rodas4())#, dtmax = 0.02)
         results = read_results(sim)
-
+display(results.solution.t)
         # Obtain data for angles
         series = get_state_series(results, ("generator-103-1", :θ_oc))
+        series = get_voltage_magnitude_series(results, 101)
+        display(Plots.plot(series))
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
