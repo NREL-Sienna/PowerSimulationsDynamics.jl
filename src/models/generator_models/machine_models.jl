@@ -178,7 +178,7 @@ function mdl_machine_ode!(
     γ_d2 = PSY.get_γ_d2(machine)
     γ_q2 = PSY.get_γ_q2(machine)
     basepower = PSY.get_base_power(dynamic_device)
-``
+    ``
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
 
@@ -191,13 +191,13 @@ function mdl_machine_ode!(
     output_ode[local_ix[1]] = 2 * π * f0 * (R * i_q - ω * ψd + V_dq[2])                        #15.9 ψq
     output_ode[local_ix[2]] = 2 * π * f0 * (R * i_d + ω * ψq + V_dq[1])                        #15.9 ψd
     output_ode[local_ix[3]] =
-        (1.0 / Td0_p) * (-eq_p - (Xd - Xd_p) * (i_d - γ_d2 * ψd_pp - (1 -γ_d1) * i_d + γ_d2 * eq_p) + Vf)     #15.13 eq_p
-    output_ode[local_ix[4]] =    
-        (1.0 / Tq0_p) * (-ed_p + (Xq - Xq_p) * (i_q - γ_q2 * ψq_pp - (1 -γ_q1) * i_q - γ_d2 * ed_p))          #15.13 ed_p
-    output_ode[local_ix[5]] =
-        (1.0 / Td0_pp) * (-ψd_pp + eq_p - (Xd_p - Xl) * i_d)        #15.13 ψd_pp
-    output_ode[local_ix[6]] = 
-        (1.0 / Tq0_pp) * (-ψq_pp - ed_p - (Xq_p - Xl) * i_q)        #15.13 ψq_pp
+        (1.0 / Td0_p) *
+        (-eq_p - (Xd - Xd_p) * (i_d - γ_d2 * ψd_pp - (1 - γ_d1) * i_d + γ_d2 * eq_p) + Vf)     #15.13 eq_p
+    output_ode[local_ix[4]] =
+        (1.0 / Tq0_p) *
+        (-ed_p + (Xq - Xq_p) * (i_q - γ_q2 * ψq_pp - (1 - γ_q1) * i_q - γ_d2 * ed_p))          #15.13 ed_p
+    output_ode[local_ix[5]] = (1.0 / Td0_pp) * (-ψd_pp + eq_p - (Xd_p - Xl) * i_d)        #15.13 ψd_pp
+    output_ode[local_ix[6]] = (1.0 / Tq0_pp) * (-ψq_pp - ed_p - (Xq_p - Xl) * i_q)        #15.13 ψq_pp
 
     #Update inner_vars
     inner_vars[τe_var] = τ_e

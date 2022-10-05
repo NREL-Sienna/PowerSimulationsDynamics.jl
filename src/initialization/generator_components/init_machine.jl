@@ -213,8 +213,10 @@ function initialize_mach_shaft!(
         out[3] = Q0 - (V_dq[2] * i_d - V_dq[1] * i_q) #Output Reactive Power
         out[4] = R * i_q - ω0 * ψd + V_dq[2]                                    #15.9 ψq
         out[5] = R * i_d + ω0 * ψq + V_dq[1]                                    #15.9 ψd
-        out[6] = -eq_p - (Xd - Xd_p) * (i_d - γ_d2 * ψd_pp - (1 -γ_d1) * i_d + γ_d2 * eq_p) + Vf0    #15.13
-        out[7] = -ed_p + (Xq - Xq_p) * (i_q - γ_q2 * ψq_pp - (1 -γ_q1) * i_q - γ_d2 * ed_p)          #15.13
+        out[6] =
+            -eq_p - (Xd - Xd_p) * (i_d - γ_d2 * ψd_pp - (1 - γ_d1) * i_d + γ_d2 * eq_p) +
+            Vf0    #15.13
+        out[7] = -ed_p + (Xq - Xq_p) * (i_q - γ_q2 * ψq_pp - (1 - γ_q1) * i_q - γ_d2 * ed_p)          #15.13
         out[8] = -ψd_pp + eq_p - (Xd_p - Xl) * i_d      #15.13
         out[9] = -ψq_pp - ed_p - (Xq_p - Xl) * i_q #15.13
     end
