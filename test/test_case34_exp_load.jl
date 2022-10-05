@@ -80,6 +80,9 @@ end
         _, v103_power = get_voltage_magnitude_series(results_power, 103)
         _, v103_exp = get_voltage_magnitude_series(results_exp, 103)
 
+        #TODO: Test for LoadPower
+        p = get_activepower_series(results_exp, "load1031")
+
         # Test Transient Simulation Results
         @test LinearAlgebra.norm(v102_power - v102_exp, Inf) <= 1e-3
         @test LinearAlgebra.norm(v103_power - v103_exp, Inf) <= 1e-3
