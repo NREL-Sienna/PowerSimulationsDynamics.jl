@@ -81,7 +81,11 @@ function post_proc_voltage_current_series(
     bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
     ts, V_R, V_I = post_proc_voltage_series(solution, bus_ix, n_buses, dt)
     dyn_device = PSY.get_dynamic_injector(device)
-    _, I_R, I_I = compute_output_current(res, dyn_device, V_R, V_I, dt)
+    if isnothing(dyn_device)
+        _, I_R, I_I = compute_output_current(res, device, V_R, V_I, dt)
+    else
+        _, I_R, I_I = compute_output_current(res, dyn_device, V_R, V_I, dt)
+    end
     return ts, V_R, V_I, I_R, I_I
 end
 
