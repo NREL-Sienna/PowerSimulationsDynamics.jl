@@ -63,7 +63,7 @@ perturbation = BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
         series = get_voltage_magnitude_series(results, 101)
         t = series[1]
         V101 = series[2]
-        display(plot(t, V101))
+        #display(plot(t, V101))
 
         # Should return zeros and a warning
         series3 = get_field_current_series(results, "generator-102-1")
