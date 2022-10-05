@@ -17,7 +17,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test45.jl"))
 
 # Define Fault: Line trip
 PSY.show_components(threebus_sys, Line)
-perturbation = BranchTrip(1.0, Line,  "BUS 1-BUS 2-i_1")
+perturbation = BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
 
 @testset "Test 45 SauerPai ResidualModel" begin
     path = (joinpath(pwd(), "test-45"))
@@ -36,13 +36,13 @@ perturbation = BranchTrip(1.0, Line,  "BUS 1-BUS 2-i_1")
         for g in get_components(DynamicGenerator, threebus_sys)
             display("Power setpoints")
             display(get_P_ref(g))
-        end 
+        end
         # Test Initial Condition
         diff_val = [0.0]
-#=         res = get_init_values_for_comparison(sim)
-        for (k, v) in test45_x0_init
-            diff_val[1] += LinearAlgebra.norm(res[k] - v)
-        end =#
+        #=         res = get_init_values_for_comparison(sim)
+                for (k, v) in test45_x0_init
+                    diff_val[1] += LinearAlgebra.norm(res[k] - v)
+                end =#
 
         #@test (diff_val[1] < 1e-3)
 
@@ -63,18 +63,18 @@ perturbation = BranchTrip(1.0, Line,  "BUS 1-BUS 2-i_1")
         series = get_voltage_magnitude_series(results, 101)
         t = series[1]
         V101 = series[2]
-        display(plot(t,V101))
-    
+        display(plot(t, V101))
+
         # Should return zeros and a warning
         series3 = get_field_current_series(results, "generator-102-1")
- 
+
         # Obtain PSAT benchmark data
         psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test45/Test45_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
 
         # Test Transient Simulation Results
         @test LinearAlgebra.norm(t - t_psat) == 0.0
-       # @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
+        # @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 
         power = PSID.get_activepower_series(results, "generator-102-1")
         rpower = PSID.get_reactivepower_series(results, "generator-102-1")
@@ -128,8 +128,7 @@ end
 
         # Should return zeros and a warning
         series3 = get_field_current_series(results, "generator-102-1")
-        
-       
+
         # Obtain PSAT benchmark data
         psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test45/Test45_delta.csv")
         t_psat, δ_psat = get_csv_delta(psat_csv)
@@ -147,5 +146,4 @@ end
         @info("removing test files")
         rm(path, force = true, recursive = true)
     end
-
 end
