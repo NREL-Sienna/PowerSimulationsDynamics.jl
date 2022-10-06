@@ -50,6 +50,7 @@ export get_real_current_branch_flow
 export get_imaginary_current_branch_flow
 export get_activepower_branch_flow
 export get_reactivepower_branch_flow
+export get_frequency_series
 export get_setpoints
 export get_solution
 

@@ -67,7 +67,7 @@ is the point of common coupling.
 ## Active and Reactive Virtual Oscillator Controllers ```[OuterControl]```
 
 The following model represents a Virtual Oscillator Controller for both active and reactive power
-to generate the voltage references that will be used in the Voltage Controller.
+to generate the voltage references that will be used in the Voltage Controller. The contructor is ```OuterControl{ActiveVirtualOscillator, ReactiveVirtualOscillator}```
 It defines a new SRF denoted as ``\theta_{\text{olc}}`` and a voltage reference ``E_{\text{olc}}``.
 The equations are:
 ```math

@@ -79,6 +79,112 @@ function compute_mechanical_torque(
     return (nothing, zeros(length(state)))
 end
 
+function compute_frequency(
+    res::SimulationResults,
+    dyn_device::G,
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicInverter}
+    outer_control = PSY.get_outer_control(dyn_device)
+    frequency_estimator = PSY.get_freq_estimator(dyn_device)
+    return _frequency(
+        outer_control,
+        frequency_estimator,
+        PSY.get_name(dyn_device),
+        res,
+        dyn_device,
+        dt,
+    )
+end
+
+"""
+Function to obtain the frequency time series of a virtual inertia grid forming inverter out of the DAE Solution. It is dispatched via the OuterControl type.
+
+"""
+function _frequency(
+    ::PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
+    ::F,
+    name::String,
+    res::SimulationResults,
+    dynamic_device::G,
+    dt::Union{Nothing, Float64},
+) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
+    ts, ω = post_proc_state_series(res, (name, :ω_oc), dt)
+    return ts, ω
+end
+
+"""
+Function to obtain the frequency time series of a droop grid forming inverter out of the DAE Solution. It is dispatched via the OuterControl type.
+
+"""
+function _frequency(
+    outer_control::PSY.OuterControl{PSY.ActivePowerDroop, PSY.ReactivePowerDroop},
+    ::F,
+    name::String,
+    res::SimulationResults,
+    dynamic_device::G,
+    dt::Union{Nothing, Float64},
+) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
+    P_ref = PSY.get_P_ref(PSY.get_active_power(outer_control))
+    ω_ref = PSY.get_ω_ref(dynamic_device) #PSY.get_ω_ref(dynamic_device)
+    ts, p_oc = post_proc_state_series(res, (name, :p_oc), dt)
+    Rp = PSY.get_Rp(outer_control.active_power)
+    ω_oc = ω_ref .+ Rp .* (P_ref .- p_oc)
+    return ts, ω_oc
+end
+
+"""
+Function to obtain the frequency time series of a VOC grid forming inverter out of the DAE Solution. It is dispatched via the OuterControl type.
+
+"""
+function _frequency(
+    outer_control::PSY.OuterControl{
+        PSY.ActiveVirtualOscillator,
+        PSY.ReactiveVirtualOscillator,
+    },
+    ::F,
+    name::String,
+    res::SimulationResults,
+    dynamic_device::G,
+    dt::Union{Nothing, Float64},
+) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
+    @warn "Output frequency for VOC inverter assumes ω_sys=1.0, regardless of ω_sys used in the simulation."
+    p_ref = PSY.get_P_ref(PSY.get_active_power(outer_control))
+    q_ref = PSY.get_Q_ref(PSY.get_reactive_power(outer_control))
+    active_power_control = PSY.get_active_power(outer_control)
+    k1 = PSY.get_k1(active_power_control)
+    ψ = PSY.get_ψ(active_power_control)
+    γ = ψ - pi / 2
+    ts, E_oc = post_proc_state_series(res, (name, :E_oc), dt)
+    _, p_elec_out = post_proc_activepower_series(res, name, dt)
+    _, q_elec_out = post_proc_reactivepower_series(res, name, dt)
+    ω_sys = 1.0  #Assume ω_sys = 1.0  
+    ω_oc =
+        ω_sys .+
+        (k1 ./ E_oc .^ 2) .*
+        (cos(γ) .* (p_ref .- p_elec_out) .+ sin(γ) .* (q_ref .- q_elec_out))
+    return ts, ω_oc
+end
+
+"""
+Function to obtain the frequency time series of a grid-following inverter with KauraPLL out of the DAE Solution. It is dispatched via the OuterControl and FrequencyEstimator type.
+
+"""
+function _frequency(
+    ::PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
+    freq_estimator::PSY.ReducedOrderPLL,
+    name::String,
+    res::SimulationResults,
+    dynamic_device::G,
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicInverter}
+    kp_pll = PSY.get_kp_pll(freq_estimator)
+    ki_pll = PSY.get_ki_pll(freq_estimator)
+    ts, vpll_q = post_proc_state_series(res, (name, :vq_pll), dt)
+    _, ε_pll = post_proc_state_series(res, (name, :ε_pll), dt)
+    Δω_pi = [pi_block(x, y, kp_pll, ki_pll)[1] for (x, y) in zip(vpll_q, ε_pll)]
+    return ts, Δω_pi .+ 1.0
+end
+
 """
 Function to obtain the output current time series of a LCL Filter model out of the DAE Solution. It is dispatched via the Filter type.
 

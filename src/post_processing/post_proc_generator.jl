@@ -84,6 +84,20 @@ function compute_mechanical_torque(
 end
 
 """
+Function to obtain the output frequency time series of a DynamicGenerator
+
+"""
+function compute_frequency(
+    res::SimulationResults,
+    dyn_device::G,
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicGenerator}
+    name = PSY.get_name(dyn_device)
+    ts, ω = post_proc_state_series(res, (name, :ω), dt)
+    return ts, ω
+end
+
+"""
 Function to obtain the output current time series of a Classic Machine model out of the DAE Solution. It is dispatched via the machine type.
 
 """

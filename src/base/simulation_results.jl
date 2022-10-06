@@ -243,6 +243,23 @@ function post_proc_branch_series(
 end
 
 """
+Function to compute the frequency of a Dynamic Injection component.
+"""
+function post_proc_frequency_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
+    system = get_system(res)
+    device = PSY.get_component(PSY.StaticInjection, system, name)
+    dyn_device = PSY.get_dynamic_injector(device)
+    if isnothing(dyn_device)
+        error("Dynamic Injection $(name) not found in the system")
+    end
+    ts, ω = compute_frequency(res, dyn_device, dt)
+end
+
+"""
     get_state_series(
         res::SimulationResults,
         ref::Tuple{String, Symbol};
@@ -528,6 +545,23 @@ function get_reactivepower_branch_flow(
         error("The location symbol $(:location) must be :from or :to to specify the bus.")
     end
     return
+end
+
+"""
+    get_frequency_series(
+            res::SimulationResults,
+            name::String,
+    )
+
+Function to obtain the frequency time series of a Dynamic Injection out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
+"""
+function get_frequency_series(res::SimulationResults, name::String; dt = nothing)
+    return post_proc_frequency_series(res, name, dt)
 end
 
 """
