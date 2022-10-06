@@ -250,6 +250,48 @@ function _machine_current(
 end
 
 """
+Function to obtain the output current time series of a SauerPaiMachine model out of the DAE Solution. It is dispatched via the machine type.
+"""
+function _machine_current(
+    machine::PSY.SauerPaiMachine,
+    name::String,
+    ::Vector{Float64},
+    ::Vector{Float64},
+    base_power_ratio::Float64,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
+    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt)
+    _, ψd = post_proc_state_series(res, (name, :ψd), dt)
+    _, ψq = post_proc_state_series(res, (name, :ψq), dt)
+    _, ψd_pp = post_proc_state_series(res, (name, :ψd_pp), dt)
+    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt)
+
+    #Get parameters
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = PSY.get_Xq_pp(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+
+    i_dq = Vector{Float64}(undef, 2)
+    I_R = similar(δ, Float64)
+    I_I = similar(δ, Float64)
+
+    for ix in 1:length(δ)
+        v = δ[ix]
+
+        #Obtain electric current
+        i_dq[1] = (1.0 / Xd_pp) * (γ_d1 * eq_p[ix] - ψd[ix] + (1 - γ_d1) * ψd_pp[ix])      #15.15
+        i_dq[2] = (1.0 / Xq_pp) * (-γ_q1 * ed_p[ix] - ψq[ix] + (1 - γ_q1) * ψq_pp[ix])     #15.15
+
+        I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
+    end
+    return ts, I_R, I_I
+end
+
+"""
 Function to obtain the output current time series of a GENROU/GENROE model out of the DAE Solution. It is dispatched via the machine type.
 """
 function _machine_current(

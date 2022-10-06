@@ -73,6 +73,9 @@ function test_zipload_implicit(csv_file, eigs_value, load_model)
         v2_psse = M[:, 2]
         v3_psse = M[:, 4]
 
+        #TODO: Test for LoadPower
+        p = get_activepower_series(results, "load1031")
+
         # Test Transient Simulation Results
         @test LinearAlgebra.norm(v2_psid - v2_psse, Inf) <= 5e-2
         @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 5e-2
