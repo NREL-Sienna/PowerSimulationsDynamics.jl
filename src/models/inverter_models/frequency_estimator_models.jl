@@ -62,7 +62,7 @@ function mdl_freq_estimator_ode!(
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    inner_vars[ω_freq_estimator_var] = Δω_pi + 1.0
+    inner_vars[ω_freq_estimator_var] = Δω_pi + ω_sys
     inner_vars[θ_freq_estimator_var] = θ_pll
     return
 end
@@ -121,7 +121,7 @@ function mdl_freq_estimator_ode!(
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    inner_vars[ω_freq_estimator_var] = Δω_pi + 1.0
+    inner_vars[ω_freq_estimator_var] = Δω_pi + ω_sys
     inner_vars[θ_freq_estimator_var] = θ_pll
     return
 end
