@@ -52,7 +52,6 @@ Ybus_change = NetworkSwitch(
         @test small_sig.stable
 
         # Test Eigenvalues
-        @show eigs
         @test LinearAlgebra.norm(eigs - test14_eigvals) < 1e-3
 
         #Run simulation
