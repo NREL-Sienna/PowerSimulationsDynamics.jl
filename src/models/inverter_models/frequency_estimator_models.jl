@@ -56,14 +56,15 @@ function mdl_freq_estimator_ode!(
     pi_output, dϵ_dt = pi_block(atan(vpll_q, vpll_d), ϵ_pll, kp_pll, ki_pll)
     #𝜕dϵ_pll/𝜕t, D'Arco ESPR122 eqn. 13
     output_ode[local_ix[3]] = dϵ_dt
-    #PLL Frequency Deviation (internal state)
+    #PLL Frequency Deviation (internal state), Note: D'Arco ESPR122 eqn. 14 is missing (1.0-ω_sys) term. 
+    #See Hug ISGT-EUROPE2018 Eqns. 26-28 for proper treatment of PLL reference frame. 
+    Δω = 1.0 - ω_sys + pi_output
     #𝜕θ_pll/𝜕t, D'Arco ESPR122 eqn. 15
-    Δω_pi = 1.0 - ω_sys + pi_output
-    output_ode[local_ix[4]] = ωb * Δω_pi  
+    output_ode[local_ix[4]] = ωb * Δω
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    inner_vars[ω_freq_estimator_var] = Δω_pi + ω_sys
+    inner_vars[ω_freq_estimator_var] = Δω + ω_sys
     inner_vars[θ_freq_estimator_var] = θ_pll
     return
 end
@@ -110,20 +111,20 @@ function mdl_freq_estimator_ode!(
     V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
 
     #Output Voltage LPF (internal state)
-    #𝜕vpll_q/𝜕t, Low Pass Filter, Johnson COMPEL2017 eqn. 3.1
+    #𝜕vpll_q/𝜕t, Low Pass Filter, Hug ISGT-EUROPE2018 eqn. 26
     output_ode[local_ix[1]] = low_pass(V_dq_pll[q], vpll_q, 1.0, 1.0 / ω_lp)[2]
     #PI Integrator (internal state)
     pi_output, dϵ_dt = pi_block(vpll_q, ϵ_pll, kp_pll, ki_pll)
-    #𝜕dϵ_pll/𝜕t, Johnson COMPEL2017 eqn. 3.2
+    #𝜕dϵ_pll/𝜕t, Hug ISGT-EUROPE2018 eqn. 10
     output_ode[local_ix[2]] = dϵ_dt
-    #PLL Frequency Deviation (internal state)
-    #𝜕θ_pll/𝜕t, DJohnson COMPEL2017 eqn. 3.3
-    Δω_pi = 1.0 - ω_sys + pi_output
-    output_ode[local_ix[3]] = ωb * Δω_pi
+    #PLL Frequency Deviation (internal state), Hug ISGT-EUROPE2018 eqn. 26 
+    Δω = 1.0 - ω_sys + pi_output
+    #𝜕θ_pll/𝜕t, Hug ISGT-EUROPE2018 eqns. 9, 26, 27 
+    output_ode[local_ix[3]] = ωb * Δω
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
-    inner_vars[ω_freq_estimator_var] = Δω_pi + ω_sys
+    inner_vars[ω_freq_estimator_var] = Δω + ω_sys
     inner_vars[θ_freq_estimator_var] = θ_pll
     return
 end
