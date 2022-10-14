@@ -5,6 +5,7 @@ struct SimulationResults
     time_log::Dict{Symbol, Any}
     solution::SciMLBase.AbstractODESolution
     setpoints::Dict{String, Dict{String, Float64}}
+    global_vars_update_pointers::Dict{Int, Int}
     function SimulationResults(
         inputs::SimulationInputs,
         system::PSY.System,
@@ -18,6 +19,7 @@ struct SimulationResults
             time_log,
             solution,
             get_setpoints(inputs),
+            get_global_vars_update_pointers(inputs),
         )
     end
 end
@@ -28,7 +30,7 @@ get_bus_lookup(res::SimulationResults) = res.bus_lookup
 get_system(res::SimulationResults) = res.system
 get_solution(res::SimulationResults) = res.solution
 get_setpoints(res::SimulationResults) = res.setpoints
-
+get_global_vars_update_pointers(res::SimulationResults) = res.global_vars_update_pointers
 """
 Internal function to obtain as a Vector of Float64 of a specific state. It receives the solution and the
 global index for a state.
