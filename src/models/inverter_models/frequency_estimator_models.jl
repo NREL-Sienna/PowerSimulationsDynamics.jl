@@ -53,12 +53,13 @@ function mdl_freq_estimator_ode!(
     #𝜕vpll_q/𝜕t, D'Arco ESPR122 eqn. 12
     output_ode[local_ix[2]] = low_pass(V_dq_pll[q], vpll_q, 1.0, 1.0 / ω_lp)[2]
     #PI Integrator (internal state)
-    Δω_pi, dϵ_dt = pi_block(atan(vpll_q, vpll_d), ϵ_pll, kp_pll, ki_pll)
+    pi_output, dϵ_dt = pi_block(atan(vpll_q, vpll_d), ϵ_pll, kp_pll, ki_pll)
     #𝜕dϵ_pll/𝜕t, D'Arco ESPR122 eqn. 13
     output_ode[local_ix[3]] = dϵ_dt
     #PLL Frequency Deviation (internal state)
     #𝜕θ_pll/𝜕t, D'Arco ESPR122 eqn. 15
-    output_ode[local_ix[4]] = ωb * Δω_pi
+    Δω_pi = 1.0 - ω_sys + pi_output
+    output_ode[local_ix[4]] = ωb * Δω_pi  
 
     #Update inner_vars
     #PLL frequency, D'Arco EPSR122 eqn. 16
@@ -112,11 +113,12 @@ function mdl_freq_estimator_ode!(
     #𝜕vpll_q/𝜕t, Low Pass Filter, Johnson COMPEL2017 eqn. 3.1
     output_ode[local_ix[1]] = low_pass(V_dq_pll[q], vpll_q, 1.0, 1.0 / ω_lp)[2]
     #PI Integrator (internal state)
-    Δω_pi, dϵ_dt = pi_block(vpll_q, ϵ_pll, kp_pll, ki_pll)
+    pi_output, dϵ_dt = pi_block(vpll_q, ϵ_pll, kp_pll, ki_pll)
     #𝜕dϵ_pll/𝜕t, Johnson COMPEL2017 eqn. 3.2
     output_ode[local_ix[2]] = dϵ_dt
     #PLL Frequency Deviation (internal state)
     #𝜕θ_pll/𝜕t, DJohnson COMPEL2017 eqn. 3.3
+    Δω_pi = 1.0 - ω_sys + pi_output
     output_ode[local_ix[3]] = ωb * Δω_pi
 
     #Update inner_vars
