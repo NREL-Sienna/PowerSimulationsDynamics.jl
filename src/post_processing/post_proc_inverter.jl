@@ -125,7 +125,7 @@ function _frequency(
     dt::Union{Nothing, Float64},
 ) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
     P_ref = PSY.get_P_ref(PSY.get_active_power(outer_control))
-    ω_ref = PSY.get_ω_ref(dynamic_device) #PSY.get_ω_ref(dynamic_device)
+    ω_ref = PSY.get_ω_ref(dynamic_device)
     ts, p_oc = post_proc_state_series(res, (name, :p_oc), dt)
     Rp = PSY.get_Rp(outer_control.active_power)
     ω_oc = ω_ref .+ Rp .* (P_ref .- p_oc)
@@ -147,7 +147,6 @@ function _frequency(
     dynamic_device::G,
     dt::Union{Nothing, Float64},
 ) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
-    @warn "Output frequency for VOC inverter assumes ω_sys=1.0, regardless of ω_sys used in the simulation."
     p_ref = PSY.get_P_ref(PSY.get_active_power(outer_control))
     q_ref = PSY.get_Q_ref(PSY.get_reactive_power(outer_control))
     active_power_control = PSY.get_active_power(outer_control)
@@ -157,7 +156,7 @@ function _frequency(
     ts, E_oc = post_proc_state_series(res, (name, :E_oc), dt)
     _, p_elec_out = post_proc_activepower_series(res, name, dt)
     _, q_elec_out = post_proc_reactivepower_series(res, name, dt)
-    ω_sys = 1.0  #Assume ω_sys = 1.0  
+    ω_sys = _system_frequency_series(res, dt)
     ω_oc =
         ω_sys .+
         (k1 ./ E_oc .^ 2) .*
@@ -181,8 +180,22 @@ function _frequency(
     ki_pll = PSY.get_ki_pll(freq_estimator)
     ts, vpll_q = post_proc_state_series(res, (name, :vq_pll), dt)
     _, ε_pll = post_proc_state_series(res, (name, :ε_pll), dt)
-    Δω_pi = [pi_block(x, y, kp_pll, ki_pll)[1] for (x, y) in zip(vpll_q, ε_pll)]
-    return ts, Δω_pi .+ 1.0
+    pi_output = [pi_block(x, y, kp_pll, ki_pll)[1] for (x, y) in zip(vpll_q, ε_pll)]
+    ω_pll = pi_output .+ 1.0 #See Hug ISGT-EUROPE2018 eqn. 9
+    return ts, ω_pll
+end
+
+function _system_frequency_series(res::SimulationResults, dt::Union{Nothing, Float64})
+    if get_global_vars_update_pointers(res)[GLOBAL_VAR_SYS_FREQ_INDEX] == 0
+        ω_sys = 1.0
+    else
+        ω_sys_state = get_state_from_ix(
+            get_global_index(res),
+            get_global_vars_update_pointers(res)[GLOBAL_VAR_SYS_FREQ_INDEX],
+        )
+        ω_sys = post_proc_state_series(res, ω_sys_state, dt)[2]
+    end
+    return ω_sys
 end
 
 """
