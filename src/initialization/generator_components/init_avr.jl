@@ -316,6 +316,97 @@ end
 function initialize_avr!(
     device_states,
     static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SCRX, TG, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain Vf0 solved from Machine
+    Vf0 = inner_vars[Vf_var]
+    #Obtain Ifd limiter
+    Ifd = inner_vars[Xad_Ifd_var] # read Lad Ifd (field current times Lad)
+    #Obtain measured terminal voltage
+    Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    Ta_Tb = PSY.get_Ta_Tb(avr)
+    Tb = PSY.get_Tb(avr)
+    Ta = Tb * Ta_Tb
+    # dont need Te >> no derivative so block is 0 (multiply by K in steady state)
+    K = PSY.get_K(avr)
+    V_min, V_max = PSY.get_Efd_lim(avr) #Efd_lim (V_lim) **n
+    Switch = PSY.get_switch(avr) # reads switch parameters **n
+    rc_rfd = PSY.get_rc_rfd(avr)
+
+    # do the negative current and switch? or is that alr counted in? 
+    #States of AVRTypeI are Vf, Vr1, Vr2, Vm
+    #To solve V_ref, Vr
+    function f!(out, x)
+        V_ref = x[1]
+        Vr1 = x[2]
+
+        V_in = V_ref - Vm # assue Vs is 0 when init
+        #lead lag block
+        #V_LL = Vr2 + Ta_Tb * V_in
+        V_LL, dVr1_dt = lead_lag_mass_matrix(V_in, Vr1, 1.0, Ta, Tb) # 1st block
+        Vr2 = K * V_LL
+        
+        #switch 
+        if Switch == 0 
+            mult = Vm #bacwards, not Vth 
+        else # elseif Switch == 1 >> don't need to
+            mult = 1.0 # solid fed, consistent (multiplier is same type)
+            #2 types of numbers  > integrate over time is a float, Jacobian uses dual number
+        end
+        Ex = Vr2 * mult
+        
+        # negative current logic
+        if rc_rfd == 0.0 # a float
+            Efd = Ex 
+        elseif rc_rfd > 0.0
+            if Ifd > 0 
+                Efd = Ex 
+            else 
+                Efd = -Ifd*rc_rfd
+            end
+        else # rc_rfd shouldnt be negative
+            @error("") # fix and raise error before for rc_rfd
+        end 
+
+        #V_ll output first block 
+        out[1] = Efd - Vf0 # we are asking for Vf0 
+        out[2] = dVr1_dt # make derivative 0 << tries to make it 0
+        #out[2] = V_in * (1 - Ta_Tb) - Vr
+    end # solve for Vref
+
+    x0 = [1.0, Vf0]
+    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    if !NLsolve.converged(sol)
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+    else # if converge
+        sol_x0 = sol.zero
+        Vr2_0 = (sol_x0[2] + Ta_Tb * (sol_x0[1] - Vm) ) * K # K * V_LL
+        #check the limits
+        if (Vr2_0 >= V_max + BOUNDS_TOLERANCE) ||
+           (Vr2_0 <= V_min - BOUNDS_TOLERANCE)
+            @error(
+                "Vr limits for AVR in $(PSY.get_name(dynamic_device)) (Vr = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min.  Consider updating the operating point."
+            )
+        end
+        #Update V_ref
+        PSY.set_V_ref!(avr, sol_x0[1])
+        set_V_ref(dynamic_device, sol_x0[1])
+        #Update AVR states
+        avr_ix = get_local_state_ix(dynamic_device, PSY.SCRX)
+        avr_states = @view device_states[avr_ix]
+        avr_states[1] = sol_x0[2] #Vr1 // not Vf
+        avr_states[2] = Vr2_0 #Vr2 // not Vr
+    end
+end
+
+
+function initialize_avr!(
+    device_states,
+    static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
