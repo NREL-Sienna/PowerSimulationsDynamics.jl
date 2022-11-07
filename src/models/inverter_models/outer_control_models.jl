@@ -699,6 +699,95 @@ function mdl_outer_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator},
+            IC,
+            DC,
+            P,
+            F,
+        },
+    },
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator},
+    )
+    Vr_filter = device_states[external_ix[1]]
+    Vi_filter = device_states[external_ix[2]]
+    Ir_filter = device_states[external_ix[3]]
+    Ii_filter = device_states[external_ix[4]]
+
+    #Get Active Power Controller parameters
+    outer_control = PSY.get_outer_control(dynamic_device)
+    active_power_control = PSY.get_active_power(outer_control)
+    k1 = PSY.get_k1(active_power_control)
+    ψ = PSY.get_ψ(active_power_control)
+    f0 = get_system_base_frequency(dynamic_device)
+    ωb = 2 * pi * f0 #Rated angular frequency
+
+    #Get Reactive Power Controller parameters
+    reactive_power_control = PSY.get_reactive_power(outer_control)
+    k2 = PSY.get_k2(reactive_power_control)
+
+    #Obtain external parameters
+    p_ref = get_P_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator},
+    )
+
+    #Define internal states for frequency estimator
+    internal_states = @view device_states[local_ix]
+    θ_oc = internal_states[1]
+    E_oc = internal_states[2]
+
+    #Obtain additional expressions
+    p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
+    q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
+
+    #Compute Frequency from VOC
+    γ = ψ - pi / 2
+    ω_oc =
+        ω_sys +
+        (k1 / E_oc^2) * (cos(γ) * (p_ref - p_elec_out) + sin(γ) * (q_ref - q_elec_out))
+
+    #Compute voltage derivatives
+    dEoc_dt =
+        ωb * (
+            (k1 / E_oc) * (-sin(γ) * (p_ref - p_elec_out) + cos(γ) * (q_ref - q_elec_out)) +
+            k2 * (V_ref^2 - E_oc^2) * E_oc
+        )
+
+    #Compute 2 states ODEs
+    output_ode[local_ix[1]] = ωb * (ω_oc - ω_sys)
+    output_ode[local_ix[2]] = dEoc_dt
+
+    #Update inner vars
+    inner_vars[θ_oc_var] = θ_oc
+    inner_vars[ω_oc_var] = ω_oc
+    inner_vars[V_oc_var] = E_oc
+    return
+end
+
+function mdl_outer_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -820,15 +909,24 @@ function mdl_outer_ode!(
             PSY.ReactiveRenewableControllerAB,
         },
     )
-    Vt_filt = device_states[external_ix[1]]
+    inner_ctrl = PSY.get_inner_control(dynamic_device)
+    inner_ctrl_ix = get_local_state_ix(dynamic_device, typeof(inner_ctrl))
+    inner_ctrl_states = @view device_states[inner_ctrl_ix]
+    Vt_filt = inner_ctrl_states[1]
 
     #Monitoring power from other branch not supported.
-    Vr_cnv = inner_vars[Vr_cnv_var]
-    Vi_cnv = inner_vars[Vi_cnv_var]
+    Vr_filter = inner_vars[Vr_filter_var]
+    Vi_filter = inner_vars[Vi_filter_var]
+    Ir_filter = inner_vars[Ir_filter_var]
+    Ii_filter = inner_vars[Ii_filter_var]
+    p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
+
     Ir_cnv = inner_vars[Ir_cnv_var]
     Ii_cnv = inner_vars[Ii_cnv_var]
-    p_elec_out = Ir_cnv * Vr_cnv + Ii_cnv * Vi_cnv
-    q_elec_out = -Ii_cnv * Vr_cnv + Ir_cnv * Vi_cnv
+    Ir_cap = Ir_filter - Ir_cnv
+    Ii_cap = Ii_filter - Ii_cnv
+    Q_cap = -Ii_cap * Vr_filter + Ir_cap * Vi_filter
+    q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter - Q_cap
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)

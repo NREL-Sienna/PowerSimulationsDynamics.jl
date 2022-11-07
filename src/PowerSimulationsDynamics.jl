@@ -41,8 +41,16 @@ export get_real_current_series
 export get_imaginary_current_series
 export get_activepower_series
 export get_reactivepower_series
+export get_source_real_current_series
+export get_source_imaginary_current_series
 export get_field_current_series
 export get_field_voltage_series
+export get_mechanical_torque_series
+export get_real_current_branch_flow
+export get_imaginary_current_branch_flow
+export get_activepower_branch_flow
+export get_reactivepower_branch_flow
+export get_frequency_series
 export get_setpoints
 export get_solution
 
@@ -84,7 +92,6 @@ include("base/bus_categories.jl")
 include("base/device_wrapper.jl")
 include("base/branch_wrapper.jl")
 include("base/frequency_reference.jl")
-include("base/file_system.jl")
 include("base/simulation_model.jl")
 include("base/simulation_inputs.jl")
 include("base/perturbations.jl")

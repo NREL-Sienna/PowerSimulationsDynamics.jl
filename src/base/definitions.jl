@@ -73,15 +73,17 @@ Inverter Inner Vars:
     Iq_ic_var = 12
     Ir_cnv_var = 13
     Ii_cnv_var = 14
-    Ir_inv_var = 15
-    Ii_inv_var = 16
-    ω_oc_var = 17
-    θ_oc_var = 18
-    Vr_inv_var = 19
-    Vi_inv_var = 20
-    Vr_cnv_var = 21
-    Vi_cnv_var = 22
-    P_ES_var = 23
+    Ir_filter_var = 15
+    Ii_filter_var = 16
+    Ir_inv_var = 17
+    Ii_inv_var = 18
+    ω_oc_var = 19
+    θ_oc_var = 20
+    Vr_inv_var = 21
+    Vi_inv_var = 22
+    Vr_cnv_var = 23
+    Vi_cnv_var = 24
+    P_ES_var = 25
 end
 
 Base.to_index(ix::inverter_inner_vars) = Int(ix)
@@ -103,7 +105,7 @@ const MAPPING_DICT = Dict{String, OrderedDict{Symbol, Int}}
 const DEVICE_INTERNAL_MAPPING = Base.ImmutableDict{Int, Vector{Int}}
 
 const GEN_INNER_VARS_SIZE = 9
-const INV_INNER_VARS_SIZE = 23
+const INV_INNER_VARS_SIZE = 25
 const PVS_INNER_VARS_SIZE = 0
 const VOLTAGE_DIVISION_LOWER_BOUND = 0.01
 
@@ -122,7 +124,6 @@ const SIMULATION_ACCEPTED_KWARGS = [
 const GLOBAL_VAR_SYS_FREQ_INDEX = 1
 get_vars_ix() = Dict{Int, Int}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
 
-const SMALL_SIGNAL_ACCEPTED_KWARGS = [:reset_simulation!]
 const RELAXED_NLSOLVE_F_TOLERANCE = :1e-6
 const STRICT_NLSOLVE_F_TOLERANCE = :1e-9
 const NLSOLVE_X_TOLERANCE = :1e-9
@@ -134,6 +135,68 @@ const BOUNDS_TOLERANCE = 1e-6
 const SIMULATION_LOG_FILENAME = "power-simulations-dynamics.log"
 
 const ACCEPTED_CONTROL_REFS = [:V_ref, :ω_ref, :P_ref, :Q_ref]
+const DIFFEQ_SOLVE_KWARGS = [
+    :dense,
+    :saveat,
+    :save_idxs,
+    :tstops,
+    :d_discontinuities,
+    :save_everystep,
+    :save_on,
+    :save_start,
+    :save_end,
+    :initialize_save,
+    :adaptive,
+    :abstol,
+    :reltol,
+    :dt,
+    :dtmax,
+    :dtmin,
+    :force_dtmin,
+    :internalnorm,
+    :controller,
+    :gamma,
+    :beta1,
+    :beta2,
+    :qmax,
+    :qmin,
+    :qsteady_min,
+    :qsteady_max,
+    :qoldinit,
+    :failfactor,
+    :calck,
+    :alias_u0,
+    :maxiters,
+    :callback,
+    :isoutofdomain,
+    :unstable_check,
+    :verbose,
+    :merge_callbacks,
+    :progress,
+    :progress_steps,
+    :progress_name,
+    :progress_message,
+    :timeseries_errors,
+    :dense_errors,
+    :weak_timeseries_errors,
+    :weak_dense_errors,
+    :calculate_errors,
+    :initializealg,
+    :alg,
+    :save_noise,
+    :delta,
+    :seed,
+    :alg_hints,
+    :kwargshandle,
+    :trajectories,
+    :batch_size,
+    :sensealg,
+    :advance_to_tstop,
+    :stop_at_next_tstop,
+    :default_set,
+    :second_time,
+    :prob_choice,
+]
 """
 Defines the status of the simulation object
 """

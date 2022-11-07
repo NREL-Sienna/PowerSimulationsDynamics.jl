@@ -4,13 +4,23 @@ struct SimulationResults
     system::PSY.System
     time_log::Dict{Symbol, Any}
     solution::SciMLBase.AbstractODESolution
+    setpoints::Dict{String, Dict{String, Float64}}
+    global_vars_update_pointers::Dict{Int, Int}
     function SimulationResults(
         inputs::SimulationInputs,
         system::PSY.System,
         time_log,
         solution,
     )
-        new(make_global_state_map(inputs), get_lookup(inputs), system, time_log, solution)
+        new(
+            make_global_state_map(inputs),
+            get_lookup(inputs),
+            system,
+            time_log,
+            solution,
+            get_setpoints(inputs),
+            get_global_vars_update_pointers(inputs),
+        )
     end
 end
 
@@ -19,7 +29,8 @@ get_bus_count(res::SimulationResults) = get_n_buses(res.system)
 get_bus_lookup(res::SimulationResults) = res.bus_lookup
 get_system(res::SimulationResults) = res.system
 get_solution(res::SimulationResults) = res.solution
-
+get_setpoints(res::SimulationResults) = res.setpoints
+get_global_vars_update_pointers(res::SimulationResults) = res.global_vars_update_pointers
 """
 Internal function to obtain as a Vector of Float64 of a specific state. It receives the solution and the
 global index for a state.
@@ -72,7 +83,11 @@ function post_proc_voltage_current_series(
     bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
     ts, V_R, V_I = post_proc_voltage_series(solution, bus_ix, n_buses, dt)
     dyn_device = PSY.get_dynamic_injector(device)
-    _, I_R, I_I = compute_output_current(res, dyn_device, V_R, V_I, dt)
+    if isnothing(dyn_device)
+        _, I_R, I_I = compute_output_current(res, device, V_R, V_I, dt)
+    else
+        _, I_R, I_I = compute_output_current(res, dyn_device, V_R, V_I, dt)
+    end
     return ts, V_R, V_I, I_R, I_I
 end
 
@@ -185,6 +200,69 @@ function post_proc_field_voltage_series(
     dyn_device = PSY.get_dynamic_injector(device)
     ts, Vf = compute_field_voltage(res, dyn_device, dt)
     return ts, Vf
+end
+
+"""
+Function to compute the mechanical torque output time series of a Dynamic Injection series out of the DAE Solution. It receives the solution and the
+string name of the Dynamic Injection device.
+
+"""
+function post_proc_mechanical_torque_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
+    system = get_system(res)
+    device = PSY.get_component(PSY.StaticInjection, system, name)
+    dyn_device = PSY.get_dynamic_injector(device)
+    ts, τm = compute_mechanical_torque(res, dyn_device, dt)
+    return ts, τm
+end
+
+"""
+Function to compute the current flowing through an AC branch through their series element.
+The current is computed through the `from` bus into the `to` bus.
+"""
+function post_proc_branch_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
+    system = get_system(res)
+    bus_lookup = get_bus_lookup(res)
+    n_buses = length(bus_lookup)
+    solution = res.solution
+    branch = PSY.get_component(PSY.ACBranch, system, name)
+    if isnothing(branch)
+        error("Branch $(name) not found in the system")
+    end
+    bus_from_number = PSY.get_number(PSY.get_from(PSY.get_arc(branch)))
+    bus_to_number = PSY.get_number(PSY.get_to(PSY.get_arc(branch)))
+    bus_from_ix = get(bus_lookup, bus_from_number, -1)
+    bus_to_ix = get(bus_lookup, bus_to_number, -1)
+    ts, V_R_from, V_I_from = post_proc_voltage_series(solution, bus_from_ix, n_buses, dt)
+    _, V_R_to, V_I_to = post_proc_voltage_series(solution, bus_to_ix, n_buses, dt)
+    r = PSY.get_r(branch)
+    x = PSY.get_x(branch)
+    I_flow = ((V_R_from + V_I_from * 1im) - (V_R_to + V_I_to * 1im)) ./ (r + x * 1im)
+    return ts, V_R_from, V_I_from, V_R_to, V_I_to, real.(I_flow), imag.(I_flow)
+end
+
+"""
+Function to compute the frequency of a Dynamic Injection component.
+"""
+function post_proc_frequency_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
+    system = get_system(res)
+    device = PSY.get_component(PSY.StaticInjection, system, name)
+    dyn_device = PSY.get_dynamic_injector(device)
+    if isnothing(dyn_device)
+        error("Dynamic Injection $(name) not found in the system")
+    end
+    ts, ω = compute_frequency(res, dyn_device, dt)
 end
 
 """
@@ -346,6 +424,150 @@ Function to obtain the field voltage time series of a Dynamic Generator out of t
 """
 function get_field_voltage_series(res::SimulationResults, name::String; dt = nothing)
     return post_proc_field_voltage_series(res, name, dt)
+end
+
+"""
+    get_mechanical_torque_series(
+            res::SimulationResults,
+            name::String,
+    )
+
+Function to obtain the mechanical torque time series of the mechanical torque out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
+"""
+function get_mechanical_torque_series(res::SimulationResults, name::String; dt = nothing)
+    return post_proc_mechanical_torque_series(res, name, dt)
+end
+
+"""
+    get_real_current_branch_flow(
+            res::SimulationResults,
+            name::String,
+    )
+Function to obtain the real current flowing through the series element of a Branch
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified line
+"""
+function get_real_current_branch_flow(res::SimulationResults, name::String; dt = nothing)
+    ts, _, _, _, _, Ir, _ = post_proc_branch_series(res, name, dt)
+    return ts, Ir
+end
+
+"""
+    get_imaginary_current_branch_flow(
+            res::SimulationResults,
+            name::String,
+    )
+Function to obtain the imaginary current flowing through the series element of a Branch
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified line
+"""
+function get_imaginary_current_branch_flow(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+)
+    ts, _, _, _, _, _, Ii = post_proc_branch_series(res, name, dt)
+    return ts, Ii
+end
+
+"""
+    get_activepower_branch_flow(
+            res::SimulationResults,
+            name::String,
+            location::Symbol,
+    )
+Function to obtain the active power flowing through the series element of a Branch.
+The user must specified is the power should be computed in the :from or to :bus, by
+specifying a symbol.
+
+If :from is specified, the power is computed flowing outwards the :from bus.
+If :to is specified, the power is computed flowing into the :to bus.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified line
+- `location::Symbol` : :from or :to to specify a bus
+"""
+function get_activepower_branch_flow(
+    res::SimulationResults,
+    name::String,
+    location::Symbol;
+    dt = nothing,
+)
+    ts, V_R_from, V_I_from, V_R_to, V_I_to, Ir, Ii = post_proc_branch_series(res, name, dt)
+    if location == :from
+        return ts, V_R_from .* Ir + V_I_from .* Ii
+    elseif location == :to
+        return ts, -(V_R_to .* Ir + V_I_to .* Ii)
+    else
+        error("The location symbol $(:location) must be :from or :to to specify the bus.")
+    end
+    return
+end
+
+"""
+    get_reactivepower_branch_flow(
+            res::SimulationResults,
+            name::String,
+            location::Symbol,
+    )
+Function to obtain the reactive power flowing through the series element of a Branch.
+The user must specified is the power should be computed in the :from or to :bus, by
+specifying a symbol.
+
+If :from is specified, the power is computed flowing outwards the :from bus.
+If :to is specified, the power is computed flowing into the :to bus.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified line
+- `location::Symbol` : :from or :to to specify a bus
+"""
+function get_reactivepower_branch_flow(
+    res::SimulationResults,
+    name::String,
+    location::Symbol;
+    dt = nothing,
+)
+    ts, V_R_from, V_I_from, V_R_to, V_I_to, Ir, Ii = post_proc_branch_series(res, name, dt)
+    if location == :from
+        return ts, V_I_from .* Ir - V_R_from .* Ii
+    elseif location == :to
+        return ts, -(V_I_to .* Ir - V_R_to .* Ii)
+    else
+        error("The location symbol $(:location) must be :from or :to to specify the bus.")
+    end
+    return
+end
+
+"""
+    get_frequency_series(
+            res::SimulationResults,
+            name::String,
+    )
+
+Function to obtain the frequency time series of a Dynamic Injection out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
+"""
+function get_frequency_series(res::SimulationResults, name::String; dt = nothing)
+    return post_proc_frequency_series(res, name, dt)
 end
 
 """

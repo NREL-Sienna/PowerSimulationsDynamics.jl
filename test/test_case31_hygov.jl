@@ -57,6 +57,9 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
         _, Vt = get_voltage_magnitude_series(results, 102)
         _, ω = get_state_series(results, ("generator-102-1", :ω))
 
+        # TODO: Test mechanical torque in PSSE
+        _, τm = get_mechanical_torque_series(results, "generator-102-1")
+
         # Obtain PSSE results
         M = get_csv_data(csv_file)
         t_psse = M[:, 1]

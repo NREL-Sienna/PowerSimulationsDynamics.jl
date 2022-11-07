@@ -102,3 +102,85 @@ function compute_output_current(
 
     return ts, I_R, I_I
 end
+
+"""
+Function to obtain the output current time series of a PowerLoad model. 
+
+"""
+function compute_output_current(
+    res::SimulationResults,
+    device::PSY.PowerLoad,
+    V_R::Vector{Float64},
+    V_I::Vector{Float64},
+    dt::Union{Nothing, Float64},
+)
+    #TODO: We should dispatch this using the ZipLoad model that we have, but that would
+    #      require to properly have access to it in the SimResults.
+    #TODO: Load is assumed to be connected. We need proper ways of keep tracking when
+    #      something is disconnected
+    solution = res.solution
+    if dt === nothing
+        ix_t = unique(i -> solution.t[i], eachindex(solution.t))
+        ts = solution.t[ix_t]
+    else
+        ts = range(0, stop = solution.t[end], step = dt)
+    end
+
+    V0 = sqrt(V_R[1]^2 + V_I[1]^2)
+    V_mag = sqrt.(V_R .^ 2 + V_I .^ 2)
+    P = PSY.get_active_power(device)
+    Q = PSY.get_reactive_power(device)
+    I_R = similar(V_mag)
+    I_I = similar(V_mag)
+
+    if PSY.get_model(device) == PSY.LoadModels.ConstantImpedance
+        I_R = (1.0 / V0)^2 .* (P .* V_R + Q .* V_I)
+        I_I = (1.0 / V0)^2 .* (P .* V_I - Q .* V_R)
+    elseif PSY.get_model(device) == PSY.LoadModels.ConstantCurrent
+        I_R = (1.0 / V0) .* (P .* V_R + Q .* V_I) ./ V_mag
+        I_I = (1.0 / V0) .* (P .* V_I - Q .* V_R) ./ V_mag
+    elseif PSY.get_model(device) == PSY.LoadModels.ConstantPower
+        I_R = (P .* V_R + Q .* V_I) ./ V_mag .^ 2
+        I_I = (P .* V_I - Q .* V_R) ./ V_mag .^ 2
+    else
+        @error("Load Model not supported. Returning zeros")
+    end
+    return ts, I_R, I_I
+end
+
+"""
+Function to obtain the output current time series of a ExponentialLoad model. 
+
+"""
+function compute_output_current(
+    res::SimulationResults,
+    device::PSY.ExponentialLoad,
+    V_R::Vector{Float64},
+    V_I::Vector{Float64},
+    dt::Union{Nothing, Float64},
+)
+    #TODO: We should dispatch this using the ZipLoad model that we have, but that would
+    #      require to properly have access to it in the SimResults.
+    #TODO: Load is assumed to be connected. We need proper ways of keep tracking when
+    #      something is disconnected
+    solution = res.solution
+    if dt === nothing
+        ix_t = unique(i -> solution.t[i], eachindex(solution.t))
+        ts = solution.t[ix_t]
+    else
+        ts = range(0, stop = solution.t[end], step = dt)
+    end
+
+    V0 = sqrt(V_R[1]^2 + V_I[1]^2)
+    V_mag = sqrt.(V_R .^ 2 + V_I .^ 2)
+    P = PSY.get_active_power(device)
+    Q = PSY.get_reactive_power(device)
+    α = PSY.get_active_power_coefficient(device)
+    β = PSY.get_reactive_power_coefficient(device)
+
+    I_R =
+        P .* V_R .* (V_mag .^ (α - 2.0) ./ V0^α) + Q .* V_I .* (V_mag .^ (β - 2.0) ./ V0^β)
+    I_I =
+        P .* V_I .* (V_mag .^ (α - 2.0) ./ V0^α) - Q .* V_R .* (V_mag .^ (β - 2.0) ./ V0^β)
+    return ts, I_R, I_I
+end
