@@ -382,6 +382,107 @@ function initialize_dynamic_device!(
 end
 
 function initialize_dynamic_device!(
+    dynamic_wrapper::DynamicWrapper{PSY.ActiveConstantPowerLoad},
+    device::PSY.StaticInjection,
+    ::AbstractVector,
+)
+    Sbase = get_system_base_power(dynamic_wrapper)
+
+    #Obtain States
+    device_states = zeros(PSY.get_n_states(dynamic_wrapper))
+
+    # Get parameters
+    dynamic_device = get_device(dynamic_wrapper)
+    r_load = PSY.get_r_load(dynamic_device)
+    rf = PSY.get_rf(dynamic_device)
+    lf = PSY.get_lf(dynamic_device)
+    cf = PSY.get_cf(dynamic_device)
+    rg = PSY.get_rg(dynamic_device)
+    lg = PSY.get_lg(dynamic_device)
+    kiv = PSY.get_kiv(dynamic_device)
+    kic = PSY.get_kic(dynamic_device)
+    base_power = PSY.get_base_power(dynamic_device)
+
+    #PowerFlow Data
+    P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
+    Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
+    Vm = PSY.get_magnitude(PSY.get_bus(device))
+    θ = PSY.get_angle(PSY.get_bus(device))
+    S0 = P0 + Q0 * 1im
+    V_R = Vm * cos(θ)
+    V_I = Vm * sin(θ)
+    V = V_R + V_I * 1im
+    I = conj(S0 / V) # total current 
+    I_R = real(I)
+    I_I = imag(I)
+
+    V_filter0 = V - I * (rg + lg * 1im)
+    Vr_filter0 = real(V_filter0)
+    Vi_filter0 = imag(V_filter0)
+    θ_pll0 = angle(V_filter0)
+
+    Ir_cap = -cf * Vi_filter0
+    Ii_cap = +cf * Vr_filter0
+    I_cnv0 = I - (Ir_cap + 1im * Ii_cap)
+    Ir_cnv0 = real(I_cnv0)
+    Ii_cnv0 = imag(I_cnv0)
+    V_cnv0 = V_filter0 - I_cnv0 * (rf + lf * 1im)
+    Vr_cnv0 = real(V_cnv0)
+    Vi_cnv0 = imag(V_cnv0)
+    P_cnv0 = Vr_cnv0 * Ir_cnv0 + Vi_cnv0 * Ii_cnv0
+    V_ref0 = sqrt(P_cnv0 * r_load)
+    x0 = [θ_pll0, 0.0, 0.0, 0.0, 0.0]
+
+    function f!(out, x)
+        θ_pll = x[1]
+        η = x[2]
+        γd = x[3]
+        γq = x[4]
+        Iq_ref = x[5]
+
+        V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter0; Vi_filter0]
+        I_dq_cnv = ri_dq(θ_pll + pi / 2) * [Ir_cnv0; Ii_cnv0]
+
+        V_dq_cnv0 = ri_dq(θ_pll + pi / 2) * [Vr_cnv0; Vi_cnv0]
+
+        Id_ref = kiv * η
+
+        Vd_cnv = kic * γd + 1.0 * lf * I_dq_cnv[q]
+        Vq_cnv = kic * γq - 1.0 * lf * I_dq_cnv[d]
+
+        out[1] = V_dq_pll[q]
+        out[2] = Id_ref - I_dq_cnv[d]
+        out[3] = Iq_ref - I_dq_cnv[q]
+        out[4] = V_dq_cnv0[q] - Vq_cnv
+        out[5] = V_dq_cnv0[d] - Vd_cnv
+    end
+    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    if !NLsolve.converged(sol)
+        @warn("Initialization in Active Load $(PSY.get_name(device)) failed")
+    else
+        sol_x0 = sol.zero
+        device_states[1] = sol_x0[1] # θ_pll
+        device_states[2] = 0.0 # ϵ
+        device_states[3] = sol_x0[2] # η
+        device_states[4] = V_ref0
+        device_states[5] = sol_x0[3] # γd
+        device_states[6] = sol_x0[4] # γq
+        device_states[7] = Ir_cnv0
+        device_states[8] = Ii_cnv0
+        device_states[9] = Vr_filter0
+        device_states[10] = Vi_filter0
+        device_states[11] = I_R
+        device_states[12] = I_I
+
+        # update V_ref
+        PSY.set_V_ref!(dynamic_device, V_ref0)
+        set_V_ref(dynamic_wrapper, V_ref0)
+        set_Q_ref(dynamic_wrapper, sol_x0[5])
+    end
+    return device_states
+end
+
+function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     static::PSY.StaticInjection,
     initial_inner_vars::AbstractVector,
