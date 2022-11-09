@@ -42,6 +42,7 @@ get_bus_ix_to(wrapper::BranchWrapper) = wrapper.bus_ix_to
 get_ix_range(wrapper::BranchWrapper) = wrapper.ix_range
 get_ode_ouput_range(wrapper::BranchWrapper) = wrapper.ode_range
 get_global_index(wrapper::BranchWrapper) = wrapper.global_index
+get_branch(wrapper:BranchWrapper) = wrapper.branch
 
 get_system_base_power(wrapper::BranchWrapper) = wrapper.system_base_power
 get_system_base_frequency(wrapper::BranchWrapper) = wrapper.system_base_frequency
