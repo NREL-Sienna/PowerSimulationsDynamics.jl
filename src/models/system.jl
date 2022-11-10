@@ -252,6 +252,8 @@ function system_mass_matrix!(
     if has_dyn_lines(inputs)
         branches_ode = get_branches_ode(cache, T)
         for dynamic_branch in get_dynamic_branches(inputs)
+            dyn_branch = get_branch(dynamic_branch) # DynamicBranch
+            branch = PSY.get_branch(dyn_branch) # Line or Transformer2W
             ix_range = get_ix_range(dynamic_branch)
             branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
             branch_states = @view x[ix_range]
@@ -271,6 +273,7 @@ function system_mass_matrix!(
                 view(current_r, bus_ix_to),
                 view(current_i, bus_ix_to),
                 dynamic_branch,
+                branch,
             )
             dx[ix_range] .= branch_output_ode
         end
