@@ -683,8 +683,11 @@ function mdl_outer_ode!(
     _, dpm_dt = low_pass(p_elec_out, pm, 1.0, 1.0 / ωz)
     _, dqm_dt = low_pass(q_elec_out, qm, 1.0, 1.0 / ωf)
 
+    ext = PSY.get_ext(outer_control)
+    bool_val = get(ext, "is_not_reference", 1.0)
+
     #Compute 3 states ODEs
-    output_ode[local_ix[1]] = ωb * (ω_oc - ω_sys)
+    output_ode[local_ix[1]] = bool_val * ωb * (ω_oc - ω_sys)
     output_ode[local_ix[2]] = dpm_dt
     output_ode[local_ix[3]] = dqm_dt
 
@@ -773,8 +776,11 @@ function mdl_outer_ode!(
             k2 * (V_ref^2 - E_oc^2) * E_oc
         )
 
+    ext = PSY.get_ext(outer_control)
+    bool_val = get(ext, "is_not_reference", 1.0)
+
     #Compute 2 states ODEs
-    output_ode[local_ix[1]] = ωb * (ω_oc - ω_sys)
+    output_ode[local_ix[1]] = bool_val * ωb * (ω_oc - ω_sys)
     output_ode[local_ix[2]] = dEoc_dt
 
     #Update inner vars
