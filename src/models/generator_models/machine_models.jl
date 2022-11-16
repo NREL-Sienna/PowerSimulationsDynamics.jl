@@ -152,12 +152,13 @@ function mdl_machine_ode!(
     #Obtain external states inputs for component
     external_ix = get_input_port_ix(dynamic_device, PSY.SauerPaiMachine)
     δ = device_states[external_ix[1]]
-    ω = device_states[external_ix[2]]
+    #ω = device_states[external_ix[2]]
 
     #Obtain inner variables for component
     V_tR = inner_vars[VR_gen_var]
     V_tI = inner_vars[VI_gen_var]
     Vf = inner_vars[Vf_var]
+    ω = inner_vars[ω_var]
 
     #Get parameters
     machine = PSY.get_machine(dynamic_device)

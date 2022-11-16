@@ -19,7 +19,7 @@ function mdl_shaft_ode!(
 
     #Define internal states for component
     internal_states = @view device_states[local_ix]
-    ω = internal_states[2]
+    Δω = internal_states[2]
 
     #Obtain inner variables for component
     τe = inner_vars[τe_var]
@@ -31,12 +31,26 @@ function mdl_shaft_ode!(
     D = PSY.get_D(shaft)
 
     #Compute 2 states ODEs
-    output_ode[local_ix[1]] = 2 * π * f0 * (ω - ω_sys)                    #15.5
-    output_ode[local_ix[2]] = (1 / (2 * H)) * (τm - τe - D * (ω - 1.0) / ω)   #15.5
-
+    output_ode[local_ix[1]] = 2 * π * f0 * (Δω)                          #15.5
+    output_ode[local_ix[2]] = (1 / (2 * H)) * (τm - τe - D * Δω)          #15.5
+    inner_vars[ω_var] = Δω + ω_sys 
     return
 end
 
+#= 
+#How do we translate this model to the equivalent model in PSCAD (without synchronous ref. frame)? 
+    dδ/dt = ω
+    #If we assume ω_sys = 1.0 
+    dω/dt = (1 / (2 * H)) * ( τm - τe - D * (ω - 1.0))  
+    #If we assume ω_sys = ω0
+    dω/dt = (1 / (2 * H)) * ( τm - τe - D * (ω - ω0))  
+    #Without assumption about ω_sys...
+    dω/dt - dω_sys/dt =  (1 / (2 * H)) * ( τm - τe - D * (ω - ω_sys))
+
+#Fundamental issue which requries an additional assumption is the parameter D is multiplied by a relative term (Δω)
+
+
+ =#
 function mdl_shaft_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},

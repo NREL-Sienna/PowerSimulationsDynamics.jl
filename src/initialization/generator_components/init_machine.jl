@@ -235,7 +235,9 @@ function initialize_mach_shaft!(
         shaft_ix = get_local_state_ix(dynamic_device, S)
         shaft_states = @view device_states[shaft_ix]
         shaft_states[1] = sol_x0[1] #δ
-        shaft_states[2] = ω0 #ω
+        shaft_states[2] = 0.0 #ω
+        #update ω_var
+        inner_vars[ω_var] = 1.0
         #Update Mechanical and Electrical Torque on Generator
         inner_vars[τe_var] = sol_x0[2]
         inner_vars[τm_var] = sol_x0[2]

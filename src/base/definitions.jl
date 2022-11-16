@@ -30,6 +30,7 @@ Generator Inner Vars:
     ψd_var = 7
     ψq_var = 8
     Xad_Ifd_var = 9
+    ω_var = 10
 end
 
 Base.to_index(ix::generator_inner_vars) = Int(ix)
@@ -104,7 +105,7 @@ Base.to_index(ix::RI_ref) = Int(ix)
 const MAPPING_DICT = Dict{String, OrderedDict{Symbol, Int}}
 const DEVICE_INTERNAL_MAPPING = Base.ImmutableDict{Int, Vector{Int}}
 
-const GEN_INNER_VARS_SIZE = 9
+const GEN_INNER_VARS_SIZE = 10
 const INV_INNER_VARS_SIZE = 25
 const PVS_INNER_VARS_SIZE = 0
 const VOLTAGE_DIVISION_LOWER_BOUND = 0.01

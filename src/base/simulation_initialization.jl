@@ -132,7 +132,7 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
         device_index = get_global_index(device)
         if haskey(device_index, :ω)
             dev_freq = initial_guess[device_index[:ω]]
-            if dev_freq > 1.2 || dev_freq < 0.8
+            if dev_freq > 1.2 || dev_freq < -0.1 #0.8
                 push!(invalid_initial_guess, "$(PSY.get_name(device)) - :ω")
             end
         end

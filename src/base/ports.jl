@@ -11,15 +11,15 @@ end
 
 #### Machine Ports ####
 function Ports(::PSY.Machine)
-    state_input = [:δ, :ω, :Vf]
-    inner_input = [VI_gen_var, VR_gen_var]
+    state_input = [:δ, :Vf]
+    inner_input = [VI_gen_var, VR_gen_var, ω_var]
     return Ports(state_input, inner_input)
 end
 
 #### PSS Ports ####
 function Ports(::PSY.PSS)
-    state_input = [:ω]
-    inner_input = [τe_var, VR_gen_var]
+    state_input = Vector{Symbol}()
+    inner_input = [τe_var, VR_gen_var, ω_var]
     return Ports(state_input, inner_input)
 end
 
@@ -32,8 +32,8 @@ end
 
 #### Turbine Governor Ports ####
 function Ports(::PSY.TurbineGov)
-    state_input = [:ω]
-    inner_input = Vector{Int}()
+    state_input = Vector{Symbol}()
+    inner_input = [ω_var]
     return Ports(state_input, inner_input)
 end
 
