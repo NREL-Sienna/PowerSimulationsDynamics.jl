@@ -606,6 +606,42 @@ function _field_voltage(
 end
 
 """
+Function to obtain the field voltage time series of a Dynamic Generator with avr SCRX.
+
+"""
+function _field_voltage(
+    avr::PSY.SCRX,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, Vr2 = post_proc_state_series(res, (name, :Vr2), dt)
+    _, Ifd = post_proc_field_current_series(res, name, dt)
+    V_min, V_max = PSY.get_Efd_lim(avr)
+    bus_str = split(name, "-")[2]
+    bus_num = parse(Int, bus_str)
+    _, Vm = get_voltage_magnitude_series(res, bus_num; dt = dt)
+    switch = PSY.get_switch(avr)
+    rc_rfd = PSY.get_rc_rfd(avr)
+    mult = switch == 0 ? Vm : ones(length(Vm))
+    Vr2_sat = clamp.(Vr2, V_min, V_max)
+    V_ex = Vr2_sat .* mult
+    Vf = similar(V_ex)
+    if rc_rfd == 0.0
+        Vf = V_ex
+    else
+        for (ix, Ifd_ix) in enumerate(Ifd)
+            if Ifd_ix > 0.0
+                Vf[ix] = V_ex[ix]
+            else
+                Vf[ix] = -Ifd_ix * rc_rfd
+            end
+        end
+    end
+    return ts, Vf
+end
+
+"""
 Function to obtain the mechanical torque time series of a Dynamic Generator with TGFixed Turbine Governor.
 
 """
