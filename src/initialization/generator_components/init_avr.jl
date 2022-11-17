@@ -334,7 +334,7 @@ function initialize_avr!(
     # dont need Te >> no derivative so block is 0 (multiply by K in steady state)
     K = PSY.get_K(avr)
     V_min, V_max = PSY.get_Efd_lim(avr) #Efd_lim (V_lim) **n
-    Switch = PSY.get_switch(avr) # reads switch parameters **n
+    switch = PSY.get_switch(avr) # reads switch parameters **n
     rc_rfd = PSY.get_rc_rfd(avr)
 
     # do the negative current and switch? or is that alr counted in? 
@@ -344,33 +344,26 @@ function initialize_avr!(
         V_ref = x[1]
         Vr1 = x[2]
 
-        V_in = V_ref - Vm # assue Vs is 0 when init
+        V_in = V_ref - Vm # assume Vs is 0 when init
         #lead lag block
         #V_LL = Vr2 + Ta_Tb * V_in
         V_LL, dVr1_dt = lead_lag_mass_matrix(V_in, Vr1, 1.0, Ta, Tb) # 1st block
         Vr2 = K * V_LL
-        
-        #switch 
-        if Switch == 0 
-            mult = Vm #bacwards, not Vth 
-        else # elseif Switch == 1 >> don't need to
-            mult = 1.0 # solid fed, consistent (multiplier is same type)
-            #2 types of numbers  > integrate over time is a float, Jacobian uses dual number
-        end
-        Ex = Vr2 * mult
-        
+
+        # Switch multiplier
+        mult = switch == 0 ? Vm : 1.0
+        V_ex = mult * Vr2
+
         # negative current logic
         if rc_rfd == 0.0 # a float
-            Efd = Ex 
-        elseif rc_rfd > 0.0
-            if Ifd > 0 
-                Efd = Ex 
-            else 
-                Efd = -Ifd*rc_rfd
+            Efd = V_ex
+        else
+            if Ifd > 0.0
+                Efd = V_ex
+            else
+                Efd = -Ifd * rc_rfd
             end
-        else # rc_rfd shouldnt be negative
-            @error("") # fix and raise error before for rc_rfd
-        end 
+        end
 
         #V_ll output first block 
         out[1] = Efd - Vf0 # we are asking for Vf0 
@@ -384,10 +377,9 @@ function initialize_avr!(
         @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else # if converge
         sol_x0 = sol.zero
-        Vr2_0 = (sol_x0[2] + Ta_Tb * (sol_x0[1] - Vm) ) * K # K * V_LL
+        Vr2_0 = (sol_x0[2] + Ta_Tb * (sol_x0[1] - Vm)) * K # K * V_LL
         #check the limits
-        if (Vr2_0 >= V_max + BOUNDS_TOLERANCE) ||
-           (Vr2_0 <= V_min - BOUNDS_TOLERANCE)
+        if (Vr2_0 >= V_max + BOUNDS_TOLERANCE) || (Vr2_0 <= V_min - BOUNDS_TOLERANCE)
             @error(
                 "Vr limits for AVR in $(PSY.get_name(dynamic_device)) (Vr = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min.  Consider updating the operating point."
             )
@@ -402,7 +394,6 @@ function initialize_avr!(
         avr_states[2] = Vr2_0 #Vr2 // not Vr
     end
 end
-
 
 function initialize_avr!(
     device_states,
