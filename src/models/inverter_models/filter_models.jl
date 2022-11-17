@@ -14,13 +14,21 @@ function mass_matrix_filter_entries!(
     global_index::Base.ImmutableDict{Symbol, Int64},
     f0::Float64,
 )
+    ext = PSY.get_ext(filt)
+    bool_val = get(ext, "is_filter_differential", 1.0)
     ωb = 2 * pi * f0
-    mass_matrix[global_index[:ir_cnv], global_index[:ir_cnv]] = PSY.get_lf(filt) / ωb
-    mass_matrix[global_index[:ii_cnv], global_index[:ii_cnv]] = PSY.get_lf(filt) / ωb
-    mass_matrix[global_index[:vr_filter], global_index[:vr_filter]] = PSY.get_cf(filt) / ωb
-    mass_matrix[global_index[:vi_filter], global_index[:vi_filter]] = PSY.get_cf(filt) / ωb
-    mass_matrix[global_index[:ir_filter], global_index[:ir_filter]] = PSY.get_lg(filt) / ωb
-    mass_matrix[global_index[:ii_filter], global_index[:ii_filter]] = PSY.get_lg(filt) / ωb
+    mass_matrix[global_index[:ir_cnv], global_index[:ir_cnv]] =
+        bool_val * PSY.get_lf(filt) / ωb
+    mass_matrix[global_index[:ii_cnv], global_index[:ii_cnv]] =
+        bool_val * PSY.get_lf(filt) / ωb
+    mass_matrix[global_index[:vr_filter], global_index[:vr_filter]] =
+        bool_val * PSY.get_cf(filt) / ωb
+    mass_matrix[global_index[:vi_filter], global_index[:vi_filter]] =
+        bool_val * PSY.get_cf(filt) / ωb
+    mass_matrix[global_index[:ir_filter], global_index[:ir_filter]] =
+        bool_val * PSY.get_lg(filt) / ωb
+    mass_matrix[global_index[:ii_filter], global_index[:ii_filter]] =
+        bool_val * PSY.get_lg(filt) / ωb
     return
 end
 

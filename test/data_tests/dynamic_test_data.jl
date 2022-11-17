@@ -291,6 +291,14 @@ dc_source_hv() = FixedDCSource(voltage = 1500.0) #Not in the original data, gues
 filt() = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01)
 filt_gfoll() = LCLFilter(lf = 0.009, rf = 0.016, cf = 2.5, lg = 0.002, rg = 0.003)
 filt_voc() = LCLFilter(lf = 0.0196, rf = 0.0139, cf = 0.1086, lg = 0.0196, rg = 0.0139)
+filt_algebraic() = LCLFilter(
+    lf = 0.08,
+    rf = 0.003,
+    cf = 0.074,
+    lg = 0.2,
+    rg = 0.01,
+    ext = Dict{String, Any}("is_filter_differential" => 0.0),
+)
 
 ###### PLL Data ######
 pll() = KauraPLL(
