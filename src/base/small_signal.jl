@@ -162,6 +162,10 @@ function _small_signal_analysis(
     jac_index = _make_reduced_jacobian_index(global_index, diff_states)
     reduced_jacobian = _reduce_jacobian(jacobian, diff_states, mass_matrix, global_index)
     eigen_vals, R_eigen_vect = _get_eigenvalues(reduced_jacobian, multimachine)
+    if !isa(Vector{ComplexF64}, typeof(eigen_vals))
+        eigen_vals = convert(Vector{ComplexF64}, eigen_vals)
+        R_eigen_vect = convert(Matrix{ComplexF64}, R_eigen_vect)
+    end
     damping = _get_damping(eigen_vals, jac_index)
     stable = _determine_stability(eigen_vals)
     participation_factors = _get_participation_factors(R_eigen_vect, jac_index)
