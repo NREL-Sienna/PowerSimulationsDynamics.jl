@@ -606,6 +606,38 @@ Ind_Motor3rd(load) = PSY.SimplifiedSingleCageInductionMachine(
     base_power = 1000.0,
 )
 
+function ActiveLoad(load)
+    Ωb = 2 * pi * 60
+    Vb = 380
+    Pb = 10000
+    Ib = Pb / Vb
+    Zb = Vb / Ib
+    Lb = Zb / Ωb
+    Cb = 1 / (Zb * Ωb)
+    Vb_dc = sqrt(8) / sqrt(3) * Vb
+    Ib_dc = Pb / Vb_dc
+    Zb_dc = Vb_dc / Ib_dc
+    Cb_dc = 1 / (Zb_dc * Ωb)
+
+    return PSY.ActiveConstantPowerLoad(
+        name = get_name(load),
+        r_load = 70.0 / Zb_dc,
+        c_dc = 2040e-6 / Cb_dc,
+        rf = 0.1 / Zb,
+        lf = 2.3e-3 / Lb,
+        cf = 8.8e-6 / Cb,
+        rg = 0.03 / Zb,
+        lg = 0.93e-3 / Lb,
+        kp_pll = 0.4,
+        ki_pll = 4.69,
+        kpv = 0.5 * (Vb_dc / Ib_dc),
+        kiv = 150.0 * (Vb_dc / Ib_dc),
+        kpc = 15.0 * (Ib / Vb),
+        kic = 30000.0 * (Ib / Vb),
+        base_power = 100.0,
+    )
+end
+
 ####### Devices #######
 
 function dyn_gen_second_order(generator)

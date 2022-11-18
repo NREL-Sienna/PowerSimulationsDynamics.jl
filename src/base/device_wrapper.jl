@@ -17,6 +17,7 @@ get_inner_vars_count(::PSY.PeriodicVariableSource) = 0
 get_inner_vars_count(::PSY.SingleCageInductionMachine) = 0
 get_inner_vars_count(::PSY.SimplifiedSingleCageInductionMachine) = 0
 get_inner_vars_count(::PSY.AggregateDistributedGenerationA) = 0
+get_inner_vars_count(::PSY.ActiveConstantPowerLoad) = 0
 
 index(::Type{<:PSY.TurbineGov}) = 1
 index(::Type{<:PSY.PSS}) = 2
