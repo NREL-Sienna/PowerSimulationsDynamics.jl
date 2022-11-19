@@ -27,6 +27,7 @@ export SourceBusVoltageChange
 export GeneratorTrip
 export LoadTrip
 export LoadChange
+export ModifyState
 # export BusTrip
 
 # Export for routines
