@@ -773,7 +773,7 @@ function _find_zip_load_ix(inputs::SimulationInputs, device::PSY.PowerLoad)
 end
 
 """
-    function ModifyState(
+    function PerturbState(
         time::Float64,
         index::Int,
         value::Float64,
@@ -784,13 +784,13 @@ Allows the user to modify the state `index` by adding `value`. The user should m
 - `index::Int` : Defines which state index you want to modify
 - `value::Float64` : Defines how much the state will increase in value
 """
-mutable struct ModifyState <: Perturbation
+mutable struct PerturbState <: Perturbation
     time::Float64
     index::Int
     value::Float64
 end
 
-function get_affect(::SimulationInputs, ::PSY.System, pert::ModifyState)
+function get_affect(::SimulationInputs, ::PSY.System, pert::PerturbState)
     return (integrator) -> begin
         @debug "Modifying state"
         integrator.u[pert.index] += pert.value

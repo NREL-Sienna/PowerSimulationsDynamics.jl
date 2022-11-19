@@ -12,7 +12,7 @@ so no eigenvalues are tested.
 raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBusMulti.raw")
 dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBus_SEXS.dyr")
 
-@testset "Test 48 ModifyState ResidualModel" begin
+@testset "Test 48 PerturbState ResidualModel" begin
     path = (joinpath(pwd(), "test-48"))
     !isdir(path) && mkdir(path)
     try
@@ -27,7 +27,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBus_SEXS.dyr")
             sys, #system
             path,
             (0.0, 20.0), #time span
-            ModifyState(1.0, 12, 0.01), #Type of Fault
+            PerturbState(1.0, 12, 0.01), #Type of Fault
         )
 
         # Solve problem
@@ -50,7 +50,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBus_SEXS.dyr")
     end
 end
 
-@testset "Test 48 ModifyState MassMatrixModel" begin
+@testset "Test 48 PerturbState MassMatrixModel" begin
     path = (joinpath(pwd(), "test-48"))
     !isdir(path) && mkdir(path)
     try
@@ -65,7 +65,7 @@ end
             sys, #system
             path,
             (0.0, 20.0), #time span
-            ModifyState(1.0, 12, 0.01), #Type of Fault
+            PerturbState(1.0, 12, 0.01), #Type of Fault
         )
 
         # Solve problem
