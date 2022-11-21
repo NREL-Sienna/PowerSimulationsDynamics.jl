@@ -113,6 +113,10 @@ function _get_eigenvalues(reduced_jacobian::AbstractArray{Float64}, multimachine
         )
         @debug(eigen_vals)
     end
+    if !isa(Vector{ComplexF64}, typeof(eigen_vals))
+        eigen_vals = convert(Vector{ComplexF64}, eigen_vals)
+        R_eigen_vect = convert(Matrix{ComplexF64}, R_eigen_vect)
+    end
     return eigen_vals, R_eigen_vect
 end
 
