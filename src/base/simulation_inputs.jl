@@ -161,7 +161,6 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         ix_range = range(injection_start, length = n_states)
         ode_range = range(injection_count, length = n_states)
         bus_n = PSY.get_number(PSY.get_bus(device))
-        lookup[101] = 1
         bus_ix = lookup[bus_n]
         inner_vars_range =
             range(inner_vars_count, length = get_inner_vars_count(dynamic_device))
