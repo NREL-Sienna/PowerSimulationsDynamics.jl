@@ -279,7 +279,8 @@ function _get_ybus(sys::PSY.System)
     else
         ybus_rectangular =
             SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2 * n_buses, 2 * n_buses))
-        lookup = Dict{Int.Int}()
+        Ybus_ = PSY.Ybus(sys)
+        lookup = Ybus_.lookup[1]
     end
     return ybus_rectangular, lookup
 end
