@@ -232,6 +232,7 @@ function ybus_update!(
     arc = PSY.get_arc(b)
     bus_from_no = num_bus[PSY.get_number(arc.from)]
     bus_to_no = num_bus[arc.to.number]
+    n_buses = length(num_bus)
 
     Y_t = 1 / (PSY.get_r(b) + PSY.get_x(b) * 1im)
     c = 1 / PSY.get_tap(b)
@@ -276,6 +277,7 @@ function ybus_update!(
     arc = PSY.get_arc(b)
     bus_from_no = num_bus[PSY.get_number(arc.from)]
     bus_to_no = num_bus[arc.to.number]
+    n_buses = length(num_bus)
 
     Y_t = 1 / (PSY.get_r(b) + PSY.get_x(b) * 1im)
     tap = (PSY.get_tap(b) * exp(PSY.get_α(b) * 1im))
