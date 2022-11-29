@@ -238,7 +238,6 @@ function ybus_update!(
     c = 1 / PSY.get_tap(b)
     b = PSY.get_primary_shunt(b)
 
-
     Y11 = (Y_t * c^2)
     Y21 = Y12 = (-Y_t * c)
     Y22 = Y_t
