@@ -1,4 +1,23 @@
 """
+Default function to compute output current. 
+Returns an error
+
+"""
+function compute_output_current(
+    ::SimulationResults,
+    dynamic_device::I,
+    ::Vector{Float64},
+    ::Vector{Float64},
+    ::Union{Nothing, Float64},
+) where {I <: PSY.DynamicInjection}
+
+    #Return error
+    error(
+        "Output current for device type $(typeof(dynamic_device)) is not implemented yet.",
+    )
+end
+
+"""
 Function to obtain the output current time series of a Dynamic Generator model out of the DAE Solution. It receives the simulation inputs,
 the dynamic device and bus voltage. It is dispatched for device type to compute the specific current.
 
@@ -28,6 +47,99 @@ function compute_output_current(
         res,
         dt,
     )
+end
+
+"""
+Function to obtain the output current time series of a AggregateDistributedGenerationA (DERA) model out of the DAE Solution.
+It receives the simulation inputs, the dynamic device and bus voltage.
+
+"""
+function compute_output_current(
+    res::SimulationResults,
+    dynamic_device::PSY.AggregateDistributedGenerationA,
+    V_R::Vector{Float64},
+    V_I::Vector{Float64},
+    dt::Union{Nothing, Float64},
+)
+
+    #Obtain Data
+    sys = get_system(res)
+    Sbase = PSY.get_base_power(sys)
+    basepower = PSY.get_base_power(dynamic_device)
+    base_power_ratio = basepower / Sbase
+    Freq_Flag = PSY.get_Freq_Flag(dynamic_device)
+    name = PSY.get_name(dynamic_device)
+    if Freq_Flag == 1
+        _, Pord = post_proc_state_series(res, (name, :Pord), dt)
+        _, dPord = post_proc_state_series(res, (name, :dPord), dt)
+        Tpord = PSY.get_Tpord(dynamic_device)
+        P_lim = PSY.get_P_lim(dynamic_device)
+    end
+
+    # Get states
+    θ = atan.(V_I ./ V_R)
+    ts, Ip = post_proc_state_series(res, (name, :Ip), dt)
+    ts, Iq = post_proc_state_series(res, (name, :Iq), dt)
+    _, Mult = post_proc_state_series(res, (name, :Mult), dt)
+    _, Vmeas = post_proc_state_series(res, (name, :Vmeas), dt)
+    Iq_neg = -Iq
+    Ip_cmd = Ip
+    Iq_cmd = Iq
+
+    # Get Params
+    Tg = PSY.get_Tg(dynamic_device)
+    rrpwr = PSY.get_rrpwr(dynamic_device)
+    P_ref = PSY.get_P_ref(dynamic_device)
+
+    I_R = similar(Ip)
+    I_I = similar(Iq)
+    for (ix, Ip_cmd_val) in enumerate(Ip_cmd)
+        Ip_min, Ip_max, _, _ = current_limit_logic(dynamic_device, Ip_cmd_val, Iq_cmd[ix])
+        if Ip[ix] >= 0
+            Rup = abs(rrpwr)
+            Rdown = -Inf
+        else
+            Rdown = -abs(rrpwr)
+            Rup = Inf
+        end
+        if Freq_Flag == 0
+            Ip_input = clamp(P_ref / max(Vmeas[ix], 0.01), Ip_min, Ip_max) * Mult[ix]
+            Ip_limited, _ = low_pass_nonwindup_ramp_limits(
+                Ip_input,
+                Ip[ix],
+                1.0,
+                Tg,
+                -Inf,
+                Inf,
+                Rdown,
+                Rup,
+            )
+        else
+            Pord_limited, _ = low_pass_nonwindup_mass_matrix(
+                dPord[ix],
+                Pord[ix],
+                1.0,
+                Tpord,
+                P_lim[:min],
+                P_lim[:max],
+            )
+            Ip_input = clamp(Pord_limited / max(Vmeas[ix], 0.01), Ip_min, Ip_max) * Mult[ix]
+            Ip_limited, _ = low_pass_nonwindup_ramp_limits(
+                Ip_input,
+                Ip[ix],
+                1.0,
+                Tg,
+                -Inf,
+                Inf,
+                Rdown,
+                Rup,
+            )
+        end
+        I_R[ix] = real(complex(Ip_limited, Iq_neg[ix]) * exp(im * θ[ix])) * base_power_ratio
+        I_I[ix] = imag(complex(Ip_limited, Iq_neg[ix]) * exp(im * θ[ix])) * base_power_ratio
+    end
+
+    return ts, I_R, I_I
 end
 
 """
