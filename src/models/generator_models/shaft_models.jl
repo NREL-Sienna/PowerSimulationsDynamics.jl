@@ -32,7 +32,7 @@ function mdl_shaft_ode!(
 
     #Compute 2 states ODEs
     output_ode[local_ix[1]] = 2 * π * f0 * (ω - ω_sys)                    #15.5
-    output_ode[local_ix[2]] = (1 / (2 * H)) * (τm - τe - D * (ω - 1.0) / ω)   #15.5
+    output_ode[local_ix[2]] = (1 / (2 * H)) * (τm - τe - D * (ω - ω_sys))   #15.5
 
     return
 end
