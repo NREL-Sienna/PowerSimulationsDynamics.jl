@@ -1015,6 +1015,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
+    Sbase = get_system_base_power(dynamic_device)
     Vt = sqrt(voltage_r^2 + voltage_i^2)
 
     #Obtain References (from wrapper and device)
@@ -1050,6 +1051,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
     Tv = PSY.get_Tv(get_device(dynamic_device))
     Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
+    basepower = PSY.get_base_power(get_device(dynamic_device))
+    base_power_ratio = basepower / Sbase
 
     #STATE Vmeas
     _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
@@ -1115,8 +1118,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_neg = -Iq
     I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
     I_i = imag(complex(Ip_limited, Iq_neg) * exp(im * θ))
-    current_r[1] = I_r
-    current_i[1] = I_i
+    current_r[1] = I_r * base_power_ratio
+    current_i[1] = I_i * base_power_ratio
 end
 
 #Freq_Flag = 1
@@ -1134,6 +1137,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
+    Sbase = get_system_base_power(dynamic_device)
     Vt = sqrt(voltage_r^2 + voltage_i^2)
 
     #Obtain References (from wrapper and device)
@@ -1182,6 +1186,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
     Tv = PSY.get_Tv(get_device(dynamic_device))
     Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
+    basepower = PSY.get_base_power(get_device(dynamic_device))
+    base_power_ratio = basepower / Sbase
 
     #STATE Vmeas
     _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
@@ -1273,6 +1279,6 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_neg = -Iq
     I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
     I_i = imag(complex(Ip_limited, Iq_neg) * exp(im * θ))
-    current_r[1] = I_r
-    current_i[1] = I_i
+    current_r[1] = I_r * base_power_ratio
+    current_i[1] = I_i * base_power_ratio
 end

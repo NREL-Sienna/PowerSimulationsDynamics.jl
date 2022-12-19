@@ -79,6 +79,7 @@ function test_dera_residual(freqflag_value, csv_file, init_cond, eigs_value)
         t_psid = get_voltage_angle_series(results, 102)[1]
         θ_psid = get_voltage_angle_series(results, 102)[2]
         V_psid = get_voltage_magnitude_series(results, 102)[2]
+        power = get_activepower_series(results, "generator-102-1")
 
         M = get_csv_data(csv_file)
         t_psse, V_psse = clean_extra_timestep!(M[:, 1], M[:, 2])
@@ -143,6 +144,7 @@ function test_dera_massmatrix(freqflag_value, csv_file, init_cond, eigs_value)
         t_psid = get_voltage_angle_series(results, 102)[1]
         θ_psid = get_voltage_angle_series(results, 102)[2]
         V_psid = get_voltage_magnitude_series(results, 102)[2]
+        power = get_activepower_series(results, "generator-102-1")
 
         M = get_csv_data(csv_file)
         t_psse, V_psse = clean_extra_timestep!(M[:, 1], M[:, 2])

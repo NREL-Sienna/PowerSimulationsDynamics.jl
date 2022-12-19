@@ -571,6 +571,7 @@ function initialize_dynamic_device!(
     end
 
     set_P_ref(dynamic_wrapper, Pref)
+    PSY.set_P_ref!(dynamic_device, Pref)
     set_Q_ref(dynamic_wrapper, Qref)
     set_V_ref(dynamic_wrapper, Vref)
     set_ω_ref(dynamic_wrapper, Freq_ref)
