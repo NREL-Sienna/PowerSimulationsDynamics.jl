@@ -22,8 +22,8 @@ Check the [Project Section](https://github.com/NREL-SIIP/PowerSimulationsDynamic
 
 ```julia
 julia> ]
-(v1.7) pkg> add PowerSystems
-(v1.7) pkg> add PowerSimulationsDynamics
+(v1.8) pkg> add PowerSystems
+(v1.8) pkg> add PowerSimulationsDynamics
 ```
 
 ## Usage
