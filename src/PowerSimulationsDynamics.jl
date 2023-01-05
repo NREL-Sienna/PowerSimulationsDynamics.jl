@@ -33,6 +33,8 @@ export PerturbState
 # Export for routines
 export get_jacobian
 export small_signal_analysis
+export summary_participation_factors
+export summary_eigenvalues
 export get_state_series
 export get_voltage_magnitude_series
 export get_voltage_angle_series
@@ -60,6 +62,7 @@ import Logging
 import InfrastructureSystems
 import SciMLBase
 import DataStructures: OrderedDict
+import DataFrames: DataFrame
 import Random
 import ForwardDiff
 import SparseArrays
