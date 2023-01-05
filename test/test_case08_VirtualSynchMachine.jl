@@ -50,6 +50,12 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
+        # Check Eigenvalue Report
+        df1 = summary_eigenvalues(small_sig)
+        df2 = summary_participation_factors(small_sig)
+        @test isa(df1, DataFrame)
+        @test isa(df2, DataFrame)
+
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
 
@@ -112,6 +118,12 @@ end
         small_sig = small_signal_analysis(sim)
         eigs = small_sig.eigenvalues
         @test small_sig.stable
+
+        # Check Eigenvalue Report
+        df1 = summary_eigenvalues(small_sig)
+        df2 = summary_participation_factors(small_sig)
+        @test isa(df1, DataFrame)
+        @test isa(df2, DataFrame)
 
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
