@@ -7,6 +7,7 @@ using SciMLBase
 using Sundials
 using OrdinaryDiffEq
 using DelimitedFiles
+using DataFrames
 using InfrastructureSystems
 using PowerFlows
 import LinearAlgebra
