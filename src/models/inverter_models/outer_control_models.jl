@@ -867,17 +867,23 @@ function mdl_outer_ode!(
     Id_pi, dσqoc_dt = pi_block(q_ref - q_oc, σq_oc, Kp_q, Ki_q)
     _, dqoc_dt = low_pass(q_elec_out, q_oc, 1.0, 1.0 / ωf)
 
+    Idq_mod = sqrt(Iq_pi^2 + Id_pi^2)
+    ρ = min(1.0, 1.1/Idq_mod)
+    binary_logic = 0.0 < Idq_mod < 1.2 ? 1.0 : 0.0
+
+    
     #Compute 4 states ODEs
-    output_ode[local_ix[1]] = dσpoc_dt
+    output_ode[local_ix[1]] = dσpoc_dt*binary_logic
     output_ode[local_ix[2]] = dpoc_dt
-    output_ode[local_ix[3]] = dσqoc_dt
+    output_ode[local_ix[3]] = dσqoc_dt*binary_logic
     output_ode[local_ix[4]] = dqoc_dt
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ_pll
     inner_vars[ω_oc_var] = ω_pll
-    inner_vars[Iq_oc_var] = Iq_pi
-    inner_vars[Id_oc_var] = Id_pi
+    inner_vars[Iq_oc_var] = Iq_pi*ρ
+    inner_vars[Id_oc_var] = Id_pi*ρ
+
     return
 end
 
