@@ -30,8 +30,6 @@ function initialize_dynamic_device!(
 
     #Initialize Machine and Shaft: V and I
     initialize_filter!(device_states, static, dynamic_device, initial_inner_vars)
-    #Initialize Converter
-    initialize_converter!(device_states, static, dynamic_device, initial_inner_vars)
     #Initialize freq estimator
     initialize_frequency_estimator!(
         device_states,
