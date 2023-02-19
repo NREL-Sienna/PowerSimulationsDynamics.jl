@@ -494,7 +494,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
         initializealg = SciMLBase.NoInit(),
         _filter_kwargs(kwargs)...,
     )
-    if solution.retcode == :Success
+    if SciMLBase.successful_retcode(solution)
         sim.status = SIMULATION_FINALIZED
         sim.results = SimulationResults(
             get_simulation_inputs(sim),
