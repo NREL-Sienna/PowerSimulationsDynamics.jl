@@ -136,7 +136,7 @@ function compute_output_current(
     # Constant Power
     I_R = (P .* V_R + Q .* V_I) ./ V_mag .^ 2
     I_I = (P .* V_I - Q .* V_R) ./ V_mag .^ 2
-   
+
     return ts, I_R, I_I
 end
 
@@ -208,7 +208,7 @@ function compute_output_current(
     Q_current = PSY.get_current_reactive_power(device)
     P_impedance = PSY.get_impedance_active_power(device)
     Q_impedance = PSY.get_impedance_reactive_power(device)
-    
+
     I_R_impedance = (1.0 / V0)^2 .* (P_impedance .* V_R + Q_impedance .* V_I)
     I_I_impedance = (1.0 / V0)^2 .* (P_impedance .* V_I - Q_impedance .* V_R)
     I_R_current = (1.0 / V0) .* (P_current .* V_R + Q_current .* V_I) ./ V_mag

@@ -595,9 +595,20 @@ mutable struct LoadChange <: Perturbation
     )
         # Currently I'm assumming P_ref and Q_ref are constant impedance to 
         if signal ∈ [:P_ref, :Q_ref]
-            @warn("P_ref and Q_ref signals will be deprecated. It will be assumed as a change in constant impedance for StandardLoads and a change in constant power for PowerLoads. Allowed signals are :P_ref_impedance, :Q_ref_impedance, :P_ref_power, :Q_ref_power, :P_ref_current, :Q_ref_current")
+            @warn(
+                "P_ref and Q_ref signals will be deprecated. It will be assumed as a change in constant impedance for StandardLoads and a change in constant power for PowerLoads. Allowed signals are :P_ref_impedance, :Q_ref_impedance, :P_ref_power, :Q_ref_power, :P_ref_current, :Q_ref_current"
+            )
         end
-        if signal ∉ [:P_ref, :Q_ref, :P_ref_impedance, :Q_ref_impedance, :P_ref_power, :Q_ref_power, :P_ref_current, :Q_ref_current]
+        if signal ∉ [
+            :P_ref,
+            :Q_ref,
+            :P_ref_impedance,
+            :Q_ref_impedance,
+            :P_ref_power,
+            :Q_ref_power,
+            :P_ref_current,
+            :Q_ref_current,
+        ]
             error("Signal $signal not accepted as a control reference change in Loads")
         end
         new(time, device, signal, ref_value)
@@ -635,7 +646,9 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
             elseif signal ∈ [:Q_ref, :Q_ref_power]
                 Q_change = ref_value - Q_old
             else
-                error("Signal is not accepted for Constant PowerLoad. Please specify the correct signal type.")
+                error(
+                    "Signal is not accepted for Constant PowerLoad. Please specify the correct signal type.",
+                )
             end
             wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
             P_power = get_P_power(wrapped_zip)
@@ -699,7 +712,9 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
             return
         end
     else
-        error("The load type of load $(PSY.get_name(ld)) is not supported for a LoadChange perturbation")
+        error(
+            "The load type of load $(PSY.get_name(ld)) is not supported for a LoadChange perturbation",
+        )
     end
     return
 end
@@ -733,15 +748,15 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
         P_trip = PSY.get_active_power(ld)
         Q_trip = PSY.get_reactive_power(ld)
         return (integrator) -> begin
-                PSY.set_available!(ld, false)
-                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-                P_power = get_P_power(wrapped_zip)
-                Q_power = get_Q_power(wrapped_zip)
-                set_P_power!(wrapped_zip, P_power - P_trip)
-                set_Q_power!(wrapped_zip, Q_power - Q_trip)
-                @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
-                return
-            end
+            PSY.set_available!(ld, false)
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            P_power = get_P_power(wrapped_zip)
+            Q_power = get_Q_power(wrapped_zip)
+            set_P_power!(wrapped_zip, P_power - P_trip)
+            set_Q_power!(wrapped_zip, Q_power - Q_trip)
+            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+            return
+        end
     elseif isa(ld, PSY.StandardLoad)
         P_power_trip = PSY.get_constant_active_power(ld)
         Q_power_trip = PSY.get_constant_reactive_power(ld)
@@ -787,7 +802,10 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
     return
 end
 
-function _find_zip_load_ix(inputs::SimulationInputs, device::U) where {U <: Union{PSY.PowerLoad, PSY.StandardLoad}}
+function _find_zip_load_ix(
+    inputs::SimulationInputs,
+    device::U,
+) where {U <: Union{PSY.PowerLoad, PSY.StandardLoad}}
     wrapped_devices = get_static_loads(inputs)
     bus_affected = PSY.get_bus(device)
     wrapped_device_ixs =

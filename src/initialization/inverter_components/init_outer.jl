@@ -55,7 +55,10 @@ function initialize_outer!(
     inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
     set_Q_ref(dynamic_device, q_elec_out)
     return
 end
@@ -117,7 +120,10 @@ function initialize_outer!(
     inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
     set_Q_ref(dynamic_device, q_elec_out)
 end
 
@@ -177,7 +183,10 @@ function initialize_outer!(
     inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
     set_Q_ref(dynamic_device, q_elec_out)
 end
 
@@ -248,7 +257,10 @@ function initialize_outer!(
     inner_vars[Iq_oc_var] = I_dq_cnv[q]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
     set_Q_ref(dynamic_device, q_elec_out)
     PSY.set_Q_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
@@ -305,9 +317,15 @@ function initialize_outer!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
     )
-    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_V_ref!(PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)), Vm)
+    PSY.set_V_ref!(
+        PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
+        Vm,
+    )
     set_V_ref(dynamic_device, Vm)
 
     #Get Outer Controller parameters

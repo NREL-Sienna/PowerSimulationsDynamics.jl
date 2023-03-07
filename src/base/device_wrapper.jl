@@ -454,7 +454,7 @@ function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix
         else
             error(
                 "Not supported load model in $(PSY.get_number(bus)) named $(PSY.get_name(ld))",
-            )           
+            )
         end
     end
 

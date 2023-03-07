@@ -25,12 +25,12 @@ function get_injection_without_dynamics(sys::PSY.System)
                 PSY.get_available(x) &&
                 !isa(x, PSY.ElectricLoad),
         PSY.StaticInjection,
-        sys,        
+        sys,
     )
 end
 
 function get_dynamic_branches(sys::PSY.System)
-    return PSY.get_components( x -> PSY.get_available(x), PSY.DynamicBranch, sys)
+    return PSY.get_components(x -> PSY.get_available(x), PSY.DynamicBranch, sys)
 end
 
 function _transform_all_lines!(sys::PSY.System)
@@ -74,15 +74,21 @@ function _compute_total_load_parameters(load::PSY.StandardLoad)
     max_impedance_reactive_power = PSY.get_max_impedance_reactive_power(load)
     # Total Load Calculations
     active_power = constant_active_power + current_active_power + impedance_active_power
-    reactive_power = constant_reactive_power + current_reactive_power + impedance_reactive_power
-    max_active_power = max_constant_active_power + max_current_active_power + max_impedance_active_power
-    max_reactive_power = max_constant_reactive_power + max_current_reactive_power + max_impedance_reactive_power
+    reactive_power =
+        constant_reactive_power + current_reactive_power + impedance_reactive_power
+    max_active_power =
+        max_constant_active_power + max_current_active_power + max_impedance_active_power
+    max_reactive_power =
+        max_constant_reactive_power +
+        max_current_reactive_power +
+        max_impedance_reactive_power
     return active_power, reactive_power, max_active_power, max_reactive_power
 end
 
 function transform_load_to_constant_impedance(load::PSY.StandardLoad)
     # Total Load Calculations
-    active_power, reactive_power, max_active_power, max_reactive_power = _compute_total_load_parameters(load)
+    active_power, reactive_power, max_active_power, max_reactive_power =
+        _compute_total_load_parameters(load)
     # Set Impedance Power
     PSY.set_impedance_active_power!(load, active_power)
     PSY.set_impedance_reactive_power!(load, reactive_power)
@@ -102,7 +108,8 @@ end
 
 function transform_load_to_constant_current(load::PSY.StandardLoad)
     # Total Load Calculations
-    active_power, reactive_power, max_active_power, max_reactive_power = _compute_total_load_parameters(load)
+    active_power, reactive_power, max_active_power, max_reactive_power =
+        _compute_total_load_parameters(load)
     # Set Impedance Power
     PSY.set_current_active_power!(load, active_power)
     PSY.set_current_reactive_power!(load, reactive_power)
@@ -122,7 +129,8 @@ end
 
 function transform_load_to_constant_power(load::PSY.StandardLoad)
     # Total Load Calculations
-    active_power, reactive_power, max_active_power, max_reactive_power = _compute_total_load_parameters(load)
+    active_power, reactive_power, max_active_power, max_reactive_power =
+        _compute_total_load_parameters(load)
     # Set Impedance Power
     PSY.set_constant_active_power!(load, active_power)
     PSY.set_constant_reactive_power!(load, reactive_power)
