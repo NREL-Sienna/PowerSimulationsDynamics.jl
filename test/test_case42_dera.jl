@@ -42,8 +42,8 @@ function test_dera_residual(freqflag_value, csv_file, init_cond, eigs_value)
             case_dera = dera(g, freqflag_value)
             add_component!(threebus_sys, case_dera, g)
         end
-        for l in get_components(PSY.PowerLoad, threebus_sys)
-            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        for l in get_components(PSY.StandardLoad, threebus_sys)
+            PSID.transform_load_to_constant_impedance(l)
         end
 
         sim = Simulation(
@@ -107,8 +107,8 @@ function test_dera_massmatrix(freqflag_value, csv_file, init_cond, eigs_value)
             case_dera = dera(g, freqflag_value)
             add_component!(threebus_sys, case_dera, g)
         end
-        for l in get_components(PSY.PowerLoad, threebus_sys)
-            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        for l in get_components(PSY.StandardLoad, threebus_sys)
+            PSID.transform_load_to_constant_impedance(l)
         end
 
         sim = Simulation(

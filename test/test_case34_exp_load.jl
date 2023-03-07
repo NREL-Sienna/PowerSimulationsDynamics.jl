@@ -18,7 +18,7 @@ sys_power = System(raw_file, dyr_file)
 # Create Exponential load system
 sys_exp = System(raw_file, dyr_file)
 # Replace Constant Power loads for Exponential loads
-for l in collect(get_components(PSY.PowerLoad, sys_exp))
+for l in collect(get_components(PSY.StandardLoad, sys_exp))
     exp_load = PSY.ExponentialLoad(
         name = PSY.get_name(l),
         available = PSY.get_available(l),

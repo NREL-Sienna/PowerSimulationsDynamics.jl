@@ -14,8 +14,8 @@ raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/ThreeBusRenewable.raw"
 dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/RENA/ThreeBus_REN_A_DEFAULT_FLAG.dyr")
 
 sys = System(raw_file, dyr_file)
-for l in get_components(PSY.PowerLoad, sys)
-    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+for l in get_components(PSY.StandardLoad, sys)
+    PSID.transform_load_to_constant_impedance(l)
 end
 
 # Modify system to use a REGCA voltage model

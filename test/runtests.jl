@@ -10,6 +10,7 @@ using DelimitedFiles
 using DataFrames
 using InfrastructureSystems
 using PowerFlows
+using PowerNetworkMatrices
 import LinearAlgebra
 using Logging
 
@@ -23,6 +24,7 @@ Aqua.test_deps_compat(PowerSimulationsDynamics)
 const IS = InfrastructureSystems
 const PSY = PowerSystems
 const PSID = PowerSimulationsDynamics
+const PNM = PowerNetworkMatrices
 
 const DISABLED_TEST_FILES = []
 test_file_dir = isempty(dirname(@__FILE__)) ? "test" : dirname(@__FILE__)
