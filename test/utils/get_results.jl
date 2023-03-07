@@ -60,7 +60,6 @@ function get_csv_data(str::AbstractString)
     return M_[idx, :]
 end
 
-
 function _compute_total_load_parameters(load::PSY.StandardLoad)
     # Constant Power Data
     constant_active_power = PSY.get_constant_active_power(load)
