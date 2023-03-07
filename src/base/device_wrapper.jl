@@ -442,23 +442,19 @@ function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix
     # Add ZIP Loads
     for ld in loads
         if isa(ld, PSY.PowerLoad)
-            if PSY.get_available(ld) &&
-               PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
-                P_impedance += PSY.get_active_power(ld)
-                Q_impedance += PSY.get_reactive_power(ld)
-            elseif PSY.get_available(ld) &&
-                   PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
-                P_current += PSY.get_active_power(ld)
-                Q_current += PSY.get_reactive_power(ld)
-            elseif PSY.get_available(ld) &&
-                   PSY.get_model(ld) == PSY.LoadModels.ConstantPower
-                P_power += PSY.get_active_power(ld)
-                Q_power += PSY.get_reactive_power(ld)
-            else
-                error(
-                    "Not supported load model in $(PSY.get_number(bus)) named $(PSY.get_name(ld))",
-                )
-            end
+            P_power += PSY.get_active_power(ld)
+            Q_power += PSY.get_reactive_power(ld)
+        elseif isa(ld, PSY.StandardLoad)
+            P_impedance += PSY.get_impedance_active_power(ld)
+            Q_impedance += PSY.get_impedance_reactive_power(ld)
+            P_current += PSY.get_current_active_power(ld)
+            Q_current += PSY.get_current_reactive_power(ld)
+            P_power += PSY.get_constant_active_power(ld)
+            Q_power += PSY.get_constant_reactive_power(ld)
+        else
+            error(
+                "Not supported load model in $(PSY.get_number(bus)) named $(PSY.get_name(ld))",
+            )           
         end
     end
 
