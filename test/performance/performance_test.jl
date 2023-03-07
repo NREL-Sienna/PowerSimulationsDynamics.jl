@@ -14,7 +14,7 @@ end
 
 sys = System("test/data_tests/WECC_240_dynamic.json"; runchecks = false)
 for l in get_components(PSY.StandardLoad, sys)
-    PSID.transform_load_to_constant_impedance(l)
+    transform_load_to_constant_impedance(l)
 end
 
 # First runs

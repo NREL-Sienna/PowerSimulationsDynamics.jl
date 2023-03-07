@@ -4,7 +4,7 @@
     try
         sys = System(joinpath(TEST_FILES_DIR, "data_tests/9BusSystem.json"))
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         gen_static = get_component(ThermalStandard, sys, "generator-2-1")

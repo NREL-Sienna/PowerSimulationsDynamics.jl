@@ -18,7 +18,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/GAST/GAST_TEST.csv")
     try
         sys = System(raw_file, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
@@ -79,7 +79,7 @@ end
     try
         sys = System(raw_file, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem

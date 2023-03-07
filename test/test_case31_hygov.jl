@@ -18,7 +18,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
     try
         sys = System(raw_file, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
@@ -85,7 +85,7 @@ end
     try
         sys = System(raw_file, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
@@ -152,7 +152,7 @@ end
             joinpath(TEST_FILES_DIR, "data_tests/11BUS_KUNDUR_B.dyr"),
         )
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         gen_static = get_component(ThermalStandard, sys, "generator-1-1")

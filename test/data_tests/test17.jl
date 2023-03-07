@@ -26,7 +26,7 @@ function dyn_gen_genrou(generator)
 end
 
 for l in get_components(PSY.StandardLoad, sys)
-    PSID.transform_load_to_constant_impedance(l)
+    transform_load_to_constant_impedance(l)
 end
 
 #Add GENROU to System

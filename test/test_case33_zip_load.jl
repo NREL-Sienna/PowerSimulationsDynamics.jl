@@ -29,11 +29,11 @@ function test_zipload_implicit(csv_file, eigs_value, load_model)
         sys = System(raw_file, dyr_file)
         if load_model == "ConstantPower"
             for l in get_components(PSY.StandardLoad, sys)
-                PSID.transform_load_to_constant_power(l)
+                transform_load_to_constant_power(l)
             end
         else
             for l in get_components(PSY.StandardLoad, sys)
-                PSID.transform_load_to_constant_current(l)
+                transform_load_to_constant_current(l)
             end
         end
 
@@ -99,11 +99,11 @@ function test_zipload_mass_matrix(csv_file, eigs_value, load_model)
         sys = System(raw_file, dyr_file)
         if load_model == "ConstantPower"
             for l in get_components(PSY.StandardLoad, sys)
-                PSID.transform_load_to_constant_power(l)
+                transform_load_to_constant_power(l)
             end
         else
             for l in get_components(PSY.StandardLoad, sys)
-                PSID.transform_load_to_constant_current(l)
+                transform_load_to_constant_current(l)
             end
         end
 

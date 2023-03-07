@@ -21,7 +21,7 @@ line_trip_csv_file =
     try
         sys = System(raw_file, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         dc = get_dynamic_injector(get_component(ThermalStandard, sys, "generator-102-SW"))
@@ -72,7 +72,7 @@ end
     try
         sys = System(raw_file, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         dc = get_dynamic_injector(get_component(ThermalStandard, sys, "generator-102-SW"))

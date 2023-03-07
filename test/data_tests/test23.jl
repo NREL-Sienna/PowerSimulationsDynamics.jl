@@ -24,7 +24,7 @@ function inv_darco_droop(static_device)
 end
 
 for l in get_components(PSY.StandardLoad, omib_sys)
-    PSID.transform_load_to_constant_impedance(l)
+    transform_load_to_constant_impedance(l)
 end
 
 #Attach dynamic generator. Currently use PSS/e format based on bus #.

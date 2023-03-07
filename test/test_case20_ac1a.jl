@@ -36,7 +36,7 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
@@ -104,7 +104,7 @@ function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem

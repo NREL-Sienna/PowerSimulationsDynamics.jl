@@ -91,7 +91,7 @@ end
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
     for l in get_components(PSY.StandardLoad, threebus_sys_dyns)
-        PSID.transform_load_to_constant_impedance(l)
+        transform_load_to_constant_impedance(l)
     end
     add_source_to_ref(threebus_sys_dyns)
 
@@ -182,7 +182,7 @@ end
         joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBus_GENROU_SEXS.dyr")
     sys = System(threebus_file_dir, dyr_file_dir)
     for l in get_components(PSY.StandardLoad, sys)
-        PSID.transform_load_to_constant_impedance(l)
+        transform_load_to_constant_impedance(l)
     end
     x0_test = zeros(23)
     x0_test[1:6] .= 1.0
@@ -296,7 +296,7 @@ end
     threebus_sys = System(three_bus_file_dir, runchecks = false)
     add_source_to_ref(threebus_sys)
     for l in get_components(PSY.StandardLoad, threebus_sys)
-        PSID.transform_load_to_constant_impedance(l)
+        transform_load_to_constant_impedance(l)
     end
     # Attach dyn devices
     for g in get_components(Generator, threebus_sys)
@@ -362,7 +362,7 @@ end
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys = System(three_bus_file_dir, runchecks = false)
     for l in get_components(PSY.StandardLoad, threebus_sys)
-        PSID.transform_load_to_constant_impedance(l)
+        transform_load_to_constant_impedance(l)
     end
     add_source_to_ref(threebus_sys)
     # Attach dyn devices
@@ -414,7 +414,7 @@ end
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys = System(three_bus_file_dir, runchecks = false)
     for l in get_components(PSY.StandardLoad, threebus_sys)
-        PSID.transform_load_to_constant_impedance(l)
+        transform_load_to_constant_impedance(l)
     end
     add_source_to_ref(threebus_sys)
     # Attach dyn devices
@@ -453,7 +453,7 @@ end
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
     for l in get_components(PSY.StandardLoad, threebus_sys_dyns)
-        PSID.transform_load_to_constant_impedance(l)
+        transform_load_to_constant_impedance(l)
     end
     add_source_to_ref(threebus_sys_dyns)
 
@@ -499,7 +499,7 @@ end
         bus_name_formatter = x -> string(strip(x["name"])) * "-" * string(x["index"]),
     )
     for l in get_components(PSY.StandardLoad, sys)
-        PSID.transform_load_to_constant_impedance(l)
+        transform_load_to_constant_impedance(l)
     end
     sim = Simulation(
         ResidualModel,

@@ -26,7 +26,7 @@ case_gen = dyn_gen_classic(gen)
 add_component!(omib_sys, case_gen, gen)
 
 for l in get_components(PSY.StandardLoad, omib_sys)
-    PSID.transform_load_to_constant_impedance(l)
+    transform_load_to_constant_impedance(l)
 end
 
 #Compute Y_bus after fault

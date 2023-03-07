@@ -37,7 +37,7 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
         sys = System(threebus_file_dir)
         add_source_to_ref(sys)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         for g in get_components(Generator, sys)
@@ -110,7 +110,7 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
         sys = System(threebus_file_dir)
         add_source_to_ref(sys)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         for g in get_components(Generator, sys)
@@ -252,7 +252,7 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
@@ -318,7 +318,7 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
-            PSID.transform_load_to_constant_impedance(l)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
