@@ -152,7 +152,7 @@ function initialize_tg!(
     x0 = [1.0 / inv_R, τm0, τm0, τm0]
     sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
+        @error("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update Control Refs
