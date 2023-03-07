@@ -596,19 +596,10 @@ mutable struct LoadChange <: Perturbation
         # Currently I'm assumming P_ref and Q_ref are constant impedance to 
         if signal ∈ [:P_ref, :Q_ref]
             @warn(
-                "P_ref and Q_ref signals will be deprecated. It will be assumed as a change in constant impedance for StandardLoads and a change in constant power for PowerLoads. Allowed signals are :P_ref_impedance, :Q_ref_impedance, :P_ref_power, :Q_ref_power, :P_ref_current, :Q_ref_current"
+                "P_ref and Q_ref signals will be deprecated. It will be assumed as a change in constant impedance for StandardLoads and a change in constant power for PowerLoads. Allowed signals are $(ACCEPTED_LOADCHANGE_REFS)"
             )
         end
-        if signal ∉ [
-            :P_ref,
-            :Q_ref,
-            :P_ref_impedance,
-            :Q_ref_impedance,
-            :P_ref_power,
-            :Q_ref_power,
-            :P_ref_current,
-            :Q_ref_current,
-        ]
+        if signal ∉ ACCEPTED_LOADCHANGE_REFS
             error("Signal $signal not accepted as a control reference change in Loads")
         end
         new(time, device, signal, ref_value)

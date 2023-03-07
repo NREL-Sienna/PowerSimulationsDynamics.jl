@@ -135,6 +135,16 @@ const BOUNDS_TOLERANCE = 1e-6
 const SIMULATION_LOG_FILENAME = "power-simulations-dynamics.log"
 
 const ACCEPTED_CONTROL_REFS = [:V_ref, :ω_ref, :P_ref, :Q_ref]
+const ACCEPTED_LOADCHANGE_REFS = [
+    :P_ref,
+    :Q_ref,
+    :P_ref_impedance,
+    :Q_ref_impedance,
+    :P_ref_power,
+    :Q_ref_power,
+    :P_ref_current,
+    :Q_ref_current,
+]
 const DIFFEQ_SOLVE_KWARGS = [
     :dense,
     :saveat,
