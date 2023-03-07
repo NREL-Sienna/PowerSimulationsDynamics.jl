@@ -356,7 +356,7 @@ mutable struct NetworkSwitch <: Perturbation
     )
         n_bus = size(ybus)[1]
         if n_bus < 15_000
-            I = PSY._goderya(ybus)
+            I = PNM._goderya(ybus)
             if length(Set(I)) != n_bus
                 error("The Ybus provided has islands and can't be used in the simulation")
             end
@@ -371,7 +371,7 @@ mutable struct NetworkSwitch <: Perturbation
     end
 end
 
-function NetworkSwitch(time::Float64, ybus::PSY.Ybus)
+function NetworkSwitch(time::Float64, ybus::PNM.Ybus)
     return NetworkSwitch(time, ybus.data)
 end
 
@@ -593,7 +593,11 @@ mutable struct LoadChange <: Perturbation
         signal::Symbol,
         ref_value::Float64,
     )
-        if signal ∉ [:P_ref, :Q_ref]
+        # Currently I'm assumming P_ref and Q_ref are constant impedance to 
+        if signal ∈ [:P_ref, :Q_ref]
+            @warn("P_ref and Q_ref signals will be deprecated. It will be assumed as a change in constant impedance for StandardLoads and a change in constant power for PowerLoads. Allowed signals are :P_ref_impedance, :Q_ref_impedance, :P_ref_power, :Q_ref_power, :P_ref_current, :Q_ref_current")
+        end
+        if signal ∉ [:P_ref, :Q_ref, :P_ref_impedance, :Q_ref_impedance, :P_ref_power, :Q_ref_power, :P_ref_current, :Q_ref_current]
             error("Signal $signal not accepted as a control reference change in Loads")
         end
         new(time, device, signal, ref_value)
@@ -618,47 +622,65 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
         @error("Load $(PSY.get_name(ld)) is unavailable. Perturbation ignored")
         return
     end
-    P_old = PSY.get_active_power(ld)
-    Q_old = PSY.get_reactive_power(ld)
     ref_value = pert.ref_value
     signal = pert.signal
-    P_change = 0.0
-    Q_change = 0.0
-    if signal == :P_ref
-        P_change = ref_value - P_old
-    else
-        Q_change = ref_value - Q_old
-    end
     if isa(ld, PSY.PowerLoad)
-        if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
-            return (integrator) -> begin
-                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+        return (integrator) -> begin
+            P_old = PSY.get_active_power(ld)
+            Q_old = PSY.get_reactive_power(ld)
+            P_change = 0.0
+            Q_change = 0.0
+            if signal ∈ [:P_ref, :P_ref_power]
+                P_change = ref_value - P_old
+            elseif signal ∈ [:Q_ref, :Q_ref_power]
+                Q_change = ref_value - Q_old
+            else
+                error("Signal is not accepted for Constant PowerLoad. Please specify the correct signal type.")
+            end
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            P_power = get_P_power(wrapped_zip)
+            Q_power = get_Q_power(wrapped_zip)
+            set_P_power!(wrapped_zip, P_power + P_change)
+            set_Q_power!(wrapped_zip, Q_power + Q_change)
+            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
+            return
+        end
+    elseif isa(ld, PSY.StandardLoad)
+        return (integrator) -> begin
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            # List all cases for StandardLoad changes
+            if signal ∈ [:P_ref, :P_ref_impedance]
+                P_old = PSY.get_impedance_active_power(ld)
+                P_change = ref_value - P_old
                 P_impedance = get_P_impedance(wrapped_zip)
-                Q_impedance = get_Q_impedance(wrapped_zip)
                 set_P_impedance!(wrapped_zip, P_impedance + P_change)
+            elseif signal ∈ [:Q_ref, :Q_ref_impedance]
+                Q_old = PSY.get_impedance_reactive_power(ld)
+                Q_change = ref_value - Q_old
+                Q_impedance = get_Q_impedance(wrapped_zip)
                 set_Q_impedance!(wrapped_zip, Q_impedance + Q_change)
-                @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
-                return
-            end
-        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
-            return (integrator) -> begin
-                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-                P_current = get_P_current(wrapped_zip)
-                Q_current = get_Q_current(wrapped_zip)
-                set_P_current!(wrapped_zip, P_current + P_change)
-                set_Q_current!(wrapped_zip, Q_current + Q_change)
-                @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
-                return
-            end
-        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
-            return (integrator) -> begin
-                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            elseif signal == :P_ref_power
+                P_old = PSY.get_constant_active_power(ld)
+                P_change = ref_value - P_old
                 P_power = get_P_power(wrapped_zip)
-                Q_power = get_Q_power(wrapped_zip)
                 set_P_power!(wrapped_zip, P_power + P_change)
+            elseif signal == :Q_ref_power
+                Q_old = PSY.get_constant_reactive_power(ld)
+                Q_change = ref_value - Q_old
+                Q_power = get_Q_power(wrapped_zip)
                 set_Q_power!(wrapped_zip, Q_power + Q_change)
-                @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
-                return
+            elseif signal == :P_ref_current
+                P_old = PSY.get_current_active_power(ld)
+                P_change = ref_value - P_old
+                P_current = get_P_current(wrapped_zip)
+                set_P_current!(wrapped_zip, P_current + P_change)
+            elseif signal == :Q_ref_current
+                Q_old = PSY.get_current_reactive_power(ld)
+                Q_change = ref_value - Q_old
+                Q_current = get_Q_current(wrapped_zip)
+                set_Q_current!(wrapped_zip, Q_current + Q_change)
+            else
+                error("It should never be here. Should have failed in the constructor.")
             end
         end
     elseif isa(ld, PSY.ExponentialLoad)
@@ -676,6 +698,8 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
             @debug "Removing exponential load entry $(ld_name) at wrapper $(PSY.get_name(wrapped_zip))"
             return
         end
+    else
+        error("The load type of load $(PSY.get_name(ld)) is not supported for a LoadChange perturbation")
     end
     return
 end
@@ -708,30 +732,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
     if isa(ld, PSY.PowerLoad)
         P_trip = PSY.get_active_power(ld)
         Q_trip = PSY.get_reactive_power(ld)
-        if PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
-            return (integrator) -> begin
-                PSY.set_available!(ld, false)
-                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-                P_impedance = get_P_impedance(wrapped_zip)
-                Q_impedance = get_Q_impedance(wrapped_zip)
-                set_P_impedance!(wrapped_zip, P_impedance - P_trip)
-                set_Q_impedance!(wrapped_zip, Q_impedance - Q_trip)
-                @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
-                return
-            end
-        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
-            return (integrator) -> begin
-                PSY.set_available!(ld, false)
-                wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
-                P_current = get_P_current(wrapped_zip)
-                Q_current = get_Q_current(wrapped_zip)
-                set_P_current!(wrapped_zip, P_current - P_trip)
-                set_Q_current!(wrapped_zip, Q_current - Q_trip)
-                @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
-                return
-            end
-        elseif PSY.get_model(ld) == PSY.LoadModels.ConstantPower
-            return (integrator) -> begin
+        return (integrator) -> begin
                 PSY.set_available!(ld, false)
                 wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
                 P_power = get_P_power(wrapped_zip)
@@ -741,6 +742,33 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
                 @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
                 return
             end
+    elseif isa(ld, PSY.StandardLoad)
+        P_power_trip = PSY.get_constant_active_power(ld)
+        Q_power_trip = PSY.get_constant_reactive_power(ld)
+        P_current_trip = PSY.get_current_active_power(ld)
+        Q_current_trip = PSY.get_current_reactive_power(ld)
+        P_impedance_trip = PSY.get_impedance_active_power(ld)
+        Q_impedance_trip = PSY.get_impedance_reactive_power(ld)
+        return (integrator) -> begin
+            PSY.set_available!(ld, false)
+            wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
+            # Update Constant Power
+            P_power = get_P_power(wrapped_zip)
+            Q_power = get_Q_power(wrapped_zip)
+            set_P_power!(wrapped_zip, P_power - P_power_trip)
+            set_Q_power!(wrapped_zip, Q_power - Q_power_trip)
+            # Update Constant Current 
+            P_current = get_P_current(wrapped_zip)
+            Q_current = get_Q_current(wrapped_zip)
+            set_P_current!(wrapped_zip, P_current - P_current_trip)
+            set_Q_current!(wrapped_zip, Q_current - Q_current_trip)
+            # Update Constant Impedance
+            P_impedance = get_P_impedance(wrapped_zip)
+            Q_impedance = get_Q_impedance(wrapped_zip)
+            set_P_impedance!(wrapped_zip, P_impedance - P_impedance_trip)
+            set_Q_impedance!(wrapped_zip, Q_impedance - Q_impedance_trip)
+            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+            return
         end
     elseif isa(ld, PSY.ExponentialLoad)
         return (integrator) -> begin
@@ -759,7 +787,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
     return
 end
 
-function _find_zip_load_ix(inputs::SimulationInputs, device::PSY.PowerLoad)
+function _find_zip_load_ix(inputs::SimulationInputs, device::U) where {U <: Union{PSY.PowerLoad, PSY.StandardLoad}}
     wrapped_devices = get_static_loads(inputs)
     bus_affected = PSY.get_bus(device)
     wrapped_device_ixs =
