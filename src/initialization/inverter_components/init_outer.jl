@@ -55,7 +55,7 @@ function initialize_outer!(
     inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
     set_Q_ref(dynamic_device, q_elec_out)
     return
 end
@@ -117,7 +117,7 @@ function initialize_outer!(
     inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
     set_Q_ref(dynamic_device, q_elec_out)
 end
 
@@ -177,7 +177,7 @@ function initialize_outer!(
     inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
     set_Q_ref(dynamic_device, q_elec_out)
 end
 
@@ -223,9 +223,9 @@ function initialize_outer!(
 
     #Get Outer Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power(outer_control)
+    active_power_control = PSY.get_active_power_control(outer_control)
     Ki_p = PSY.get_Ki_p(active_power_control) #Integral Gain
-    reactive_power_control = PSY.get_reactive_power(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     Ki_q = PSY.get_Ki_q(reactive_power_control) #Integral Gain
 
     #Update inner_vars
@@ -248,10 +248,10 @@ function initialize_outer!(
     inner_vars[Iq_oc_var] = I_dq_cnv[q]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
     set_Q_ref(dynamic_device, q_elec_out)
     PSY.set_Q_ref!(
-        PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
+        PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
     )
     return
@@ -302,18 +302,18 @@ function initialize_outer!(
     PSY.set_Q_ref!(PSY.get_converter(dynamic_device), q_elec_out)
     set_Q_ref(dynamic_device, q_elec_out)
     PSY.set_Q_ref!(
-        PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
+        PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
     )
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)), p_elec_out)
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_V_ref!(PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)), Vm)
+    PSY.set_V_ref!(PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)), Vm)
     set_V_ref(dynamic_device, Vm)
 
     #Get Outer Controller parameters
     q_ref = get_Q_ref(dynamic_device)
     outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power(outer_control)
+    active_power_control = PSY.get_active_power_control(outer_control)
     Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag
 
     #Set state counter for variable number of states due to flags
@@ -351,7 +351,7 @@ function initialize_outer!(
         state_ct += 1
     end
 
-    reactive_power_control = PSY.get_reactive_power(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     # Note: Monitoring power from other branch not supported.
     VC_Flag = PSY.get_VC_Flag(reactive_power_control)
     Ref_Flag = PSY.get_Ref_Flag(reactive_power_control)
