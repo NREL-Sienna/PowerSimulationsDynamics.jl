@@ -19,8 +19,8 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/EXST1/results_PSSe.csv")
     try
         # Define system
         sys = System(raw_file, dyr_file)
-        for l in get_components(PSY.PowerLoad, sys)
-            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        for l in get_components(PSY.StandardLoad, sys)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem

@@ -124,10 +124,10 @@ function _frequency(
     dynamic_device::G,
     dt::Union{Nothing, Float64},
 ) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
-    P_ref = PSY.get_P_ref(PSY.get_active_power(outer_control))
+    P_ref = PSY.get_P_ref(PSY.get_active_power_control(outer_control))
     ω_ref = PSY.get_ω_ref(dynamic_device)
     ts, p_oc = post_proc_state_series(res, (name, :p_oc), dt)
-    Rp = PSY.get_Rp(outer_control.active_power)
+    Rp = PSY.get_Rp(outer_control.active_power_control)
     ω_oc = ω_ref .+ Rp .* (P_ref .- p_oc)
     return ts, ω_oc
 end
@@ -147,9 +147,9 @@ function _frequency(
     dynamic_device::G,
     dt::Union{Nothing, Float64},
 ) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
-    p_ref = PSY.get_P_ref(PSY.get_active_power(outer_control))
-    q_ref = PSY.get_Q_ref(PSY.get_reactive_power(outer_control))
-    active_power_control = PSY.get_active_power(outer_control)
+    p_ref = PSY.get_P_ref(PSY.get_active_power_control(outer_control))
+    q_ref = PSY.get_Q_ref(PSY.get_reactive_power_control(outer_control))
+    active_power_control = PSY.get_active_power_control(outer_control)
     k1 = PSY.get_k1(active_power_control)
     ψ = PSY.get_ψ(active_power_control)
     γ = ψ - pi / 2

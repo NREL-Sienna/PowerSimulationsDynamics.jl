@@ -47,8 +47,8 @@ function inv_darco_droop(static_device)
     ) #pss
 end
 
-for l in get_components(PSY.PowerLoad, threebus_sys)
-    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+for l in get_components(PSY.StandardLoad, threebus_sys)
+    transform_load_to_constant_impedance(l)
 end
 
 for g in get_components(Generator, threebus_sys)

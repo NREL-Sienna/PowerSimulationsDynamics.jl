@@ -27,7 +27,7 @@ for g in get_components(Generator, sys)
     add_component!(sys, case_gen, g)
 end
 
-for l in get_components(PSY.PowerLoad, sys)
+for l in get_components(PSY.StandardLoad, sys)
     dyn_load = ActiveLoad(l)
     add_component!(sys, dyn_load, l)
 end

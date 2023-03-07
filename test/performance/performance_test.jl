@@ -11,10 +11,10 @@ using Logging
 open("precompile_time.txt", "a") do io
     write(io, "| $(ARGS[1]) | $(precompile.time) |\n")
 end
-
+include("../utils/get_results.jl")
 sys = System("test/data_tests/WECC_240_dynamic.json"; runchecks = false)
-for l in get_components(PSY.PowerLoad, sys)
-    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+for l in get_components(PSY.StandardLoad, sys)
+    transform_load_to_constant_impedance(l)
 end
 
 # First runs

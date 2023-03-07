@@ -16,7 +16,7 @@ end
 
 function initialize_tg!(
     device_states,
-    ::PSY.StaticInjection,
+    static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -80,7 +80,7 @@ end
 
 function initialize_tg!(
     device_states,
-    ::PSY.StaticInjection,
+    static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -120,7 +120,7 @@ end
 
 function initialize_tg!(
     device_states,
-    ::PSY.StaticInjection,
+    static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -152,7 +152,7 @@ function initialize_tg!(
     x0 = [1.0 / inv_R, τm0, τm0, τm0]
     sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
+        @error("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update Control Refs

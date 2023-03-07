@@ -117,7 +117,7 @@ function initialize_inner!(
         inner_vars[θ_oc_var] = sol_x0[1]
         set_V_ref(dynamic_device, sol_x0[2])
         PSY.set_V_ref!(
-            PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
+            PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
             sol_x0[2],
         )
         inner_vars[V_oc_var] = sol_x0[2]

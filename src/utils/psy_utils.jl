@@ -1,4 +1,4 @@
-# This is where we do some type pyracy on the PSY types
+# This is where we do some type piracy on the PSY types
 get_n_buses(sys::PSY.System) = length(sys.bus_numbers)
 
 function _filter_function(x::T) where {T <: PSY.StaticInjection}
@@ -15,22 +15,22 @@ function _filter_function(x::T) where {T <: PSY.StaticInjection}
 end
 
 function get_injectors_with_dynamics(sys::PSY.System)
-    return PSY.get_components(PSY.StaticInjection, sys, x -> _filter_function(x))
+    return PSY.get_components(x -> _filter_function(x), PSY.StaticInjection, sys)
 end
 
 function get_injection_without_dynamics(sys::PSY.System)
     return PSY.get_components(
-        PSY.StaticInjection,
-        sys,
         x ->
             PSY.get_dynamic_injector(x) === nothing &&
                 PSY.get_available(x) &&
                 !isa(x, PSY.ElectricLoad),
+        PSY.StaticInjection,
+        sys,
     )
 end
 
 function get_dynamic_branches(sys::PSY.System)
-    return PSY.get_components(PSY.DynamicBranch, sys, x -> PSY.get_available(x))
+    return PSY.get_components(x -> PSY.get_available(x), PSY.DynamicBranch, sys)
 end
 
 function _transform_all_lines!(sys::PSY.System)

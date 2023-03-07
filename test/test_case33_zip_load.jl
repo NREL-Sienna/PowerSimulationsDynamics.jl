@@ -8,8 +8,8 @@ The fault drop the line connecting the infinite bus and GENROU.
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-names = ["Constant Power", "Constant Current"]
-load_models = [PSY.LoadModels.ConstantPower, PSY.LoadModels.ConstantCurrent]
+names = ["ConstantPower", "ConstantCurrent"]
+load_models = ["ConstantPower", "ConstantCurrent"]
 raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/ThreeBusMulti.raw")
 dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/LOAD/ThreeBus_GENROU.dyr")
 
@@ -27,8 +27,14 @@ function test_zipload_implicit(csv_file, eigs_value, load_model)
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file, dyr_file)
-        for l in get_components(PSY.PowerLoad, sys)
-            PSY.set_model!(l, load_model)
+        if load_model == "ConstantPower"
+            for l in get_components(PSY.StandardLoad, sys)
+                transform_load_to_constant_power(l)
+            end
+        else
+            for l in get_components(PSY.StandardLoad, sys)
+                transform_load_to_constant_current(l)
+            end
         end
 
         # Define Simulation Problem
@@ -91,8 +97,14 @@ function test_zipload_mass_matrix(csv_file, eigs_value, load_model)
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file, dyr_file)
-        for l in get_components(PSY.PowerLoad, sys)
-            PSY.set_model!(l, load_model)
+        if load_model == "ConstantPower"
+            for l in get_components(PSY.StandardLoad, sys)
+                transform_load_to_constant_power(l)
+            end
+        else
+            for l in get_components(PSY.StandardLoad, sys)
+                transform_load_to_constant_current(l)
+            end
         end
 
         # Define Simulation Problem

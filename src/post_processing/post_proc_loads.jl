@@ -133,18 +133,10 @@ function compute_output_current(
     I_R = similar(V_mag)
     I_I = similar(V_mag)
 
-    if PSY.get_model(device) == PSY.LoadModels.ConstantImpedance
-        I_R = (1.0 / V0)^2 .* (P .* V_R + Q .* V_I)
-        I_I = (1.0 / V0)^2 .* (P .* V_I - Q .* V_R)
-    elseif PSY.get_model(device) == PSY.LoadModels.ConstantCurrent
-        I_R = (1.0 / V0) .* (P .* V_R + Q .* V_I) ./ V_mag
-        I_I = (1.0 / V0) .* (P .* V_I - Q .* V_R) ./ V_mag
-    elseif PSY.get_model(device) == PSY.LoadModels.ConstantPower
-        I_R = (P .* V_R + Q .* V_I) ./ V_mag .^ 2
-        I_I = (P .* V_I - Q .* V_R) ./ V_mag .^ 2
-    else
-        @error("Load Model not supported. Returning zeros")
-    end
+    # Constant Power
+    I_R = (P .* V_R + Q .* V_I) ./ V_mag .^ 2
+    I_I = (P .* V_I - Q .* V_R) ./ V_mag .^ 2
+
     return ts, I_R, I_I
 end
 
@@ -182,5 +174,49 @@ function compute_output_current(
         P .* V_R .* (V_mag .^ (α - 2.0) ./ V0^α) + Q .* V_I .* (V_mag .^ (β - 2.0) ./ V0^β)
     I_I =
         P .* V_I .* (V_mag .^ (α - 2.0) ./ V0^α) - Q .* V_R .* (V_mag .^ (β - 2.0) ./ V0^β)
+    return ts, I_R, I_I
+end
+
+"""
+Function to obtain the output current time series of a PowerLoad model. 
+
+"""
+function compute_output_current(
+    res::SimulationResults,
+    device::PSY.StandardLoad,
+    V_R::Vector{Float64},
+    V_I::Vector{Float64},
+    dt::Union{Nothing, Float64},
+)
+    #TODO: We should dispatch this using the ZipLoad model that we have, but that would
+    #      require to properly have access to it in the SimResults.
+    #TODO: Load is assumed to be connected. We need proper ways of keep tracking when
+    #      something is disconnected
+    solution = res.solution
+    if dt === nothing
+        ix_t = unique(i -> solution.t[i], eachindex(solution.t))
+        ts = solution.t[ix_t]
+    else
+        ts = range(0, stop = solution.t[end], step = dt)
+    end
+
+    V0 = sqrt(V_R[1]^2 + V_I[1]^2)
+    V_mag = sqrt.(V_R .^ 2 + V_I .^ 2)
+    P_power = PSY.get_constant_active_power(device)
+    Q_power = PSY.get_constant_reactive_power(device)
+    P_current = PSY.get_current_active_power(device)
+    Q_current = PSY.get_current_reactive_power(device)
+    P_impedance = PSY.get_impedance_active_power(device)
+    Q_impedance = PSY.get_impedance_reactive_power(device)
+
+    I_R_impedance = (1.0 / V0)^2 .* (P_impedance .* V_R + Q_impedance .* V_I)
+    I_I_impedance = (1.0 / V0)^2 .* (P_impedance .* V_I - Q_impedance .* V_R)
+    I_R_current = (1.0 / V0) .* (P_current .* V_R + Q_current .* V_I) ./ V_mag
+    I_I_current = (1.0 / V0) .* (P_current .* V_I - Q_current .* V_R) ./ V_mag
+    I_R_power = (P_power .* V_R + Q_power .* V_I) ./ V_mag .^ 2
+    I_I_power = (P_power .* V_I - Q_power .* V_R) ./ V_mag .^ 2
+
+    I_R = I_R_power + I_R_current + I_R_impedance
+    I_I = I_I_power + I_I_current + I_I_impedance
     return ts, I_R, I_I
 end

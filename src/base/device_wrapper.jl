@@ -136,6 +136,13 @@ function DynamicWrapper(
     component_state_mapping, input_port_mapping =
         state_port_mappings(dynamic_device, device_states)
 
+    # Consider the special case when the static device is StandardLoad
+    if isa(device, PSY.StandardLoad)
+        reactive_power = PF._get_total_q(device)
+    else
+        reactive_power = PSY.get_reactive_power(device)
+    end
+
     return DynamicWrapper(
         dynamic_device,
         sys_base_power,
@@ -146,7 +153,7 @@ function DynamicWrapper(
         Base.Ref(PSY.get_V_ref(dynamic_device)),
         Base.Ref(PSY.get_ω_ref(dynamic_device)),
         Base.Ref(PSY.get_P_ref(dynamic_device)),
-        Base.Ref(PSY.get_reactive_power(device)),
+        Base.Ref(reactive_power),
         inner_var_range,
         ix_range,
         ode_range,
@@ -442,23 +449,15 @@ function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix
     # Add ZIP Loads
     for ld in loads
         if isa(ld, PSY.PowerLoad)
-            if PSY.get_available(ld) &&
-               PSY.get_model(ld) == PSY.LoadModels.ConstantImpedance
-                P_impedance += PSY.get_active_power(ld)
-                Q_impedance += PSY.get_reactive_power(ld)
-            elseif PSY.get_available(ld) &&
-                   PSY.get_model(ld) == PSY.LoadModels.ConstantCurrent
-                P_current += PSY.get_active_power(ld)
-                Q_current += PSY.get_reactive_power(ld)
-            elseif PSY.get_available(ld) &&
-                   PSY.get_model(ld) == PSY.LoadModels.ConstantPower
-                P_power += PSY.get_active_power(ld)
-                Q_power += PSY.get_reactive_power(ld)
-            else
-                error(
-                    "Not supported load model in $(PSY.get_number(bus)) named $(PSY.get_name(ld))",
-                )
-            end
+            P_power += PSY.get_active_power(ld)
+            Q_power += PSY.get_reactive_power(ld)
+        elseif isa(ld, PSY.StandardLoad)
+            P_impedance += PSY.get_impedance_active_power(ld)
+            Q_impedance += PSY.get_impedance_reactive_power(ld)
+            P_current += PSY.get_current_active_power(ld)
+            Q_current += PSY.get_current_reactive_power(ld)
+            P_power += PSY.get_constant_active_power(ld)
+            Q_power += PSY.get_constant_reactive_power(ld)
         end
     end
 

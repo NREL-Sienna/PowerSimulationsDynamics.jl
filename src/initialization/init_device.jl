@@ -210,8 +210,13 @@ function initialize_dynamic_device!(
     X_aq = PSY.get_X_aq(dynamic_device)
 
     #PowerFlow Data
-    P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
-    Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
+    if isa(device, PSY.StandardLoad)
+        P0 = PF._get_total_p(device) * Sbase / base_power # in pu (motor base)
+        Q0 = PF._get_total_q(device) * Sbase / base_power # in pu (motor base)
+    else
+        P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
+        Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
+    end
     Vm = PSY.get_magnitude(PSY.get_bus(device))
     θ = PSY.get_angle(PSY.get_bus(device))
     S0 = P0 + Q0 * 1im
@@ -306,8 +311,13 @@ function initialize_dynamic_device!(
     X_p = PSY.get_X_p(dynamic_device)
 
     #PowerFlow Data
-    P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
-    Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
+    if isa(device, PSY.StandardLoad)
+        P0 = PF._get_total_p(device) * Sbase / base_power # in pu (motor base)
+        Q0 = PF._get_total_q(device) * Sbase / base_power # in pu (motor base)
+    else
+        P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
+        Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
+    end
     Vm = PSY.get_magnitude(PSY.get_bus(device))
     θ = PSY.get_angle(PSY.get_bus(device))
     S0 = P0 + Q0 * 1im
@@ -402,8 +412,13 @@ function initialize_dynamic_device!(
     base_power = PSY.get_base_power(dynamic_device)
 
     #PowerFlow Data
-    P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
-    Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
+    if isa(device, PSY.StandardLoad)
+        P0 = PF._get_total_p(device) * Sbase / base_power # in pu (motor base)
+        Q0 = PF._get_total_q(device) * Sbase / base_power # in pu (motor base)
+    else
+        P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
+        Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
+    end
     Vm = PSY.get_magnitude(PSY.get_bus(device))
     θ = PSY.get_angle(PSY.get_bus(device))
     S0 = P0 + Q0 * 1im

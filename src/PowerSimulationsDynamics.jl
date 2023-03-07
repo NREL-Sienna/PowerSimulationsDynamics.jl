@@ -73,6 +73,7 @@ import PrettyTables
 import Base.ImmutableDict
 import PowerSystems
 import PowerFlows
+import PowerNetworkMatrices
 import TimerOutputs
 import FastClosures: @closure
 
@@ -80,6 +81,7 @@ const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
 const PF = PowerFlows
+const PNM = PowerNetworkMatrices
 
 using DocStringExtensions
 
