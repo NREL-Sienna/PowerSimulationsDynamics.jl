@@ -16,7 +16,7 @@ end
 
 function initialize_tg!(
     device_states,
-    ::PSY.StaticInjection,
+    static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -80,7 +80,7 @@ end
 
 function initialize_tg!(
     device_states,
-    ::PSY.StaticInjection,
+    static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
@@ -120,7 +120,7 @@ end
 
 function initialize_tg!(
     device_states,
-    ::PSY.StaticInjection,
+    static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
