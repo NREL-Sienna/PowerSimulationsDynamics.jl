@@ -869,7 +869,7 @@ function mdl_outer_ode!(
 
     Idq_mod = sqrt(Iq_pi^2 + Id_pi^2)
     ρ = min(1.0, 1.1/Idq_mod)
-    binary_logic = 0.0 < Idq_mod < 1.2 ? 1.0 : 0.0
+    binary_logic = 0.0 < Idq_mod < 1.05 ? 1.0 : 0.0
 
     
     #Compute 4 states ODEs
