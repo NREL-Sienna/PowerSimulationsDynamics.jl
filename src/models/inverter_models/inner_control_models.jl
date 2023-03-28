@@ -218,13 +218,22 @@ function mdl_inner_ode!(
     #Voltage Control PI Blocks
     Id_pi, dξd_dt = pi_block(Vd_filter_ref - V_dq_filter[d], ξ_d, kpv, kiv)
     Iq_pi, dξq_dt = pi_block(Vq_filter_ref - V_dq_filter[q], ξ_q, kpv, kiv)
-    #PI Integrator (internal state)
-    output_ode[local_ix[1]] = dξd_dt
-    output_ode[local_ix[2]] = dξq_dt
 
     #Compensate output Control Signal - Links to SRF Current Controller
-    Id_cnv_ref = Id_pi - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
-    Iq_cnv_ref = Iq_pi + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
+    Id_cnv_star = Id_pi - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
+    Iq_cnv_star = Iq_pi + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
+
+    # Current Saturation with d-axis priority 
+    Imax=1.2
+    Id_cnv_ref = sign(Id_cnv_star)*min(Imax, abs(Id_cnv_star))
+    Iq_cnv_ref = sign(Iq_cnv_star)*min(sqrt(Imax^2-Id_cnv_ref^2), abs(Iq_cnv_star))
+    d_axis_anti_windup = abs(Id_cnv_star) < Imax  ? 1.0 : 0.0
+    q_axis_anti_windup = abs(Iq_cnv_star) < sqrt(Imax^2-Id_cnv_ref^2) ? 1.0 : 0.0
+
+
+    #PI Integrator (internal state)
+    output_ode[local_ix[1]] = dξd_dt*d_axis_anti_windup
+    output_ode[local_ix[2]] = dξq_dt*q_axis_anti_windup
 
     ## SRF Current Control ##
     #Current Control PI Blocks
