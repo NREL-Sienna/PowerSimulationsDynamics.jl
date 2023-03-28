@@ -867,30 +867,30 @@ function mdl_outer_ode!(
     Id_pi, dσqoc_dt = pi_block(q_ref - q_oc, σq_oc, Kp_q, Ki_q)
     _, dqoc_dt = low_pass(q_elec_out, q_oc, 1.0, 1.0 / ωf)
 
-    Idq_mod = sqrt(Iq_pi^2 + Id_pi^2)
-    ρ = min(1.0, 1.2/Idq_mod)
-    binary_logic = 0.0 < Idq_mod < 1.2 ? 1.0 : 0.0
+    # Idq_mod = sqrt(Iq_pi^2 + Id_pi^2)
+    # ρ = min(1.0, 1.2/Idq_mod)
+    # binary_logic = 0.0 < Idq_mod < 1.2 ? 1.0 : 0.0
 
     # # Current Saturation with d-axis priority 
-    # Imax=1.2
-    # Id_cnv_ref = sign(Id_pi)*min(Imax, abs(Id_pi))
-    # Iq_cnv_ref = sign(Iq_pi)*min(sqrt(Imax^2-Id_cnv_ref^2), abs(Iq_pi))
-    # d_axis_anti_windup = abs(Id_pi) < Imax ? 1.0 : 0.0
-    # q_axis_anti_windup = abs(Iq_pi) < sqrt(Imax^2-Id_cnv_ref^2) ? 1.0 : 0.0
+    Imax=1.2
+    Id_cnv_ref = sign(Id_pi)*min(Imax, abs(Id_pi))
+    Iq_cnv_ref = sign(Iq_pi)*min(sqrt(Imax^2-Id_cnv_ref^2), abs(Iq_pi))
+    d_axis_anti_windup = abs(Id_pi) < Imax ? 1.0 : 0.0
+    q_axis_anti_windup = abs(Iq_pi) < sqrt(Imax^2-Id_cnv_ref^2) ? 1.0 : 0.0
     
     #Compute 4 states ODEs
-    output_ode[local_ix[1]] = dσpoc_dt*binary_logic#d_axis_anti_windup
+    output_ode[local_ix[1]] = dσpoc_dt*d_axis_anti_windup
     output_ode[local_ix[2]] = dpoc_dt
-    output_ode[local_ix[3]] = dσqoc_dt*binary_logic#q_axis_anti_windup
+    output_ode[local_ix[3]] = dσqoc_dt*q_axis_anti_windup
     output_ode[local_ix[4]] = dqoc_dt
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ_pll
     inner_vars[ω_oc_var] = ω_pll
-    # inner_vars[Iq_oc_var] = Id_cnv_ref#Iq_pi*ρ
-    # inner_vars[Id_oc_var] = Iq_cnv_ref#Id_pi*ρ
-    inner_vars[Iq_oc_var] = Iq_pi*ρ
-    inner_vars[Id_oc_var] = Id_pi*ρ
+    inner_vars[Iq_oc_var] = Iq_cnv_ref
+    inner_vars[Id_oc_var] = Id_cnv_ref
+    # inner_vars[Iq_oc_var] = Iq_pi*ρ
+    # inner_vars[Id_oc_var] = Id_pi*ρ
 
     return
 end
