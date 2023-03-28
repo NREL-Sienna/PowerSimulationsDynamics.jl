@@ -56,6 +56,7 @@ export get_reactivepower_branch_flow
 export get_frequency_series
 export get_setpoints
 export get_solution
+export transform_load_to_constant_impedance
 
 ####################################### Package Imports ####################################
 import Logging
