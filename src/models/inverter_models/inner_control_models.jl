@@ -224,11 +224,21 @@ function mdl_inner_ode!(
     Iq_cnv_star = Iq_pi + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
 
     # Current Saturation with d-axis priority 
-    Imax=1.2
-    Id_cnv_ref = sign(Id_cnv_star)*min(Imax, abs(Id_cnv_star))
-    Iq_cnv_ref = sign(Iq_cnv_star)*min(sqrt(Imax^2-Id_cnv_ref^2), abs(Iq_cnv_star))
-    d_axis_anti_windup = abs(Id_cnv_star) < Imax  ? 1.0 : 0.0
-    q_axis_anti_windup = abs(Iq_cnv_star) < sqrt(Imax^2-Id_cnv_ref^2) ? 1.0 : 0.0
+    # Imax=1.2
+    # Id_cnv_ref = sign(Id_cnv_star)*min(Imax, abs(Id_cnv_star))
+    # Iq_cnv_ref = sign(Iq_cnv_star)*min(sqrt(Imax^2-Id_cnv_ref^2), abs(Iq_cnv_star))
+    # d_axis_anti_windup = abs(Id_cnv_star) < Imax  ? 1.0 : 0.0
+    # q_axis_anti_windup = abs(Iq_cnv_star) < sqrt(Imax^2-Id_cnv_ref^2) ? 1.0 : 0.0
+
+    # Imax=1.2
+    # Idq_mod = sqrt(Id_cnv_star^2 + Iq_cnv_star^2)
+    # ρ = min(1.0, Imax/Idq_mod)
+    # d_axis_anti_windup = q_axis_anti_windup = 0.0 < Idq_mod < Imax ? 1.0 : 0.0
+    # Id_cnv_ref=Id_cnv_star*ρ
+    # Iq_cnv_ref=Iq_cnv_star*ρ
+    d_axis_anti_windup = q_axis_anti_windup = 1
+    Id_cnv_ref=Id_cnv_star
+    Iq_cnv_ref=Iq_cnv_star
 
 
     #PI Integrator (internal state)

@@ -872,12 +872,25 @@ function mdl_outer_ode!(
     # binary_logic = 0.0 < Idq_mod < 1.2 ? 1.0 : 0.0
 
     # # Current Saturation with d-axis priority 
-    Imax=1.2
-    Id_cnv_ref = sign(Id_pi)*min(Imax, abs(Id_pi))
-    Iq_cnv_ref = sign(Iq_pi)*min(sqrt(Imax^2-Id_cnv_ref^2), abs(Iq_pi))
-    d_axis_anti_windup = abs(Id_pi) < Imax ? 1.0 : 0.0
-    q_axis_anti_windup = abs(Iq_pi) < sqrt(Imax^2-Id_cnv_ref^2) ? 1.0 : 0.0
+    avgconverter=PSY.get_converter(dynamic_device)
+    Imax=PSY.get_rated_current(avgconverter)
+    # Imax=1.2
+
+    # Id_cnv_ref = sign(Id_pi)*min(Imax, abs(Id_pi))
+    # Iq_cnv_ref = sign(Iq_pi)*min(sqrt(Imax^2-Id_cnv_ref^2), abs(Iq_pi))
+    # d_axis_anti_windup = abs(Id_pi) < Imax ? 1.0 : 0.0
+    # q_axis_anti_windup = abs(Iq_pi) < sqrt(Imax^2-Id_cnv_ref^2) ? 1.0 : 0.0
     
+    Idq_mod = sqrt(Iq_pi^2 + Id_pi^2)
+    ρ = min(1.0, Imax/Idq_mod)
+    d_axis_anti_windup = q_axis_anti_windup = 0.0 < Idq_mod < Imax ? 1.0 : 0.0
+    Id_cnv_ref=Id_pi*ρ
+    Iq_cnv_ref=Iq_pi*ρ
+
+    # d_axis_anti_windup = q_axis_anti_windup = 1
+    # Id_cnv_ref=Id_pi
+    # Iq_cnv_ref=Iq_pi
+
     #Compute 4 states ODEs
     output_ode[local_ix[1]] = dσpoc_dt*d_axis_anti_windup
     output_ode[local_ix[2]] = dpoc_dt
@@ -889,8 +902,6 @@ function mdl_outer_ode!(
     inner_vars[ω_oc_var] = ω_pll
     inner_vars[Iq_oc_var] = Iq_cnv_ref
     inner_vars[Id_oc_var] = Id_cnv_ref
-    # inner_vars[Iq_oc_var] = Iq_pi*ρ
-    # inner_vars[Id_oc_var] = Id_pi*ρ
 
     return
 end
