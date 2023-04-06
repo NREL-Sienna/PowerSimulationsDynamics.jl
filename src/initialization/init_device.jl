@@ -390,6 +390,62 @@ function initialize_dynamic_device!(
 end
 
 function initialize_dynamic_device!(
+    dynamic_wrapper::DynamicWrapper{PSY.CSVGN1},
+    device::PSY.StaticInjection,
+    ::AbstractVector,
+)
+    Sbase = get_system_base_power(dynamic_wrapper)
+
+    # Obtain States
+    device_states = zeros(PSY.get_n_states(dynamic_wrapper))
+
+    # Get parameters
+    dynamic_device = get_device(dynamic_wrapper)
+    K = PSY.get_K(dynamic_device)
+    T1 = PSY.get_T1(dynamic_device)
+    T2 = PSY.get_T2(dynamic_device)
+    T3 = PSY.get_T3(dynamic_device)
+    T4 = PSY.get_T4(dynamic_device)
+    T5 = PSY.get_T5(dynamic_device)
+    Rmin = PSY.get_Rmin(dynamic_device)
+    Vmax = PSY.get_Vmax(dynamic_device)
+    Vmin = PSY.get_Vmin(dynamic_device)
+    Cbase = PSY.get_CBase(dynamic_device)
+    # FIXME: base_power is changed to system's base_power when a CSVGN1 is attached to a Source using add_component!()
+    # Temporarily, to avoid that, set_dynamic_injector!() could be used
+    Mbase = PSY.get_base_power(dynamic_device)
+    Rbase = Mbase
+
+    # PowerFlow Data
+    Q0 = PSY.get_reactive_power(device) * Sbase / Mbase # in pu (machine base)
+    # TODO: V_abs is the voltage magnitude on the high side of generator step-up transformer, if present.
+    V_abs = PSY.get_magnitude(PSY.get_bus(device))
+    Y = Q0 / V_abs^2
+
+    V_ref0 = V_abs - (Cbase/Sbase - Y) * 1/K * Sbase/Mbase
+
+    # update V_ref
+    set_V_ref(dynamic_wrapper, V_ref0)
+
+    thy = K * (V_abs - V_ref0)
+    vr2 = thy
+
+    if (thy > Vmax) || (thy < Vmin)
+        @error("Thyristor state thy = $(thy) outside the limits")
+    end
+
+    if (vr2 > 1) || (vr2 < Rmin/Rbase)
+        @error("Regulator state vr2 = $(vr2) outside the limits")
+    end
+
+    device_states[1] = K * (V_abs - V_ref0) # thy
+    device_states[2] = 0.0 # vr1
+    device_states[3] = K * (V_abs - V_ref0) # vr2
+    
+    return device_states
+end
+
+function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.ActiveConstantPowerLoad},
     device::PSY.StaticInjection,
     ::AbstractVector,

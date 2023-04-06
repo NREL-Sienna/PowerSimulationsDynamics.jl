@@ -794,6 +794,95 @@ end
 
 function device_mass_matrix_entries!(
     mass_matrix::AbstractArray,
+    dynamic_device::DynamicWrapper{PSY.CSVGN1},
+)
+    global_index = get_global_index(dynamic_device)
+    mass_matrix_csvgn1_entries!(mass_matrix, dynamic_device, global_index)
+    return
+end
+
+function mass_matrix_csvgn1_entries!(
+    mass_matrix,
+    csvgn1::DynamicWrapper{PSY.CSVGN1},
+    global_index::ImmutableDict{Symbol, Int64},
+)
+    @debug "Using default mass matrix entries $csvgn1"
+end
+
+"""
+Model of Static Shunt Compensator: CSVGN1.
+"""
+function device!(
+    device_states::AbstractArray{T},
+    output_ode::AbstractArray{T},
+    voltage_r::T,
+    voltage_i::T,
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    global_vars::AbstractArray{T},
+    ::AbstractArray{T},
+    dynamic_wrapper::DynamicWrapper{PSY.CSVGN1},
+    t,
+) where {T <: ACCEPTED_REAL_TYPES}
+    Sbase = get_system_base_power(dynamic_wrapper)
+    V_ref = get_V_ref(dynamic_wrapper)
+    # TODO: V_abs is the voltage magnitude on the high side of generator step-up transformer, if present.
+    V_abs = sqrt(voltage_r^2 + voltage_i^2)
+
+    if get_connection_status(dynamic_wrapper) < 1.0
+        output_ode .= zero(T)
+        return
+    end
+
+    # get states
+    thy = device_states[1]
+    vr1 = device_states[2]
+    vr2 = device_states[3]
+
+    #Get parameters
+    dynamic_device = get_device(dynamic_wrapper)
+    K = PSY.get_K(dynamic_device)
+    T1 = PSY.get_T1(dynamic_device)
+    T2 = PSY.get_T2(dynamic_device)
+    T3 = PSY.get_T3(dynamic_device)
+    T4 = PSY.get_T4(dynamic_device)
+    T5 = PSY.get_T5(dynamic_device)
+    Rmin = PSY.get_Rmin(dynamic_device)
+    Vmax = PSY.get_Vmax(dynamic_device)
+    Vmin = PSY.get_Vmin(dynamic_device)
+    Cbase = PSY.get_CBase(dynamic_device)
+    # FIXME: base_power is changed to system's base_power when a CSVGN1 is attached to a Source using add_component!()
+    # Temporarily, to avoid that, set_dynamic_injector!() could be used
+    Mbase = PSY.get_base_power(dynamic_device)
+    Rbase = Mbase
+
+    # Regulator
+    T3_ll = T1 + T2 # time parameter for the lead-lag block
+    T4_ll = T1 * T2 # time parameter for the lead-lag block
+    T1_ll = T3 + T4 # time parameter for the lead-lag block
+    T2_ll = T3 * T4 # time parameter for the lead-lag block
+
+    v_ll, dvr1_dt, dvr2_dt = lead_lag_2nd_nonwindup(K * (V_abs - V_ref), vr1, vr2, T1_ll, T2_ll, T3_ll, T4_ll, Vmin, Vmax)
+
+    # Thyristor
+    y_r, dthy_dt = low_pass_nonwindup(v_ll, thy, 1.0, T5, Rmin/Rbase, 1.0)
+
+    # Admittance output
+    Y = Cbase/Sbase - y_r * Mbase/Sbase
+
+    #Compute ODEs
+    output_ode[1] = dthy_dt
+    output_ode[2] = dvr1_dt
+    output_ode[3] = dvr2_dt
+
+    #Update current
+    current_r[1] = (Mbase / Sbase) * Y * voltage_i # in system base
+    current_i[1] = -(Mbase / Sbase) * Y * voltage_r # in system base
+    return
+end
+
+function device_mass_matrix_entries!(
+    mass_matrix::AbstractArray,
     dynamic_device::DynamicWrapper{PSY.ActiveConstantPowerLoad},
 )
     global_index = get_global_index(dynamic_device)
