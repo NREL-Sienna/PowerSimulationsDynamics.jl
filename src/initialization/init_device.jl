@@ -422,7 +422,7 @@ function initialize_dynamic_device!(
     V_abs = PSY.get_magnitude(PSY.get_bus(device))
     Y = Q0 / V_abs^2
 
-    V_ref0 = V_abs - (Cbase/Sbase - Y) * 1/K * Sbase/Mbase
+    V_ref0 = V_abs - (Cbase / Sbase - Y) * 1 / K * Sbase / Mbase
 
     # update V_ref
     set_V_ref(dynamic_wrapper, V_ref0)
@@ -434,14 +434,14 @@ function initialize_dynamic_device!(
         @error("Thyristor state thy = $(thy) outside the limits")
     end
 
-    if (vr2 > 1) || (vr2 < Rmin/Rbase)
+    if (vr2 > 1) || (vr2 < Rmin / Rbase)
         @error("Regulator state vr2 = $(vr2) outside the limits")
     end
 
     device_states[1] = K * (V_abs - V_ref0) # thy
     device_states[2] = 0.0 # vr1
     device_states[3] = K * (V_abs - V_ref0) # vr2
-    
+
     return device_states
 end
 

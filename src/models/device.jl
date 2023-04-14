@@ -862,13 +862,23 @@ function device!(
     T1_ll = T3 + T4 # time parameter for the lead-lag block
     T2_ll = T3 * T4 # time parameter for the lead-lag block
 
-    v_ll, dvr1_dt, dvr2_dt = lead_lag_2nd_nonwindup(K * (V_abs - V_ref), vr1, vr2, T1_ll, T2_ll, T3_ll, T4_ll, Vmin, Vmax)
+    v_ll, dvr1_dt, dvr2_dt = lead_lag_2nd_nonwindup(
+        K * (V_abs - V_ref),
+        vr1,
+        vr2,
+        T1_ll,
+        T2_ll,
+        T3_ll,
+        T4_ll,
+        Vmin,
+        Vmax,
+        )
 
     # Thyristor
-    y_r, dthy_dt = low_pass_nonwindup(v_ll, thy, 1.0, T5, Rmin/Rbase, 1.0)
+    y_r, dthy_dt = low_pass_nonwindup(v_ll, thy, 1.0, T5, Rmin / Rbase, 1.0)
 
     # Admittance output
-    Y = Cbase/Sbase - y_r * Mbase/Sbase
+    Y = Cbase / Sbase - y_r * Mbase / Sbase
 
     #Compute ODEs
     output_ode[1] = dthy_dt

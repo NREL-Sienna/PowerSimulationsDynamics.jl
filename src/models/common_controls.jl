@@ -301,7 +301,8 @@ function lead_lag_2nd_nonwindup(
     y_min::Float64,
     y_max::Float64,
 ) where {Z <: ACCEPTED_REAL_TYPES}
-    y, dx1dt_scaled, dx2dt = lead_lag_2nd_mass_matrix_nonwindup(u, x1, x2, T1, T2, T3, T4, y_min, y_max)
+    y, dx1dt_scaled, dx2dt =
+        lead_lag_2nd_mass_matrix_nonwindup(u, x1, x2, T1, T2, T3, T4, y_min, y_max)
     return y, (1.0 / T2) * dx1dt_scaled, dx2dt
 end
 
