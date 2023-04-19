@@ -872,7 +872,7 @@ function device!(
         T4_ll,
         Vmin,
         Vmax,
-        )
+    )
 
     # Thyristor
     y_r, dthy_dt = low_pass_nonwindup(v_ll, thy, 1.0, T5, Rmin / Rbase, 1.0)
@@ -886,8 +886,8 @@ function device!(
     output_ode[3] = dvr2_dt
 
     #Update current
-    current_r[1] = (Mbase / Sbase) * Y * voltage_i # in system base
-    current_i[1] = -(Mbase / Sbase) * Y * voltage_r # in system base
+    current_r[1] = Y * voltage_i # in system base
+    current_i[1] = -Y * voltage_r # in system base
     return
 end
 

@@ -417,7 +417,7 @@ function initialize_dynamic_device!(
     Rbase = Mbase
 
     # PowerFlow Data
-    Q0 = PSY.get_reactive_power(device) * Sbase / Mbase # in pu (machine base)
+    Q0 = PSY.get_reactive_power(device) # in pu (system base)
     # TODO: V_abs is the voltage magnitude on the high side of generator step-up transformer, if present.
     V_abs = PSY.get_magnitude(PSY.get_bus(device))
     Y = Q0 / V_abs^2
