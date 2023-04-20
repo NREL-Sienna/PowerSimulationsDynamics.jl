@@ -75,6 +75,8 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         @test LinearAlgebra.norm(θ - θ_pscad) <= 3e-2
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
+        ω = PSID.get_frequency_series(results, "generator-102-1")
+        @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -129,6 +131,8 @@ end
         @test LinearAlgebra.norm(θ - θ_pscad) <= 3e-2
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
+        ω = PSID.get_frequency_series(results, "generator-102-1")
+        @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

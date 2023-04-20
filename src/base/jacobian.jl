@@ -56,7 +56,7 @@ function JacobianFunctionWrapper(
     m!::SystemModel{MassMatrixModel},
     x0_guess::Vector{Float64};
     # Improve the heuristic to do sparsity detection
-    sparse_retrieve_loop::Int = max(3, length(x0_guess) ÷ 100),
+    sparse_retrieve_loop::Int = 0, #max(3, length(x0_guess) ÷ 100),
 )
     x0 = deepcopy(x0_guess)
     n = length(x0)
@@ -152,7 +152,7 @@ function get_jacobian(
 ) where {T <: SimulationModel}
     # Deepcopy avoid system modifications
     simulation_system = deepcopy(system)
-    inputs = SimulationInputs(T, simulation_system, ReferenceBus)
+    inputs = SimulationInputs(T, simulation_system, ReferenceBus())
     x0_init = get_flat_start(inputs)
     set_operating_point!(x0_init, inputs, system)
     return get_jacobian(T, inputs, x0_init, sparse_retrieve_loop)

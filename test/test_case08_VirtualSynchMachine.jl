@@ -50,6 +50,12 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
+        # Check Eigenvalue Report
+        df1 = summary_eigenvalues(small_sig)
+        df2 = summary_participation_factors(small_sig)
+        @test isa(df1, DataFrame)
+        @test isa(df2, DataFrame)
+
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
 
@@ -74,8 +80,10 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
         power = PSID.get_activepower_series(results, "generator-102-1")
         rpower = PSID.get_reactivepower_series(results, "generator-102-1")
+        ω2 = PSID.get_frequency_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(ω2, Tuple{Vector{Float64}, Vector{Float64}})
         @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
@@ -111,6 +119,12 @@ end
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
+        # Check Eigenvalue Report
+        df1 = summary_eigenvalues(small_sig)
+        df2 = summary_participation_factors(small_sig)
+        @test isa(df1, DataFrame)
+        @test isa(df2, DataFrame)
+
         # Test Eigenvalues
         @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
 
@@ -131,11 +145,12 @@ end
 
         power = PSID.get_activepower_series(results, "generator-102-1")
         rpower = PSID.get_reactivepower_series(results, "generator-102-1")
+        ω2 = PSID.get_frequency_series(results, "generator-102-1")
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(ω2, Tuple{Vector{Float64}, Vector{Float64}})
         @test LinearAlgebra.norm(ω - ω_pscad) <= 1e-4
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
-
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

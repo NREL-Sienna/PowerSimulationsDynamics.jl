@@ -20,7 +20,7 @@ struct SimulationInputs
 
     function SimulationInputs(
         sys::PSY.System,
-        ::Type{T},
+        ::T,
     ) where {T <: Union{ConstantFrequency, ReferenceBus}}
         n_buses = get_n_buses(sys)
         Ybus, lookup = _get_ybus(sys)
@@ -125,14 +125,22 @@ end
 """
 SimulationInputs build function for MassMatrixModels
 """
-function SimulationInputs(::Type{MassMatrixModel}, sys::PSY.System, frequency_reference)
+function SimulationInputs(
+    ::Type{MassMatrixModel},
+    sys::PSY.System,
+    frequency_reference::Union{ConstantFrequency, ReferenceBus},
+)
     return SimulationInputs(sys, frequency_reference)
 end
 
 """
 SimulationInputs build function for ResidualModels
 """
-function SimulationInputs(::Type{ResidualModel}, sys::PSY.System, frequency_reference)
+function SimulationInputs(
+    ::Type{ResidualModel},
+    sys::PSY.System,
+    frequency_reference::Union{ConstantFrequency, ReferenceBus},
+)
     return SimulationInputs(sys, frequency_reference)
 end
 
@@ -157,8 +165,11 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         inner_vars_range =
             range(inner_vars_count, length = get_inner_vars_count(dynamic_device))
         @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range"
+        dynamic_device = PSY.get_dynamic_injector(device)
+        @assert dynamic_device !== nothing
         wrapped_injector[ix] = DynamicWrapper(
             device,
+            dynamic_device,
             bus_ix,
             ix_range,
             ode_range,
@@ -228,7 +239,7 @@ end
 function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
     # This needs to change if we implement dynamic load models
     static_loads =
-        PSY.get_components(PSY.ElectricLoad, sys, x -> !isa(x, PSY.FixedAdmittance))
+        PSY.get_components(x -> !isa(x, PSY.FixedAdmittance), PSY.ElectricLoad, sys)
     map_bus_load = Dict{PSY.Bus, Vector{PSY.ElectricLoad}}()
     for ld in static_loads
         if PSY.get_dynamic_injector(ld) !== nothing || !(PSY.get_available(ld))
@@ -256,9 +267,9 @@ end
 
 function _get_ybus(sys::PSY.System)
     n_buses = length(PSY.get_components(PSY.Bus, sys))
-    dyn_lines = PSY.get_components(PSY.DynamicBranch, sys, x -> PSY.get_available(x))
+    dyn_lines = PSY.get_components(x -> PSY.get_available(x), PSY.DynamicBranch, sys)
     if !isempty(PSY.get_components(PSY.ACBranch, sys))
-        Ybus_ = PSY.Ybus(sys)
+        Ybus_ = PNM.Ybus(sys)
         ybus = Ybus_[:, :]
         lookup = Ybus_.lookup[1]
         ybus_rectangular = transform_ybus_to_rectangular(ybus)
@@ -268,7 +279,8 @@ function _get_ybus(sys::PSY.System)
     else
         ybus_rectangular =
             SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2 * n_buses, 2 * n_buses))
-        lookup = Dict{Int.Int}()
+        Ybus_ = PNM.Ybus(sys)
+        lookup = Ybus_.lookup[1]
     end
     return ybus_rectangular, lookup
 end

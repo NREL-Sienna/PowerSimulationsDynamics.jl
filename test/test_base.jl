@@ -30,6 +30,7 @@ end
             (0.0, 30.0), #time span
             Ybus_change;
             system_to_file = true,
+            console_level = Logging.Error,
         )
         @test sim.status == PSID.BUILT
         # Test accessor functions
@@ -64,6 +65,7 @@ end
             (0.0, 30.0), #time span
             Ybus_change;
             system_to_file = true,
+            console_level = Logging.Error,
         )
         @test sim.status == PSID.BUILT
         m_system = System(joinpath(path2, "initialized_system.json"))
@@ -84,12 +86,40 @@ end
     end
 end
 
+@testset "Solve Twice Simulation" begin
+    path1 = (joinpath(pwd(), "test-Base-1"))
+    !isdir(path1) && mkdir(path1)
+    try
+        #Define Simulation Problem
+        sim = Simulation(
+            ResidualModel,
+            omib_sys, #system
+            path1,
+            (0.0, 30.0), #time span
+            Ybus_change;
+            system_to_file = true,
+            console_level = Logging.Error,
+        )
+        @test sim.status == PSID.BUILT
+
+        # First run
+        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        # Second run
+        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+    finally
+        @info("removing test files")
+        rm(path1, force = true, recursive = true)
+    end
+end
+
 @testset "Hybrid Line Indexing" begin
     ## Create threebus system with more dyn lines ##
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
-    for l in get_components(PSY.PowerLoad, threebus_sys_dyns)
-        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    for l in get_components(PSY.StandardLoad, threebus_sys_dyns)
+        transform_load_to_constant_impedance(l)
     end
     add_source_to_ref(threebus_sys_dyns)
 
@@ -113,7 +143,13 @@ end
     end
 
     # Tests for all Dynamic Lines
-    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir(), (0.0, 10.0))
+    sim = Simulation(
+        ResidualModel,
+        threebus_sys_dyns,
+        mktempdir(),
+        (0.0, 10.0);
+        console_level = Logging.Error,
+    )
     @test sim.status == PSID.BUILT
     sim_inputs = sim.inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
@@ -139,7 +175,13 @@ end
     # Tests for dynamic lines with b = 0
     set_b!(dyn_branch12, (from = 0.0, to = 0.0))
     set_b!(dyn_branch23, (from = 0.0, to = 0.0))
-    sim = Simulation(ResidualModel, threebus_sys_dyns, pwd(), (0.0, 10.0))
+    sim = Simulation(
+        ResidualModel,
+        threebus_sys_dyns,
+        pwd(),
+        (0.0, 10.0);
+        console_level = Logging.Error,
+    )
     @test sim.status == PSID.BUILT
     sim_inputs = sim.inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
@@ -148,7 +190,7 @@ end
         if !entry
             @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] == 0
         elseif entry
-            @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] == 1
+            @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] > 0
         else
             @test false
         end
@@ -167,8 +209,8 @@ end
     dyr_file_dir =
         joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBus_GENROU_SEXS.dyr")
     sys = System(threebus_file_dir, dyr_file_dir)
-    for l in get_components(PSY.PowerLoad, sys)
-        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    for l in get_components(PSY.StandardLoad, sys)
+        transform_load_to_constant_impedance(l)
     end
     x0_test = zeros(23)
     x0_test[1:6] .= 1.0
@@ -181,6 +223,7 @@ end
         BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1");
         initialize_simulation = false,
         initial_conditions = x0_test,
+        console_level = Logging.Error,
     )
     @test LinearAlgebra.norm(sim.x0_init - x0_test) <= 1e-6
     #Initialize System normally
@@ -189,7 +232,8 @@ end
         sys,
         pwd(),
         (0.0, 20.0),
-        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"),
+        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1");
+        console_level = Logging.Error,
     )
     #Save states without generator at bus 2
     x0 = sim_normal.x0_init
@@ -207,6 +251,7 @@ end
         (0.0, 20.0);
         initialize_simulation = false,
         initial_conditions = x0_no_gen,
+        console_level = Logging.Error,
     )
     @test LinearAlgebra.norm(sim_trip_gen.x0_init - x0_no_gen) <= 1e-6
     #Create Simulation without Gen 2 at steady state
@@ -215,12 +260,19 @@ end
         sys,
         pwd(),
         (0.0, 20.0),
-        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1"),
+        BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1");
+        console_level = Logging.Error,
     )
     @test length(sim_normal_no_gen.x0_init) == 17
     #Ignore Initial Conditions without passing initialize_simulation = false
-    sim_ignore_init =
-        Simulation(ResidualModel, sys, pwd(), (0.0, 20.0); initial_conditions = x0_no_gen)
+    sim_ignore_init = Simulation(
+        ResidualModel,
+        sys,
+        pwd(),
+        (0.0, 20.0);
+        initial_conditions = x0_no_gen,
+        console_level = Logging.Error,
+    )
     @test LinearAlgebra.norm(sim_ignore_init.x0_init - sim_normal_no_gen.x0_init) <= 1e-6
     #Pass wrong vector size
     x0_wrong = zeros(20)
@@ -230,11 +282,18 @@ end
     #     pwd(),
     #     (0.0, 20.0);
     #     initialize_simulation = false,
-    #     initial_conditions = x0_wrong,
+    #     initial_conditions = x0_wrong;
+    #    console_level = Logging.Error
     # )
     #Flat start initialization
-    sim_flat =
-        Simulation(ResidualModel, sys, pwd(), (0.0, 20.0); initialize_simulation = false)
+    sim_flat = Simulation(
+        ResidualModel,
+        sys,
+        pwd(),
+        (0.0, 20.0);
+        console_level = Logging.Error,
+        initialize_simulation = false,
+    )
     x0_flat = zeros(17)
     x0_flat[1:3] .= 1.0
     @test LinearAlgebra.norm(sim_flat.x0_init - x0_flat) <= 1e-6
@@ -249,9 +308,9 @@ end
     ]
     V_r = voltages[1:2]
     V_i = voltages[3:end]
-    ybus_ = PSY.Ybus(omib_sys).data
+    ybus_ = PNM.Ybus(omib_sys).data
     I_balance_ybus = -1 * ybus_ * (V_r + V_i .* 1im)
-    inputs = PSID.SimulationInputs(ResidualModel, omib_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, omib_sys, ConstantFrequency())
     I_balance_sim = zeros(4)
     PSID.network_model(inputs, I_balance_sim, voltages)
     for i in 1:2
@@ -264,8 +323,8 @@ end
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys = System(three_bus_file_dir, runchecks = false)
     add_source_to_ref(threebus_sys)
-    for l in get_components(PSY.PowerLoad, threebus_sys)
-        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    for l in get_components(PSY.StandardLoad, threebus_sys)
+        transform_load_to_constant_impedance(l)
     end
     # Attach dyn devices
     for g in get_components(Generator, threebus_sys)
@@ -278,9 +337,9 @@ end
         end
     end
 
-    ybus_original = PSY.Ybus(threebus_sys)
+    ybus_original = PNM.Ybus(threebus_sys)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
 
     for i in 1:3, j in 1:3
         complex_ybus = ybus_original.data[i, j]
@@ -294,7 +353,7 @@ end
     PSID.ybus_update!(inputs, br, -1.0)
 
     remove_component!(threebus_sys, br)
-    ybus_line_trip = PSY.Ybus(threebus_sys)
+    ybus_line_trip = PNM.Ybus(threebus_sys)
 
     # Use is approx because the inversion of complex might be different in
     # floating point than the inversion of a single float
@@ -311,7 +370,7 @@ end
     end
 
     threebus_sys = System(three_bus_file_dir, runchecks = false)
-    ybus_original = PSY.Ybus(threebus_sys)
+    ybus_original = PNM.Ybus(threebus_sys)
     cb1 = NetworkSwitch(1.0, ybus_original)
 
     @test all(
@@ -330,8 +389,8 @@ end
 @testset "Test Generation perturbations callback affects" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys = System(three_bus_file_dir, runchecks = false)
-    for l in get_components(PSY.PowerLoad, threebus_sys)
-        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    for l in get_components(PSY.StandardLoad, threebus_sys)
+        transform_load_to_constant_impedance(l)
     end
     add_source_to_ref(threebus_sys)
     # Attach dyn devices
@@ -351,7 +410,7 @@ end
     cref = ControlReferenceChange(1.0, mach, :P_ref, 10.0)
     ωref = ControlReferenceChange(1.0, inv, :ω_ref, 0.9)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
 
     cref_affect_f = PSID.get_affect(inputs, threebus_sys, cref)
@@ -363,7 +422,7 @@ end
     @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
     @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
 
     mach_trip = PSID.GeneratorTrip(1.0, mach)
@@ -382,8 +441,8 @@ end
 @testset "Test Load perturbations callback affects" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys = System(three_bus_file_dir, runchecks = false)
-    for l in get_components(PSY.PowerLoad, threebus_sys)
-        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    for l in get_components(PSY.StandardLoad, threebus_sys)
+        transform_load_to_constant_impedance(l)
     end
     add_source_to_ref(threebus_sys)
     # Attach dyn devices
@@ -403,7 +462,7 @@ end
     load_val = LoadChange(1.0, load_1, :P_ref, 10.0)
     load_trip = LoadTrip(1.0, load_2)
 
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency)
+    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
 
     lref_affect_f = PSID.get_affect(inputs, threebus_sys, load_val)
@@ -421,8 +480,8 @@ end
 @testset "Global Index" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
     threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
-    for l in get_components(PSY.PowerLoad, threebus_sys_dyns)
-        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    for l in get_components(PSY.StandardLoad, threebus_sys_dyns)
+        transform_load_to_constant_impedance(l)
     end
     add_source_to_ref(threebus_sys_dyns)
 
@@ -446,7 +505,13 @@ end
     end
 
     # Tests for all Dynamic Lines
-    sim = Simulation(ResidualModel, threebus_sys_dyns, mktempdir(), (0.0, 10.0))
+    sim = Simulation(
+        ResidualModel,
+        threebus_sys_dyns,
+        mktempdir(),
+        (0.0, 10.0);
+        console_level = Logging.Error,
+    )
     global_index = PSID.make_global_state_map(sim.inputs)
     @test_throws ErrorException PSID.get_state_from_ix(global_index, 40)
     @test ("V_2", :R) == PSID.get_state_from_ix(global_index, 2)
@@ -461,8 +526,8 @@ end
         joinpath(TEST_FILES_DIR, "data_tests/240busWECC_2018_PSS.dyr"),
         bus_name_formatter = x -> string(strip(x["name"])) * "-" * string(x["index"]),
     )
-    for l in get_components(PSY.PowerLoad, sys)
-        PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+    for l in get_components(PSY.StandardLoad, sys)
+        transform_load_to_constant_impedance(l)
     end
     sim = Simulation(
         ResidualModel,
@@ -470,7 +535,8 @@ end
         mktempdir(),
         (0.0, 20.0), #time span
         # Not initialized to speed up the test
-        initialize_simulation = false,
+        initialize_simulation = false;
+        console_level = Logging.Error,
     )
 
     @test PSID.get_global_vars_update_pointers(sim.inputs)[1] != 0
@@ -482,13 +548,14 @@ end
         (0.0, 20.0),
         # Not initialized to speed up the test
         initialize_simulation = false,
-        frequency_reference = ConstantFrequency, #time span
+        frequency_reference = ConstantFrequency(),
+        console_level = Logging.Error, #time span
     )
 
     @test PSID.get_global_vars_update_pointers(sim.inputs)[1] == 0
 
     ref_bus = get_component(Bus, sys, "TESLA-3933")
-    devs_in_ref = get_components(StaticInjection, sys, x -> get_bus(x) == ref_bus)
+    devs_in_ref = get_components(x -> get_bus(x) == ref_bus, StaticInjection, sys)
     for d in devs_in_ref
         remove_component!(sys, get_dynamic_injector(d))
         remove_component!(sys, d)
@@ -501,7 +568,7 @@ end
     #     (0.0, 20.0),
     #     # Not initialized to speed up the test
     #     initialize_simulation = false,
-    #     frequency_reference = ConstantFrequency, #time span
+    #     frequency_reference = ConstantFrequency(), #time span
     # )
 end
 
@@ -514,6 +581,7 @@ end
         mktempdir(),
         (0.0, 30.0); #time span
         all_lines_dynamic = true,
+        console_level = Logging.Error,
     )
     @test sim.status == PSID.BUILT
     inputs = PSID.get_simulation_inputs(sim)
@@ -526,6 +594,7 @@ end
         mktempdir(),
         (0.0, 30.0); #time span
         all_branches_dynamic = true,
+        console_level = Logging.Error,
     )
     @test sim.status == PSID.BUILT
     inputs = PSID.get_simulation_inputs(sim)
@@ -538,6 +607,7 @@ end
         mktempdir(),
         (0.0, 30.0); #time span
         all_lines_dynamic = true,
+        console_level = Logging.Error,
     )
     @test sim.status == PSID.BUILT
     inputs = PSID.get_simulation_inputs(sim)
@@ -585,7 +655,8 @@ end
             omib_sys, #system
             path,
             (0.0, 20.0), #time span
-            Ybus_change,
+            Ybus_change;
+            console_level = Logging.Error,
         )
 
         # Test Initial Condition
@@ -620,4 +691,37 @@ end
         @info("removing test files")
         rm(path, force = true, recursive = true)
     end
+end
+
+@testset "Test 01 OMIB AVR Error" begin
+    # Define Classic OMIB with different AVR
+    omib_sys_error = System(omib_file_dir, runchecks = false)
+    add_source_to_ref(omib_sys_error)
+    ############### Data Dynamic devices ########################
+    function dyn_gen_error(generator)
+        return DynamicGenerator(
+            name = get_name(generator),
+            ω_ref = 1.0,
+            machine = machine_classic(),
+            shaft = shaft_damping(),
+            avr = avr_type1(),
+            prime_mover = tg_none(),
+            pss = pss_none(),
+        )
+    end
+    #Attach dynamic generator. Currently use PSS/e format based on bus #.
+    gen = [g for g in get_components(Generator, omib_sys_error)][1]
+    case_gen = dyn_gen_error(gen)
+    add_component!(omib_sys_error, case_gen, gen)
+
+    @test_throws ErrorException PSID.DynamicWrapper(
+        gen,
+        case_gen,
+        1,
+        1:6,
+        1:6,
+        1:9,
+        100.0,
+        60.0,
+    )
 end

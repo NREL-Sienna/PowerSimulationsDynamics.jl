@@ -31,6 +31,7 @@ makedocs(
             "Outer Control" => "component_models/outer_control.md",
         ],
         "Branch Models" => Any["Network" => "component_models/network.md",],
+        "Load Models" => Any["Load Models" => "component_models/loads.md",],
         "Code Base Developer Guide" => Any["Developer Guide" => "code_base_developer_guide/developer.md",],
         "Public API Reference" => "api/public.md",
         "Internal API Reference" => "api/internal.md",

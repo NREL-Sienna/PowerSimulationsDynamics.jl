@@ -45,8 +45,8 @@ for g in get_components(Generator, threebus_sys)
     end
 end
 
-for l in get_components(PSY.PowerLoad, threebus_sys)
-    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+for l in get_components(PSY.StandardLoad, threebus_sys)
+    transform_load_to_constant_impedance(l)
 end
 
 #Create Ybus_Fault
@@ -57,4 +57,4 @@ for br in fault_branches
         br.x = 4 * br.x
     end
 end
-Ybus_fault = PSY.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :];
+Ybus_fault = PNM.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :];

@@ -11,10 +11,10 @@ using Logging
 open("precompile_time.txt", "a") do io
     write(io, "| $(ARGS[1]) | $(precompile.time) |\n")
 end
-
+include("../utils/get_results.jl")
 sys = System("test/data_tests/WECC_240_dynamic.json"; runchecks = false)
-for l in get_components(PSY.PowerLoad, sys)
-    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+for l in get_components(PSY.StandardLoad, sys)
+    transform_load_to_constant_impedance(l)
 end
 
 # First runs
@@ -69,7 +69,7 @@ try
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10"),
         #console_level = Logging.Error,
     ) #Type of Fault
-    status = execute!(sim_rodas, Rodas4(), rtol = 1e-9, atol = 1e-9)
+    status = execute!(sim_rodas, Rodas4())
     if status == PSID.SIMULATION_FINALIZED
         res_rodas = read_results(sim_rodas)
         solve_time = res_rodas.time_log[:timed_solve_time]

@@ -51,7 +51,7 @@ function test_sundials(solver)
         #Solve problem
         @info "$(solver)" @time execute!(sim, IDA(linear_solver = solver))
         results = read_results(sim)
-        @test results.solution.retcode == :Success
+        @test SciMLBase.successful_retcode(results.solution)
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)

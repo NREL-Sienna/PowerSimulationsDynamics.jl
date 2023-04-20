@@ -23,8 +23,8 @@ function inv_gfoll(static_device)
     ) #pss
 end
 
-for l in get_components(PSY.PowerLoad, omib_sys)
-    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+for l in get_components(PSY.StandardLoad, omib_sys)
+    transform_load_to_constant_impedance(l)
 end
 
 #Attach dynamic generator. Currently use PSS/e format based on bus #.

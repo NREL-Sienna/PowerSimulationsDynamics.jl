@@ -27,11 +27,14 @@ export SourceBusVoltageChange
 export GeneratorTrip
 export LoadTrip
 export LoadChange
+export PerturbState
 # export BusTrip
 
 # Export for routines
 export get_jacobian
 export small_signal_analysis
+export summary_participation_factors
+export summary_eigenvalues
 export get_state_series
 export get_voltage_magnitude_series
 export get_voltage_angle_series
@@ -41,16 +44,29 @@ export get_real_current_series
 export get_imaginary_current_series
 export get_activepower_series
 export get_reactivepower_series
+export get_source_real_current_series
+export get_source_imaginary_current_series
 export get_field_current_series
 export get_field_voltage_series
+export get_mechanical_torque_series
+export get_real_current_branch_flow
+export get_imaginary_current_branch_flow
+export get_activepower_branch_flow
+export get_reactivepower_branch_flow
+export get_frequency_series
 export get_setpoints
 export get_solution
+export is_valid
+export transform_load_to_constant_impedance
+export transform_load_to_constant_current
+export transform_load_to_constant_power
 
 ####################################### Package Imports ####################################
 import Logging
 import InfrastructureSystems
 import SciMLBase
 import DataStructures: OrderedDict
+import DataFrames: DataFrame
 import Random
 import ForwardDiff
 import SparseArrays
@@ -61,6 +77,7 @@ import PrettyTables
 import Base.ImmutableDict
 import PowerSystems
 import PowerFlows
+import PowerNetworkMatrices
 import TimerOutputs
 import FastClosures: @closure
 
@@ -68,6 +85,7 @@ const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
 const PF = PowerFlows
+const PNM = PowerNetworkMatrices
 
 using DocStringExtensions
 
@@ -84,7 +102,6 @@ include("base/bus_categories.jl")
 include("base/device_wrapper.jl")
 include("base/branch_wrapper.jl")
 include("base/frequency_reference.jl")
-include("base/file_system.jl")
 include("base/simulation_model.jl")
 include("base/simulation_inputs.jl")
 include("base/perturbations.jl")
@@ -99,6 +116,7 @@ include("base/supplemental_accesors.jl")
 include("base/nlsolve_wrapper.jl")
 include("base/simulation_initialization.jl")
 include("base/small_signal.jl")
+include("base/model_validation.jl")
 
 #Common Models
 include("models/branch.jl")
@@ -157,6 +175,7 @@ include("post_processing/post_proc_generator.jl")
 include("post_processing/post_proc_inverter.jl")
 include("post_processing/post_proc_results.jl")
 include("post_processing/post_proc_loads.jl")
+include("post_processing/post_proc_source.jl")
 
 #Utils
 include("utils/psy_utils.jl")

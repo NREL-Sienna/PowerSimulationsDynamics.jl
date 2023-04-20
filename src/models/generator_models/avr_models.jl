@@ -19,6 +19,16 @@ end
 
 function mass_matrix_avr_entries!(
     mass_matrix,
+    avr::PSY.SCRX,
+    global_index::Base.ImmutableDict{Symbol, Int64},
+)
+    mass_matrix[global_index[:Vr1], global_index[:Vr1]] = PSY.get_Tb(avr) # left hand side
+    mass_matrix[global_index[:Vr2], global_index[:Vr2]] = PSY.get_Te(avr) #
+    return
+end
+
+function mass_matrix_avr_entries!(
+    mass_matrix,
     avr::PSY.EXST1,
     global_index::Base.ImmutableDict{Symbol, Int64},
 )
@@ -319,6 +329,66 @@ function mdl_avr_ode!(
 
     #Update inner_vars
     inner_vars[Vf_var] = Vf
+
+    return
+end
+
+function mdl_avr_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SCRX, TG, P}}, #
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+
+    #Obtain references
+    V0_ref = get_V_ref(dynamic_device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, PSY.SCRX) #
+
+    #Define inner states for component
+    internal_states = @view device_states[local_ix]
+    Vr1 = internal_states[1]
+    Vr2 = internal_states[2]
+
+    #Define external states for device
+    V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2) # real and imaginary >> Ec
+    Vs = inner_vars[V_pss_var] #Vs, PSS output
+    Ifd = inner_vars[Xad_Ifd_var] # read Lad Ifd
+
+    #Get parameters << keep
+    avr = PSY.get_avr(dynamic_device)
+    Ta_Tb = PSY.get_Ta_Tb(avr) # Ta/Tb
+    Tb = PSY.get_Tb(avr)
+    Ta = Tb * Ta_Tb
+    Te = PSY.get_Te(avr)
+    K = PSY.get_K(avr)
+    V_min, V_max = PSY.get_Efd_lim(avr) #Efd_lim (V_lim)
+    switch = PSY.get_switch(avr) # reads switch parameters
+    rc_rfd = PSY.get_rc_rfd(avr)
+
+    #Compute auxiliary parameters << keep
+    V_in = V0_ref + Vs - V_th #sum of V
+    V_LL, dVr1_dt = lead_lag_mass_matrix(V_in, Vr1, 1.0, Ta, Tb) # 1st block
+    Vr2_sat, dVr2_dt = low_pass_nonwindup_mass_matrix(V_LL, Vr2, K, Te, V_min, V_max) # gain K , 2nd block
+
+    # Switch multiplier
+    mult = switch == 0 ? V_th : one(typeof(V_th))
+    V_ex = mult * Vr2_sat
+
+    #Negative current logic
+    if rc_rfd == 0.0 # a float
+        E_fd = V_ex
+    else
+        E_fd = Ifd > 0.0 ? V_ex : -Ifd * rc_rfd
+    end
+
+    #Compute 2 States AVR ODE: << move this after? (final computation)
+    output_ode[local_ix[1]] = dVr1_dt
+    output_ode[local_ix[2]] = dVr2_dt
+
+    #Update inner_vars << do this after
+    inner_vars[Vf_var] = E_fd # field voltage from rc_rfd
 
     return
 end

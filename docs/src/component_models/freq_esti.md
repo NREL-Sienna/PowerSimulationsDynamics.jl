@@ -31,8 +31,9 @@ with
 
 ```math
 \begin{align}
-\delta\omega_{\text{pll}} &= k_{p,\text{pll}} \tan^{-1} \left(\frac{v_{q,\text{pll}}}{v_{d,\text{pll}}} \right) + k_{i,\text{pll}} \varepsilon_{\text{pll}} \tag{1e} \\
-v_{d,\text{out}} + jv_{q,\text{out}} &= (v_r + jv_i)e^{-\delta\theta_\text{pll}}  \tag{1f}
+\delta\omega_{\text{pll}} &= 1.0 - \omega_{\text{sys}} + k_{p,\text{pll}} \tan^{-1} \left(\frac{v_{q,\text{pll}}}{v_{d,\text{pll}}} \right) + k_{i,\text{pll}} \varepsilon_{\text{pll}} \tag{1e} \\
+\omega_{\text{pll}} &= \delta\omega_{\text{pll}} + \omega_{\text{sys}} \tag{1f} \\
+v_{d,\text{out}} + jv_{q,\text{out}} &= (v_r + jv_i)e^{-\delta\theta_\text{pll}}  \tag{1g}
 \end{align}
 ```
 
@@ -42,7 +43,7 @@ or the last branch of such filter.
 
 ## Reduced Order Phase-Locked Loop (PLL) ```[ReducedOrderPLL]```
 
-The following equations presents a simplified PLL used to estimate the frequency and PLL angle of the grid. The model assumes that the voltage in the d-axis is always zero (i.e. locked) and hence it does not model it. With that the equations are given by:
+The following equations presents a simplified PLL used to estimate the frequency and PLL angle of the grid. The model attempts to steer the voltage in the q-axis to zero (i.e. lock the q-axis to zero) using a PI controller. With that the equations are given by:
 
 ```math
 \begin{align}
@@ -55,8 +56,9 @@ The following equations presents a simplified PLL used to estimate the frequency
 with
 ```math
 \begin{align}
-\delta\omega_{\text{pll}} &= k_{p,\text{pll}} v_{q,\text{pll}} + k_{i,\text{pll}} \varepsilon_{\text{pll}} \tag{2d} \\
-v_{d,\text{out}} + jv_{q,\text{out}} &= (v_r + jv_i)e^{-\delta\theta_\text{pll}}  \tag{2e}
+\delta\omega_{\text{pll}} &= 1.0 - \omega_{\text{sys}} + k_{p,\text{pll}} v_{q,\text{pll}} + k_{i,\text{pll}} \varepsilon_{\text{pll}} \tag{2d} \\
+\omega_{\text{pll}} &= \delta\omega_{\text{pll}} + \omega_{\text{sys}} \tag{2e} \\
+v_{d,\text{out}} + jv_{q,\text{out}} &= (v_r + jv_i)e^{-\delta\theta_\text{pll}}  \tag{2f}
 \end{align}
 ```
 

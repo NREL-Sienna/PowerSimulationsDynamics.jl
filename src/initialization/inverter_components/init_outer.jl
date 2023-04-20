@@ -55,7 +55,10 @@ function initialize_outer!(
     inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
     set_Q_ref(dynamic_device, q_elec_out)
     return
 end
@@ -117,7 +120,73 @@ function initialize_outer!(
     inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
+    set_Q_ref(dynamic_device, q_elec_out)
+end
+
+function initialize_outer!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator},
+            IC,
+            DC,
+            P,
+            F,
+        },
+    },
+    inner_vars::AbstractVector,
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator},
+    )
+    Vr_filter = device_states[external_ix[1]]
+    Vi_filter = device_states[external_ix[2]]
+    Ir_filter = device_states[external_ix[3]]
+    Ii_filter = device_states[external_ix[4]]
+
+    Vr_cnv = inner_vars[Vr_cnv_var]
+    Vi_cnv = inner_vars[Vi_cnv_var]
+    θ0_oc = atan(Vi_cnv, Vr_cnv)
+
+    #Obtain additional expressions
+    p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
+    q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
+
+    #Update inner_vars
+    inner_vars[P_ES_var] = p_elec_out
+    #Update states
+    outer_ix = get_local_state_ix(
+        dynamic_device,
+        PSY.OuterControl{PSY.ActiveVirtualOscillator, PSY.ReactiveVirtualOscillator},
+    )
+    outer_states = @view device_states[outer_ix]
+    outer_states[1] = θ0_oc #θ_oc
+    outer_states[2] = 1.0 # V_ref will be computed in the inner control
+
+    #Update inner vars
+    inner_vars[θ_oc_var] = θ0_oc
+    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
+    set_P_ref(dynamic_device, p_elec_out)
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
     set_Q_ref(dynamic_device, q_elec_out)
 end
 
@@ -163,9 +232,9 @@ function initialize_outer!(
 
     #Get Outer Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power(outer_control)
+    active_power_control = PSY.get_active_power_control(outer_control)
     Ki_p = PSY.get_Ki_p(active_power_control) #Integral Gain
-    reactive_power_control = PSY.get_reactive_power(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     Ki_q = PSY.get_Ki_q(reactive_power_control) #Integral Gain
 
     #Update inner_vars
@@ -188,10 +257,13 @@ function initialize_outer!(
     inner_vars[Iq_oc_var] = I_dq_cnv[q]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
     set_P_ref(dynamic_device, p_elec_out)
-    PSY.set_P_ref!(PSY.get_active_power(PSY.get_outer_control(dynamic_device)), p_elec_out)
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
     set_Q_ref(dynamic_device, q_elec_out)
     PSY.set_Q_ref!(
-        PSY.get_reactive_power(PSY.get_outer_control(dynamic_device)),
+        PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
     )
     return
@@ -221,28 +293,45 @@ function initialize_outer!(
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
 }
-    #function get_value_I(v::Float64)
-    #    return v
-    #end
-    #function get_value_I(v::Int)
-    #    return v
-    #end
-    #function get_value_I(v::ForwardDiff.Dual)
-    #    return v.value
-    #end
+    # Read inner vars
+    Vr_filter = inner_vars[Vr_filter_var]
+    Vi_filter = inner_vars[Vi_filter_var]
+    Ir_filter = inner_vars[Ir_filter_var]
+    Ii_filter = inner_vars[Ii_filter_var]
+    V_t = sqrt(Vr_filter^2 + Vi_filter^2)
 
-    Vr_cnv = inner_vars[Vr_cnv_var]
-    Vi_cnv = inner_vars[Vi_cnv_var]
     Ir_cnv = inner_vars[Ir_cnv_var]
     Ii_cnv = inner_vars[Ii_cnv_var]
-    V_t = sqrt(Vr_cnv^2 + Vi_cnv^2)
-    p_elec_out = Ir_cnv * Vr_cnv + Ii_cnv * Vi_cnv
-    q_elec_out = -Ii_cnv * Vr_cnv + Ir_cnv * Vi_cnv
-    q_ref = get_Q_ref(dynamic_device)
+    Ir_cap = Ir_filter - Ir_cnv
+    Ii_cap = Ii_filter - Ii_cnv
+    Q_cap = -Ii_cap * Vr_filter + Ir_cap * Vi_filter
+
+    p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
+    q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter - Q_cap
+
+    ## Set references
+    Vm = V_t
+    PSY.set_Q_ref!(PSY.get_converter(dynamic_device), q_elec_out)
+    set_Q_ref(dynamic_device, q_elec_out)
+    PSY.set_Q_ref!(
+        PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
+        q_elec_out,
+    )
+    PSY.set_P_ref!(
+        PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
+        p_elec_out,
+    )
+    set_P_ref(dynamic_device, p_elec_out)
+    PSY.set_V_ref!(
+        PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
+        Vm,
+    )
+    set_V_ref(dynamic_device, Vm)
 
     #Get Outer Controller parameters
+    q_ref = get_Q_ref(dynamic_device)
     outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power(outer_control)
+    active_power_control = PSY.get_active_power_control(outer_control)
     Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag
 
     #Set state counter for variable number of states due to flags
@@ -280,7 +369,7 @@ function initialize_outer!(
         state_ct += 1
     end
 
-    reactive_power_control = PSY.get_reactive_power(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     # Note: Monitoring power from other branch not supported.
     VC_Flag = PSY.get_VC_Flag(reactive_power_control)
     Ref_Flag = PSY.get_Ref_Flag(reactive_power_control)
@@ -317,7 +406,7 @@ function initialize_outer!(
         R_c = PSY.get_R_c(reactive_power_control)
         X_c = PSY.get_R_c(reactive_power_control)
         VC_Flag = PSY.get_VC_Flag(reactive_power_control)
-        V_reg = sqrt(Vr_cnv^2 + Vi_cnv^2)
+        V_reg = sqrt(Vr_filter^2 + Vi_filter^2)
         # Compute input to the compensated voltage filter
         if VC_Flag == 0
             V_flt_input = V_reg + K_c * q_elec_out
@@ -325,8 +414,8 @@ function initialize_outer!(
             # Calculate compensated voltage: | V_reg - (R_c + jX_c)(I_r + jI_i) |
             V_flt_input = sqrt(
                 V_reg^2 +
-                2 * V_reg * (Ii_cnv * X_c - Ir_cnv * R_c) +
-                (Ii_cnv^2 + Ir_cnv^2) * (R_c^2 + X_c^2),
+                2 * V_reg * (Ii_filter * X_c - Ir_filter * R_c) +
+                (Ii_filter^2 + Ir_filter^2) * (R_c^2 + X_c^2),
             )
         end
         #Update states
@@ -345,7 +434,7 @@ function initialize_outer!(
         R_c = PSY.get_R_c(reactive_power_control)
         X_c = PSY.get_R_c(reactive_power_control)
         VC_Flag = PSY.get_VC_Flag(reactive_power_control)
-        V_reg = sqrt(Vr_cnv^2 + Vi_cnv^2)
+        V_reg = sqrt(Vr_filter^2 + Vi_filter^2)
         # Compute input to the compensated voltage filter
         if VC_Flag == 0
             V_flt_input = V_reg + K_c * q_elec_out
@@ -353,8 +442,8 @@ function initialize_outer!(
             # Calculate compensated voltage: | V_reg - (R_c + jX_c)(I_r + jI_i) |
             V_flt_input = sqrt(
                 V_reg^2 +
-                2 * V_reg * (Ii_cnv * X_c - Ir_cnv * R_c) +
-                (Ii_cnv^2 + Ir_cnv^2) * (R_c^2 + X_c^2),
+                2 * V_reg * (Ii_filter * X_c - Ir_filter * R_c) +
+                (Ii_filter^2 + Ir_filter^2) * (R_c^2 + X_c^2),
             )
         end
         #Update states

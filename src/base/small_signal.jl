@@ -113,6 +113,10 @@ function _get_eigenvalues(reduced_jacobian::AbstractArray{Float64}, multimachine
         )
         @debug(eigen_vals)
     end
+    if !isa(Vector{ComplexF64}, typeof(eigen_vals))
+        eigen_vals = convert(Vector{ComplexF64}, eigen_vals)
+        R_eigen_vect = convert(Matrix{ComplexF64}, R_eigen_vect)
+    end
     return eigen_vals, R_eigen_vect
 end
 
@@ -199,4 +203,90 @@ function small_signal_analysis(::Type{T}, system::PSY.System) where {T <: Simula
     x0_init = get_flat_start(inputs)
     set_operating_point!(x0_init, inputs, system)
     return _small_signal_analysis(T, inputs, x0_init)
+end
+
+function summary_participation_factors(
+    pf::Dict{String, Dict{Symbol, Array{Float64}}},
+    eigs::Vector{ComplexF64},
+)
+    pf_ord = sort(OrderedDict(pf))
+    names = ["λ_$(k)" for k in 1:length(eigs)]
+    names = vcat(["Name"], names)
+    df = DataFrame([name => [] for name in names])
+
+    for (device, dict_pfs) in pf_ord
+        ord_dict_pfs = sort(OrderedDict(dict_pfs))
+        for (state, state_pf) in ord_dict_pfs
+            row = vcat(device * " " * String(state), round.(state_pf, digits = 8))
+            push!(df, row)
+        end
+    end
+    return df
+end
+
+"""
+    summary_participation_factors(
+            sm::SmallSignalOutput,
+    )
+
+Function to obtain the participation factor of each state to each eigenvalue.
+It returns a DataFrame with the participation factors of each state to all eigenvalues.
+
+# Arguments
+
+- `sm::SmallSignalOutput` : Small Signal Output object that contains the eigenvalues and participation factors
+"""
+function summary_participation_factors(sm::SmallSignalOutput)
+    eigs = sm.eigenvalues
+    pf = sm.participation_factors
+    return summary_participation_factors(pf, eigs)
+end
+
+function summary_eigenvalues(
+    pf::Dict{String, Dict{Symbol, Array{Float64}}},
+    eigs::Vector{ComplexF64},
+)
+    df = summary_participation_factors(pf, eigs)
+    df_noname = df[!, 2:end]
+    most_associated = Vector{Int}(undef, length(eigs))
+    for (ix, col_pfs) in enumerate(eachcol(df_noname))
+        most_associated[ix] = findfirst(==(maximum(col_pfs)), col_pfs)
+    end
+    col_names = [
+        "Most Associated",
+        "Part. Factor",
+        "Real Part",
+        "Imag. Part",
+        "Damping [%]",
+        "Freq [Hz]",
+    ]
+    df_summary = DataFrame([name => [] for name in col_names])
+    for (ix, eig) in enumerate(eigs)
+        eig_associated = most_associated[ix]
+        state_name = df[eig_associated, "Name"]
+        pf_val = df_noname[eig_associated, ix]
+        freq_rad = abs(eig)
+        damping = -100 * real(eig) / freq_rad
+        row = [state_name, pf_val, real(eig), imag(eig), damping, freq_rad / (2pi)]
+        push!(df_summary, row)
+    end
+    return df_summary
+end
+
+"""
+    summary_eigenvalues(
+            sm::SmallSignalOutput,
+    )
+
+Function to obtain a summary of the eigenvalues of the Jacobian at the operating point.
+It returns a DataFrame with the most associated state for each eigenvalue, its real and imaginary part, damping and frequency.
+
+# Arguments
+
+- `sm::SmallSignalOutput` : Small Signal Output object that contains the eigenvalues and participation factors
+"""
+function summary_eigenvalues(sm::SmallSignalOutput)
+    eigs = sm.eigenvalues
+    pf = sm.participation_factors
+    return summary_eigenvalues(pf, eigs)
 end

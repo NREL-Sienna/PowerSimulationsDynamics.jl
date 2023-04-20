@@ -18,18 +18,18 @@ sys_power = System(raw_file, dyr_file)
 # Create Exponential load system
 sys_exp = System(raw_file, dyr_file)
 # Replace Constant Power loads for Exponential loads
-for l in collect(get_components(PSY.PowerLoad, sys_exp))
+for l in collect(get_components(PSY.StandardLoad, sys_exp))
     exp_load = PSY.ExponentialLoad(
         name = PSY.get_name(l),
         available = PSY.get_available(l),
         bus = PSY.get_bus(l),
-        active_power = PSY.get_active_power(l),
-        reactive_power = PSY.get_reactive_power(l),
+        active_power = PSY.get_constant_active_power(l),
+        reactive_power = PSY.get_constant_reactive_power(l),
         active_power_coefficient = 0.0, # Constant Power
         reactive_power_coefficient = 0.0, # Constant Power
         base_power = PSY.get_base_power(l),
-        max_active_power = PSY.get_max_active_power(l),
-        max_reactive_power = PSY.get_max_reactive_power(l),
+        max_active_power = PSY.get_max_constant_active_power(l),
+        max_reactive_power = PSY.get_max_constant_reactive_power(l),
     )
     PSY.remove_component!(sys_exp, l)
     PSY.add_component!(sys_exp, exp_load)
@@ -79,6 +79,9 @@ end
         _, v102_exp = get_voltage_magnitude_series(results_exp, 102)
         _, v103_power = get_voltage_magnitude_series(results_power, 103)
         _, v103_exp = get_voltage_magnitude_series(results_exp, 103)
+
+        #TODO: Test for LoadPower
+        p = get_activepower_series(results_exp, "load1031")
 
         # Test Transient Simulation Results
         @test LinearAlgebra.norm(v102_power - v102_exp, Inf) <= 1e-3

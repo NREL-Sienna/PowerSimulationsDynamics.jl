@@ -17,8 +17,8 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/GAST/GAST_TEST.csv")
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file, dyr_file)
-        for l in get_components(PSY.PowerLoad, sys)
-            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        for l in get_components(PSY.StandardLoad, sys)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
@@ -57,6 +57,9 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/GAST/GAST_TEST.csv")
         t = series[1]
         δ = series[2]
 
+        # TODO: Test mechanical torque in PSSE
+        series2 = get_mechanical_torque_series(results, "generator-102-1")
+
         # Obtain PSSE results
         t_psse, δ_psse = get_csv_delta(csv_file)
 
@@ -75,8 +78,8 @@ end
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file, dyr_file)
-        for l in get_components(PSY.PowerLoad, sys)
-            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        for l in get_components(PSY.StandardLoad, sys)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
@@ -114,6 +117,11 @@ end
         series = get_state_series(results, ("generator-102-1", :δ))
         t = series[1]
         δ = series[2]
+
+        # TODO: Test mechanical torque in PSSE
+        _, τm = get_mechanical_torque_series(results, "generator-102-1")
+        _, Ir = get_source_real_current_series(results, "generator-101-1")
+        _, Ii = get_source_imaginary_current_series(results, "generator-101-1")
 
         # Obtain PSSE results
         t_psse, δ_psse = get_csv_delta(csv_file)
