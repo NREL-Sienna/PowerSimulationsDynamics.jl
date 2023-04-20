@@ -28,7 +28,11 @@ struct SimulationInputs
         TimerOutputs.@timeit BUILD_TIMER "Wrap Branches" begin
             wrapped_branches = _wrap_dynamic_branches(sys, lookup)
             has_dyn_lines = !isempty(wrapped_branches)
-            branch_state_counts = 2 * length(wrapped_branches)
+            aux_states = 0
+            for br in wrapped_branches
+                aux_states += PSY.get_n_states(br)
+            end
+            branch_state_counts = aux_states
             injection_start = 2 * n_buses + branch_state_counts + 1
         end
 
