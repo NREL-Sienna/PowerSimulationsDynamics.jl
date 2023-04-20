@@ -256,6 +256,57 @@ function lead_lag_2nd(
 end
 
 """
+2nd Order Lead-Lag Block with non-windup limits
+                  y_max
+                 /¯¯¯¯¯¯
+     ┌──────────────────┐
+     │ 1 + sT3 + s^2 T4 │
+u -> │ ──────────────── │ -> y
+     │ 1 + sT1 + s^2 T2 │
+     └──────────────────┘
+      ______/
+      y_min
+    
+Internal States: x1, x2
+"""
+
+function lead_lag_2nd_mass_matrix_nonwindup(
+    u::Z,
+    x1::Z,
+    x2::Z,
+    T1::Float64,
+    T2::Float64,
+    T3::Float64,
+    T4::Float64,
+    y_min::Float64,
+    y_max::Float64,
+) where {Z <: ACCEPTED_REAL_TYPES}
+    dx1dt_scaled = u - T1 * x1 - x2
+    dx2dt = x1
+    T4_T2 = T2 < eps() ? 0.0 : (T4 / T2)
+    y = T4_T2 * u + (T3 - T1 * T4_T2) * x1 + (1.0 - T4_T2) * x2
+    y_sat = clamp(y, y_min, y_max)
+    binary_logic = y_min < y < y_max ? 1.0 : 0.0
+    return y_sat, binary_logic * dx1dt_scaled, binary_logic * dx2dt
+end
+
+function lead_lag_2nd_nonwindup(
+    u::Z,
+    x1::Z,
+    x2::Z,
+    T1::Float64,
+    T2::Float64,
+    T3::Float64,
+    T4::Float64,
+    y_min::Float64,
+    y_max::Float64,
+) where {Z <: ACCEPTED_REAL_TYPES}
+    y, dx1dt_scaled, dx2dt =
+        lead_lag_2nd_mass_matrix_nonwindup(u, x1, x2, T1, T2, T3, T4, y_min, y_max)
+    return y, (1.0 / T2) * dx1dt_scaled, dx2dt
+end
+
+"""
 Proportional-Integral Block
              y_max
             /¯¯¯¯¯¯

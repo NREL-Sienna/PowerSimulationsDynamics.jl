@@ -16,6 +16,7 @@ get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.PeriodicVariableSource) = 0
 get_inner_vars_count(::PSY.SingleCageInductionMachine) = 0
 get_inner_vars_count(::PSY.SimplifiedSingleCageInductionMachine) = 0
+get_inner_vars_count(::PSY.CSVGN1) = 0
 get_inner_vars_count(::PSY.AggregateDistributedGenerationA) = 0
 get_inner_vars_count(::PSY.ActiveConstantPowerLoad) = 0
 
