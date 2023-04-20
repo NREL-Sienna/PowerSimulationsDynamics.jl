@@ -16,18 +16,18 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/CSVGN1/results_PSSe.csv")
 
 function csvgn1_1(source)
     return PSY.CSVGN1(
-        name=get_name(source),
-        K=20.0,
-        T1=0.0,
-        T2=1.0,
-        T3=0.154833,
-        T4=1.0,
-        T5=0.005167,
-        Rmin=0.0,
-        Vmax=1.0,
-        Vmin=0.0,
-        CBase=60.0,
-        base_power=500.0,
+        name = get_name(source),
+        K = 20.0,
+        T1 = 0.0,
+        T2 = 1.0,
+        T3 = 0.154833,
+        T4 = 1.0,
+        T5 = 0.005167,
+        Rmin = 0.0,
+        Vmax = 1.0,
+        Vmin = 0.0,
+        CBase = 60.0,
+        base_power = 500.0,
     )
 end
 
@@ -85,12 +85,8 @@ end
         # Define Perturbation
         load = get_load_by_name(sys, "load21")
 
-        perturbation_load = LoadChange(
-            0.005,
-            load,
-            :P_ref_impedance,
-            400/get_base_power(sys)
-        )
+        perturbation_load =
+            LoadChange(0.005, load, :P_ref_impedance, 400 / get_base_power(sys))
 
         # Define Simulation Problem
         sim = Simulation(
