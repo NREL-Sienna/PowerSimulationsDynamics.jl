@@ -86,6 +86,34 @@ end
     end
 end
 
+@testset "Solve Twice Simulation" begin
+    path1 = (joinpath(pwd(), "test-Base-1"))
+    !isdir(path1) && mkdir(path1)
+    try
+        #Define Simulation Problem
+        sim = Simulation(
+            ResidualModel,
+            omib_sys, #system
+            path1,
+            (0.0, 30.0), #time span
+            Ybus_change;
+            system_to_file = true,
+            console_level = Logging.Error,
+        )
+        @test sim.status == PSID.BUILT
+
+        # First run
+        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        # Second run
+        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+    finally
+        @info("removing test files")
+        rm(path1, force = true, recursive = true)
+    end
+end
+
 @testset "Hybrid Line Indexing" begin
     ## Create threebus system with more dyn lines ##
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
