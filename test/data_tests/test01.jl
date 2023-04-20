@@ -25,12 +25,12 @@ gen = [g for g in get_components(Generator, omib_sys)][1]
 case_gen = dyn_gen_classic(gen)
 add_component!(omib_sys, case_gen, gen)
 
-for l in get_components(PSY.PowerLoad, omib_sys)
-    PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+for l in get_components(PSY.StandardLoad, omib_sys)
+    transform_load_to_constant_impedance(l)
 end
 
 #Compute Y_bus after fault
 fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
 fault_branch.r = 0.00;
 fault_branch.x = 0.1;
-Ybus_fault = PSY.Ybus([fault_branch], get_components(Bus, omib_sys))[:, :]
+Ybus_fault = PNM.Ybus([fault_branch], get_components(Bus, omib_sys))[:, :]

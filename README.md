@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/NREL-SIIP/PowerSimulationsDynamics.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/NREL-SIIP/PowerSimulationsDynamics.jl)
 [![Documentation](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/workflows/Documentation/badge.svg)](https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable)
 [<img src="https://img.shields.io/badge/slack-@SIIP/PSID-blue.svg?logo=slack">](https://join.slack.com/t/nrel-siip/shared_invite/zt-glam9vdu-o8A9TwZTZqqNTKHa7q3BpQ)
-[![DOI](https://zenodo.org/badge/280242020.svg)](https://zenodo.org/badge/latestdoi/280242020)
+[![DOI](https://zenodo.org/badge/280242020.svg)](https://zenodo.org/badge/latestdoi/280242020) [![PowerSimulationsDynamics.jl Downloads](https://shields.io/endpoint?url=https://pkgs.genieframework.com/api/v1/badge/PowerSimulationsDynamics)](https://pkgs.genieframework.com?packages=PowerSimulationsDynamics)
 
 `PowerSimulationsDynamics.jl` is a Julia package for power system modeling and simulation of Power Systems dynamics. The objectives of the package are:
 
@@ -22,8 +22,8 @@ Check the [Project Section](https://github.com/NREL-SIIP/PowerSimulationsDynamic
 
 ```julia
 julia> ]
-(v1.7) pkg> add PowerSystems
-(v1.7) pkg> add PowerSimulationsDynamics
+(v1.8) pkg> add PowerSystems
+(v1.8) pkg> add PowerSimulationsDynamics
 ```
 
 ## Usage

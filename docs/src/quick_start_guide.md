@@ -46,7 +46,7 @@ show_states_initial_value(sim)
 
 Show eigenvalues for operating point
 ```@repl quick_start_guide
-    small_sig.eigenvalues
+    summary_eigenvalues(small_sig)
 ```
 
 Show reduced jacobian for operating point
@@ -56,8 +56,7 @@ Show reduced jacobian for operating point
 
 Explore participation factors. In this case for state ω
 ```@repl quick_start_guide
-    part_factors = small_sig.participation_factors
-    part_factors["generator-102-1"][:ω]
+    part_factors = summary_participation_factors(small_sig)
 ```
 This means that the state ω of the generator at bus 102, participates 50% in eigenvalue 1 and 50% in eigenvalue 2.
 

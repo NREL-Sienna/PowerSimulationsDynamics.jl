@@ -794,6 +794,149 @@ end
 
 function device_mass_matrix_entries!(
     mass_matrix::AbstractArray,
+    dynamic_device::DynamicWrapper{PSY.ActiveConstantPowerLoad},
+)
+    global_index = get_global_index(dynamic_device)
+    device = get_device(dynamic_device)
+    bool_mm_value = PSY.get_is_filter_differential(device)
+    f0 = get_system_base_frequency(dynamic_device)
+    ωb = 2 * pi * f0
+    mass_matrix[global_index[:ir_cnv], global_index[:ir_cnv]] =
+        bool_mm_value * PSY.get_lf(device) / ωb
+    mass_matrix[global_index[:ii_cnv], global_index[:ii_cnv]] =
+        bool_mm_value * PSY.get_lf(device) / ωb
+    mass_matrix[global_index[:vr_filter], global_index[:vr_filter]] =
+        bool_mm_value * PSY.get_cf(device) / ωb
+    mass_matrix[global_index[:vi_filter], global_index[:vi_filter]] =
+        bool_mm_value * PSY.get_cf(device) / ωb
+    mass_matrix[global_index[:ir_filter], global_index[:ir_filter]] =
+        bool_mm_value * PSY.get_lg(device) / ωb
+    mass_matrix[global_index[:ii_filter], global_index[:ii_filter]] =
+        bool_mm_value * PSY.get_lg(device) / ωb
+    return
+end
+
+"""
+Model of 12-state Active Constant Power Load in Julia.
+Based on the paper `Malicious Control of an Active Load in an Islanded Mixed-Source Microgrid`
+by C. Roberts, U. Markovic, D. Arnold and D. Callaway.
+"""
+function device!(
+    device_states::AbstractArray{T},
+    output_ode::AbstractArray{T},
+    voltage_r::T,
+    voltage_i::T,
+    current_r::AbstractArray{T},
+    current_i::AbstractArray{T},
+    global_vars::AbstractArray{T},
+    ::AbstractArray{T},
+    dynamic_wrapper::DynamicWrapper{PSY.ActiveConstantPowerLoad},
+    t,
+) where {T <: ACCEPTED_REAL_TYPES}
+    Sbase = get_system_base_power(dynamic_wrapper)
+    f0 = get_system_base_frequency(dynamic_wrapper)
+    V_ref = get_V_ref(dynamic_wrapper)
+    if get_connection_status(dynamic_wrapper) < 1.0
+        output_ode .= zero(T)
+        return
+    end
+
+    # get speed of system's reference frame
+    sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
+
+    # get states
+    θ_pll = device_states[1]
+    ϵ_pll = device_states[2]
+    η = device_states[3]
+    v_dc = device_states[4]
+    γd = device_states[5]
+    γq = device_states[6]
+    Ir_cnv = device_states[7]
+    Ii_cnv = device_states[8]
+    Vr_filter = device_states[9]
+    Vi_filter = device_states[10]
+    Ir_filter = device_states[11]
+    Ii_filter = device_states[12]
+
+    # Voltages in Network Ref Frame
+    V_tR = voltage_r
+    V_tI = voltage_i
+
+    # Transformation to Ref Frame
+    I_dq_cnv = ri_dq(θ_pll + pi / 2) * [Ir_cnv; Ii_cnv]
+
+    #Get parameters
+    dynamic_device = get_device(dynamic_wrapper)
+    r_load = PSY.get_r_load(dynamic_device)
+    c_dc = PSY.get_c_dc(dynamic_device)
+    rf = PSY.get_rf(dynamic_device)
+    lf = PSY.get_lf(dynamic_device)
+    cf = PSY.get_cf(dynamic_device)
+    rg = PSY.get_rg(dynamic_device)
+    lg = PSY.get_lg(dynamic_device)
+    kp_pll = PSY.get_kp_pll(dynamic_device)
+    ki_pll = PSY.get_ki_pll(dynamic_device)
+    kpv = PSY.get_kpv(dynamic_device)
+    kiv = PSY.get_kiv(dynamic_device)
+    kpc = PSY.get_kpc(dynamic_device)
+    kic = PSY.get_kic(dynamic_device)
+    base_power = PSY.get_base_power(dynamic_device)
+
+    # Compute PLL expressions
+    V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
+    Δω_pi, dϵ_dt = pi_block(V_dq_pll[2], ϵ_pll, kp_pll, ki_pll)
+    ω_pll = Δω_pi + sys_ω
+
+    # Compute DC side output
+    Id_ref, dη_dt = pi_block(V_ref - v_dc, η, kpv, kiv)
+    Iq_ref = get_Q_ref(dynamic_wrapper)
+
+    # Compute AC controller expressions
+    Vd_ref_uncomp, dγd_dt = pi_block(-Id_ref + I_dq_cnv[d], γd, kpc, kic)
+    Vq_ref_uncomp, dγq_dt = pi_block(-Iq_ref + I_dq_cnv[q], γq, kpc, kic)
+    Vd_cnv = Vd_ref_uncomp + ω_pll * lf * I_dq_cnv[q]
+    Vq_cnv = Vq_ref_uncomp - ω_pll * lf * I_dq_cnv[d]
+
+    Vr_cnv, Vi_cnv = dq_ri(θ_pll + pi / 2) * [Vd_cnv; Vq_cnv]
+
+    # Converter Power
+    P_cnv = Vr_cnv * Ir_cnv + Vi_cnv * Ii_cnv
+
+    #Compute ODEs
+
+    ## PLL Dynamics
+    output_ode[1] = 2 * pi * f0 * Δω_pi
+    output_ode[2] = dϵ_dt
+    ## DC Voltage Controller
+    output_ode[3] = dη_dt
+    output_ode[4] = (2 * pi * f0 / c_dc) * (P_cnv / v_dc - v_dc / r_load)
+    ## AC Current Controller
+    output_ode[5] = dγd_dt
+    output_ode[6] = dγq_dt
+    ## AC Dynamics
+    #𝜕id_c/𝜕t
+    output_ode[7] = (Vr_filter - Vr_cnv - rf * Ir_cnv + lf * sys_ω * Ii_cnv)
+    #𝜕iq_c/𝜕t
+    output_ode[8] = (Vi_filter - Vi_cnv - rf * Ii_cnv - lf * sys_ω * Ir_cnv)
+    #LCL Capacitor (internal state)
+    #𝜕vd_o/𝜕t
+    output_ode[9] = (Ir_filter - Ir_cnv + cf * sys_ω * Vi_filter)
+    #𝜕vq_o/𝜕t
+    output_ode[10] = (Ii_filter - Ii_cnv - cf * sys_ω * Vr_filter)
+    #Grid Inductance (internal state)
+    #𝜕id_o/𝜕t
+    output_ode[11] = (V_tR - Vr_filter - rg * Ir_filter + lg * sys_ω * Ii_filter)
+    #𝜕iq_o/𝜕t
+    output_ode[12] = (V_tI - Vi_filter - rg * Ii_filter - lg * sys_ω * Ir_filter)
+
+    #Update current
+    current_r[1] -= Ir_filter * base_power / Sbase  # in system base
+    current_i[1] -= Ii_filter * base_power / Sbase  # in system base
+    return
+end
+
+function device_mass_matrix_entries!(
+    mass_matrix::AbstractArray,
     dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
 )
     global_index = get_global_index(dynamic_device)
@@ -872,6 +1015,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
+    Sbase = get_system_base_power(dynamic_device)
     Vt = sqrt(voltage_r^2 + voltage_i^2)
 
     #Obtain References (from wrapper and device)
@@ -907,6 +1051,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
     Tv = PSY.get_Tv(get_device(dynamic_device))
     Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
+    basepower = PSY.get_base_power(get_device(dynamic_device))
+    base_power_ratio = basepower / Sbase
 
     #STATE Vmeas
     _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
@@ -972,8 +1118,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_neg = -Iq
     I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
     I_i = imag(complex(Ip_limited, Iq_neg) * exp(im * θ))
-    current_r[1] = I_r
-    current_i[1] = I_i
+    current_r[1] = I_r * base_power_ratio
+    current_i[1] = I_i * base_power_ratio
 end
 
 #Freq_Flag = 1
@@ -991,6 +1137,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
+    Sbase = get_system_base_power(dynamic_device)
     Vt = sqrt(voltage_r^2 + voltage_i^2)
 
     #Obtain References (from wrapper and device)
@@ -1039,6 +1186,8 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
     Tv = PSY.get_Tv(get_device(dynamic_device))
     Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
+    basepower = PSY.get_base_power(get_device(dynamic_device))
+    base_power_ratio = basepower / Sbase
 
     #STATE Vmeas
     _, dVmeas_dt = low_pass_mass_matrix(Vt, Vmeas, 1.0, T_rv)
@@ -1130,6 +1279,6 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_neg = -Iq
     I_r = real(complex(Ip_limited, Iq_neg) * exp(im * θ))
     I_i = imag(complex(Ip_limited, Iq_neg) * exp(im * θ))
-    current_r[1] = I_r
-    current_i[1] = I_i
+    current_r[1] = I_r * base_power_ratio
+    current_i[1] = I_i * base_power_ratio
 end

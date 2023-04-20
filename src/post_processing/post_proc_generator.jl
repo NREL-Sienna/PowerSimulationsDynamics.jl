@@ -1,4 +1,23 @@
 """
+Default function to compute output current. 
+Returns an error
+
+"""
+function compute_output_current(
+    ::SimulationResults,
+    dynamic_device::I,
+    ::Vector{Float64},
+    ::Vector{Float64},
+    ::Union{Nothing, Float64},
+) where {I <: PSY.DynamicInjection}
+
+    #Return error
+    error(
+        "Output current for device type $(typeof(dynamic_device)) is not implemented yet.",
+    )
+end
+
+"""
 Function to obtain the output current time series of a Dynamic Generator model out of the DAE Solution. It receives the simulation inputs,
 the dynamic device and bus voltage. It is dispatched for device type to compute the specific current.
 
@@ -28,6 +47,99 @@ function compute_output_current(
         res,
         dt,
     )
+end
+
+"""
+Function to obtain the output current time series of a AggregateDistributedGenerationA (DERA) model out of the DAE Solution.
+It receives the simulation inputs, the dynamic device and bus voltage.
+
+"""
+function compute_output_current(
+    res::SimulationResults,
+    dynamic_device::PSY.AggregateDistributedGenerationA,
+    V_R::Vector{Float64},
+    V_I::Vector{Float64},
+    dt::Union{Nothing, Float64},
+)
+
+    #Obtain Data
+    sys = get_system(res)
+    Sbase = PSY.get_base_power(sys)
+    basepower = PSY.get_base_power(dynamic_device)
+    base_power_ratio = basepower / Sbase
+    Freq_Flag = PSY.get_Freq_Flag(dynamic_device)
+    name = PSY.get_name(dynamic_device)
+    if Freq_Flag == 1
+        _, Pord = post_proc_state_series(res, (name, :Pord), dt)
+        _, dPord = post_proc_state_series(res, (name, :dPord), dt)
+        Tpord = PSY.get_Tpord(dynamic_device)
+        P_lim = PSY.get_P_lim(dynamic_device)
+    end
+
+    # Get states
+    θ = atan.(V_I ./ V_R)
+    ts, Ip = post_proc_state_series(res, (name, :Ip), dt)
+    ts, Iq = post_proc_state_series(res, (name, :Iq), dt)
+    _, Mult = post_proc_state_series(res, (name, :Mult), dt)
+    _, Vmeas = post_proc_state_series(res, (name, :Vmeas), dt)
+    Iq_neg = -Iq
+    Ip_cmd = Ip
+    Iq_cmd = Iq
+
+    # Get Params
+    Tg = PSY.get_Tg(dynamic_device)
+    rrpwr = PSY.get_rrpwr(dynamic_device)
+    P_ref = PSY.get_P_ref(dynamic_device)
+
+    I_R = similar(Ip)
+    I_I = similar(Iq)
+    for (ix, Ip_cmd_val) in enumerate(Ip_cmd)
+        Ip_min, Ip_max, _, _ = current_limit_logic(dynamic_device, Ip_cmd_val, Iq_cmd[ix])
+        if Ip[ix] >= 0
+            Rup = abs(rrpwr)
+            Rdown = -Inf
+        else
+            Rdown = -abs(rrpwr)
+            Rup = Inf
+        end
+        if Freq_Flag == 0
+            Ip_input = clamp(P_ref / max(Vmeas[ix], 0.01), Ip_min, Ip_max) * Mult[ix]
+            Ip_limited, _ = low_pass_nonwindup_ramp_limits(
+                Ip_input,
+                Ip[ix],
+                1.0,
+                Tg,
+                -Inf,
+                Inf,
+                Rdown,
+                Rup,
+            )
+        else
+            Pord_limited, _ = low_pass_nonwindup_mass_matrix(
+                dPord[ix],
+                Pord[ix],
+                1.0,
+                Tpord,
+                P_lim[:min],
+                P_lim[:max],
+            )
+            Ip_input = clamp(Pord_limited / max(Vmeas[ix], 0.01), Ip_min, Ip_max) * Mult[ix]
+            Ip_limited, _ = low_pass_nonwindup_ramp_limits(
+                Ip_input,
+                Ip[ix],
+                1.0,
+                Tg,
+                -Inf,
+                Inf,
+                Rdown,
+                Rup,
+            )
+        end
+        I_R[ix] = real(complex(Ip_limited, Iq_neg[ix]) * exp(im * θ[ix])) * base_power_ratio
+        I_I[ix] = imag(complex(Ip_limited, Iq_neg[ix]) * exp(im * θ[ix])) * base_power_ratio
+    end
+
+    return ts, I_R, I_I
 end
 
 """
@@ -81,6 +193,20 @@ function compute_mechanical_torque(
     #Get TG
     tg = PSY.get_prime_mover(dynamic_device)
     return _mechanical_torque(tg, PSY.get_name(dynamic_device), res, dt)
+end
+
+"""
+Function to obtain the output frequency time series of a DynamicGenerator
+
+"""
+function compute_frequency(
+    res::SimulationResults,
+    dyn_device::G,
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicGenerator}
+    name = PSY.get_name(dyn_device)
+    ts, ω = post_proc_state_series(res, (name, :ω), dt)
+    return ts, ω
 end
 
 """
@@ -229,6 +355,48 @@ function _machine_current(
         #Obtain electric current
         i_dq[1] = (1.0 / Xd_pp) * (eq_pp[ix] - ψd[ix])      #15.18
         i_dq[2] = (1.0 / Xq_pp) * (-ed_pp[ix] - ψq[ix])     #15.18
+
+        I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
+    end
+    return ts, I_R, I_I
+end
+
+"""
+Function to obtain the output current time series of a SauerPaiMachine model out of the DAE Solution. It is dispatched via the machine type.
+"""
+function _machine_current(
+    machine::PSY.SauerPaiMachine,
+    name::String,
+    ::Vector{Float64},
+    ::Vector{Float64},
+    base_power_ratio::Float64,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
+    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt)
+    _, ψd = post_proc_state_series(res, (name, :ψd), dt)
+    _, ψq = post_proc_state_series(res, (name, :ψq), dt)
+    _, ψd_pp = post_proc_state_series(res, (name, :ψd_pp), dt)
+    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt)
+
+    #Get parameters
+    Xd_pp = PSY.get_Xd_pp(machine)
+    Xq_pp = PSY.get_Xq_pp(machine)
+    γ_d1 = PSY.get_γ_d1(machine)
+    γ_q1 = PSY.get_γ_q1(machine)
+
+    i_dq = Vector{Float64}(undef, 2)
+    I_R = similar(δ, Float64)
+    I_I = similar(δ, Float64)
+
+    for ix in 1:length(δ)
+        v = δ[ix]
+
+        #Obtain electric current
+        i_dq[1] = (1.0 / Xd_pp) * (γ_d1 * eq_p[ix] - ψd[ix] + (1 - γ_d1) * ψd_pp[ix])      #15.15
+        i_dq[2] = (1.0 / Xq_pp) * (-γ_q1 * ed_p[ix] - ψq[ix] + (1 - γ_q1) * ψq_pp[ix])     #15.15
 
         I_R[ix], I_I[ix] = base_power_ratio * dq_ri(v) * i_dq
     end
@@ -546,6 +714,42 @@ function _field_voltage(
     Kc = PSY.get_Kc(avr)
     I_N = Kc * Xad_Ifd ./ Ve
     Vf = Ve .* rectifier_function.(I_N)
+    return ts, Vf
+end
+
+"""
+Function to obtain the field voltage time series of a Dynamic Generator with avr SCRX.
+
+"""
+function _field_voltage(
+    avr::PSY.SCRX,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, Vr2 = post_proc_state_series(res, (name, :Vr2), dt)
+    _, Ifd = post_proc_field_current_series(res, name, dt)
+    V_min, V_max = PSY.get_Efd_lim(avr)
+    bus_str = split(name, "-")[2]
+    bus_num = parse(Int, bus_str)
+    _, Vm = get_voltage_magnitude_series(res, bus_num; dt = dt)
+    switch = PSY.get_switch(avr)
+    rc_rfd = PSY.get_rc_rfd(avr)
+    mult = switch == 0 ? Vm : ones(length(Vm))
+    Vr2_sat = clamp.(Vr2, V_min, V_max)
+    V_ex = Vr2_sat .* mult
+    Vf = similar(V_ex)
+    if rc_rfd == 0.0
+        Vf = V_ex
+    else
+        for (ix, Ifd_ix) in enumerate(Ifd)
+            if Ifd_ix > 0.0
+                Vf[ix] = V_ex[ix]
+            else
+                Vf[ix] = -Ifd_ix * rc_rfd
+            end
+        end
+    end
     return ts, Vf
 end
 

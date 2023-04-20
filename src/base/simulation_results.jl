@@ -5,6 +5,7 @@ struct SimulationResults
     time_log::Dict{Symbol, Any}
     solution::SciMLBase.AbstractODESolution
     setpoints::Dict{String, Dict{String, Float64}}
+    global_vars_update_pointers::Dict{Int, Int}
     function SimulationResults(
         inputs::SimulationInputs,
         system::PSY.System,
@@ -18,6 +19,7 @@ struct SimulationResults
             time_log,
             solution,
             get_setpoints(inputs),
+            get_global_vars_update_pointers(inputs),
         )
     end
 end
@@ -28,7 +30,7 @@ get_bus_lookup(res::SimulationResults) = res.bus_lookup
 get_system(res::SimulationResults) = res.system
 get_solution(res::SimulationResults) = res.solution
 get_setpoints(res::SimulationResults) = res.setpoints
-
+get_global_vars_update_pointers(res::SimulationResults) = res.global_vars_update_pointers
 """
 Internal function to obtain as a Vector of Float64 of a specific state. It receives the solution and the
 global index for a state.
@@ -81,7 +83,11 @@ function post_proc_voltage_current_series(
     bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
     ts, V_R, V_I = post_proc_voltage_series(solution, bus_ix, n_buses, dt)
     dyn_device = PSY.get_dynamic_injector(device)
-    _, I_R, I_I = compute_output_current(res, dyn_device, V_R, V_I, dt)
+    if isnothing(dyn_device)
+        _, I_R, I_I = compute_output_current(res, device, V_R, V_I, dt)
+    else
+        _, I_R, I_I = compute_output_current(res, dyn_device, V_R, V_I, dt)
+    end
     return ts, V_R, V_I, I_R, I_I
 end
 
@@ -240,6 +246,23 @@ function post_proc_branch_series(
     x = PSY.get_x(branch)
     I_flow = ((V_R_from + V_I_from * 1im) - (V_R_to + V_I_to * 1im)) ./ (r + x * 1im)
     return ts, V_R_from, V_I_from, V_R_to, V_I_to, real.(I_flow), imag.(I_flow)
+end
+
+"""
+Function to compute the frequency of a Dynamic Injection component.
+"""
+function post_proc_frequency_series(
+    res::SimulationResults,
+    name::String,
+    dt::Union{Nothing, Float64},
+)
+    system = get_system(res)
+    device = PSY.get_component(PSY.StaticInjection, system, name)
+    dyn_device = PSY.get_dynamic_injector(device)
+    if isnothing(dyn_device)
+        error("Dynamic Injection $(name) not found in the system")
+    end
+    ts, ω = compute_frequency(res, dyn_device, dt)
 end
 
 """
@@ -528,6 +551,23 @@ function get_reactivepower_branch_flow(
         error("The location symbol $(:location) must be :from or :to to specify the bus.")
     end
     return
+end
+
+"""
+    get_frequency_series(
+            res::SimulationResults,
+            name::String,
+    )
+
+Function to obtain the frequency time series of a Dynamic Injection out of the DAE Solution.
+
+# Arguments
+
+- `res::SimulationResults` : Simulation Results object that contains the solution
+- `name::String` : Name to identify the specified device
+"""
+function get_frequency_series(res::SimulationResults, name::String; dt = nothing)
+    return post_proc_frequency_series(res, name, dt)
 end
 
 """

@@ -13,8 +13,8 @@ uses a simple voltage droop for dispatching reactive power:
 
 ```math
 \begin{align}
-    \dot{\delta\omega}_{\text{olc}} &= \frac{p_{\text{ref}}}{T_a} - \frac{p_e}{T_a} - \frac{k_d(\omega_{\text{olc}} - \omega_{\text{pll}})}{T_a} - \frac{k_\omega(\omega_{\text{olc}} - \omega_{\text{ref}})}{T_a} \tag{1a} \\
-    \dot{\theta}_{\text{olc}} &= \Omega_b \delta\omega_{\text{olc}} \tag{1b} \\
+    \dot{\omega}_{\text{olc}} &= \frac{p_{\text{ref}}}{T_a} - \frac{p_e}{T_a} - \frac{k_d(\omega_{\text{olc}} - \omega_{\text{pll}})}{T_a} - \frac{k_\omega(\omega_{\text{olc}} - \omega_{\text{ref}})}{T_a} \tag{1a} \\
+    \dot{\theta}_{\text{olc}} &= \Omega_b (\omega_{\text{olc}} - \omega_{\text{sys}}) \tag{1b} \\
     \dot{q}_m &= \omega_f (q_e - q_m) \tag{1c}
 \end{align}
 ```
@@ -55,7 +55,7 @@ with
 \begin{align}
     p_e &= v_ri_r + v_ii_i \tag{2d} \\
     q_e &= v_ii_r - v_ri_i \tag{2e} \\
-    \omega_{\text{olc}} &= \omega_{\text{ref}} + R_p (p_{\text{ref}} - p_e) \tag{2f} \\
+    \omega_{\text{olc}} &= \omega_{\text{ref}} + R_p (p_{\text{ref}} - p_m) \tag{2f} \\
     v_{\text{olc}}^{\text{ref}} &= v_{\text{ref}} + k_q(q_{\text{ref}} - q_m) \tag{2g}
 \end{align}
 ```
@@ -67,7 +67,7 @@ is the point of common coupling.
 ## Active and Reactive Virtual Oscillator Controllers ```[OuterControl]```
 
 The following model represents a Virtual Oscillator Controller for both active and reactive power
-to generate the voltage references that will be used in the Voltage Controller.
+to generate the voltage references that will be used in the Voltage Controller. The contructor is ```OuterControl{ActiveVirtualOscillator, ReactiveVirtualOscillator}```
 It defines a new SRF denoted as ``\theta_{\text{olc}}`` and a voltage reference ``E_{\text{olc}}``.
 The equations are:
 ```math

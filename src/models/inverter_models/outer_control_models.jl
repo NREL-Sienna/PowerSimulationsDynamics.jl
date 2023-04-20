@@ -558,7 +558,7 @@ function mdl_outer_ode!(
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power(outer_control)
+    active_power_control = PSY.get_active_power_control(outer_control)
     Ta = PSY.get_Ta(active_power_control) #VSM Inertia constant
     kd = PSY.get_kd(active_power_control) #VSM damping constant
     kω = PSY.get_kω(active_power_control) #Frequency droop gain
@@ -566,7 +566,7 @@ function mdl_outer_ode!(
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
-    reactive_power_control = PSY.get_reactive_power(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     kq = PSY.get_kq(reactive_power_control) #Reactive power droop gain
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
@@ -643,14 +643,14 @@ function mdl_outer_ode!(
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power(outer_control)
+    active_power_control = PSY.get_active_power_control(outer_control)
     Rp = PSY.get_Rp(active_power_control) #Droop Gain
     ωz = PSY.get_ωz(active_power_control) #Frequency cutoff frequency
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
-    reactive_power_control = PSY.get_reactive_power(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     kq = PSY.get_kq(reactive_power_control) #Reactive power droop gain
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
@@ -683,8 +683,11 @@ function mdl_outer_ode!(
     _, dpm_dt = low_pass(p_elec_out, pm, 1.0, 1.0 / ωz)
     _, dqm_dt = low_pass(q_elec_out, qm, 1.0, 1.0 / ωf)
 
+    ext = PSY.get_ext(outer_control)
+    bool_val = get(ext, "is_not_reference", 1.0)
+
     #Compute 3 states ODEs
-    output_ode[local_ix[1]] = ωb * (ω_oc - ω_sys)
+    output_ode[local_ix[1]] = bool_val * ωb * (ω_oc - ω_sys)
     output_ode[local_ix[2]] = dpm_dt
     output_ode[local_ix[3]] = dqm_dt
 
@@ -730,14 +733,14 @@ function mdl_outer_ode!(
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power(outer_control)
+    active_power_control = PSY.get_active_power_control(outer_control)
     k1 = PSY.get_k1(active_power_control)
     ψ = PSY.get_ψ(active_power_control)
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
-    reactive_power_control = PSY.get_reactive_power(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     k2 = PSY.get_k2(reactive_power_control)
 
     #Obtain external parameters
@@ -773,8 +776,11 @@ function mdl_outer_ode!(
             k2 * (V_ref^2 - E_oc^2) * E_oc
         )
 
+    ext = PSY.get_ext(outer_control)
+    bool_val = get(ext, "is_not_reference", 1.0)
+
     #Compute 2 states ODEs
-    output_ode[local_ix[1]] = ωb * (ω_oc - ω_sys)
+    output_ode[local_ix[1]] = bool_val * ωb * (ω_oc - ω_sys)
     output_ode[local_ix[2]] = dEoc_dt
 
     #Update inner vars
@@ -823,13 +829,13 @@ function mdl_outer_ode!(
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power(outer_control)
+    active_power_control = PSY.get_active_power_control(outer_control)
     Kp_p = PSY.get_Kp_p(active_power_control) #Proportional Gain
     Ki_p = PSY.get_Ki_p(active_power_control) #Integral Gain
     ωz = PSY.get_ωz(active_power_control) #Frequency cutoff frequency
 
     #Get Reactive Power Controller parameters
-    reactive_power_control = PSY.get_reactive_power(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     Kp_q = PSY.get_Kp_q(reactive_power_control) #Proportional Gain
     Ki_q = PSY.get_Ki_q(reactive_power_control) #Integral Gain
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
@@ -930,12 +936,12 @@ function mdl_outer_ode!(
 
     #Get Active Power Controller parameters
     outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power(outer_control)
+    active_power_control = PSY.get_active_power_control(outer_control)
     #Note: Monitoring power from other branch not supported.
     Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag
 
     #Get Reactive Power Controller parameters
-    reactive_power_control = PSY.get_reactive_power(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     #Note: Monitoring power from other branch not supported.
     Ref_Flag = PSY.get_Ref_Flag(reactive_power_control)
     PF_Flag = PSY.get_PF_Flag(reactive_power_control)

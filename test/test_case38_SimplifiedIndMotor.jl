@@ -27,7 +27,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "data_tests/TVC_System_motor.dyr")
         sim_P = Simulation(ResidualModel, sys, path, time_span, perturbation_trip)
 
         # Motor parameters - 3rd order model
-        load = first(get_components(PSY.PowerLoad, sys))
+        load = first(get_components(PSY.StandardLoad, sys))
         # Include the induction motor
         dynamic_injector = Ind_Motor3rd(load)
         set_dynamic_injector!(load, dynamic_injector)
@@ -80,7 +80,7 @@ end
         sim_P = Simulation(MassMatrixModel, sys, path, time_span, perturbation_trip)
 
         # Motor parameters - 3rd order model
-        load = first(get_components(PSY.PowerLoad, sys))
+        load = first(get_components(PSY.StandardLoad, sys))
         # Include the induction motor
         dynamic_injector = Ind_Motor3rd(load)
         set_dynamic_injector!(load, dynamic_injector)

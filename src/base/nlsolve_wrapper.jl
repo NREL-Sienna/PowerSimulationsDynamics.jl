@@ -97,8 +97,9 @@ function _check_residual(
 )
     @debug _sorted_residuals(residual)
     val, ix = findmax(residual)
-    @info "Residual from initial guess: max = $(val) at $ix, total = $(sum(residual))"
-    if sum(residual) > tolerance
+    sum_residual = sum(abs.(residual))
+    @info "Residual from initial guess: max = $(val) at $ix, total = $sum_residual"
+    if sum_residual > tolerance
         state_map = make_global_state_map(inputs)
         gen_name = ""
         state = ""
@@ -110,9 +111,9 @@ function _check_residual(
                 end
             end
         end
-        @warn "The initial residual in $ix of the NLsolve function has a value of $val.
+        error("The initial residual in $ix of the NLsolve function has a value of $val.
                Generator = $gen_name, state = $state.
-               Expect convergence problems"
+               Error is too large to continue")
     end
     return
 end

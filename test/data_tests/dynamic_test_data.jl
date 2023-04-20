@@ -52,6 +52,21 @@ machine_marconato() = MarconatoMachine(
     0.0,
 ) #MVABase
 
+machine_sauerpai() = SauerPaiMachine(
+    0.002, # check
+    1.79, #Xd
+    1.71, #Xq
+    0.169, #Xd_p
+    0.228, #Xq_p
+    0.135, #Xd_pp
+    0.2, #Xq_pp
+    0.13,  #Xl 
+    4.3, #Td0_p
+    0.85, #Tq0_p
+    0.032, #Td0_pp
+    0.05, #Tq0_pp
+) #MVABase
+
 machine_anderson() = AndersonFouadMachine(
     0.0, #R
     0.8979, #Xd
@@ -276,6 +291,14 @@ dc_source_hv() = FixedDCSource(voltage = 1500.0) #Not in the original data, gues
 filt() = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01)
 filt_gfoll() = LCLFilter(lf = 0.009, rf = 0.016, cf = 2.5, lg = 0.002, rg = 0.003)
 filt_voc() = LCLFilter(lf = 0.0196, rf = 0.0139, cf = 0.1086, lg = 0.0196, rg = 0.0139)
+filt_algebraic() = LCLFilter(
+    lf = 0.08,
+    rf = 0.003,
+    cf = 0.074,
+    lg = 0.2,
+    rg = 0.01,
+    ext = Dict{String, Any}("is_filter_differential" => 0.0),
+)
 
 ###### PLL Data ######
 pll() = KauraPLL(
@@ -582,6 +605,38 @@ Ind_Motor3rd(load) = PSY.SimplifiedSingleCageInductionMachine(
     B = 0.0,
     base_power = 1000.0,
 )
+
+function ActiveLoad(load)
+    Ωb = 2 * pi * 60
+    Vb = 380
+    Pb = 10000
+    Ib = Pb / Vb
+    Zb = Vb / Ib
+    Lb = Zb / Ωb
+    Cb = 1 / (Zb * Ωb)
+    Vb_dc = sqrt(8) / sqrt(3) * Vb
+    Ib_dc = Pb / Vb_dc
+    Zb_dc = Vb_dc / Ib_dc
+    Cb_dc = 1 / (Zb_dc * Ωb)
+
+    return PSY.ActiveConstantPowerLoad(
+        name = get_name(load),
+        r_load = 70.0 / Zb_dc,
+        c_dc = 2040e-6 / Cb_dc,
+        rf = 0.1 / Zb,
+        lf = 2.3e-3 / Lb,
+        cf = 8.8e-6 / Cb,
+        rg = 0.03 / Zb,
+        lg = 0.93e-3 / Lb,
+        kp_pll = 0.4,
+        ki_pll = 4.69,
+        kpv = 0.5 * (Vb_dc / Ib_dc),
+        kiv = 150.0 * (Vb_dc / Ib_dc),
+        kpc = 15.0 * (Ib / Vb),
+        kic = 30000.0 * (Ib / Vb),
+        base_power = 100.0,
+    )
+end
 
 ####### Devices #######
 

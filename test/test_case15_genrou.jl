@@ -37,8 +37,8 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
-        for l in get_components(PSY.PowerLoad, sys)
-            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        for l in get_components(PSY.StandardLoad, sys)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
@@ -90,9 +90,11 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
 
         power = PSID.get_activepower_series(results, "generator-102-1")
         rpower = PSID.get_reactivepower_series(results, "generator-102-1")
+        ω = PSID.get_frequency_series(results, "generator-102-1")
         @test isa(series2, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
@@ -104,8 +106,8 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
     !isdir(path) && mkdir(path)
     try
         sys = System(raw_file_dir, dyr_file)
-        for l in get_components(PSY.PowerLoad, sys)
-            PSY.set_model!(l, PSY.LoadModels.ConstantImpedance)
+        for l in get_components(PSY.StandardLoad, sys)
+            transform_load_to_constant_impedance(l)
         end
 
         # Define Simulation Problem
@@ -157,9 +159,11 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
 
         power = PSID.get_activepower_series(results, "generator-102-1")
         rpower = PSID.get_reactivepower_series(results, "generator-102-1")
+        ω = PSID.get_frequency_series(results, "generator-102-1")
         @test isa(series2, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
+        @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
         rm(path, force = true, recursive = true)
