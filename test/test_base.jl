@@ -521,7 +521,7 @@ end
         # Not initialized to speed up the test
         initialize_simulation = false,
         frequency_reference = ConstantFrequency(),
-        console_level = Logging.Error, #time span
+        console_level = Logging.Error,
     )
 
     @test PSID.get_global_vars_update_pointers(sim.inputs)[1] == 0
