@@ -196,6 +196,7 @@ function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
     sim.inputs = SimulationInputs(T, get_system(sim), sim.frequency_reference)
     sim.status = BUILD_INCOMPLETE
+    sim.initialized = false
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
