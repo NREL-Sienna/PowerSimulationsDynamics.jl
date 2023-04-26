@@ -796,6 +796,668 @@ function lead_lag_8th(
 end
 
 """
+Ramp Tracking Filter Block
+
+M >= 0
+
+N >= 0
+
+M * N <= 8
+
+If M == 0, N = 0
+
+To bypass: use M = 0, N = 0
+
+     ┌─────────────────────┐
+     │  ┌─           ─┐^N  │
+     │  │   1 + sT2   │    │
+u -> │  │ ─────────── │    │ -> y
+     │  │ (1 + sT1)^M │    │
+     │  └─           ─┘    │
+     └─────────────────────┘
+    
+Internal States: x1, x2, x3, x4, x5, x6, x7, x8
+"""
+
+function ramp_tracking_filter(
+    u::Z,
+    x1::Z,
+    x2::Z,
+    x3::Z,
+    x4::Z,
+    x5::Z,
+    x6::Z,
+    x7::Z,
+    x8::Z,
+    T1::Float64,
+    T2::Float64,
+    M::Int64,
+    N::Int64,
+) where {Z <: ACCEPTED_REAL_TYPES}
+    dx1dt = 0.0
+    dx2dt = 0.0
+    dx3dt = 0.0
+    dx4dt = 0.0
+    dx5dt = 0.0
+    dx6dt = 0.0
+    dx7dt = 0.0
+    dx8dt = 0.0
+    y = 0.0
+
+    if N == 0
+        y = u
+    elseif N == 1
+        if M == 0
+            y = u
+        elseif M == 1
+            T1_ll = T2 # time parameter for the lead-lag filter
+            T2_ll = T1 # time parameter for the lead-lag filter
+
+            y, dx1dt = lead_lag(u, x1, 1.0, T1_ll, T2_ll)
+        elseif M == 2
+            T1_ll = 2.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = T1^2 # time parameter for the lead-lag filter
+            T3_ll = T2 # time parameter for the lead-lag filter
+            T4_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt = lead_lag_2nd(u, x1, x2, T1_ll, T2_ll, T3_ll, T4_ll)
+        elseif M == 3
+            T1_ll = 3.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 3.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = T1^3 # time parameter for the lead-lag filter
+            T4_ll = T2 # time parameter for the lead-lag filter
+            T5_ll = 0.0 # time parameter for the lead-lag filter
+            T6_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt =
+                lead_lag_3rd(u, x1, x2, x3, T1_ll, T2_ll, T3_ll, T4_ll, T5_ll, T6_ll)
+        elseif M == 4
+            T1_ll = 4.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 6.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 4.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = T1^4 # time parameter for the lead-lag filter
+            T5_ll = T2 # time parameter for the lead-lag filter
+            T6_ll = 0.0 # time parameter for the lead-lag filter
+            T7_ll = 0.0 # time parameter for the lead-lag filter
+            T8_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt = lead_lag_4th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+            )
+        elseif M == 5
+            T1_ll = 5.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 10.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 10.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 5.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = T1^5 # time parameter for the lead-lag filter
+            T6_ll = T2 # time parameter for the lead-lag filter
+            T7_ll = 0.0 # time parameter for the lead-lag filter
+            T8_ll = 0.0 # time parameter for the lead-lag filter
+            T9_ll = 0.0 # time parameter for the lead-lag filter
+            T10_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt = lead_lag_5th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+            )
+        elseif M == 6
+            T1_ll = 6.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 15.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 20.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 15.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 6.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = T1^6 # time parameter for the lead-lag filter
+            T7_ll = T2 # time parameter for the lead-lag filter
+            T8_ll = 0.0 # time parameter for the lead-lag filter
+            T9_ll = 0.0 # time parameter for the lead-lag filter
+            T10_ll = 0.0 # time parameter for the lead-lag filter
+            T11_ll = 0.0 # time parameter for the lead-lag filter
+            T12_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt = lead_lag_6th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+            )
+        elseif M == 7
+            T1_ll = 7.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 21.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 35.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 35.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 21.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = 7.0 * T1^6 # time parameter for the lead-lag filter
+            T7_ll = T1^7 # time parameter for the lead-lag filter
+            T8_ll = T2 # time parameter for the lead-lag filter
+            T9_ll = 0.0 # time parameter for the lead-lag filter
+            T10_ll = 0.0 # time parameter for the lead-lag filter
+            T11_ll = 0.0 # time parameter for the lead-lag filter
+            T12_ll = 0.0 # time parameter for the lead-lag filter
+            T13_ll = 0.0 # time parameter for the lead-lag filter
+            T14_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt = lead_lag_7th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                x7,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+                T13_ll,
+                T14_ll,
+            )
+        elseif M == 8
+            T1_ll = 8.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 28.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 56.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 70.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 56.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = 28.0 * T1^6 # time parameter for the lead-lag filter
+            T7_ll = 8.0 * T1^7 # time parameter for the lead-lag filter
+            T8_ll = T1^8 # time parameter for the lead-lag filter
+            T9_ll = T2 # time parameter for the lead-lag filter
+            T10_ll = 0.0 # time parameter for the lead-lag filter
+            T11_ll = 0.0 # time parameter for the lead-lag filter
+            T12_ll = 0.0 # time parameter for the lead-lag filter
+            T13_ll = 0.0 # time parameter for the lead-lag filter
+            T14_ll = 0.0 # time parameter for the lead-lag filter
+            T15_ll = 0.0 # time parameter for the lead-lag filter
+            T16_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt, dx8dt = lead_lag_8th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                x7,
+                x8,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+                T13_ll,
+                T14_ll,
+                T15_ll,
+                T16_ll,
+            )
+        end
+    elseif N == 2
+        if M == 0
+            y = u
+        elseif M == 1
+            T1_ll = 2.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = T1^2 # time parameter for the lead-lag filter
+            T3_ll = 2.0 * T2 # time parameter for the lead-lag filter
+            T4_ll = T2^2 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt = lead_lag_2nd(u, x1, x2, T1_ll, T2_ll, T3_ll, T4_ll)
+        elseif M == 2
+            T1_ll = 4.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 6.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 4.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = T1^4 # time parameter for the lead-lag filter
+            T5_ll = 2.0 * T2 # time parameter for the lead-lag filter
+            T6_ll = T2^2 # time parameter for the lead-lag filter
+            T7_ll = 0.0 # time parameter for the lead-lag filter
+            T8_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt = lead_lag_4th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+            )
+        elseif M == 3
+            T1_ll = 6.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 15.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 20.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 15.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 6.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = T1^6 # time parameter for the lead-lag filter
+            T7_ll = 2.0 * T2 # time parameter for the lead-lag filter
+            T8_ll = T2^2 # time parameter for the lead-lag filter
+            T9_ll = 0.0 # time parameter for the lead-lag filter
+            T10_ll = 0.0 # time parameter for the lead-lag filter
+            T11_ll = 0.0 # time parameter for the lead-lag filter
+            T12_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt = lead_lag_6th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+            )
+        elseif M == 4
+            T1_ll = 8.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 28.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 56.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 70.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 56.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = 28.0 * T1^6 # time parameter for the lead-lag filter
+            T7_ll = 8.0 * T1^7 # time parameter for the lead-lag filter
+            T8_ll = T1^8 # time parameter for the lead-lag filter
+            T9_ll = 2.0 * T2 # time parameter for the lead-lag filter
+            T10_ll = T2^2 # time parameter for the lead-lag filter
+            T11_ll = 0.0 # time parameter for the lead-lag filter
+            T12_ll = 0.0 # time parameter for the lead-lag filter
+            T13_ll = 0.0 # time parameter for the lead-lag filter
+            T14_ll = 0.0 # time parameter for the lead-lag filter
+            T15_ll = 0.0 # time parameter for the lead-lag filter
+            T16_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt, dx8dt = lead_lag_8th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                x7,
+                x8,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+                T13_ll,
+                T14_ll,
+                T15_ll,
+                T16_ll,
+            )
+        end
+    elseif N == 3
+        if M == 0
+            y = u
+        elseif M == 1
+            T1_ll = 3.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 3.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = T1^3 # time parameter for the lead-lag filter
+            T4_ll = 3.0 * T2 # time parameter for the lead-lag filter
+            T5_ll = 3.0 * T2^2 # time parameter for the lead-lag filter
+            T6_ll = T2^3 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt =
+                lead_lag_3rd(u, x1, x2, x3, T1_ll, T2_ll, T3_ll, T4_ll, T5_ll, T6_ll)
+        elseif M == 2
+            T1_ll = 6.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 15.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 20.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 15.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 6.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = T1^6 # time parameter for the lead-lag filter
+            T7_ll = 3.0 * T2 # time parameter for the lead-lag filter
+            T8_ll = 3.0 * T2^2 # time parameter for the lead-lag filter
+            T9_ll = T2^3 # time parameter for the lead-lag filter
+            T10_ll = 0.0 # time parameter for the lead-lag filter
+            T11_ll = 0.0 # time parameter for the lead-lag filter
+            T12_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt = lead_lag_6th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+            )
+        end
+    elseif N == 4
+        if M == 0
+            y = u
+        elseif M == 1
+            T1_ll = 4.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 6.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 4.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = T1^4 # time parameter for the lead-lag filter
+            T5_ll = 4.0 * T2 # time parameter for the lead-lag filter
+            T6_ll = 6.0 * T2^2 # time parameter for the lead-lag filter
+            T7_ll = 4.0 * T2^3 # time parameter for the lead-lag filter
+            T8_ll = T2^4 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt = lead_lag_4th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+            )
+        elseif M == 2
+            T1_ll = 8.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 28.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 56.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 70.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 56.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = 28.0 * T1^6 # time parameter for the lead-lag filter
+            T7_ll = 8.0 * T1^7 # time parameter for the lead-lag filter
+            T8_ll = T1^8 # time parameter for the lead-lag filter
+            T9_ll = 4.0 * T2 # time parameter for the lead-lag filter
+            T10_ll = 6.0 * T2^2 # time parameter for the lead-lag filter
+            T11_ll = 4.0 * T2^3 # time parameter for the lead-lag filter
+            T12_ll = T2^4 # time parameter for the lead-lag filter
+            T13_ll = 0.0 # time parameter for the lead-lag filter
+            T14_ll = 0.0 # time parameter for the lead-lag filter
+            T15_ll = 0.0 # time parameter for the lead-lag filter
+            T16_ll = 0.0 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt, dx8dt = lead_lag_8th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                x7,
+                x8,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+                T13_ll,
+                T14_ll,
+                T15_ll,
+                T16_ll,
+            )
+        end
+    elseif N == 5
+        if M == 0
+            y = u
+        elseif M == 1
+            T1_ll = 5.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 10.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 10.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 5.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = T1^5 # time parameter for the lead-lag filter
+            T6_ll = 5.0 * T2 # time parameter for the lead-lag filter
+            T7_ll = 10.0 * T2^2 # time parameter for the lead-lag filter
+            T8_ll = 10.0 * T2^3 # time parameter for the lead-lag filter
+            T9_ll = 5.0 * T2^4 # time parameter for the lead-lag filter
+            T10_ll = T2^5 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt = lead_lag_5th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+            )
+        end
+    elseif N == 6
+        if M == 0
+            y = u
+        elseif M == 1
+            T1_ll = 6.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 15.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 20.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 15.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 6.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = T1^6 # time parameter for the lead-lag filter
+            T7_ll = 6.0 * T2 # time parameter for the lead-lag filter
+            T8_ll = 15.0 * T2^2 # time parameter for the lead-lag filter
+            T9_ll = 20.0 * T2^3 # time parameter for the lead-lag filter
+            T10_ll = 15.0 * T2^4 # time parameter for the lead-lag filter
+            T11_ll = 6.0 * T2^5 # time parameter for the lead-lag filter
+            T12_ll = T2^6 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt = lead_lag_6th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+            )
+        end
+    elseif N == 7
+        if M == 0
+            y = u
+        elseif M == 1
+            T1_ll = 7.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 21.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 35.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 35.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 21.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = 7.0 * T1^6 # time parameter for the lead-lag filter
+            T7_ll = T1^7 # time parameter for the lead-lag filter
+            T8_ll = 7.0 * T2 # time parameter for the lead-lag filter
+            T9_ll = 21.0 * T2^2 # time parameter for the lead-lag filter
+            T10_ll = 35.0 * T2^3 # time parameter for the lead-lag filter
+            T11_ll = 35.0 * T2^4 # time parameter for the lead-lag filter
+            T12_ll = 21.0 * T2^5 # time parameter for the lead-lag filter
+            T13_ll = 7.0 * T2^6 # time parameter for the lead-lag filter
+            T14_ll = T2^7 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt = lead_lag_7th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                x7,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+                T13_ll,
+                T14_ll,
+            )
+        end
+    elseif N == 8
+        if M == 0
+            y = u
+        elseif M == 1
+            T1_ll = 8.0 * T1 # time parameter for the lead-lag filter
+            T2_ll = 28.0 * T1^2 # time parameter for the lead-lag filter
+            T3_ll = 56.0 * T1^3 # time parameter for the lead-lag filter
+            T4_ll = 70.0 * T1^4 # time parameter for the lead-lag filter
+            T5_ll = 56.0 * T1^5 # time parameter for the lead-lag filter
+            T6_ll = 28.0 * T1^6 # time parameter for the lead-lag filter
+            T7_ll = 8.0 * T1^7 # time parameter for the lead-lag filter
+            T8_ll = T1^8 # time parameter for the lead-lag filter
+            T9_ll = 8.0 * T2 # time parameter for the lead-lag filter
+            T10_ll = 28.0 * T2^2 # time parameter for the lead-lag filter
+            T11_ll = 56.0 * T2^3 # time parameter for the lead-lag filter
+            T12_ll = 70.0 * T2^4 # time parameter for the lead-lag filter
+            T13_ll = 56.0 * T2^5 # time parameter for the lead-lag filter
+            T14_ll = 28.0 * T2^6 # time parameter for the lead-lag filter
+            T15_ll = 8.0 * T2^7 # time parameter for the lead-lag filter
+            T16_ll = T2^8 # time parameter for the lead-lag filter
+
+            y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt, dx8dt = lead_lag_8th(
+                u,
+                x1,
+                x2,
+                x3,
+                x4,
+                x5,
+                x6,
+                x7,
+                x8,
+                T1_ll,
+                T2_ll,
+                T3_ll,
+                T4_ll,
+                T5_ll,
+                T6_ll,
+                T7_ll,
+                T8_ll,
+                T9_ll,
+                T10_ll,
+                T11_ll,
+                T12_ll,
+                T13_ll,
+                T14_ll,
+                T15_ll,
+                T16_ll,
+            )
+        end
+    end
+
+    return y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt, dx8dt
+end
+
+"""
 Proportional-Integral Block
              y_max
             /¯¯¯¯¯¯
