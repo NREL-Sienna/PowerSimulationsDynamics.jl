@@ -16,7 +16,7 @@
 
 - Provide State-of-Art modeling to assess Low-Inertia Power Systems.
 
-Check the [Project Section](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/projects/1) to see the pipelines of new models to be added.
+Check the [Project Section](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl/projects/1) to see the pipelines of new models to be added.
 
 ## Installation
 
@@ -28,7 +28,7 @@ julia> ]
 
 ## Usage
 
-`PowerSimulationsDynamics.jl` uses [PowerSystems.jl](https://github.com/NREL/PowerSystems.jl) to handle the data used in the simulations.
+`PowerSimulationsDynamics.jl` uses [PowerSystems.jl](https://github.com/NREL-Sienna/PowerSystems.jl) to handle the data used in the simulations.
 
 ```julia
 using PowerSimulationsDynamics
@@ -37,9 +37,9 @@ using PowerSystems
 
 ## Development
 
-Contributions to the development and enahancement of PowerSimulationsDynamics is welcome. Please see [CONTRIBUTING.md](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/blob/master/CONTRIBUTING.md) for code contribution guidelines.
+Contributions to the development and enahancement of PowerSimulationsDynamics is welcome. Please see [CONTRIBUTING.md](https://github.com/NREL-SIIP/PowerSimulationsDynamics.jl/blob/main/CONTRIBUTING.md) for code contribution guidelines.
 
 ## License
 
-PowerSimulationsDynamics is released under a BSD [license](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl/blob/master/LICENSE).
+PowerSimulationsDynamics is released under a BSD [license](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl/blob/main/LICENSE).
 PowerSimulationsDynamics has been developed as part of the Scalable Integrated Infrastructure Planning (SIIP) initiative at the U.S. Department of Energy's National Renewable Energy Laboratory ([NREL](https://www.nrel.gov/))
