@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v1
       - name: Run Perfomance Test Main
         run: |
-          julia --project=test -e 'using Pkg; Pkg.add(PackageSpec(name="PowerSimulationsDynamics", rev="master")); Pkg.instantiate()'
+          julia --project=test -e 'using Pkg; Pkg.add(PackageSpec(name="PowerSimulationsDynamics", rev="main")); Pkg.instantiate()'
           julia --project=test test/performance/performance_test.jl "Main"
       - name: Run Perfomance Test Branch
         run: |
