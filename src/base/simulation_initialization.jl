@@ -11,7 +11,7 @@ function power_flow_solution!(
     sys::PSY.System,
     inputs::SimulationInputs,
 )
-    res = PF.run_powerflow!(sys)
+    res = PF.solve_powerflow!(sys)
     if !res
         @error("PowerFlow failed to solve")
         return BUILD_FAILED
