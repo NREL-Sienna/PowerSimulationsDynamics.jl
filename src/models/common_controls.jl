@@ -386,8 +386,11 @@ function lead_lag_4th_mass_matrix(
     dx4dt = x3
     T8_T4 = T4 < eps() ? 0.0 : (T8 / T4)
     y =
-        T8_T4 * u + (T7 - T3 * T8_T4) * x1 + (T6 - T2 * T8_T4) * x2 +
-        (T5 - T1 * T8_T4) * x3 + (1.0 - T8_T4) * x4
+        T8_T4 * u +
+        (T7 - T3 * T8_T4) * x1 +
+        (T6 - T2 * T8_T4) * x2 +
+        (T5 - T1 * T8_T4) * x3 +
+        (1.0 - T8_T4) * x4
     return y, dx1dt, dx2dt, dx3dt, dx4dt
 end
 
@@ -447,8 +450,12 @@ function lead_lag_5th_mass_matrix(
     dx5dt = x4
     T10_T5 = T5 < eps() ? 0.0 : (T10 / T5)
     y =
-        T10_T5 * u + (T9 - T4 * T10_T5) * x1 + (T8 - T3 * T10_T5) * x2 +
-        (T7 - T2 * T10_T5) * x3 + (T6 - T1 * T10_T5) * x4 + (1.0 - T10_T5) * x5
+        T10_T5 * u +
+        (T9 - T4 * T10_T5) * x1 +
+        (T8 - T3 * T10_T5) * x2 +
+        (T7 - T2 * T10_T5) * x3 +
+        (T6 - T1 * T10_T5) * x4 +
+        (1.0 - T10_T5) * x5
     return y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt
 end
 
@@ -531,8 +538,12 @@ function lead_lag_6th_mass_matrix(
     dx6dt = x5
     T12_T6 = T6 < eps() ? 0.0 : (T12 / T6)
     y =
-        T12_T6 * u + (T11 - T5 * T12_T6) * x1 + (T10 - T4 * T12_T6) * x2 +
-        (T9 - T3 * T12_T6) * x3 + (T8 - T2 * T12_T6) * x4 + (T7 - T1 * T12_T6) * x5 +
+        T12_T6 * u +
+        (T11 - T5 * T12_T6) * x1 +
+        (T10 - T4 * T12_T6) * x2 +
+        (T9 - T3 * T12_T6) * x3 +
+        (T8 - T2 * T12_T6) * x4 +
+        (T7 - T1 * T12_T6) * x5 +
         (1.0 - T12_T6) * x6
     return y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt
 end
@@ -626,9 +637,14 @@ function lead_lag_7th_mass_matrix(
     dx7dt = x6
     T14_T7 = T7 < eps() ? 0.0 : (T14 / T7)
     y =
-        T14_T7 * u + (T13 - T6 * T14_T7) * x1 + (T12 - T5 * T14_T7) * x2 +
-        (T11 - T4 * T14_T7) * x3 + (T10 - T3 * T14_T7) * x4 + (T9 - T2 * T14_T7) * x5 +
-        (T8 - T1 * T14_T7) * x6 + (1.0 - T14_T7) * x7
+        T14_T7 * u +
+        (T13 - T6 * T14_T7) * x1 +
+        (T12 - T5 * T14_T7) * x2 +
+        (T11 - T4 * T14_T7) * x3 +
+        (T10 - T3 * T14_T7) * x4 +
+        (T9 - T2 * T14_T7) * x5 +
+        (T8 - T1 * T14_T7) * x6 +
+        (1.0 - T14_T7) * x7
     return y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt
 end
 
@@ -731,9 +747,15 @@ function lead_lag_8th_mass_matrix(
     dx8dt = x7
     T16_T8 = T8 < eps() ? 0.0 : (T16 / T8)
     y =
-        T16_T8 * u + (T15 - T7 * T16_T8) * x1 + (T14 - T6 * T16_T8) * x2 +
-        (T13 - T5 * T16_T8) * x3 + (T12 - T4 * T16_T8) * x4 + (T11 - T3 * T16_T8) * x5 +
-        (T10 - T2 * T16_T8) * x6 + (T9 - T1 * T16_T8) * x7 + (1.0 - T16_T8) * x8
+        T16_T8 * u +
+        (T15 - T7 * T16_T8) * x1 +
+        (T14 - T6 * T16_T8) * x2 +
+        (T13 - T5 * T16_T8) * x3 +
+        (T12 - T4 * T16_T8) * x4 +
+        (T11 - T3 * T16_T8) * x5 +
+        (T10 - T2 * T16_T8) * x6 +
+        (T9 - T1 * T16_T8) * x7 +
+        (1.0 - T16_T8) * x8
     return y, dx1dt, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt, dx8dt
 end
 
