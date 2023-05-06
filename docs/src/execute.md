@@ -30,7 +30,7 @@ Similarly, a Mass Matrix model can be executed using `Rodas4` solver.
 ```julia
 using OrdinaryDiffEq
 sim2 = Simulation(
-    ResidualModel,
+    MassMatrixModel,
     sys,
     pwd(),
     (0.0, 20.0),

@@ -8,7 +8,13 @@ makedocs(
         "Welcome Page" => "index.md",
         "Quick Start Guide" => "quick_start_guide.md",
         "Simulation Execution" => "execute.md",
-        "Tutorials" => "tutorials_page.md",
+        "Tutorials" => Any[
+            "Create Dynamic Data" => "tutorials/tutorial_dynamic_data.md",
+            "OMIB" => "tutorials/tutorial_omib.md",
+            "Dynamic Lines simulation" => "tutorials/tutorial_dynamic_lines.md",
+            "Inverter modeling" => "tutorials/tutorial_inverter_modeling.md",
+            "240 WECC solver comparison" => "tutorials/tutorial_240bus.md",
+        ],
         "Models" => "models.md",
         "Initialization" => "initialization.md",
         "Small Signal" => "small.md",
@@ -39,10 +45,10 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/NREL-SIIP/PowerSimulationsDynamics.jl.git",
+    repo = "github.com/NREL-Sienna/PowerSimulationsDynamics.jl.git",
     target = "build",
     branch = "gh-pages",
-    devbranch = "master",
+    devbranch = "main",
     devurl = "dev",
     push_preview = true,
     versions = ["stable" => "v^", "v#.#"],
