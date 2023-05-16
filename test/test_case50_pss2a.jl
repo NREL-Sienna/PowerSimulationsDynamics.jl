@@ -41,10 +41,7 @@ genroe_machine() = RoundRotorExponential(;
 
 #Shafts
 
-single_mass_shaft() = PSY.SingleMass(;
-    H = 3.50,
-    D = 0.00,
-)
+single_mass_shaft() = PSY.SingleMass(; H = 3.50, D = 0.00)
 
 #AVR ESAC1A
 
@@ -68,9 +65,7 @@ esac1a_avr() = ESAC1A(;
 
 #Prime Mover
 
-fixed_torque() = PSY.TGFixed(;
-    efficiency = 1.0,
-)
+fixed_torque() = PSY.TGFixed(; efficiency = 1.0)
 
 #PSS2A
 
@@ -105,7 +100,7 @@ pss2a_pss() = PSY.PSS2A(;
     try
         # Define system
         sys = System(raw_file, dyr_file; frequency = 50.0)
-        
+
         for l in get_components(PSY.StandardLoad, sys)
             transform_load_to_constant_impedance(l)
         end
