@@ -355,16 +355,8 @@ mutable struct NetworkSwitch <: Perturbation
         ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int},
     )
         n_bus = size(ybus)[1]
-        if n_bus < 15_000
-            I = PNM._goderya(ybus)
-            if length(Set(I)) != n_bus
-                error("The Ybus provided has islands and can't be used in the simulation")
-            end
-        else
-            @warn(
-                "The number of buses in the Ybus provided is $n_bus and is too large to be verified for connectivity"
-            )
-        end
+        sub_nets = PNM.find_subnetworks(ybus, collect(1:n_bus))
+        length(sub_nets) > 1 && throw(IS.DataFormatError("Network not connected"))
         # TODO: Improve performance here
         ybus_rect = transform_ybus_to_rectangular(ybus)
         new(time, ybus_rect)
@@ -593,7 +585,7 @@ mutable struct LoadChange <: Perturbation
         signal::Symbol,
         ref_value::Float64,
     )
-        # Currently I'm assumming P_ref and Q_ref are constant impedance to 
+        # Currently I'm assumming P_ref and Q_ref are constant impedance to
         if signal ∈ [:P_ref, :Q_ref]
             @warn(
                 "P_ref and Q_ref signals will be deprecated. It will be assumed as a change in constant impedance for StandardLoads and a change in constant power for PowerLoads. Allowed signals are $(ACCEPTED_LOADCHANGE_REFS)"
@@ -763,7 +755,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
             Q_power = get_Q_power(wrapped_zip)
             set_P_power!(wrapped_zip, P_power - P_power_trip)
             set_Q_power!(wrapped_zip, Q_power - Q_power_trip)
-            # Update Constant Current 
+            # Update Constant Current
             P_current = get_P_current(wrapped_zip)
             Q_current = get_Q_current(wrapped_zip)
             set_P_current!(wrapped_zip, P_current - P_current_trip)
