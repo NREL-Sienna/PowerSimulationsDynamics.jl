@@ -96,10 +96,10 @@ function _check_residual(
     tolerance::Float64,
 )
     @debug _sorted_residuals(residual)
-    @show val, ix = findmax(residual)
+    val, ix = findmax(residual)
     sum_residual = sum(abs.(residual))
     @info "Residual from initial guess: max = $(val) at $ix, total = $sum_residual"
-    if sum_residual > 1e-5 # tolerance
+    if sum_residual > tolerance
         state_map = make_global_state_map(inputs)
         for (k, val) in state_map
             inputs.global_state_map[k] = val
@@ -121,6 +121,7 @@ function _check_residual(
     end
     return
 end
+
 function refine_initial_condition!(
     sim::Simulation,
     model::SystemModel,
@@ -133,14 +134,13 @@ function refine_initial_condition!(
         #return
     end
     converged = false
-    @show initial_guess = get_initial_conditions(sim)
+    initial_guess = get_initial_conditions(sim)
     inputs = get_simulation_inputs(sim)
     bus_range = get_bus_range(inputs)
     powerflow_solution = deepcopy(initial_guess[bus_range])
     f! = _get_model_closure(model, initial_guess)
-    @show residual = similar(initial_guess)
+    residual = similar(initial_guess)
     f!(residual, initial_guess)
-    @show residual
     _check_residual(residual, inputs, MAX_INIT_RESIDUAL)
     for tol in [STRICT_NLSOLVE_F_TOLERANCE, RELAXED_NLSOLVE_F_TOLERANCE]
         if converged
