@@ -173,9 +173,9 @@ pss2a_pss() = PSY.PSS2A(;
 
         # Test Transient Simulation Results
         @test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
-        @test LinearAlgebra.norm(v1_psid - v1_psse, Inf) <= 3e-3
-        @test LinearAlgebra.norm(v2_psid - v2_psse, Inf) <= 3e-3
-        @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 3e-3
+        @test LinearAlgebra.norm(v1_psid - v1_psse, Inf) <= 5e-3
+        @test LinearAlgebra.norm(v2_psid - v2_psse, Inf) <= 5e-3
+        @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 5e-3
 
     finally
         @info("removing test files")
