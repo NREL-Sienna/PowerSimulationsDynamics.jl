@@ -427,7 +427,7 @@ function build!(sim; kwargs...)
     logger = configure_logging(sim, "w")
     Logging.with_logger(logger) do
         _build!(sim; kwargs...)
-        if sim.status == BUILT
+        #if sim.status == BUILT
             string_buffer = IOBuffer()
             TimerOutputs.print_timer(
                 string_buffer,
@@ -436,7 +436,7 @@ function build!(sim; kwargs...)
                 compact = true,
             )
             @info "\n$(String(take!(string_buffer)))\n"
-        end
+        #end
     end
     close(logger)
     return sim.status
