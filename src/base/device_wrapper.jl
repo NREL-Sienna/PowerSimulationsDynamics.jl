@@ -147,12 +147,18 @@ function DynamicWrapper(
         ode_range,
         bus_ix,
         Base.ImmutableDict(
-            sort!(device_states .=> ix_range, by = x -> x.second, rev = true)...,
+            sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
         ),
-        isempty(component_state_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
-        Base.ImmutableDict(component_state_mapping...),
-        isempty(input_port_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
-        Base.ImmutableDict(input_port_mapping...),
+        if isempty(component_state_mapping)
+            Base.ImmutableDict{Int, Vector{Int}}()
+        else
+            Base.ImmutableDict(component_state_mapping...)
+        end,
+        if isempty(input_port_mapping)
+            Base.ImmutableDict{Int, Vector{Int}}()
+        else
+            Base.ImmutableDict(input_port_mapping...)
+        end,
         Dict{String, Any}(),
     )
 end
@@ -189,12 +195,18 @@ function DynamicWrapper(
         ode_range,
         bus_ix,
         Base.ImmutableDict(
-            sort!(device_states .=> ix_range, by = x -> x.second, rev = true)...,
+            sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
         ),
-        isempty(component_state_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
-        Base.ImmutableDict(component_state_mapping...),
-        isempty(input_port_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
-        Base.ImmutableDict(input_port_mapping...),
+        if isempty(component_state_mapping)
+            Base.ImmutableDict{Int, Vector{Int}}()
+        else
+            Base.ImmutableDict(component_state_mapping...)
+        end,
+        if isempty(input_port_mapping)
+            Base.ImmutableDict{Int, Vector{Int}}()
+        else
+            Base.ImmutableDict(input_port_mapping...)
+        end,
         Dict{String, Any}(),
     )
 end

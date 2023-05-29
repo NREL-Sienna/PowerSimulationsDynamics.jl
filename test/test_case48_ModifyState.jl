@@ -31,7 +31,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBus_SEXS.dyr")
         )
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -46,7 +46,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBus_SEXS.dyr")
         @test isa(ω, Vector{Float64})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -69,7 +69,7 @@ end
         )
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -84,6 +84,6 @@ end
         @test isa(ω, Vector{Float64})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

@@ -77,11 +77,11 @@ function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbo
 end
 
 function _sorted_residuals(residual::Vector{Float64})
-    if isapprox(sum(abs.(residual)), 0.0, atol = STRICT_NLSOLVE_F_TOLERANCE)
+    if isapprox(sum(abs.(residual)), 0.0; atol = STRICT_NLSOLVE_F_TOLERANCE)
         @debug "Residual is zero with tolerance $(STRICT_NLSOLVE_F_TOLERANCE)"
         return
     end
-    ix_sorted = sortperm(abs.(residual), rev = true)
+    ix_sorted = sortperm(abs.(residual); rev = true)
     show_residual = min(10, length(residual))
     for i in 1:show_residual
         ix = ix_sorted[i]
@@ -111,7 +111,6 @@ function _check_residual(
                 if index == ix
                     gen_name = gen
                     state = state_name
-
                 end
             end
         end

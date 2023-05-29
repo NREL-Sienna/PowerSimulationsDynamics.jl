@@ -68,7 +68,7 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -97,7 +97,7 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -137,7 +137,7 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -166,7 +166,7 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 

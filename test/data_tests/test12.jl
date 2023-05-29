@@ -7,10 +7,10 @@ include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusMulti.raw")
-threebus_sys = System(threebus_file_dir, runchecks = false)
+threebus_sys = System(threebus_file_dir; runchecks = false)
 
 function dyn_gen_multi(generator)
-    return PSY.DynamicGenerator(
+    return PSY.DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_classic(), #machine
@@ -22,7 +22,7 @@ function dyn_gen_multi(generator)
 end
 
 function dyn_gen_multi_tg(generator)
-    return PSY.DynamicGenerator(
+    return PSY.DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_classic(), #machine

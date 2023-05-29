@@ -48,7 +48,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/GAST/GAST_TEST.csv")
         @test LinearAlgebra.norm(eigs - test21_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -69,7 +69,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/GAST/GAST_TEST.csv")
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -109,7 +109,7 @@ end
         @test LinearAlgebra.norm(eigs - test21_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -132,6 +132,6 @@ end
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

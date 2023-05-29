@@ -1,8 +1,8 @@
 using Documenter, PowerSystems, DocStringExtensions, PowerSimulationsDynamics
 
-makedocs(
+makedocs(;
     modules = [PowerSimulationsDynamics],
-    format = Documenter.HTML(mathengine = Documenter.MathJax()),
+    format = Documenter.HTML(; mathengine = Documenter.MathJax()),
     sitename = "PowerSimulationsDynamics.jl",
     pages = Any[
         "Welcome Page" => "index.md",
@@ -44,7 +44,7 @@ makedocs(
     ],
 )
 
-deploydocs(
+deploydocs(;
     repo = "github.com/NREL-Sienna/PowerSimulationsDynamics.jl.git",
     target = "build",
     branch = "gh-pages",

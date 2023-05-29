@@ -6,7 +6,7 @@ function add_source_to_ref(sys::PSY.System, X_th::Float64)
     end
 
     slack_bus = [b for b in PSY.get_components(Bus, sys) if b.bustype == BusTypes.REF][1]
-    inf_source = Source(
+    inf_source = Source(;
         name = "InfBus", #name
         available = true, #availability
         active_power = 0.0,
@@ -27,7 +27,7 @@ function add_source_to_ref(sys::PSY.System)
     end
 
     slack_bus = [b for b in PSY.get_components(Bus, sys) if b.bustype == BusTypes.REF][1]
-    inf_source = Source(
+    inf_source = Source(;
         name = "InfBus", #name
         available = true, #availability
         active_power = 0.0,

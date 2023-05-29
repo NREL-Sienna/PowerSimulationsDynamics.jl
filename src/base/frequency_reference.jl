@@ -55,7 +55,7 @@ function get_frequency_reference!(
                     ),
                 )
             end
-            ref_devices = sort(ref_devices, by = x -> PSY.get_base_power(x))
+            ref_devices = sort(ref_devices; by = x -> PSY.get_base_power(x))
         elseif length(ref_devices) < 1
             throw(
                 IS.ConflictingInputsError(

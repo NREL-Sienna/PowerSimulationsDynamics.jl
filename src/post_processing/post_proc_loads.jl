@@ -123,7 +123,7 @@ function compute_output_current(
         ix_t = unique(i -> solution.t[i], eachindex(solution.t))
         ts = solution.t[ix_t]
     else
-        ts = range(0, stop = solution.t[end], step = dt)
+        ts = range(0; stop = solution.t[end], step = dt)
     end
 
     V0 = sqrt(V_R[1]^2 + V_I[1]^2)
@@ -160,7 +160,7 @@ function compute_output_current(
         ix_t = unique(i -> solution.t[i], eachindex(solution.t))
         ts = solution.t[ix_t]
     else
-        ts = range(0, stop = solution.t[end], step = dt)
+        ts = range(0; stop = solution.t[end], step = dt)
     end
 
     V0 = sqrt(V_R[1]^2 + V_I[1]^2)
@@ -197,7 +197,7 @@ function compute_output_current(
         ix_t = unique(i -> solution.t[i], eachindex(solution.t))
         ts = solution.t[ix_t]
     else
-        ts = range(0, stop = solution.t[end], step = dt)
+        ts = range(0; stop = solution.t[end], step = dt)
     end
 
     V0 = sqrt(V_R[1]^2 + V_I[1]^2)

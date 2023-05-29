@@ -54,7 +54,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test13_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.02) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(); dtmax = 0.02) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         #Obtain data for angles
@@ -62,7 +62,7 @@ Ybus_change = NetworkSwitch(
         series2 = get_mechanical_torque_series(results, "generator-102-1")
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -97,7 +97,7 @@ end
         @test LinearAlgebra.norm(eigs - test13_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.02) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas4(); dtmax = 0.02) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         #Obtain data for angles
@@ -105,6 +105,6 @@ end
         series2 = get_mechanical_torque_series(results, "generator-102-1")
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

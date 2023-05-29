@@ -7,11 +7,11 @@ include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusNetwork.raw")
-threebus_sys = System(threebus_file_dir, runchecks = false)
+threebus_sys = System(threebus_file_dir; runchecks = false)
 add_source_to_ref(threebus_sys)
 
 function dyn_gen_second_order(generator)
-    return DynamicGenerator(
+    return DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_oneDoneQ(), #machine
@@ -23,7 +23,7 @@ function dyn_gen_second_order(generator)
 end
 
 function inv_case78(static_device)
-    return DynamicInverter(
+    return DynamicInverter(;
         name = get_name(static_device),
         ω_ref = 1.0, # ω_ref,
         converter = converter_high_power(), #converter

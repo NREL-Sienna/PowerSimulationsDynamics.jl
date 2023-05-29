@@ -12,5 +12,5 @@ function AutoAbstol(save = true, init_current_max = 1e-9)
     affect! = AutoAbstolAffect(init_current_max)
     condtion = (u, t, integrator) -> true
     save_positions = (save, false)
-    return SciMLBase.DiscreteCallback(condtion, affect!, save_positions = save_positions)
+    return SciMLBase.DiscreteCallback(condtion, affect!; save_positions = save_positions)
 end

@@ -203,7 +203,7 @@ function reset!(sim::Simulation{T}) where {T <: SimulationModel}
 end
 
 function configure_logging(sim::Simulation, file_mode; kwargs...)
-    return IS.configure_logging(
+    return IS.configure_logging(;
         console = true,
         console_stream = stderr,
         console_level = get(kwargs, :console_level, sim.console_level),
@@ -333,7 +333,7 @@ function _get_diffeq_problem(
         dx0,
         x0,
         get_tspan(sim),
-        simulation_inputs,
+        simulation_inputs;
         differential_vars = get_DAE_vector(simulation_inputs),
     )
     sim.status = BUILT
@@ -348,7 +348,7 @@ function _get_diffeq_problem(
     simulation_inputs = get_simulation_inputs(sim)
     sim.problem = SciMLBase.ODEProblem(
         SciMLBase.ODEFunction{true}(
-            model,
+            model;
             mass_matrix = get_mass_matrix(simulation_inputs),
             jac = jacobian,
             jac_prototype = jacobian.Jv,
@@ -429,14 +429,14 @@ function build!(sim; kwargs...)
     Logging.with_logger(logger) do
         _build!(sim; kwargs...)
         #if sim.status == BUILT
-            string_buffer = IOBuffer()
-            TimerOutputs.print_timer(
-                string_buffer,
-                BUILD_TIMER,
-                sortby = :firstexec,
-                compact = true,
-            )
-            @info "\n$(String(take!(string_buffer)))\n"
+        string_buffer = IOBuffer()
+        TimerOutputs.print_timer(
+            string_buffer,
+            BUILD_TIMER;
+            sortby = :firstexec,
+            compact = true,
+        )
+        @info "\n$(String(take!(string_buffer)))\n"
         #end
     end
     close(logger)

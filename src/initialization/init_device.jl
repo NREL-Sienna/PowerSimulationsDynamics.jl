@@ -268,7 +268,7 @@ function initialize_dynamic_device!(
         out[8] = (1.0 - ωr) * ψ_qr + R_r / X_lr * (ψ_md - ψ_dr) # dψ_dr/dt = 0
         out[9] = ψ_ds * i_qs - ψ_qs * i_ds - τ_m0 * (A * ωr^2 + B * ωr + C) # dωr/dt = 0
     end
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization in Ind. Motor $(PSY.get_name(device)) failed")
     else
@@ -372,7 +372,7 @@ function initialize_dynamic_device!(
         out[10] = (1.0 - ωr) * ψ_qr - R_r * i_dr # dψ_dr/dt = 0
         out[11] = ψ_qr * i_dr - ψ_dr * i_qr - τ_m0 * (A * ωr^2 + B * ωr + C) # dωr/dt = 0
     end
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization in Ind. Motor $(PSY.get_name(device)) failed")
     else
@@ -525,7 +525,7 @@ function initialize_dynamic_device!(
         out[4] = V_dq_cnv0[q] - Vq_cnv
         out[5] = V_dq_cnv0[d] - Vd_cnv
     end
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization in Active Load $(PSY.get_name(device)) failed")
     else

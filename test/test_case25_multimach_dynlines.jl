@@ -48,7 +48,7 @@ Pref_change = ControlReferenceChange(1.0, gen2, :P_ref, 0.9);
         @test small_sig.stable
 
         # Solve problem in equilibrium
-        @test execute!(sim, Sundials.IDA(), dtmax = 0.01, saveat = 0.01) ==
+        @test execute!(sim, Sundials.IDA(); dtmax = 0.01, saveat = 0.01) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -67,7 +67,7 @@ Pref_change = ControlReferenceChange(1.0, gen2, :P_ref, 0.9);
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -91,7 +91,7 @@ end
         @test small_sig.stable
 
         # Solve problem in equilibrium
-        @test execute!(sim, Rodas4(), dtmax = 0.01, saveat = 0.01) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.01, saveat = 0.01) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -110,6 +110,6 @@ end
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

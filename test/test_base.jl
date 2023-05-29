@@ -3,7 +3,7 @@
 ##################################################
 
 include(joinpath(TEST_FILES_DIR, "data_tests/test01.jl"))
-omib_sys_file = System(PowerModelsData(omib_file_dir), runchecks = false)
+omib_sys_file = System(PowerModelsData(omib_file_dir); runchecks = false)
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -51,7 +51,7 @@ end
 
     finally
         @info("removing test files")
-        rm(path1, force = true, recursive = true)
+        rm(path1; force = true, recursive = true)
     end
 
     path2 = (joinpath(pwd(), "test-Base-2"))
@@ -82,7 +82,7 @@ end
 
     finally
         @info("removing test files")
-        rm(path2, force = true, recursive = true)
+        rm(path2; force = true, recursive = true)
     end
 end
 
@@ -103,21 +103,21 @@ end
         @test sim.status == PSID.BUILT
 
         # First run
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         # Second run
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
     finally
         @info("removing test files")
-        rm(path1, force = true, recursive = true)
+        rm(path1; force = true, recursive = true)
     end
 end
 
 @testset "Hybrid Line Indexing" begin
     ## Create threebus system with more dyn lines ##
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
-    threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
+    threebus_sys_dyns = System(three_bus_file_dir; runchecks = false)
     for l in get_components(PSY.StandardLoad, threebus_sys_dyns)
         transform_load_to_constant_impedance(l)
     end
@@ -321,7 +321,7 @@ end
 
 @testset "Test Network Modification Callback Affects" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
-    threebus_sys = System(three_bus_file_dir, runchecks = false)
+    threebus_sys = System(three_bus_file_dir; runchecks = false)
     add_source_to_ref(threebus_sys)
     for l in get_components(PSY.StandardLoad, threebus_sys)
         transform_load_to_constant_impedance(l)
@@ -369,7 +369,7 @@ end
         @test isapprox(inputs.ybus_rectangular[i, j + 3], imag(complex_ybus), atol = 1e-10)
     end
 
-    threebus_sys = System(three_bus_file_dir, runchecks = false)
+    threebus_sys = System(three_bus_file_dir; runchecks = false)
     ybus_original = PNM.Ybus(threebus_sys)
     cb1 = NetworkSwitch(1.0, ybus_original)
 
@@ -388,7 +388,7 @@ end
 
 @testset "Test Generation perturbations callback affects" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
-    threebus_sys = System(three_bus_file_dir, runchecks = false)
+    threebus_sys = System(three_bus_file_dir; runchecks = false)
     for l in get_components(PSY.StandardLoad, threebus_sys)
         transform_load_to_constant_impedance(l)
     end
@@ -440,7 +440,7 @@ end
 
 @testset "Test Load perturbations callback affects" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
-    threebus_sys = System(three_bus_file_dir, runchecks = false)
+    threebus_sys = System(three_bus_file_dir; runchecks = false)
     for l in get_components(PSY.StandardLoad, threebus_sys)
         transform_load_to_constant_impedance(l)
     end
@@ -479,7 +479,7 @@ end
 
 @testset "Global Index" begin
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
-    threebus_sys_dyns = System(three_bus_file_dir, runchecks = false)
+    threebus_sys_dyns = System(three_bus_file_dir; runchecks = false)
     for l in get_components(PSY.StandardLoad, threebus_sys_dyns)
         transform_load_to_constant_impedance(l)
     end
@@ -523,7 +523,7 @@ end
 @testset "Frequency Reference" begin
     sys = System(
         joinpath(TEST_FILES_DIR, "data_tests/240busWECC_2018_PSS32_fixed_shunts.raw"),
-        joinpath(TEST_FILES_DIR, "data_tests/240busWECC_2018_PSS.dyr"),
+        joinpath(TEST_FILES_DIR, "data_tests/240busWECC_2018_PSS.dyr");
         bus_name_formatter = x -> string(strip(x["name"])) * "-" * string(x["index"]),
     )
     for l in get_components(PSY.StandardLoad, sys)
@@ -533,9 +533,9 @@ end
         ResidualModel,
         sys, #system
         mktempdir(),
-        (0.0, 20.0), #time span
+        (0.0, 20.0); #time span
         # Not initialized to speed up the test
-        initialize_simulation = false;
+        initialize_simulation = false,
         console_level = Logging.Error,
     )
 
@@ -545,7 +545,7 @@ end
         ResidualModel,
         sys, #system
         mktempdir(),
-        (0.0, 20.0),
+        (0.0, 20.0);
         # Not initialized to speed up the test
         initialize_simulation = false,
         frequency_reference = ConstantFrequency(),
@@ -678,7 +678,7 @@ end
         @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -689,17 +689,17 @@ end
         @test t[2] - t[1] == 0.01
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
 @testset "Test 01 OMIB AVR Error" begin
     # Define Classic OMIB with different AVR
-    omib_sys_error = System(omib_file_dir, runchecks = false)
+    omib_sys_error = System(omib_file_dir; runchecks = false)
     add_source_to_ref(omib_sys_error)
     ############### Data Dynamic devices ########################
     function dyn_gen_error(generator)
-        return DynamicGenerator(
+        return DynamicGenerator(;
             name = get_name(generator),
             ω_ref = 1.0,
             machine = machine_classic(),

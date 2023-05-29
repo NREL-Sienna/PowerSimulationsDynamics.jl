@@ -7,10 +7,10 @@ include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
 sys_dir = joinpath(dirname(@__FILE__), "OMIB_ActiveLoad.raw")
-sys = System(sys_dir, runchecks = false)
+sys = System(sys_dir; runchecks = false)
 
 function inv_model(static_device)
-    return DynamicInverter(
+    return DynamicInverter(;
         name = get_name(static_device),
         ω_ref = 1.0, # ω_ref,
         converter = converter_high_power(), #converter

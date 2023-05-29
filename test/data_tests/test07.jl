@@ -7,16 +7,16 @@ include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusNetwork.raw")
-threebus_sys = System(threebus_file_dir, runchecks = false)
+threebus_sys = System(threebus_file_dir; runchecks = false)
 add_source_to_ref(threebus_sys)
 #Reduce generator output
 for g in get_components(Generator, threebus_sys)
     g.active_power = 0.75
 end
-res = run_powerflow!(threebus_sys)
+res = solve_powerflow!(threebus_sys)
 
 function dyn_gen_five_mass_shaft_order(generator)
-    return PSY.DynamicGenerator(
+    return PSY.DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_oneDoneQ(), #machine
@@ -28,7 +28,7 @@ function dyn_gen_five_mass_shaft_order(generator)
 end
 
 function dyn_gen_first_order(generator)
-    return PSY.DynamicGenerator(
+    return PSY.DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_oneDoneQ(), #machine

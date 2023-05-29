@@ -54,7 +54,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -64,7 +64,7 @@ Ybus_change = NetworkSwitch(
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -99,7 +99,7 @@ end
         @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -109,6 +109,6 @@ end
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

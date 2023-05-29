@@ -14,7 +14,7 @@ remove_component!(ThermalStandard, sys, "generator-101-1");
 add_source_to_ref(sys)
 
 function dyn_gen_genrou(generator)
-    return PSY.DynamicGenerator(
+    return PSY.DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0, #ω_ref
         machine = machine_genrou(), #machine

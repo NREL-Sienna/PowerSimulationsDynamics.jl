@@ -66,7 +66,7 @@ Ybus_change = NetworkSwitch(
         ]
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -113,6 +113,6 @@ end
         ]
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

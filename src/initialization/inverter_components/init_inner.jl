@@ -103,7 +103,7 @@ function initialize_inner!(
         out[8] = Vq_cnv_ref - V_dq_cnv0[q]
     end
     x0 = [θ0_oc, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization in Inner Control failed")
     else
@@ -209,7 +209,7 @@ function initialize_inner!(
         out[2] = Vq_cnv_ref - V_dq_cnv0[q]
     end
     x0 = [0.0, 0.0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization in Inner Control failed")
     else
