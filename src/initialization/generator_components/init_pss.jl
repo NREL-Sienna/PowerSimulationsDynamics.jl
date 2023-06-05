@@ -192,7 +192,6 @@ function initialize_pss!(
     M_rtf = PSY.get_M_rtf(pss)
     N_rtf = PSY.get_N_rtf(pss)
     Tw1 = PSY.get_Tw1(pss)
-    Tw3 = PSY.get_Tw3(pss)
     T9 = PSY.get_T9(pss)
     Vs1_min, Vs1_max = PSY.get_Vs1_lim(pss)
     Vs2_min, Vs2_max = PSY.get_Vs2_lim(pss)
