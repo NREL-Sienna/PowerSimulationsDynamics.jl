@@ -158,6 +158,10 @@ function initialize_pss!(
     basepower = PSY.get_base_power(dynamic_device)
     Sbase = get_system_base_power(dynamic_device)
 
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(dynamic_device, typeof(pss))
+    ω = device_states[external_ix[1]]
+
     #Get Input Signal 1
     u_1 = get_pss_input_signal(
         Val(PSY.get_input_code_1(pss)),
@@ -168,7 +172,7 @@ function initialize_pss!(
     )
 
     if PSY.get_input_code_1(pss) == 3
-        u_1 = u_1 * (Sbase / basepower)
+        u_1 = u_1 * (Sbase / basepower) * ω
     end
 
     #Get Input Signal 2
@@ -181,7 +185,7 @@ function initialize_pss!(
     )
 
     if PSY.get_input_code_2(pss) == 3
-        u_2 = u_2 * (Sbase / basepower)
+        u_2 = u_2 * (Sbase / basepower) * ω
     end
 
     #Obtain PSS States
