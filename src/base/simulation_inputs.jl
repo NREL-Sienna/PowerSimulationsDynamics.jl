@@ -237,6 +237,7 @@ function _wrap_static_injectors(sys::PSY.System, lookup::Dict{Int, Int})
 end
 
 function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
+    sys_base_power = PSY.get_base_power(sys)
     # This needs to change if we implement dynamic load models
     static_loads =
         PSY.get_components(x -> !isa(x, PSY.FixedAdmittance), PSY.ElectricLoad, sys)
@@ -249,18 +250,19 @@ function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
         # Optimize this dictionary push
         push!(get!(map_bus_load, bus, PSY.ElectricLoad[]), ld)
     end
-    return _construct_load_wrapper(lookup, map_bus_load)
+    return _construct_load_wrapper(lookup, map_bus_load, sys_base_power)
 end
 
 function _construct_load_wrapper(
     lookup::Dict{Int, Int},
     map_bus_load::Dict{PSY.Bus, Vector{PSY.ElectricLoad}},
+    sys_base_power,
 )
     container = Vector{StaticLoadWrapper}(undef, length(map_bus_load))
     for (ix, (bus, loads)) in enumerate(map_bus_load)
         bus_n = PSY.get_number(bus)
         bus_ix = lookup[bus_n]
-        container[ix] = StaticLoadWrapper(bus, loads, bus_ix)
+        container[ix] = StaticLoadWrapper(bus, loads, bus_ix, sys_base_power)
     end
     return container
 end

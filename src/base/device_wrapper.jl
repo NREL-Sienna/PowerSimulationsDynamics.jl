@@ -439,7 +439,12 @@ mutable struct StaticLoadWrapper
     bus_ix::Int
 end
 
-function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix::Int)
+function StaticLoadWrapper(
+    bus::PSY.Bus,
+    loads::Vector{PSY.ElectricLoad},
+    bus_ix::Int,
+    sys_base_power,
+)
     P_power = 0.0
     P_current = 0.0
     P_impedance = 0.0
@@ -450,15 +455,19 @@ function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix
     # Add ZIP Loads
     for ld in loads
         if isa(ld, PSY.PowerLoad)
-            P_power += PSY.get_active_power(ld)
-            Q_power += PSY.get_reactive_power(ld)
+            base_power = PSY.get_base_power(ld)
+            P_power += PSY.get_active_power(ld) * (base_power / sys_base_power)
+            Q_power += PSY.get_reactive_power(ld) * (base_power / sys_base_power)
         elseif isa(ld, PSY.StandardLoad)
-            P_impedance += PSY.get_impedance_active_power(ld)
-            Q_impedance += PSY.get_impedance_reactive_power(ld)
-            P_current += PSY.get_current_active_power(ld)
-            Q_current += PSY.get_current_reactive_power(ld)
-            P_power += PSY.get_constant_active_power(ld)
-            Q_power += PSY.get_constant_reactive_power(ld)
+            base_power = PSY.get_base_power(ld)
+            P_impedance +=
+                PSY.get_impedance_active_power(ld) * (base_power / sys_base_power)
+            Q_impedance +=
+                PSY.get_impedance_reactive_power(ld) * (base_power / sys_base_power)
+            P_current += PSY.get_current_active_power(ld) * (base_power / sys_base_power)
+            Q_current += PSY.get_current_reactive_power(ld) * (base_power / sys_base_power)
+            P_power += PSY.get_constant_active_power(ld) * (base_power / sys_base_power)
+            Q_power += PSY.get_constant_reactive_power(ld) * (base_power / sys_base_power)
         end
     end
 
@@ -468,12 +477,13 @@ function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix
     dict_names = Dict{String, Int}()
     if !isempty(exp_loads)
         for (ix, ld) in enumerate(exp_loads)
+            base_power = PSY.get_base_power(ld)
             dict_names[PSY.get_name(ld)] = ix
             exp_params[ix] = ExpLoadParams(
-                PSY.get_active_power(ld),
+                PSY.get_active_power(ld) * (base_power / sys_base_power),
                 PSY.get_active_power_coefficient(ld),
                 PSY.get_reactive_power(ld),
-                PSY.get_reactive_power_coefficient(ld),
+                PSY.get_reactive_power_coefficient(ld) * (base_power / sys_base_power),
             )
         end
     end
