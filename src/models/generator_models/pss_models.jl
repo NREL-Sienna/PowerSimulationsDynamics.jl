@@ -359,8 +359,8 @@ function mdl_pss_ode!(
     Vst_min, Vst_max = PSY.get_Vst_lim(pss)
 
     # Clamp inputs
-    u1 = clamp(u1, Vs1_min, Vs1_max)
-    u2 = clamp(u2, Vs2_min, Vs2_max)
+    u_1 = clamp(u1, Vs1_min, Vs1_max)
+    u_2 = clamp(u2, Vs2_min, Vs2_max)
 
     # Compute block derivatives
     y_w_1_1, dxp1_dt = high_pass(u_1, x_p1, Tw1, Tw1)
