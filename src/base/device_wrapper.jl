@@ -456,11 +456,9 @@ function StaticLoadWrapper(
     for ld in loads
         base_power_conversion = PSY.get_base_power(ld) / sys_base_power
         if isa(ld, PSY.PowerLoad)
-            base_power = PSY.get_base_power(ld)
             P_power += PSY.get_active_power(ld) * base_power_conversion
             Q_power += PSY.get_reactive_power(ld) * base_power_conversion
         elseif isa(ld, PSY.StandardLoad)
-            base_power = PSY.get_base_power(ld)
             P_impedance += PSY.get_impedance_active_power(ld) * base_power_conversion
             Q_impedance += PSY.get_impedance_reactive_power(ld) * base_power_conversion
             P_current += PSY.get_current_active_power(ld) * base_power_conversion
