@@ -312,7 +312,7 @@ function mdl_pss_ode!(
     end
 
     #Obtain indices for component w/r to device
-    local_ix = get_local_state_ix(dynamic_device, PSY.PSS2A)
+    local_ix = get_local_state_ix(dynamic_device, PSY.PSS2B)
 
     #Define inner states for component
     internal_states = @view device_states[local_ix]
@@ -364,7 +364,14 @@ function mdl_pss_ode!(
 
     # Compute block derivatives
     y_w_1_1, dxp1_dt = high_pass(u_1, x_p1, Tw1, Tw1)
-    y_w_2_1, dxp2_dt = high_pass(y_w_1_1, x_p2, Tw2, Tw2)
+
+    # To bypass second washout, of the first signal use Tw2 = 0.0
+    y_w_2_1 = y_w_1_1
+    dxp2_dt = 0.0
+
+    if Tw2 != 0.0
+        y_w_2_1, dxp2_dt = high_pass(y_w_1_1, x_p2, Tw2, Tw2)
+    end
 
     # To bypass use T6 = 0.0
     yt_1 = y_w_2_1
@@ -375,7 +382,14 @@ function mdl_pss_ode!(
     end
 
     y_w_1_2, dxp4_dt = high_pass(u_2, x_p4, Tw3, Tw3)
-    y_w_2_2, dxp5_dt = high_pass(y_w_1_2, x_p5, Tw4, Tw4)
+
+    # To bypass second washout, of the second signal use Tw4 = 0.0
+    y_w_2_2 = y_w_1_2
+    dxp5_dt = 0.0
+
+    if Tw4 != 0.0
+        y_w_2_2, dxp5_dt = high_pass(y_w_1_2, x_p5, Tw4, Tw4)
+    end
 
     # To bypass use T7 = 0.0
     yt_2 = y_w_2_2
