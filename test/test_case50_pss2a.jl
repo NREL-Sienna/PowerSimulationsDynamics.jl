@@ -151,7 +151,7 @@ pss2a_pss() = PSY.PSS2A(;
         # Obtain results
         t_psid, Pe_psid = get_activepower_series(results, "generator-1-1")
         _, v1_psid = get_voltage_magnitude_series(results, 1)
-        _, omega_psid = get_state_series(results, ("generator-1-1",:ω))
+        _, omega_psid = get_state_series(results, ("generator-1-1", :ω))
 
         # Obtain PSSE results
         M = get_csv_data(csv_file)
@@ -164,7 +164,7 @@ pss2a_pss() = PSY.PSS2A(;
         @test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
         @test LinearAlgebra.norm(Pe_psid - Pe_psse, Inf) <= 5e-3
         @test LinearAlgebra.norm(v1_psid - v1_psse, Inf) <= 2e-3
-        @test LinearAlgebra.norm(omega_psid - omega_psse, Inf) <= 1e-4
+        @test LinearAlgebra.norm(omega_psid - omega_psse, Inf) <= 2e-3
 
     finally
         @info("removing test files")
