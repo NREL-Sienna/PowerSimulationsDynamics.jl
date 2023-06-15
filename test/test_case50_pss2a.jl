@@ -143,6 +143,13 @@ pss2a_pss() = PSY.PSS2A(;
 
         @test diff_val[1] < 1e-3
 
+        # Obtain small signal results for initial conditions
+        small_sig = small_signal_analysis(sim)
+        # @test small_sig.stable
+
+        # In this test several blocks are bypassed resulting in problems for
+        # the small signal stability analysis at initial conditions.
+
         # Solve problem
         @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
