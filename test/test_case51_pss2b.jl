@@ -2,7 +2,7 @@
 Test for PSS model : PSS2B available in PSS/e
 This case study defines a two bus system with a GENROU machine in bus 1
 and an infinite bus in 2.
-The GENROU machine has the SEXS and the PSS2A models.
+The GENROU machine has the SEXS and the PSS2B models.
 The small disturbance is a change of Vref in SEXS.
 """
 ##################################################
