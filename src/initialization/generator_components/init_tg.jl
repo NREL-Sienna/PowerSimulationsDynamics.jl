@@ -8,7 +8,7 @@ function initialize_tg!(
     τm0 = inner_vars[τm_var]
     eff = PSY.get_efficiency(tg)
     P_ref = τm0 / eff
-    #PSY.set_P_ref!(tg, P_ref)
+    PSY.set_P_ref!(tg, P_ref)
     #Update Control Refs
     set_P_ref(dynamic_device, P_ref)
     return
