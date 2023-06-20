@@ -301,7 +301,7 @@ function _build_perturbations!(sim::Simulation)
     perturbations = sim.perturbations
     perturbations_count = length(perturbations)
     callback_vector = Vector{SciMLBase.DiscreteCallback}(undef, perturbations_count)
-    tstops = Float64[] 
+    tstops = Float64[]
     for (ix, pert) in enumerate(perturbations)
         _add_callback!(tstops, callback_vector, ix, pert, sim, inputs)
     end
@@ -310,13 +310,20 @@ function _build_perturbations!(sim::Simulation)
     return
 end
 
-function _add_callback!(tstops::Vector{Float64}, callback_vector:: Vector{SciMLBase.DiscreteCallback}, ix::Int, pert::T, sim::Simulation, inputs::SimulationInputs) where {T <: Perturbation}
+function _add_callback!(
+    tstops::Vector{Float64},
+    callback_vector::Vector{SciMLBase.DiscreteCallback},
+    ix::Int,
+    pert::T,
+    sim::Simulation,
+    inputs::SimulationInputs,
+) where {T <: Perturbation}
     @debug pert
     condition = (x, t, integrator) -> t in [pert.time]
     affect = get_affect(inputs, get_system(sim), pert)
     callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
     push!(tstops, pert.time)
-end 
+end
 
 function _get_diffeq_problem(
     sim::Simulation,
