@@ -1,11 +1,12 @@
 name: Main - CI
 
 on:
+  schedule:
+  - cron: "0 0 * * 1-5"
   push:
     branches:
       - main
-    schedule:
-      - cron: 0 * * * *
+
 jobs:
   test:
     name: Julia ${{ matrix.julia-version }} - ${{ matrix.os }}
@@ -14,7 +15,7 @@ jobs:
       matrix:
         julia-version: ['1', 'nightly']
         julia-arch: [x64]
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - uses: actions/checkout@v2
@@ -23,7 +24,6 @@ jobs:
           version: ${{ matrix.julia-version }}
           arch: ${{ matrix.julia-arch }}
       - uses: julia-actions/julia-buildpkg@latest
-        continue-on-error: ${{ matrix.julia-version == 'nightly' }}
         env:
           PYTHON: ""
       - uses: julia-actions/julia-runtest@latest
