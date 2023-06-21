@@ -9,7 +9,11 @@ and the generator located in bus 3.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test03.jl"))
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_simple_marconato")
+
+#Compute Y_bus after fault
+fault_branch = deepcopy(collect(get_components(Branch, threebus_sys))[2:3])
+Ybus_fault = PNM.Ybus(fault_branch, collect(get_components(Bus, threebus_sys)))[:, :]
 
 ##################################################
 ############### SOLVE PROBLEM ####################

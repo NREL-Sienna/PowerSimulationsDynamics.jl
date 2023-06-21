@@ -8,7 +8,14 @@ drop a circuit on the (double circuit) line connecting the two buses, doubling i
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test01.jl"))
+omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
+
+#Compute Y_bus after fault
+fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
+fault_branch.r = 0.00;
+fault_branch.x = 0.1;
+Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
+
 
 ##################################################
 ############### SOLVE PROBLEM ####################

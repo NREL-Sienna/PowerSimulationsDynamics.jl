@@ -9,22 +9,24 @@ and the generator located in bus 3.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test02.jl"))
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_oneDoneQ")
+solve_powerflow!(threebus_sys)
+#Compute Y_bus after fault
+fault_branch = deepcopy(collect(get_components(Branch, threebus_sys))[2:3])
+Ybus_fault = PNM.Ybus(fault_branch, collect(get_components(Bus, threebus_sys)))[:, :]
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-# Define Fault: Change of YBus
-Ybus_change = NetworkSwitch(
-    1.0, #change at t = 1.0
-    Ybus_fault,
-) #New YBus
-
 @testset "Test 02 OneDoneQ ResidualModel" begin
     path = (joinpath(pwd(), "test-02"))
     !isdir(path) && mkdir(path)
     try
+        Ybus_change = NetworkSwitch(
+            1.0, #change at t = 1.0
+            Ybus_fault,
+        )
         # Define Simulation Problem
         sim = Simulation(
             ResidualModel,
@@ -90,6 +92,10 @@ end
     path = (joinpath(pwd(), "test-02"))
     !isdir(path) && mkdir(path)
     try
+        Ybus_change = NetworkSwitch(
+            1.0, #change at t = 1.0
+            Ybus_fault,
+        )
         # Define Simulation Problem
         sim = Simulation(
             MassMatrixModel,

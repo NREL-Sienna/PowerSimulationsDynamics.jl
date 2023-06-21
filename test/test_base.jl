@@ -2,17 +2,16 @@
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test01.jl"))
-omib_sys_file = System(PowerModelsData(omib_file_dir); runchecks = false)
+omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
+omib_sys_file = build_system(PSIDTestSystems, "psid_test_omib"; force_build = true)
+
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 #Define Fault: Change of YBus
-Ybus_change = NetworkSwitch(
-    1.0, #change at t = 1.0
-    Ybus_fault,
-) #New YBus
+
+
 
 @testset "Prog meter enabling" begin
     @test !PSID._prog_meter_enabled()
@@ -22,6 +21,16 @@ end
     path1 = (joinpath(pwd(), "test-Base-1"))
     !isdir(path1) && mkdir(path1)
     try
+        #Compute Y_bus after fault
+        fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
+        fault_branch.r = 0.00;
+        fault_branch.x = 0.1;
+        Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
+
+        Ybus_change = NetworkSwitch(
+            1.0, #change at t = 1.0
+            Ybus_fault,
+        ) #New YBus
         #Define Simulation Problem
         sim = Simulation(
             ResidualModel,
@@ -57,6 +66,16 @@ end
     path2 = (joinpath(pwd(), "test-Base-2"))
     !isdir(path2) && mkdir(path2)
     try
+        #Compute Y_bus after fault
+        fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
+        fault_branch.r = 0.00;
+        fault_branch.x = 0.1;
+        Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
+
+        Ybus_change = NetworkSwitch(
+            1.0, #change at t = 1.0
+            Ybus_fault,
+        ) #New YBus
         #Define Simulation Problem
         sim = Simulation!(
             ResidualModel,
@@ -90,6 +109,16 @@ end
     path1 = (joinpath(pwd(), "test-Base-1"))
     !isdir(path1) && mkdir(path1)
     try
+        #Compute Y_bus after fault
+        fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
+        fault_branch.r = 0.00;
+        fault_branch.x = 0.1;
+        Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
+
+        Ybus_change = NetworkSwitch(
+            1.0, #change at t = 1.0
+            Ybus_fault,
+        ) #New YBus
         #Define Simulation Problem
         sim = Simulation(
             ResidualModel,
@@ -649,6 +678,16 @@ end
     path = (joinpath(pwd(), "test-01"))
     !isdir(path) && mkdir(path)
     try
+        #Compute Y_bus after fault
+        fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
+        fault_branch.r = 0.00;
+        fault_branch.x = 0.1;
+        Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
+
+        Ybus_change = NetworkSwitch(
+            1.0, #change at t = 1.0
+            Ybus_fault,
+        ) #New YBus
         # Define Simulation Problem
         sim = Simulation!(
             ResidualModel,
@@ -695,8 +734,7 @@ end
 
 @testset "Test 01 OMIB AVR Error" begin
     # Define Classic OMIB with different AVR
-    omib_sys_error = System(omib_file_dir; runchecks = false)
-    add_source_to_ref(omib_sys_error)
+    omib_sys_error = build_system(PSIDTestSystems, "psid_test_omib"; force_build = true)
     ############### Data Dynamic devices ########################
     function dyn_gen_error(generator)
         return DynamicGenerator(;
@@ -711,6 +749,8 @@ end
     end
     #Attach dynamic generator. Currently use PSS/e format based on bus #.
     gen = [g for g in get_components(Generator, omib_sys_error)][1]
+    # Not recommended way of handling DynamicInjectors in PSY but useful for this test.
+    gen.dynamic_injector = nothing
     case_gen = dyn_gen_error(gen)
     add_component!(omib_sys_error, case_gen, gen)
 
