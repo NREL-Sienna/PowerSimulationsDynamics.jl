@@ -114,9 +114,17 @@ function _check_residual(
                 end
             end
         end
-        error("The initial residual in $ix of the NLsolve function has a value of $val.
-               Generator = $gen_name, state = $state.
-               Error is too large to continue")
+        if gen_name != ""
+            error("The initial residual in the state located at $ix has a value of $val.
+                Generator = $gen_name, state = $state.
+               Residual error is too large to continue")
+        else
+            bus_no = ix > bus_count ? ix - bus_count : ix
+            component = ix > bus_count ? "imag" : "real"
+            error("The initial residual in the state located at $ix has a value of $val.
+                Voltage at bus = $bus_no, component = $component.
+                Error is too large to continue")
+        end
     end
     return
 end
@@ -130,7 +138,7 @@ function refine_initial_condition!(
 
     if sim.status == SIMULATION_INITIALIZED
         @info "Simulation already initialized. Refinement not executed"
-        #return
+        return
     end
     converged = false
     initial_guess = get_initial_conditions(sim)
