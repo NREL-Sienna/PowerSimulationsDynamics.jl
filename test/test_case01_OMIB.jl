@@ -16,7 +16,6 @@ fault_branch.r = 0.00;
 fault_branch.x = 0.1;
 Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
 
-
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################

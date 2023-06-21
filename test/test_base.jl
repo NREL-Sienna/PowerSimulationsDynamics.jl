@@ -5,13 +5,10 @@
 omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
 omib_sys_file = build_system(PSIDTestSystems, "psid_test_omib"; force_build = true)
 
-
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 #Define Fault: Change of YBus
-
-
 
 @testset "Prog meter enabling" begin
     @test !PSID._prog_meter_enabled()
@@ -23,8 +20,8 @@ end
     try
         #Compute Y_bus after fault
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
-        fault_branch.r = 0.00;
-        fault_branch.x = 0.1;
+        fault_branch.r = 0.00
+        fault_branch.x = 0.1
         Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
 
         Ybus_change = NetworkSwitch(
@@ -68,8 +65,8 @@ end
     try
         #Compute Y_bus after fault
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
-        fault_branch.r = 0.00;
-        fault_branch.x = 0.1;
+        fault_branch.r = 0.00
+        fault_branch.x = 0.1
         Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
 
         Ybus_change = NetworkSwitch(
@@ -111,8 +108,8 @@ end
     try
         #Compute Y_bus after fault
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
-        fault_branch.r = 0.00;
-        fault_branch.x = 0.1;
+        fault_branch.r = 0.00
+        fault_branch.x = 0.1
         Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
 
         Ybus_change = NetworkSwitch(
@@ -680,8 +677,8 @@ end
     try
         #Compute Y_bus after fault
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
-        fault_branch.r = 0.00;
-        fault_branch.x = 0.1;
+        fault_branch.r = 0.00
+        fault_branch.x = 0.1
         Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
 
         Ybus_change = NetworkSwitch(
