@@ -151,7 +151,7 @@ Dynamic Components
 [ Info: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 [ Info: PowerFlow solve converged, the results have been stored in the system
 [ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
-[ Info: Residual from initial guess: max = 5.029822114366311e-10 at 18, total = 2.0999521763243847e-9
+[ Info: Residual from initial guess: max = 5.029822114366311e-10 at 18, total = 2.0999020174248218e-9
 Iter     f(x) inf-norm    Step 2-norm 
 ------   --------------   --------------
 [ Info: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
@@ -161,25 +161,25 @@ Iter     f(x) inf-norm    Step 2-norm
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     3.35s             181MiB    
+│                 Total measured:                     4.46s             182MiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    3.35s  100.0%    181MiB  100.0%
-│    Build Simulation Inputs                  1    388ms   11.6%   26.1MiB   14.4%
-│      Wrap Branches                          1   7.30μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1    312ms    9.3%   22.5MiB   12.4%
-│      Calculate MM, DAE_vector, Tota...      1   27.5ms    0.8%   2.42MiB    1.3%
-│      Wrap Static Injectors                  1    110μs    0.0%   26.2KiB    0.0%
-│    Pre-initialization                       1    1.41s   42.1%   85.5MiB   47.1%
-│      Power Flow solution                    1   1.27ms    0.0%    350KiB    0.2%
-│      Initialize Static Injectors            1   1.00μs    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1    1.41s   42.0%   85.0MiB   46.8%
-│    Calculate Jacobian                       1    1.04s   31.0%   48.1MiB   26.5%
-│    Make Model Function                      1   7.70μs    0.0%   1.39KiB    0.0%
-│    Initial Condition NLsolve refine...      1    513ms   15.3%   21.7MiB   12.0%
-│    Build Perturbations                      1    112μs    0.0%   11.9KiB    0.0%
-│    Make DiffEq Problem                      1    144μs    0.0%   11.6KiB    0.0%
+│  Build Simulation                           1    4.46s  100.0%    182MiB  100.0%
+│    Build Simulation Inputs                  1    623ms   13.9%   26.9MiB   14.8%
+│      Wrap Branches                          1   24.6μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1    516ms   11.6%   22.5MiB   12.3%
+│      Calculate MM, DAE_vector, Tota...      1   33.3ms    0.7%   2.42MiB    1.3%
+│      Wrap Static Injectors                  1    172μs    0.0%   26.2KiB    0.0%
+│    Pre-initialization                       1    1.79s   40.1%   85.5MiB   46.9%
+│      Power Flow solution                    1   1.71ms    0.0%    350KiB    0.2%
+│      Initialize Static Injectors            1   1.30μs    0.0%     0.00B    0.0%
+│      Initialize Dynamic Injectors           1    1.79s   40.1%   85.0MiB   46.6%
+│    Calculate Jacobian                       1    1.35s   30.3%   48.1MiB   26.4%
+│    Make Model Function                      1   11.7μs    0.0%   1.39KiB    0.0%
+│    Initial Condition NLsolve refine...      1    697ms   15.6%   21.7MiB   11.9%
+│    Build Perturbations                      1    188μs    0.0%   11.9KiB    0.0%
+│    Make DiffEq Problem                      1    191μs    0.0%   11.6KiB    0.0%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -352,7 +352,7 @@ Vr3 -0.0986
 │ Time Span                  │ (0.0, 20.0) │
 │ Total Time Steps           │ 342         │
 │ Number of States           │ 86          │
-│ Total solve time           │ 1.836495734 │
+│ Total solve time           │ 2.214174942 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(Bus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
            plot!(
@@ -375,25 +375,25 @@ Vr3 -0.0986
 │ If all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable.
 └ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/small_signal.jl:111
 The system is small signal stable</code></pre><h1 id="The-eigenvalues-can-be-explored"><a class="docs-heading-anchor" href="#The-eigenvalues-can-be-explored">The eigenvalues can be explored</a><a id="The-eigenvalues-can-be-explored-1"></a><a class="docs-heading-anchor-permalink" href="#The-eigenvalues-can-be-explored" title="Permalink"></a></h1><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res.eigenvalues</code><code class="nohighlight hljs ansi" style="display:block;">58-element Vector{ComplexF64}:
-   -1000.000000000001 + 0.0im
-  -1000.0000000000008 + 0.0im
-  -1000.0000000000007 + 0.0im
-  -1000.0000000000005 + 0.0im
-              -1000.0 + 0.0im
-   -51.83364371956075 + 0.0im
-   -51.70455018825664 + 0.0im
-    -51.4443744131907 - 0.018220782844780393im
-    -51.4443744131907 + 0.018220782844780393im
-  -51.410203503315515 + 0.0im
+  -1000.0000000000011 + 0.0im
+  -1000.0000000000003 + 0.0im
+  -1000.0000000000002 + 0.0im
+   -999.9999999999999 + 0.0im
+   -999.9999999999987 + 0.0im
+   -51.83364371955908 + 0.0im
+   -51.70455018825632 + 0.0im
+    -51.4443744131974 - 0.018220782843667252im
+    -51.4443744131974 + 0.018220782843667252im
+  -51.410203503318655 + 0.0im
                       ⋮
-  -0.8293800767699612 - 0.04428569213391823im
-  -0.8293800767699612 + 0.04428569213391823im
-  -0.6362034818563695 + 0.0im
+  -0.8293800767698636 - 0.04428569213291785im
+  -0.8293800767698636 + 0.04428569213291785im
+  -0.6362034818555844 + 0.0im
                  -0.5 + 0.0im
-  -0.4682884182391468 + 0.0im
- -0.28233919601695484 + 0.0im
- -0.22910619390452502 - 7.68463570870567im
- -0.22910619390452502 + 7.68463570870567im
+  -0.4682884182387393 + 0.0im
+ -0.28233919601574187 + 0.0im
+ -0.22910619391582432 - 7.684635708728959im
+ -0.22910619391582432 + 7.684635708728959im
                   0.0 + 0.0im</code></pre><h2 id="Modifying-the-system-and-adding-storage"><a class="docs-heading-anchor" href="#Modifying-the-system-and-adding-storage">Modifying the system and adding storage</a><a id="Modifying-the-system-and-adding-storage-1"></a><a class="docs-heading-anchor-permalink" href="#Modifying-the-system-and-adding-storage" title="Permalink"></a></h2><p>Reload the system for this example:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sys = System(joinpath(file_dir, &quot;14bus.raw&quot;), joinpath(file_dir, &quot;dyn_data.dyr&quot;), runchecks = false)</code><code class="nohighlight hljs ansi" style="display:block;">[ Info: The PSS(R)E parser currently supports buses, loads, shunts, generators, branches, transformers, and dc lines
 [ Info: The PSS(R)E parser currently supports buses, loads, shunts, generators, branches, transformers, and dc lines
 [ Info: The following fields in GENERATOR are missing: O2, F2, O3, F3, O4, F4, WMOD, WPF
@@ -687,7 +687,7 @@ Dynamic Components
 [ Info: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 [ Info: PowerFlow solve converged, the results have been stored in the system
 [ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
-[ Info: Residual from initial guess: max = 5.029822114366311e-10 at 18, total = 2.018604779933659e-9
+[ Info: Residual from initial guess: max = 5.029822114366311e-10 at 18, total = 2.01858687833403e-9
 Iter     f(x) inf-norm    Step 2-norm 
 ------   --------------   --------------
 [ Info: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
@@ -697,25 +697,25 @@ Iter     f(x) inf-norm    Step 2-norm
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     1.83s            77.0MiB    
+│                 Total measured:                     2.39s            69.6MiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    1.83s  100.0%   77.0MiB  100.0%
-│    Build Simulation Inputs                  1    281ms   15.4%   16.9MiB   21.9%
-│      Wrap Branches                          1   3.90μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1    251ms   13.7%   16.2MiB   21.0%
-│      Calculate MM, DAE_vector, Tota...      1   39.1μs    0.0%   10.8KiB    0.0%
-│      Wrap Static Injectors                  1   24.4ms    1.3%    530KiB    0.7%
-│    Pre-initialization                       1    475ms   26.0%   17.0MiB   22.0%
-│      Power Flow solution                    1    154ms    8.4%   3.68MiB    4.8%
+│  Build Simulation                           1    2.39s  100.0%   69.6MiB  100.0%
+│    Build Simulation Inputs                  1    267ms   11.2%   9.41MiB   13.5%
+│      Wrap Branches                          1   6.20μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1    224ms    9.4%   8.71MiB   12.5%
+│      Calculate MM, DAE_vector, Tota...      1   89.6μs    0.0%   10.8KiB    0.0%
+│      Wrap Static Injectors                  1   35.1ms    1.5%    530KiB    0.7%
+│    Pre-initialization                       1    674ms   28.2%   17.0MiB   24.4%
+│      Power Flow solution                    1    215ms    9.0%   3.67MiB    5.3%
 │      Initialize Static Injectors            1   1.00μs    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1    321ms   17.6%   13.1MiB   17.1%
-│    Calculate Jacobian                       1    1.07s   58.5%   42.8MiB   55.6%
-│    Make Model Function                      1   8.10μs    0.0%   1.61KiB    0.0%
-│    Initial Condition NLsolve refine...      1    925μs    0.1%    348KiB    0.4%
-│    Build Perturbations                      1    111μs    0.0%   11.9KiB    0.0%
-│    Make DiffEq Problem                      1    142μs    0.0%   12.1KiB    0.0%
+│      Initialize Dynamic Injectors           1    459ms   19.2%   13.1MiB   18.9%
+│    Calculate Jacobian                       1    1.45s   60.5%   42.8MiB   61.6%
+│    Make Model Function                      1   10.3μs    0.0%   1.61KiB    0.0%
+│    Initial Condition NLsolve refine...      1   1.53ms    0.1%    348KiB    0.5%
+│    Build Perturbations                      1    180μs    0.0%   11.9KiB    0.0%
+│    Make DiffEq Problem                      1    181μs    0.0%   12.1KiB    0.0%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -733,25 +733,25 @@ Simulation Summary
 │ If all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable.
 └ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/small_signal.jl:111
 The system is small signal stable</code></pre><p>Exploring the eigenvalues:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res.eigenvalues</code><code class="nohighlight hljs ansi" style="display:block;">66-element Vector{ComplexF64}:
-  -2268.0867226709233 - 6832.691906127055im
-  -2268.0867226709233 + 6832.691906127055im
-  -2094.4896778090088 - 6527.127111961696im
-  -2094.4896778090088 + 6527.127111961696im
-  -1615.3518213143143 - 290.9590763918999im
-  -1615.3518213143143 + 290.9590763918999im
-  -1000.0000000000008 + 0.0im
-  -1000.0000000000002 + 0.0im
+  -2268.0867226709297 - 6832.691906127064im
+  -2268.0867226709297 + 6832.691906127064im
+  -2094.4896778090165 - 6527.127111961708im
+  -2094.4896778090165 + 6527.127111961708im
+  -1615.3518213143097 - 290.95907639189977im
+  -1615.3518213143097 + 290.95907639189977im
+  -1000.0000000000005 + 0.0im
               -1000.0 + 0.0im
-   -999.9999999999993 + 0.0im
+   -999.9999999999999 + 0.0im
+   -999.9999999999989 + 0.0im
                       ⋮
-  -1.0079674062478294 + 0.0im
-  -0.9363177869625027 + 0.0im
-  -0.7915469983862312 + 0.0im
-  -0.6203963306190455 + 0.0im
+  -1.0079674062478834 + 0.0im
+  -0.9363177869625994 + 0.0im
+  -0.7915469983861834 + 0.0im
+   -0.620396330618953 + 0.0im
                  -0.5 + 0.0im
-  -0.2525713087060531 + 0.0im
- -0.23628223522840464 - 7.6599937874629065im
- -0.23628223522840464 + 7.6599937874629065im
+ -0.25257130870598776 + 0.0im
+ -0.23628223522845182 - 7.659993787462862im
+ -0.23628223522845182 + 7.659993787462862im
                   0.0 + 0.0im</code></pre><p>We execute the simulation</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; execute!(sim, IDA(); abstol = 1e-8)</code><code class="nohighlight hljs ansi" style="display:block;">SIMULATION_FINALIZED::BUILD_STATUS = 6</code></pre><p>Using <code>PowerSimulationsDynamics</code> tools for exploring the results, we can plot all the voltage results for the buses</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; result = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;">Simulation Results Summary
 ┌────────────────────────────┬─────────────┐
 │ Property                   │ Value       │
@@ -761,7 +761,7 @@ The system is small signal stable</code></pre><p>Exploring the eigenvalues:</p><
 │ Time Span                  │ (0.0, 20.0) │
 │ Total Time Steps           │ 569         │
 │ Number of States           │ 94          │
-│ Total solve time           │ 0.267448953 │
+│ Total solve time           │ 0.406431726 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(Bus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
            plot!(
@@ -780,4 +780,4 @@ The system is small signal stable</code></pre><p>Exploring the eigenvalues:</p><
                ylabel = &quot;Speed [pu]&quot;,
                label = &quot;$(get_name(g)) - ω&quot;,
            );
-       end</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; state_series = get_state_series(result, (&quot;Battery&quot;, :ω_oc))</code><code class="nohighlight hljs ansi" style="display:block;">([0.0, 0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.256  …  19.315140167359424, 19.37644768484352, 19.437755202327615, 19.49906271981171, 19.621677754779903, 19.707059527522656, 19.79244130026541, 19.877823073008162, 19.963204845750916, 20.0], [1.0, 0.999999999999997, 1.0000000000000386, 1.0000000000002491, 1.0000000000006428, 1.0000000000005582, 1.0000000000003035, 1.000000000000358, 1.0000000000004967, 1.000000000000362  …  1.000095587526671, 1.0000959538974594, 1.0000962971844696, 1.000096543878788, 1.0000965875429688, 1.0000962428278177, 1.0000957156804129, 1.0000952244197194, 1.000094971235317, 1.0000949847095189])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Thursday 22 June 2023 00:52">Thursday 22 June 2023</span>. Using Julia version 1.9.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+       end</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; state_series = get_state_series(result, (&quot;Battery&quot;, :ω_oc))</code><code class="nohighlight hljs ansi" style="display:block;">([0.0, 0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.256  …  19.315136048313963, 19.376437355594117, 19.43773866287427, 19.499039970154424, 19.621642584714735, 19.70701810135107, 19.792393617987408, 19.877769134623744, 19.96314465126008, 20.0], [1.0, 0.999999999999997, 1.0000000000000386, 1.0000000000002491, 1.0000000000006428, 1.0000000000005582, 1.0000000000003035, 1.0000000000003577, 1.0000000000004967, 1.000000000000362  …  1.0000955873468313, 1.0000959536754859, 1.0000962969728657, 1.0000965437427685, 1.00009658770921, 1.0000962432054912, 1.000095716158358, 1.0000952248033563, 1.000094971334032, 1.000094984721813])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Thursday 22 June 2023 01:07">Thursday 22 June 2023</span>. Using Julia version 1.9.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
