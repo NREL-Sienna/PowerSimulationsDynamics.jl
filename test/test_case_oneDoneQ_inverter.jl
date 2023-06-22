@@ -8,7 +8,7 @@ The perturbation increase the reference power (analogy for mechanical power) of 
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_machine_vsm")
 
 ##################################################
 ############### SOLVE PROBLEM ####################

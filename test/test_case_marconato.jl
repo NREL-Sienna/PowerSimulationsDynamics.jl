@@ -1,6 +1,6 @@
 """
-Case 5:
-This case study a three bus system with 2 machines (Simple Anderson-Fouad: 4th order model) and an infinite source.
+Case 4:
+This case study a three bus system with 2 machines (Marconato: 8th order model) and an infinite source.
 The fault drop the connection between buses 1 and 3, eliminating the direct connection between the infinite source
 and the generator located in bus 3.
 """
@@ -9,26 +9,22 @@ and the generator located in bus 3.
 ############### LOAD DATA ########################
 ##################################################
 
-threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_simple_anderson")
-
-#Compute Y_bus after fault
-fault_branch = deepcopy(collect(get_components(Branch, threebus_sys))[2:3])
-Ybus_fault = PNM.Ybus(fault_branch, collect(get_components(Bus, threebus_sys)))[:, :]
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_marconato")
+solve_powerflow!(threebus_sys)
+Ybus_fault = get_ybus_fault_threebus_sys(threebus_sys)
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-# time span
-tspan = (0.0, 200.0);
 # Define Fault: Change of YBus
 Ybus_change = NetworkSwitch(
     1.0, #change at t = 1.0
     Ybus_fault,
 ) #New YBus
 
-@testset "Test 05 Simple Anderson ResidualModel" begin
-    path = (joinpath(pwd(), "test-05"))
+@testset "Test 04 Marconato ResidualModel" begin
+    path = (joinpath(pwd(), "test-04"))
     !isdir(path) && mkdir(path)
     try
         # Define Simulation Problem
@@ -43,7 +39,7 @@ Ybus_change = NetworkSwitch(
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test05_x0_init
+        for (k, v) in test04_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
@@ -55,12 +51,28 @@ Ybus_change = NetworkSwitch(
         @test small_sig.stable
 
         # Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test05_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test04_eigvals) < 1e-3
 
         # Solve problem
         @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
+
+        # Obtain data for angles
+        series = get_state_series(results, ("generator-102-1", :δ))
+        t = series[1]
+        δ = series[2]
+
+        # Should return zeros and a warning
+        series3 = get_field_current_series(results, "generator-102-1")
+
+        # Obtain PSAT benchmark data
+        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test04/Test04_delta.csv")
+        t_psat, δ_psat = get_csv_delta(psat_csv)
+
+        # Test Transient Simulation Results
+        @test LinearAlgebra.norm(t - t_psat) == 0.0
+        @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 
         power = PSID.get_activepower_series(results, "generator-102-1")
         rpower = PSID.get_reactivepower_series(results, "generator-102-1")
@@ -72,14 +84,14 @@ Ybus_change = NetworkSwitch(
     end
 end
 
-@testset "Test 05 Simple Anderson MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-05"))
+@testset "Test 04 Marconato MassMatrixModel" begin
+    path = (joinpath(pwd(), "test-04"))
     !isdir(path) && mkdir(path)
     try
         # Define Simulation Problem
-        sim = Simulation(
+        sim = Simulation!(
             MassMatrixModel,
-            threebus_sys, #system
+            threebus_sys, #system,
             path,
             (0.0, 20.0), #time span
             Ybus_change, #Type of Fault
@@ -88,7 +100,7 @@ end
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test05_x0_init
+        for (k, v) in test04_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
@@ -100,12 +112,28 @@ end
         @test small_sig.stable
 
         # Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test05_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test04_eigvals) < 1e-3
 
         # Solve problem
         @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
+
+        # Obtain data for angles
+        series = get_state_series(results, ("generator-102-1", :δ))
+        t = series[1]
+        δ = series[2]
+
+        # Should return zeros and a warning
+        series3 = get_field_current_series(results, "generator-102-1")
+
+        # Obtain PSAT benchmark data
+        psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test04/Test04_delta.csv")
+        t_psat, δ_psat = get_csv_delta(psat_csv)
+
+        # Test Transient Simulation Results
+        @test LinearAlgebra.norm(t - t_psat) == 0.0
+        @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
 
         power = PSID.get_activepower_series(results, "generator-102-1")
         rpower = PSID.get_reactivepower_series(results, "generator-102-1")

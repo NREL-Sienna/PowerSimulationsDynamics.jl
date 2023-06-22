@@ -1,6 +1,3 @@
-using PowerSimulationsDynamics
-using Sundials
-
 """
 Case 8:
 This case study a 19-state virtual synchronous machine against an infinite bus located at bus 1, with VSM located at bus 2.
@@ -11,7 +8,8 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test08.jl"))
+omib_sys = build_system(PSIDTestSystems, "psid_test_vsm_inverter")
+case_inv = [g for g in get_components(DynamicInjection, omib_sys)][1]
 
 ##################################################
 ############### SOLVE PROBLEM ####################
