@@ -6,7 +6,7 @@ function add_source_to_ref(sys::PSY.System, X_th::Float64)
     end
 
     slack_bus = [b for b in PSY.get_components(Bus, sys) if b.bustype == BusTypes.REF][1]
-    inf_source = Source(
+    inf_source = Source(;
         name = "InfBus", #name
         available = true, #availability
         active_power = 0.0,
@@ -27,7 +27,7 @@ function add_source_to_ref(sys::PSY.System)
     end
 
     slack_bus = [b for b in PSY.get_components(Bus, sys) if b.bustype == BusTypes.REF][1]
-    inf_source = Source(
+    inf_source = Source(;
         name = "InfBus", #name
         available = true, #availability
         active_power = 0.0,
@@ -38,4 +38,13 @@ function add_source_to_ref(sys::PSY.System)
     )
     PSY.add_component!(sys, inf_source)
     return
+end
+
+function get_ybus_fault_threebus_sys(sys)
+    fault_branch =
+        filter!(x -> get_name(x) != "BUS 1-BUS 3-i_1", collect(get_components(Branch, sys)))
+    sorted_buses =
+        sort!(collect(get_components(Bus, threebus_sys)); by = x -> get_number(x))
+    Ybus_fault = PNM.Ybus(fault_branch, sorted_buses)[:, :]
+    return Ybus_fault
 end

@@ -3,10 +3,9 @@ const PSY = PowerSystems
 
 ############### Data Network ########################
 include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
-include(joinpath(dirname(@__FILE__), "data_utils.jl"))
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusInverter.raw")
-threebus_sys = System(threebus_file_dir, runchecks = false)
+threebus_sys = System(threebus_file_dir; runchecks = false)
 add_source_to_ref(threebus_sys)
 dyn_branch = DynamicBranch(get_component(Branch, threebus_sys, "BUS 2-BUS 3-i_1"))
 add_component!(threebus_sys, dyn_branch)
@@ -14,7 +13,7 @@ add_component!(threebus_sys, dyn_branch)
 ############### Data devices ########################
 
 function dyn_gen_second_order(generator)
-    return PSY.DynamicGenerator(
+    return PSY.DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_oneDoneQ(), #machine
@@ -26,7 +25,7 @@ function dyn_gen_second_order(generator)
 end
 
 function inv_case78(static_device)
-    return DynamicInverter(
+    return DynamicInverter(;
         name = get_name(static_device),
         ω_ref = 1.0, # ω_ref,
         converter = converter_high_power(), #converter
@@ -49,7 +48,7 @@ for g in get_components(Generator, threebus_sys)
 end
 
 #Create Ybus_Fault
-sys3 = System(threebus_file_dir, runchecks = false)
+sys3 = System(threebus_file_dir; runchecks = false)
 add_source_to_ref(sys3)
 remove_component!(Line, sys3, "BUS 2-BUS 3-i_1")
 #Create Ybus_Fault

@@ -9,7 +9,9 @@ and the generator located in bus 3.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test03.jl"))
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_simple_marconato")
+solve_powerflow!(threebus_sys)
+Ybus_fault = get_ybus_fault_threebus_sys(threebus_sys)
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -24,8 +26,7 @@ Ybus_change = NetworkSwitch(
 ) #New YBus
 
 @testset "Test 03 Simple Marconato ResidualModel" begin
-    path = (joinpath(pwd(), "test-03"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -55,7 +56,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test03_eigvals_psat, Inf) < 5.0
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -78,13 +79,12 @@ Ybus_change = NetworkSwitch(
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
 @testset "Test 03 Simple Marconato MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-03"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -114,7 +114,7 @@ end
         @test LinearAlgebra.norm(eigs - test03_eigvals_psat, Inf) < 5.0
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -137,6 +137,6 @@ end
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

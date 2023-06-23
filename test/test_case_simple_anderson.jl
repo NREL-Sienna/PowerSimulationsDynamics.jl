@@ -1,6 +1,6 @@
 """
-Case 6:
-This case study a three bus system with 2 machines (Anderson-Fouad: 6th order model) and an infinite source.
+Case 5:
+This case study a three bus system with 2 machines (Simple Anderson-Fouad: 4th order model) and an infinite source.
 The fault drop the connection between buses 1 and 3, eliminating the direct connection between the infinite source
 and the generator located in bus 3.
 """
@@ -9,7 +9,9 @@ and the generator located in bus 3.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test06.jl"))
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_simple_anderson")
+solve_powerflow!(threebus_sys)
+Ybus_fault = get_ybus_fault_threebus_sys(threebus_sys)
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -23,9 +25,8 @@ Ybus_change = NetworkSwitch(
     Ybus_fault,
 ) #New YBus
 
-@testset "Test 06 Anderson ResidualModel" begin
-    path = (joinpath(pwd(), "test-06"))
-    !isdir(path) && mkdir(path)
+@testset "Test 05 Simple Anderson ResidualModel" begin
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -39,7 +40,7 @@ Ybus_change = NetworkSwitch(
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test06_x0_init
+        for (k, v) in test05_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
@@ -51,10 +52,10 @@ Ybus_change = NetworkSwitch(
         @test small_sig.stable
 
         # Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test05_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -64,13 +65,12 @@ Ybus_change = NetworkSwitch(
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
-@testset "Test 06 Anderson MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-06"))
-    !isdir(path) && mkdir(path)
+@testset "Test 05 Simple Anderson MassMatrixModel" begin
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -84,7 +84,7 @@ end
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test06_x0_init
+        for (k, v) in test05_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
@@ -96,10 +96,10 @@ end
         @test small_sig.stable
 
         # Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test06_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test05_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -109,6 +109,6 @@ end
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

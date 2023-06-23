@@ -70,7 +70,7 @@ function initialize_avr!(
         out[3] = (Kf / Tf) * Vf0 + Vr2 #16.12b
     end
     x0 = [1.0, Vf0, Vf0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
@@ -132,7 +132,7 @@ function initialize_avr!(
         out[3] = dVr2_dt #16.20
     end
     x0 = [1.0, Vf0, Vf0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
@@ -197,7 +197,7 @@ function initialize_avr!(
         out[1] = Vf0 - V_e0 * rectifier_function(I_N0)
     end
     x0 = [1.0]
-    sol = NLsolve.nlsolve(f_Ve!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f_Ve!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
@@ -242,7 +242,7 @@ function initialize_avr!(
         out[5] = Vf0 - Ve * rectifier_function(I_N)
     end
     x0 = [V_ref0, V_r10, V_r20, V_e0, V_r30]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
@@ -291,7 +291,7 @@ function initialize_avr!(
         out[2] = V_in * (1 - Ta_Tb) - Vr
     end
     x0 = [1.0, Vf0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else
@@ -372,7 +372,7 @@ function initialize_avr!(
     end # solve for Vref
 
     x0 = [1.0, Vf0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
     else # if converge

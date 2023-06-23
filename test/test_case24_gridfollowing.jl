@@ -57,7 +57,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
 
         #Solve problem in equilibrium
-        @test execute!(sim, Sundials.IDA(), dtmax = 0.001, saveat = 0.005) ==
+        @test execute!(sim, Sundials.IDA(); dtmax = 0.001, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -86,7 +86,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -120,7 +120,7 @@ end
         @test LinearAlgebra.norm(eigs - test24_eigvals) < 1e-3
 
         #Solve problem in equilibrium
-        @test execute!(sim, Rodas4(), dtmax = 0.001, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.001, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -149,6 +149,6 @@ end
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

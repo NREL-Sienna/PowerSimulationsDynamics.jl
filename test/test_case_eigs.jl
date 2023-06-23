@@ -11,16 +11,12 @@ for ω for output torque in TGOV1 model produces exact eigenvalue results.
 ############### SOLVE PROBLEM ####################
 ##################################################
 
-raw_file = joinpath(TEST_FILES_DIR, "benchmarks/andes/test36/11BUS_KUNDUR.raw")
-dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/andes/test36/11BUS_KUNDUR_TGOV.dyr")
 eigs_andes_csv = joinpath(TEST_FILES_DIR, "benchmarks/andes/test36/eigs_tgov_andes.csv")
 
 @testset "Test 36 Eigenvalues" begin
-    path = (joinpath(pwd(), "test-eigs"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
-        sys = System(raw_file, dyr_file)
-
+        sys = build_system(PSIDSystems, "psid_11bus_andes")
         # Define Simulation Problem
         sim = Simulation!(
             ResidualModel,
@@ -36,6 +32,6 @@ eigs_andes_csv = joinpath(TEST_FILES_DIR, "benchmarks/andes/test36/eigs_tgov_and
         @test LinearAlgebra.norm(eigs - eigs_andes, 2) / length(eigs) < 1.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

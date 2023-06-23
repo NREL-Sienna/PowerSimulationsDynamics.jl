@@ -55,7 +55,7 @@ function initialize_tg!(
         (1.0 - T3 / Tc) * τm0,
         (1.0 - T4 / T5) * ((1.0 - T3 / Tc) * τm0 + (T3 / Tc) * τm0),
     ]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
@@ -102,7 +102,7 @@ function initialize_tg!(
         out[2] = (1.0 / T2) * (inv_R * (1 - T2 / T1) * (ω_ref - ω0) - xg)
     end
     x0 = [τm0, 0.0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
@@ -150,7 +150,7 @@ function initialize_tg!(
         out[4] = (x_g2 - D_turb * Δω) - τm0
     end
     x0 = [1.0 / inv_R, τm0, τm0, τm0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @error("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
@@ -201,7 +201,7 @@ function initialize_tg!(
         out[3] = (Pm - D_T * Δω) - τm0
     end
     x0 = [1.0 / inv_R, τm0, τm0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization in TG failed")
     else
@@ -265,7 +265,7 @@ function initialize_tg!(
     end
     P0 = R * (q_nl + τm0 / At) # mechanical power initial guess. It migth be different than electrical output power
     x0 = [P0, 0, (r * Tr) * P0 / R, P0 / R, P0 / R]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else

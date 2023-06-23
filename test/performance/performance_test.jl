@@ -42,7 +42,7 @@ try
         BranchTrip(1.0, Line, "CORONADO    -1101-PALOVRDE    -1401-i_10");
         console_level = Logging.Error,
     )
-    status = execute!(sim_ida, IDA(), dtmax = 0.01, enable_progress_bar = false)
+    status = execute!(sim_ida, IDA(); dtmax = 0.01, enable_progress_bar = false)
     if status == PSID.SIMULATION_FINALIZED
         res_ida = read_results(sim_ida)
         solve_time = res_ida.time_log[:timed_solve_time]

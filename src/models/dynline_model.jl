@@ -43,8 +43,9 @@ function mdl_transformer_Lshape_ode!(
     L = PSY.get_x(branch)
     R = PSY.get_r(branch)
     ω_b = get_system_base_frequency(branch) * 2 * π
-
-    shunt = PSY.get_primary_shunt(branch)
+    dyn_branch = branch.branch
+    br = dyn_branch.branch
+    shunt = PSY.get_primary_shunt(br)
     Il_r = device_states[1]
     Il_i = device_states[2]
     Ishunt_r = device_states[3]

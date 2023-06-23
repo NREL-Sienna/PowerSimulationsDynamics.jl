@@ -28,7 +28,11 @@ struct SimulationInputs
         TimerOutputs.@timeit BUILD_TIMER "Wrap Branches" begin
             wrapped_branches = _wrap_dynamic_branches(sys, lookup)
             has_dyn_lines = !isempty(wrapped_branches)
-            branch_state_counts = 2 * length(wrapped_branches)
+            aux_states = 0
+            for br in wrapped_branches
+                aux_states += PSY.get_n_states(br)
+            end
+            branch_state_counts = aux_states
             injection_start = 2 * n_buses + branch_state_counts + 1
         end
 
@@ -158,12 +162,12 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         @debug "Wrapping $(PSY.get_name(device))"
         dynamic_device = PSY.get_dynamic_injector(device)
         n_states = PSY.get_n_states(dynamic_device)
-        ix_range = range(injection_start, length = n_states)
-        ode_range = range(injection_count, length = n_states)
+        ix_range = range(injection_start; length = n_states)
+        ode_range = range(injection_count; length = n_states)
         bus_n = PSY.get_number(PSY.get_bus(device))
         bus_ix = lookup[bus_n]
         inner_vars_range =
-            range(inner_vars_count, length = get_inner_vars_count(dynamic_device))
+            range(inner_vars_count; length = get_inner_vars_count(dynamic_device))
         @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range"
         dynamic_device = PSY.get_dynamic_injector(device)
         @assert dynamic_device !== nothing
@@ -201,8 +205,8 @@ function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
             to_bus_number = PSY.get_number(arc.to)
             bus_ix_from = lookup[from_bus_number]
             bus_ix_to = lookup[to_bus_number]
-            ix_range = range(branches_start, length = n_states)
-            ode_range = range(branches_count, length = n_states)
+            ix_range = range(branches_start; length = n_states)
+            ode_range = range(branches_count; length = n_states)
             @debug "ix_range=$ix_range ode_range=$ode_range"
             wrapped_branches[ix] = BranchWrapper(
                 br,

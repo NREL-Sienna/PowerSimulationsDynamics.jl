@@ -64,7 +64,7 @@ function test_zipload_implicit(csv_file, eigs_value, load_model)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), abstol = 1e-9, saveat = 0.005) ==
+        @test execute!(sim, IDA(); abstol = 1e-9, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -88,7 +88,7 @@ function test_zipload_implicit(csv_file, eigs_value, load_model)
         @test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -134,7 +134,7 @@ function test_zipload_mass_matrix(csv_file, eigs_value, load_model)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), abstol = 1e-9, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); abstol = 1e-9, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -155,7 +155,7 @@ function test_zipload_mass_matrix(csv_file, eigs_value, load_model)
         @test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 

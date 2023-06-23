@@ -24,8 +24,7 @@ Ybus_change = NetworkSwitch(
 ) #New YBus
 
 @testset "Test 10 Static Branches ResidualModel" begin
-    path = (joinpath(pwd(), "test-10"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -66,13 +65,12 @@ Ybus_change = NetworkSwitch(
         ]
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
 @testset "Test 10 Static Branches MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-10"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -113,6 +111,6 @@ end
         ]
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

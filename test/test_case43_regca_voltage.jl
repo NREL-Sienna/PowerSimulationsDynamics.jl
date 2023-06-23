@@ -45,9 +45,9 @@ conv_voltage() = PSY.RenewableEnergyVoltageConverterTypeA(
     0,
 )
 
-filt_noc() = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.0, lg = 0.2, rg = 0.01)
+filt_noc() = LCLFilter(; lf = 0.08, rf = 0.003, cf = 0.0, lg = 0.2, rg = 0.01)
 
-new_dynamic_injector = PSY.DynamicInverter(
+new_dynamic_injector = PSY.DynamicInverter(;
     name = PSY.get_name(inverter),
     ω_ref = 1.0,
     converter = conv_voltage(),
@@ -97,13 +97,13 @@ PSY.set_dynamic_injector!(inverter, new_dynamic_injector)
         @test LinearAlgebra.norm(eigs - test43_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), abstol = 1e-9) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(); abstol = 1e-9) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # No comparison
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -138,12 +138,12 @@ end
         @test LinearAlgebra.norm(eigs - test43_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), abstol = 1e-9) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas4(); abstol = 1e-9) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # No comparison
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
