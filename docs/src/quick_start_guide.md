@@ -1,7 +1,7 @@
 # Quick Start Guide
 
-You can access example data in the [Power Systems Test Data Repository](https://github.com/NREL-SIIP/PowerSystemsTestData),
-the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`. Some systems are already provided in [PowerSystemCaseBuilder](https://github.com/NREL-SIIP/PowerSystemCaseBuilder.jl).
+You can access example data in the [Power Systems Test Data Repository](https://github.com/nrel-sienna/PowerSystemsTestData),
+the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`. Some systems are already provided in [PowerSystemCaseBuilder](https://github.com/nrel-sienna/PowerSystemCaseBuilder.jl).
 
 ## Loading data
 
@@ -17,7 +17,7 @@ omib_sys = PowerSystemCaseBuilder.build_system(
 ```
 
 For more details about loading data and adding more dynamic components check the
-[Creating a System with Dynamic devices](https://nrel-siip.github.io/PowerSystems.jl/stable/modeler_guide/system_dynamic_data/)
+[Creating a System with Dynamic devices](https://nrel-sienna.github.io/PowerSystems.jl/stable/modeler_guide/system_dynamic_data/)
 section of the documentation in `PowerSystems.jl`.
 
 ## Define the Simulation
