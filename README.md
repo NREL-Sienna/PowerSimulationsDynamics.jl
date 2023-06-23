@@ -1,6 +1,6 @@
 # PowerSimulationsDynamics.jl
 
-![Main - CI](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl/workflows/Main%20-%20CI/badge.svg?branch=main)
+[![Main - CI](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl/workflows/Main%20-%20CI/badge.svg?branch=main)](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl/actions/workflows/main-tests.yml)
 [![codecov](https://codecov.io/gh/NREL-Sienna/PowerSimulationsDynamics.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/NREL-Sienna/PowerSimulationsDynamics.jl)
 [![Documentation](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl/workflows/Documentation/badge.svg)](https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable)
 [<img src="https://img.shields.io/badge/slack-@Sienna/PSID-sienna.svg?logo=slack">](https://join.slack.com/t/nrel-sienna/shared_invite/zt-glam9vdu-o8A9TwZTZqqNTKHa7q3BpQ)
