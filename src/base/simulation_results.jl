@@ -42,7 +42,7 @@ function _post_proc_state_series(solution, ix::Int, dt::Union{Nothing, Float64})
         ts = solution.t[ix_t]
         state = solution[ix, ix_t]
     else
-        ts = range(0, stop = solution.t[end], step = dt)
+        ts = range(0; stop = solution.t[end], step = dt)
         state = solution(collect(ts); idxs = ix)
     end
     return ts, state
@@ -597,8 +597,8 @@ function show_states_initial_value(res::SimulationResults)
         V_I = x0_init[bus_ix + bus_size]
         Vm = sqrt(V_R^2 + V_I^2)
         θ = angle(V_R + V_I * 1im)
-        print("Vm ", round(Vm, digits = 4), "\n")
-        print("θ ", round(θ, digits = 4), "\n")
+        print("Vm ", round(Vm; digits = 4), "\n")
+        print("θ ", round(θ; digits = 4), "\n")
         println("====================")
     end
     println("====================")
@@ -610,7 +610,7 @@ function show_states_initial_value(res::SimulationResults)
         println("====================")
         global_index = get_global_index(res)[name]
         for s in states
-            print(s, " ", round(x0_init[global_index[s]], digits = 4), "\n")
+            print(s, " ", round(x0_init[global_index[s]]; digits = 4), "\n")
         end
         println("====================")
     end
@@ -626,7 +626,7 @@ function show_states_initial_value(res::SimulationResults)
             println(printed_name)
             global_index = get_global_index(res)[name]
             for (i, s) in enumerate(states)
-                print(s, " ", round(x0_init[global_index[s]], digits = 5), "\n")
+                print(s, " ", round(x0_init[global_index[s]]; digits = 5), "\n")
             end
             println("====================")
         end

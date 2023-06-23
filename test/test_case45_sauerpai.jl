@@ -55,7 +55,7 @@ perturbation = BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
         #@test LinearAlgebra.norm(eigs - test45_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -82,7 +82,7 @@ perturbation = BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
         #@test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -117,7 +117,7 @@ end
         #@test LinearAlgebra.norm(eigs - test45_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -144,6 +144,6 @@ end
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

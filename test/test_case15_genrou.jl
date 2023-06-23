@@ -33,8 +33,7 @@ raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBusMulti.ra
 tspan = (0.0, 20.0)
 
 function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
-    path = (joinpath(pwd(), "test-psse-genrou"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
@@ -68,7 +67,7 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -97,13 +96,12 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
 function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
-    path = (joinpath(pwd(), "test-psse-genrou"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
@@ -137,7 +135,7 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -166,7 +164,7 @@ function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 

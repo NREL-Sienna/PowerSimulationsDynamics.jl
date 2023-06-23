@@ -8,15 +8,14 @@ The perturbation increase the reference power (analogy for mechanical power) of 
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_machine_vsm")
 
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
 @testset "Test 09 VSM Inverter and OneDoneQ ResidualModel" begin
-    path = (joinpath(pwd(), "test-09"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     #time span
     tspan = (0.0, 20.0)
     case_inv = collect(PSY.get_components(PSY.DynamicInverter, threebus_sys))[1]
@@ -52,7 +51,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
         @test LinearAlgebra.norm(eigs - test09_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.02) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(); dtmax = 0.02) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         #Obtain data for angles
@@ -62,7 +61,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
         @test length(t) == length(ω_oc)
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -104,7 +103,7 @@ end
         @test LinearAlgebra.norm(eigs - test09_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.02) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas4(); dtmax = 0.02) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         #Obtain data for angles
@@ -120,6 +119,6 @@ end
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

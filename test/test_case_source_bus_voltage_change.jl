@@ -9,7 +9,7 @@ The test changes botht he voltage magnitude and phase angle of the source bus.
 ##################################################
 
 # Use the sme test data as Test 09
-include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_machine_vsm")
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -25,8 +25,7 @@ case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 V_source_change = SourceBusVoltageChange(1.0, case_source, :V_ref, 1.02)
 
 @testset "Test 27 Source Bus Voltage Magnitude Perturbation ResidualModel" begin
-    path = (joinpath(pwd(), "test-27"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -46,20 +45,19 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, :V_ref, 1.02)
         @test (diff_val[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, IDA(), dtmax = 0.02)
+        execute!(sim, IDA(); dtmax = 0.02)
         results = read_results(sim)
 
         # Obtain data for angles
         series = get_state_series(results, ("generator-103-1", :θ_oc))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
 @testset "Test 27 Source Bus Voltage Magnitude Perturbation MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-27"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -79,14 +77,14 @@ end
         @test (diff_val[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, Rodas4(), dtmax = 0.02)
+        execute!(sim, Rodas4(); dtmax = 0.02)
         results = read_results(sim)
 
         # Obtain data for angles
         series = get_state_series(results, ("generator-103-1", :θ_oc))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -121,14 +119,14 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, :θ_ref, 0.1)
         @test (diff_val[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, IDA(), dtmax = 0.02)
+        execute!(sim, IDA(); dtmax = 0.02)
         results = read_results(sim)
 
         # Obtain data for angles
         series = get_state_series(results, ("generator-103-1", :θ_oc))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -153,13 +151,13 @@ end
         @test (diff_val[1] < 1e-3)
 
         # Solve problem
-        execute!(sim, Rodas4(), dtmax = 0.02)
+        execute!(sim, Rodas4(); dtmax = 0.02)
         results = read_results(sim)
 
         # Obtain data for angles
         series = get_state_series(results, ("generator-103-1", :θ_oc))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

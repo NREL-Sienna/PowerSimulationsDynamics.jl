@@ -10,7 +10,9 @@ The fault disconnects a circuit between buses 1 and 2, doubling its impedance.
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test07.jl"))
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_5shaft")
+solve_powerflow!(threebus_sys)
+Ybus_fault = get_ybus_fault_threebus_sys(threebus_sys)
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -25,8 +27,7 @@ Ybus_change = NetworkSwitch(
 ) #New YBus
 
 @testset "Test 07 5-Mass-shaft model ResidualModel" begin
-    path = (joinpath(pwd(), "test-07"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -55,7 +56,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test07_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.001) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(); dtmax = 0.001) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for angles
@@ -65,13 +66,12 @@ Ybus_change = NetworkSwitch(
         series4 = get_state_series(results, ("generator-103-1", :δ_ex))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
 @testset "Test 07 5-Mass-shaft model MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-07"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -100,7 +100,7 @@ end
         @test LinearAlgebra.norm(eigs - test07_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.001) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas4(); dtmax = 0.001) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for angles
@@ -110,6 +110,6 @@ end
         series4 = get_state_series(results, ("generator-103-1", :δ_ex))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

@@ -4,13 +4,13 @@ const PSY = PowerSystems
 
 ############### Data Network ########################
 include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
-include(joinpath(dirname(@__FILE__), "data_utils.jl"))
+
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusMulti.raw")
-threebus_sys = System(threebus_file_dir, runchecks = false)
+threebus_sys = System(threebus_file_dir; runchecks = false)
 
 function inv_case78(static_device)
-    return DynamicInverter(
+    return DynamicInverter(;
         name = get_name(static_device),
         ω_ref = 1.0, # ω_ref,
         converter = converter_high_power(), #converter
@@ -23,7 +23,7 @@ function inv_case78(static_device)
 end
 
 function dyn_gen_multi_tg(generator)
-    return PSY.DynamicGenerator(
+    return PSY.DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_classic(), #machine
@@ -57,4 +57,4 @@ for br in fault_branches
         br.x = 4 * br.x
     end
 end
-Ybus_fault = PNM.Ybus(fault_branches, get_components(Bus, threebus_sys))[:, :];
+Ybus_fault = PNM.Ybus(fault_branches, collect(get_components(Bus, threebus_sys)))[:, :];

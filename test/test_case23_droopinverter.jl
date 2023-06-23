@@ -57,7 +57,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -79,7 +79,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -113,7 +113,7 @@ end
         @test LinearAlgebra.norm(eigs - test23_eigvals) < 1e-3
 
         #Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -135,6 +135,6 @@ end
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

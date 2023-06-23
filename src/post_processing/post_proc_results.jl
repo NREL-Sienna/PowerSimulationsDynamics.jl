@@ -26,8 +26,8 @@ function show_states_initial_value(sim::Simulation)
         V_I = sim.x0_init[bus_ix + bus_size]
         Vm = sqrt(V_R^2 + V_I^2)
         θ = angle(V_R + V_I * 1im)
-        print("Vm ", round(Vm, digits = 4), "\n")
-        print("θ ", round(θ, digits = 4), "\n")
+        print("Vm ", round(Vm; digits = 4), "\n")
+        print("θ ", round(θ; digits = 4), "\n")
         println("====================")
     end
     println("====================")
@@ -39,7 +39,7 @@ function show_states_initial_value(sim::Simulation)
         println("====================")
         global_index = global_state_map[name]
         for s in states
-            print(s, " ", round(sim.x0_init[global_index[s]], digits = 4), "\n")
+            print(s, " ", round(sim.x0_init[global_index[s]]; digits = 4), "\n")
         end
         println("====================")
     end
@@ -56,7 +56,7 @@ function show_states_initial_value(sim::Simulation)
             global_index = global_state_map[name]
             x0_br = Dict{Symbol, Float64}()
             for (i, s) in enumerate(states)
-                print(s, " ", round(sim.x0_init[global_index[s]], digits = 5), "\n")
+                print(s, " ", round(sim.x0_init[global_index[s]]; digits = 5), "\n")
             end
             println("====================")
         end

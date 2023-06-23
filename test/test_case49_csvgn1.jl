@@ -15,7 +15,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/CSVGN1/3_BUS_System.dyr")
 csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/CSVGN1/results_PSSe.csv")
 
 function csvgn1_1(source)
-    return PSY.CSVGN1(
+    return PSY.CSVGN1(;
         name = get_name(source),
         K = 20.0,
         T1 = 0.0,
@@ -60,7 +60,7 @@ end
         # Define Source and Attach CSVGN1
         bus_3 = get_bus_by_number(sys, 3)
 
-        inf_source() = Source(
+        inf_source() = Source(;
             name = "CSVGN1", #name
             available = true, #availability
             active_power = 0.0,
@@ -112,7 +112,7 @@ end
         @test small_sig.stable
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.0001, saveat = 0.0001) ==
+        @test execute!(sim, IDA(); dtmax = 0.0001, saveat = 0.0001) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -138,6 +138,6 @@ end
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

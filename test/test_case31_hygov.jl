@@ -48,7 +48,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
         @test LinearAlgebra.norm(eigs - test31_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -75,7 +75,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
         @test LinearAlgebra.norm(ω - ω_psse, Inf) <= 1e-3
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -115,7 +115,7 @@ end
         @test LinearAlgebra.norm(eigs - test31_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -139,7 +139,7 @@ end
         @test LinearAlgebra.norm(ω - ω_psse, Inf) <= 1e-3
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -166,7 +166,7 @@ end
             ControlReferenceChange(1.0, gen_dynamic, :P_ref, 0.6),
         )
         small_sig = small_signal_analysis(sim)
-        @test execute!(sim, IDA(), dtmax = 0.01) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(); dtmax = 0.01) == PSID.SIMULATION_FINALIZED
 
         sim = Simulation(
             MassMatrixModel,
@@ -181,6 +181,6 @@ end
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

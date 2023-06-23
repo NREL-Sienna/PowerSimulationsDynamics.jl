@@ -1,6 +1,3 @@
-using PowerSimulationsDynamics
-using Sundials
-
 """
 Case 8:
 This case study a 19-state virtual synchronous machine against an infinite bus located at bus 1, with VSM located at bus 2.
@@ -11,7 +8,8 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test08.jl"))
+omib_sys = build_system(PSIDTestSystems, "psid_test_vsm_inverter")
+case_inv = [g for g in get_components(DynamicInjection, omib_sys)][1]
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -25,8 +23,7 @@ t_offset = 9.0
 Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
 @testset "Test 08 VSM Inverter Infinite Bus ResidualModel" begin
-    path = (joinpath(pwd(), "test-08"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -60,7 +57,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -89,13 +86,12 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
 @testset "Test 08 VSM Inverter Infinite Bus MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-08"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         #Define Simulation Problem
         sim = Simulation(
@@ -129,7 +125,7 @@ end
         @test LinearAlgebra.norm(eigs - test08_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas5(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas5(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -153,6 +149,6 @@ end
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

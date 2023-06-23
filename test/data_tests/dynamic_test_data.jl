@@ -95,7 +95,7 @@ machine_simple_anderson() = SimpleAFMachine(
     0.033, #Tq0_pp
 )
 
-machine_genrou() = RoundRotorExponential(
+machine_genrou() = RoundRotorExponential(;
     R = 0.0,
     Td0_p = 8.0,
     Td0_pp = 0.03,
@@ -169,7 +169,7 @@ shaft_no_damping() = SingleMass(
     0.0,
 ) #D
 
-shaft_genrou() = SingleMass(H = 6.175, D = 0.05)
+shaft_genrou() = SingleMass(; H = 6.175, D = 0.05)
 
 shaft_fivemass() = FiveMassShaft(
     3.01, #5.148, #H
@@ -196,7 +196,7 @@ shaft_fivemass() = FiveMassShaft(
 
 pss_none() = PSSFixed(0.0)
 
-pss_stab1() = PSY.STAB1(
+pss_stab1() = PSY.STAB1(;
     KT = 6.0,
     T = 1.5,
     T1T3 = 13.3,
@@ -261,7 +261,7 @@ avr_type2() = AVRTypeII(
     0.0,
 ) #Be - 2nd ceiling coefficient
 
-avr_exst1() = PSY.EXST1(
+avr_exst1() = PSY.EXST1(;
     Tr = 0.01,
     Vi_lim = (-5.0, 5.0),
     Tc = 10.0,
@@ -279,19 +279,19 @@ avr_exst1() = PSY.EXST1(
 ######################################
 
 ###### Converter Data ######
-converter_low_power() = AverageConverter(rated_voltage = 690.0, rated_current = 2.75)
+converter_low_power() = AverageConverter(; rated_voltage = 690.0, rated_current = 2.75)
 
-converter_high_power() = AverageConverter(rated_voltage = 138.0, rated_current = 100.0)
+converter_high_power() = AverageConverter(; rated_voltage = 138.0, rated_current = 100.0)
 
 ###### DC Source Data ######
-dc_source_lv() = FixedDCSource(voltage = 600.0) #Not in the original data, guessed.
-dc_source_hv() = FixedDCSource(voltage = 1500.0) #Not in the original data, guessed.
+dc_source_lv() = FixedDCSource(; voltage = 600.0) #Not in the original data, guessed.
+dc_source_hv() = FixedDCSource(; voltage = 1500.0) #Not in the original data, guessed.
 
 ###### Filter Data ######
-filt() = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01)
-filt_gfoll() = LCLFilter(lf = 0.009, rf = 0.016, cf = 2.5, lg = 0.002, rg = 0.003)
-filt_voc() = LCLFilter(lf = 0.0196, rf = 0.0139, cf = 0.1086, lg = 0.0196, rg = 0.0139)
-filt_algebraic() = LCLFilter(
+filt() = LCLFilter(; lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01)
+filt_gfoll() = LCLFilter(; lf = 0.009, rf = 0.016, cf = 2.5, lg = 0.002, rg = 0.003)
+filt_voc() = LCLFilter(; lf = 0.0196, rf = 0.0139, cf = 0.1086, lg = 0.0196, rg = 0.0139)
+filt_algebraic() = LCLFilter(;
     lf = 0.08,
     rf = 0.003,
     cf = 0.074,
@@ -301,13 +301,13 @@ filt_algebraic() = LCLFilter(
 )
 
 ###### PLL Data ######
-pll() = KauraPLL(
+pll() = KauraPLL(;
     ω_lp = 500.0, #Cut-off frequency for LowPass filter of PLL filter.
     kp_pll = 0.084,  #PLL proportional gain
     ki_pll = 4.69,   #PLL integral gain
 )
 
-reduced_pll() = ReducedOrderPLL(
+reduced_pll() = ReducedOrderPLL(;
     ω_lp = 1.32 * 2 * pi * 50, #Cut-off frequency for LowPass filter of PLL filter.
     kp_pll = 2.0,  #PLL proportional gain
     ki_pll = 20.0,   #PLL integral gain
@@ -318,56 +318,56 @@ no_pll() = PSY.FixedFrequency()
 ###### Outer Control ######
 function outer_control()
     function virtual_inertia()
-        return VirtualInertia(Ta = 2.0, kd = 400.0, kω = 20.0)
+        return VirtualInertia(; Ta = 2.0, kd = 400.0, kω = 20.0)
     end
     function reactive_droop()
-        return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)
+        return ReactivePowerDroop(; kq = 0.2, ωf = 1000.0)
     end
     return OuterControl(virtual_inertia(), reactive_droop())
 end
 
 function outer_control_nopll()
     function virtual_inertia()
-        return VirtualInertia(Ta = 2.0, kd = 0.0, kω = 20.0)
+        return VirtualInertia(; Ta = 2.0, kd = 0.0, kω = 20.0)
     end
     function reactive_droop()
-        return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)
+        return ReactivePowerDroop(; kq = 0.2, ωf = 1000.0)
     end
     return OuterControl(virtual_inertia(), reactive_droop())
 end
 
 function outer_control_droop()
     function active_droop()
-        return PSY.ActivePowerDroop(Rp = 0.05, ωz = 2 * pi * 5)
+        return PSY.ActivePowerDroop(; Rp = 0.05, ωz = 2 * pi * 5)
     end
     function reactive_droop()
-        return ReactivePowerDroop(kq = 0.2, ωf = 1000.0)
+        return ReactivePowerDroop(; kq = 0.2, ωf = 1000.0)
     end
     return OuterControl(active_droop(), reactive_droop())
 end
 
 function outer_control_gfoll()
     function active_pi()
-        return ActivePowerPI(Kp_p = 2.0, Ki_p = 30.0, ωz = 0.132 * 2 * pi * 50)
+        return ActivePowerPI(; Kp_p = 2.0, Ki_p = 30.0, ωz = 0.132 * 2 * pi * 50)
     end
     function reactive_pi()
-        return ReactivePowerPI(Kp_q = 2.0, Ki_q = 30.0, ωf = 0.132 * 2 * pi * 50.0)
+        return ReactivePowerPI(; Kp_q = 2.0, Ki_q = 30.0, ωf = 0.132 * 2 * pi * 50.0)
     end
     return OuterControl(active_pi(), reactive_pi())
 end
 
 function outer_voc()
     function active_voc()
-        return PSY.ActiveVirtualOscillator(k1 = 0.0033, ψ = pi / 4)
+        return PSY.ActiveVirtualOscillator(; k1 = 0.0033, ψ = pi / 4)
     end
     function reactive_voc()
-        return PSY.ReactiveVirtualOscillator(k2 = 0.0796)
+        return PSY.ReactiveVirtualOscillator(; k2 = 0.0796)
     end
     return OuterControl(active_voc(), reactive_voc())
 end
 
 ######## Inner Control ######
-inner_control() = VoltageModeControl(
+inner_control() = VoltageModeControl(;
     kpv = 0.59,     #Voltage controller proportional gain
     kiv = 736.0,    #Voltage controller integral gain
     kffv = 0.0,     #Binary variable enabling the voltage feed-forward in output of current controllers
@@ -380,7 +380,7 @@ inner_control() = VoltageModeControl(
     kad = 0.2,
 )
 
-current_mode_inner() = CurrentModeControl(
+current_mode_inner() = CurrentModeControl(;
     kpc = 0.37,     #Current controller proportional gain
     kic = 0.7,     #Current controller integral gain
     kffv = 1.0,     #Binary variable enabling the voltage feed-forward in output of current controllers
@@ -392,7 +392,7 @@ current_mode_inner() = CurrentModeControl(
 
 function outer_control_TypeAB()
     function active_ab()
-        return ActiveRenewableControllerAB(
+        return ActiveRenewableControllerAB(;
             bus_control = 0,
             from_branch_control = 0,
             to_branch_control = 0,
@@ -413,7 +413,7 @@ function outer_control_TypeAB()
         )
     end
     function reactive_ab()
-        return ReactiveRenewableControllerAB(
+        return ReactiveRenewableControllerAB(;
             bus_control = 0,
             from_branch_control = 0,
             to_branch_control = 0,
@@ -446,7 +446,7 @@ end
 
 function outer_control_TypeAB_FreqFlag()
     function active_ab_fflag()
-        return ActiveRenewableControllerAB(
+        return ActiveRenewableControllerAB(;
             bus_control = 0,
             from_branch_control = 0,
             to_branch_control = 0,
@@ -467,7 +467,7 @@ function outer_control_TypeAB_FreqFlag()
         )
     end
     function reactive_ab()
-        return ReactiveRenewableControllerAB(
+        return ReactiveRenewableControllerAB(;
             bus_control = 0,
             from_branch_control = 0,
             to_branch_control = 0,
@@ -498,7 +498,7 @@ function outer_control_TypeAB_FreqFlag()
     return OuterControl(active_ab_fflag(), reactive_ab())
 end
 
-inner_ctrl_typeB() = RECurrentControlB(
+inner_ctrl_typeB() = RECurrentControlB(;
     Q_Flag = 0,
     PQ_Flag = 0,
     Vdip_lim = (-99.0, 99.0),
@@ -513,7 +513,7 @@ inner_ctrl_typeB() = RECurrentControlB(
     I_max = 1.11,
 )
 
-converter_regca() = RenewableEnergyConverterTypeA(
+converter_regca() = RenewableEnergyConverterTypeA(;
     T_g = 0.02,
     Rrpwr = 10.0,
     Brkpt = 0.9,
@@ -531,10 +531,10 @@ converter_regca() = RenewableEnergyConverterTypeA(
     X_source = 1.0e5,
 )
 
-filt_current() = RLFilter(rf = 0.0, lf = 0.0)
+filt_current() = RLFilter(; rf = 0.0, lf = 0.0)
 
 #Parameters from (Ma, 2020)
-dera(generator, freq_flag) = AggregateDistributedGenerationA(
+dera(generator, freq_flag) = AggregateDistributedGenerationA(;
     name = get_name(generator),
     Pf_Flag = 1,
     Freq_Flag = freq_flag,
@@ -580,7 +580,7 @@ dera(generator, freq_flag) = AggregateDistributedGenerationA(
 
 ####### Loads ########
 
-Ind_Motor(load) = PSY.SingleCageInductionMachine(
+Ind_Motor(load) = PSY.SingleCageInductionMachine(;
     name = PSY.get_name(load),
     R_s = 0.013,
     R_r = 0.009,
@@ -593,7 +593,7 @@ Ind_Motor(load) = PSY.SingleCageInductionMachine(
     base_power = 1000.0,
 )
 
-Ind_Motor3rd(load) = PSY.SimplifiedSingleCageInductionMachine(
+Ind_Motor3rd(load) = PSY.SimplifiedSingleCageInductionMachine(;
     name = PSY.get_name(load),
     R_s = 0.013,
     R_r = 0.009,
@@ -619,7 +619,7 @@ function ActiveLoad(load)
     Zb_dc = Vb_dc / Ib_dc
     Cb_dc = 1 / (Zb_dc * Ωb)
 
-    return PSY.ActiveConstantPowerLoad(
+    return PSY.ActiveConstantPowerLoad(;
         name = get_name(load),
         r_load = 70.0 / Zb_dc,
         c_dc = 2040e-6 / Cb_dc,
@@ -641,7 +641,7 @@ end
 ####### Devices #######
 
 function dyn_gen_second_order(generator)
-    return PSY.DynamicGenerator(
+    return PSY.DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0, # ω_ref,
         machine = machine_oneDoneQ(), #machine
@@ -653,7 +653,7 @@ function dyn_gen_second_order(generator)
 end
 
 function inv_case78(static_device)
-    return DynamicInverter(
+    return DynamicInverter(;
         name = get_name(static_device),
         ω_ref = 1.0, # ω_ref,
         converter = converter_high_power(), #converter

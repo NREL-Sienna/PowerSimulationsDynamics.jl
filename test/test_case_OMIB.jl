@@ -8,7 +8,13 @@ drop a circuit on the (double circuit) line connecting the two buses, doubling i
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test01.jl"))
+omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
+
+#Compute Y_bus after fault
+fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
+fault_branch.r = 0.00;
+fault_branch.x = 0.1;
+Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -20,8 +26,7 @@ Ybus_change = NetworkSwitch(
 ) #New YBus
 
 @testset "Test 01 OMIB ResidualModel" begin
-    path = (joinpath(pwd(), "test-01"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -51,7 +56,7 @@ Ybus_change = NetworkSwitch(
         @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -84,7 +89,7 @@ Ybus_change = NetworkSwitch(
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -132,7 +137,7 @@ end
         @test LinearAlgebra.norm(eigs - test01_eigvals_psat, Inf) < 5.0
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -164,6 +169,6 @@ end
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

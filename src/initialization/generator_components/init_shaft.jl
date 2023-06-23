@@ -72,7 +72,7 @@ function initialize_shaft!(
     end
 
     x0 = [τm0, δ0, δ0, δ0, δ0]
-    sol = NLsolve.nlsolve(f!, x0, ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization in Shaft failed")
     else

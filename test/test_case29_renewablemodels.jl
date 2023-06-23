@@ -69,7 +69,7 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
         # Solve problem
         @test execute!(
             sim,
-            IDA(),
+            IDA();
             dtmax = 0.005,
             saveat = 0.005,
             abstol = 1e-9,
@@ -99,7 +99,7 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -142,7 +142,7 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
         # Solve problem
         @test execute!(
             sim,
-            Rodas4(),
+            Rodas4();
             dtmax = 0.005,
             saveat = 0.005,
             abstol = 1e-6,
@@ -172,7 +172,7 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -282,7 +282,7 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -292,7 +292,7 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
         _, angl_ref = get_voltage_angle_series(results, 102)
 
         # Obtain data from PSS/E
-        M, _ = readdlm(csv_file, ',', header = true)
+        M, _ = readdlm(csv_file, ','; header = true)
 
         M_t = M[:, 1]
         M_θ = M[:, 2]
@@ -308,7 +308,7 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -348,7 +348,7 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
         @test LinearAlgebra.norm(eigs - eigs_value) < 1e-2
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.005, saveat = 0.005) ==
+        @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
@@ -358,7 +358,7 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
         _, angl_ref = get_voltage_angle_series(results, 102)
 
         # Obtain data from PSS/E
-        M, _ = readdlm(csv_file, ',', header = true)
+        M, _ = readdlm(csv_file, ','; header = true)
 
         M_t = M[:, 1]
         M_θ = M[:, 2]
@@ -374,7 +374,7 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
