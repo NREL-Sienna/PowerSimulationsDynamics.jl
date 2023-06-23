@@ -365,6 +365,7 @@ struct StaticWrapper{T <: PSY.StaticInjection, V}
     P_ref::Base.RefValue{Float64}
     Q_ref::Base.RefValue{Float64}
     bus_ix::Int
+    ext::Dict{String, Any}
 end
 
 function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
@@ -377,6 +378,7 @@ function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
         Base.Ref(PSY.get_active_power(device)),
         Base.Ref(PSY.get_reactive_power(device)),
         bus_ix,
+        Dict{String, Any}(),
     )
 end
 
@@ -390,6 +392,7 @@ function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.Source}
         Base.Ref(PSY.get_active_power(device)),
         Base.Ref(PSY.get_reactive_power(device)),
         bus_ix,
+        Dict{String, Any}(),
     )
 end
 
@@ -399,6 +402,7 @@ get_bus_category(::StaticWrapper{<:PSY.StaticInjection, U}) where {U} = U
 # TODO: something smart to forward fields
 get_device(wrapper::StaticWrapper) = wrapper.device
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
+get_ext(wrapper::StaticWrapper) = wrapper.ext
 
 get_P_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::StaticWrapper) = wrapper.Q_ref[]
