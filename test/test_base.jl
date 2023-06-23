@@ -15,8 +15,7 @@ omib_sys_file = build_system(PSIDTestSystems, "psid_test_omib"; force_build = tr
 end
 
 @testset "Make Simulation" begin
-    path1 = (joinpath(pwd(), "test-Base-1"))
-    !isdir(path1) && mkdir(path1)
+    path1 = mktempdir()
     try
         #Compute Y_bus after fault
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
@@ -60,8 +59,7 @@ end
         rm(path1; force = true, recursive = true)
     end
 
-    path2 = (joinpath(pwd(), "test-Base-2"))
-    !isdir(path2) && mkdir(path2)
+    path2 = mktempdir()
     try
         #Compute Y_bus after fault
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
@@ -103,8 +101,7 @@ end
 end
 
 @testset "Solve Twice Simulation" begin
-    path1 = (joinpath(pwd(), "test-Base-1"))
-    !isdir(path1) && mkdir(path1)
+    path1 = mktempdir()
     try
         #Compute Y_bus after fault
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
@@ -672,8 +669,7 @@ end
 end
 
 @testset "Test 01 OMIB ResidualModel" begin
-    path = (joinpath(pwd(), "test-01"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         #Compute Y_bus after fault
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])

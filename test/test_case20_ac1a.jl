@@ -31,8 +31,7 @@ raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/AC1A/ThreeBusMulti.raw"
 tspan = (0.0, 20.0)
 
 function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
-    path = (joinpath(pwd(), "test-psse-ac1a"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
@@ -99,8 +98,7 @@ function test_ac1a_implicit(dyr_file, csv_file, init_cond, eigs_value)
 end
 
 function test_ac1a_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
-    path = (joinpath(pwd(), "test-psse-ac1a"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)

@@ -211,8 +211,8 @@ function initialize_dynamic_device!(
 
     #PowerFlow Data
     if isa(device, PSY.StandardLoad)
-        P0 = PF._get_total_p(device) * Sbase / base_power # in pu (motor base)
-        Q0 = PF._get_total_q(device) * Sbase / base_power # in pu (motor base)
+        P0 = PF.get_total_p(device) * Sbase / base_power # in pu (motor base)
+        Q0 = PF.get_total_q(device) * Sbase / base_power # in pu (motor base)
     else
         P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
         Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
@@ -245,7 +245,7 @@ function initialize_dynamic_device!(
     τ_m00 = P0 / ωr0
     x0 = [i_qs0, i_ds0, B_sh0, ψ_qs0, ψ_ds0, ψ_qr0, ψ_dr0, ωr0, τ_m00]
 
-    # 
+    #
     function f!(out, x)
         i_qs = x[1]
         i_ds = x[2]
@@ -260,7 +260,7 @@ function initialize_dynamic_device!(
         ψ_md = ψ_ds - i_ds * X_ls
         out[1] = -I_R + i_ds - V_I * B_sh # network interface
         out[2] = -I_I + i_qs + V_R * B_sh # network interface
-        out[3] = v_qs - ψ_ds - R_s * i_qs # 
+        out[3] = v_qs - ψ_ds - R_s * i_qs #
         out[4] = v_ds + ψ_qs - R_s * i_ds #
         out[5] = -ψ_mq + X_aq * (ψ_qs / X_ls + ψ_qr / X_lr) # dψ_qs/dt = 0
         out[6] = -ψ_md + X_ad * (ψ_ds / X_ls + ψ_dr / X_lr) # dψ_ds/dt = 0
@@ -312,8 +312,8 @@ function initialize_dynamic_device!(
 
     #PowerFlow Data
     if isa(device, PSY.StandardLoad)
-        P0 = PF._get_total_p(device) * Sbase / base_power # in pu (motor base)
-        Q0 = PF._get_total_q(device) * Sbase / base_power # in pu (motor base)
+        P0 = PF.get_total_p(device) * Sbase / base_power # in pu (motor base)
+        Q0 = PF.get_total_q(device) * Sbase / base_power # in pu (motor base)
     else
         P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
         Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
@@ -346,7 +346,7 @@ function initialize_dynamic_device!(
     τ_m00 = P0 / ωr0
     x0 = [i_qs0, i_ds0, i_qr0, i_dr0, B_sh0, ψ_qs0, ψ_ds0, ψ_qr0, ψ_dr0, ωr0, τ_m00]
 
-    # 
+    #
     function f!(out, x)
         i_qs = x[1]
         i_ds = x[2]
@@ -469,8 +469,8 @@ function initialize_dynamic_device!(
 
     #PowerFlow Data
     if isa(device, PSY.StandardLoad)
-        P0 = PF._get_total_p(device) * Sbase / base_power # in pu (motor base)
-        Q0 = PF._get_total_q(device) * Sbase / base_power # in pu (motor base)
+        P0 = PF.get_total_p(device) * Sbase / base_power # in pu (motor base)
+        Q0 = PF.get_total_q(device) * Sbase / base_power # in pu (motor base)
     else
         P0 = PSY.get_active_power(device) * Sbase / base_power # in pu (motor base)
         Q0 = PSY.get_reactive_power(device) * Sbase / base_power # in pu (motor base)
@@ -481,7 +481,7 @@ function initialize_dynamic_device!(
     V_R = Vm * cos(θ)
     V_I = Vm * sin(θ)
     V = V_R + V_I * 1im
-    I = conj(S0 / V) # total current 
+    I = conj(S0 / V) # total current
     I_R = real(I)
     I_I = imag(I)
 
@@ -627,7 +627,7 @@ function initialize_dynamic_device!(
         @error "Unsupported value of Freq_Flag"
     end
 
-    #See Note 2 on PSSE Documentation 
+    #See Note 2 on PSSE Documentation
     Vref0 = PSY.get_V_ref(dynamic_device)
     K_qv = PSY.get_K_qv(dynamic_device)
     (dbd1, dbd2) = PSY.get_dbd_pnts(dynamic_device)

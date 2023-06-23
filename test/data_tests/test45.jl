@@ -4,7 +4,7 @@ const PSY = PowerSystems
 
 ############### Data Network ########################
 include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
-include(joinpath(dirname(@__FILE__), "data_utils.jl"))
+
 ############### Data Network ########################
 threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusPSCAD.raw")
 threebus_sys = System(threebus_file_dir; runchecks = false)
@@ -20,7 +20,7 @@ function dyn_gen_sauerpai(generator)
         pss = pss_none(),
     ) #pss
 end
-#= 
+#=
 function inv_darco(static_device)
     return PSY.DynamicInverter(
         get_name(static_device),

@@ -23,8 +23,7 @@ t_offset = 9.0
 Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
 @testset "Test 08 VSM Inverter Infinite Bus ResidualModel" begin
-    path = (joinpath(pwd(), "test-08"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -92,8 +91,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 end
 
 @testset "Test 08 VSM Inverter Infinite Bus MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-08"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         #Define Simulation Problem
         sim = Simulation(

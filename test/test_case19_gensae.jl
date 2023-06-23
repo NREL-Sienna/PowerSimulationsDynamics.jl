@@ -36,8 +36,7 @@ raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENSAE/ThreeBusMulti.ra
 tspan = (0.0, 20.0)
 
 function test_gensae_implicit(dyr_file, csv_file, init_cond, eigs_value)
-    path = (joinpath(pwd(), "test-psse-gensae"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
@@ -102,8 +101,7 @@ function test_gensae_implicit(dyr_file, csv_file, init_cond, eigs_value)
 end
 
 function test_gensae_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
-    path = (joinpath(pwd(), "test-psse-gensae"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)

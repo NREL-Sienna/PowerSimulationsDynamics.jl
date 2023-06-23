@@ -9,7 +9,7 @@ The test changes botht he voltage magnitude and phase angle of the source bus.
 ##################################################
 
 # Use the sme test data as Test 09
-include(joinpath(TEST_FILES_DIR, "data_tests/test09.jl"))
+threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_machine_vsm")
 
 ##################################################
 ############### SOLVE PROBLEM ####################
@@ -25,8 +25,7 @@ case_source = collect(PSY.get_components(PSY.Source, threebus_sys))[1]
 V_source_change = SourceBusVoltageChange(1.0, case_source, :V_ref, 1.02)
 
 @testset "Test 27 Source Bus Voltage Magnitude Perturbation ResidualModel" begin
-    path = (joinpath(pwd(), "test-27"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -58,8 +57,7 @@ V_source_change = SourceBusVoltageChange(1.0, case_source, :V_ref, 1.02)
 end
 
 @testset "Test 27 Source Bus Voltage Magnitude Perturbation MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-27"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(

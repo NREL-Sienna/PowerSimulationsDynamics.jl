@@ -33,8 +33,7 @@ raw_file_dir = joinpath(TEST_FILES_DIR, "benchmarks/psse/GENROU/ThreeBusMulti.ra
 tspan = (0.0, 20.0)
 
 function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
-    path = (joinpath(pwd(), "test-psse-genrou"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)
@@ -102,8 +101,7 @@ function test_genrou_implicit(dyr_file, csv_file, init_cond, eigs_value)
 end
 
 function test_genrou_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
-    path = (joinpath(pwd(), "test-psse-genrou"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         sys = System(raw_file_dir, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)

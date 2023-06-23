@@ -18,8 +18,7 @@ Ybus_fault = get_ybus_fault_threebus_sys(threebus_sys)
 ##################################################
 
 @testset "Test 02 OneDoneQ ResidualModel" begin
-    path = (joinpath(pwd(), "test-02"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         Ybus_change = NetworkSwitch(
             1.0, #change at t = 1.0
@@ -87,8 +86,7 @@ Ybus_fault = get_ybus_fault_threebus_sys(threebus_sys)
 end
 
 @testset "Test 02 OneDoneQ MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-02"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         Ybus_change = NetworkSwitch(
             1.0, #change at t = 1.0

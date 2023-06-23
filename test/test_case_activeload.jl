@@ -1,6 +1,6 @@
 """
 Case 46:
-This case study a single VSM inverter against an active load model. 
+This case study a single VSM inverter against an active load model.
 The perturbation increase P_ref of the generator by 0.1 pu.
 """
 
@@ -19,8 +19,7 @@ case_gen = first(get_components(PSY.DynamicInjection, sys))
 perturbation = ControlReferenceChange(0.1, case_gen, :P_ref, 0.6)
 
 @testset "Test 46 ActiveLoad ResidualModel" begin
-    path = (joinpath(pwd(), "test-46"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -65,8 +64,7 @@ perturbation = ControlReferenceChange(0.1, case_gen, :P_ref, 0.6)
 end
 
 @testset "Test 46 ActiveLoad MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-46"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(

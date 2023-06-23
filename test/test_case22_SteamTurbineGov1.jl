@@ -13,8 +13,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/TGOV1/ThreeBus_TGOV1.dyr")
 csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/TGOV1/TEST_TGOV1.csv")
 
 @testset "Test 21 SteamTurbineGov1 ResidualModel" begin
-    path = (joinpath(pwd(), "test-psse-tgov1"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         sys = System(raw_file, dyr_file)
         for l in get_components(PSY.StandardLoad, sys)

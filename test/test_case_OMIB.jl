@@ -26,8 +26,7 @@ Ybus_change = NetworkSwitch(
 ) #New YBus
 
 @testset "Test 01 OMIB ResidualModel" begin
-    path = (joinpath(pwd(), "test-01"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(

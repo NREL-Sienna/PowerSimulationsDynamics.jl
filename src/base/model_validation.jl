@@ -7,6 +7,8 @@ is_valid(::PSY.AggregateDistributedGenerationA) = nothing
 is_valid(::PSY.SimplifiedSingleCageInductionMachine) = nothing
 is_valid(::PSY.PeriodicVariableSource) = nothing
 is_valid(::PSY.SingleCageInductionMachine) = nothing
+is_valid(::PSY.ActiveConstantPowerLoad) = nothing
+is_valid(::PSY.CSVGN1) = nothing
 
 function is_valid(
     ::PSY.DynamicGenerator{

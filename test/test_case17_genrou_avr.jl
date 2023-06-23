@@ -15,8 +15,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test17.jl"))
 ##################################################
 
 @testset "Test 17 GENROU AVR ResidualModel" begin
-    path = (joinpath(pwd(), "test-psse-genrou-avr"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -57,8 +56,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test17.jl"))
 end
 
 @testset "Test 17 GENROU AVR MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-psse-genrou-avr"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(

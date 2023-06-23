@@ -26,8 +26,7 @@ Ybus_change = NetworkSwitch(
 ) #New YBus
 
 @testset "Test 05 Simple Anderson ResidualModel" begin
-    path = (joinpath(pwd(), "test-05"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -71,8 +70,7 @@ Ybus_change = NetworkSwitch(
 end
 
 @testset "Test 05 Simple Anderson MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-05"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(

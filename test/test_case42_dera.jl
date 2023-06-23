@@ -1,6 +1,6 @@
 """
 Case 42:
-This case study a three bus system with one AggregateDistributedGenerationA model, one load, and one infinite source. 
+This case study a three bus system with one AggregateDistributedGenerationA model, one load, and one infinite source.
 The fault drops the line connecting the infinite bus and AggregateDistributedGenerationA.
 
 """
@@ -8,7 +8,6 @@ The fault drops the line connecting the infinite bus and AggregateDistributedGen
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/data_utils.jl"))
 raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/DERA/ThreeBusMulti.raw")
 
 ##################################################
@@ -17,7 +16,7 @@ raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/DERA/ThreeBusMulti.raw")
 
 names = ["DERA: FreqFlag=0", "DERA: FreqFlag=1"]
 
-#TODO - include set of dyr values once parser includes DERA. 
+#TODO - include set of dyr values once parser includes DERA.
 FreqFlag_values = [0, 1]
 csv_files = (
     joinpath(TEST_FILES_DIR, "benchmarks/psse/DERA/dera_freqflag0.csv"),

@@ -1,8 +1,7 @@
 @testset "Test 32 9-Bus Machine Only System" begin
-    path = (joinpath(pwd(), "test-9Bus-system"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
-        sys = System(joinpath(TEST_FILES_DIR, "data_tests/9BusSystem.json"))
+        sys = build_system(PSIDTestSystems, "psid_test_ieee_9bus")
         for l in get_components(PSY.StandardLoad, sys)
             transform_load_to_constant_impedance(l)
         end

@@ -15,8 +15,7 @@ threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_machine_vsm")
 ##################################################
 
 @testset "Test 09 VSM Inverter and OneDoneQ ResidualModel" begin
-    path = (joinpath(pwd(), "test-09"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     #time span
     tspan = (0.0, 20.0)
     case_inv = collect(PSY.get_components(PSY.DynamicInverter, threebus_sys))[1]
