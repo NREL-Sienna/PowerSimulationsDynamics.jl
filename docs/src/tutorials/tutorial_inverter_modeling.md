@@ -10,7 +10,8 @@ The tutorial uses a modified 14-bus system on which all the synchronous machines
 
 In the first portion of the tutorial we will simulate the system with the original data and cause a line trip between Buses 2 and 4. In the second part of the simulation, we will switch generator 6 with a battery using an inverter and perform the same fault.
 
-# Load the packages
+### Load the packages
+
 ```@repl inv_sys
 using PowerSimulationsDynamics
 using PowerSystems
@@ -100,7 +101,7 @@ It is also possible to explore the small signal stability of this system we crea
 res = small_signal_analysis(sim)
 ```
 
-# The eigenvalues can be explored
+## The eigenvalues can be explored
 
 ```@repl inv_sys
 res.eigenvalues
@@ -109,13 +110,14 @@ res.eigenvalues
 ## Modifying the system and adding storage
 
 Reload the system for this example:
+
 ```@repl inv_sys
 sys = System(joinpath(file_dir, "14bus.raw"), joinpath(file_dir, "dyn_data.dyr"), runchecks = false)
 # Transform loads to constant impedance
-include(joinpath(pkgdir(PowerSimulationsDynamics), "test/utils/get_results.jl")) 
-for l in get_components(StandardLoad, sys) 
+include(joinpath(pkgdir(PowerSimulationsDynamics), "test/utils/get_results.jl"))
+for l in get_components(StandardLoad, sys)
     transform_load_to_constant_impedance(l)
-end 
+end
 
 # We want to remove the generator 6 and the dynamic component attached to it.
 thermal_gen = get_component(ThermalStandard, sys, "generator-6-1")
@@ -234,7 +236,7 @@ for b in get_components(Bus, sys)
         xlabel = "Time",
         ylabel = "Voltage Magnitude [pu]",
         label = "Bus - $(get_name(b))",
-    );  
+    );
 end
 ```
 

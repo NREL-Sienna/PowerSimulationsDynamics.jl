@@ -2,7 +2,7 @@
 
 **Originally Contributed by**: Rodrigo Henriquez-Auba and José Daniel Lara
 
-# Introduction
+## Introduction
 
 This tutorial will introduce you to the functionality of `PowerSimulationsDynamics`
 for running power system dynamic simulations.
@@ -63,7 +63,7 @@ execute!(
     sim, #simulation structure
     IDA(), #Sundials DAE Solver
     dtmax = 0.02, #Arguments: Maximum timestep allowed
-); 
+);
 ```
 
 In some cases, the dynamic time step used for the simulation may fail. In such case, the keyword argument `dtmax` can be used to limit the maximum time step allowed for the simulation.

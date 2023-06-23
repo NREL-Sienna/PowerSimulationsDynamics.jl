@@ -12,11 +12,11 @@ using PowerSimulationsDynamics
 const PSY = PowerSystems
 ```
 
-# Step 1: System description
+## Step 1: System description
 
 Next we need to define the different elements required to run a simulation. To run a simulation in `PowerSimulationsDynamics`, it is required to define a `System` that contains the following components:
 
-## Static Components:
+## Static Components
 
 We called static components to those that are used to run a Power Flow problem.
 
@@ -28,7 +28,7 @@ We called static components to those that are used to run a Power Flow problem.
  - The base of power used to define per unit values, in MVA as a `Float64` value.
  - The base frequency used in the system, in Hz as a `Float64` value.
 
-## Dynamic Components:
+## Dynamic Components
 
 Dynamic components are those that define differential equations to run a transient simulation.
 

@@ -4,13 +4,13 @@
 
 ## Introduction
 
-This tutorial will introduce an example of considering dynamic lines in `PowerSimulationsDynamics`. 
+This tutorial will introduce an example of considering dynamic lines in `PowerSimulationsDynamics`.
 
 This tutorial presents a simulation of a three-bus system, with an infinite bus (represented as a voltage source behind an impedance) at bus 1, a one d- one q- machine on bus 2 and an inverter of 19 states, as a virtual synchronous machine at bus 3. The perturbation will be the trip of two of the three circuits (triplicating its resistance and impedance) of the line that connects bus 1 and bus 3. This case also consider a dynamic line model for connection between buses 2 and 3. We will compare it against a system without dynamic lines.
 
 It is recommended to check the OMIB tutorial first, since that includes more details and explanations on all definitions and functions.
 
-# Step 1: Package Initialization
+### Step 1: Package Initialization
 
 ```@repl dyn_lines
 using PowerSimulationsDynamics
@@ -20,7 +20,7 @@ using Sundials
 using Plots
 ```
 
-# Step 2: Data creation
+### Step 2: Data creation
 
 ```@repl dyn_lines
 file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "docs", "src", "tutorials", "data")
@@ -33,7 +33,7 @@ In addition, we will create a new copy of the system on which we will simulate t
 threebus_sys_dyn = deepcopy(threebus_sys);
 ```
 
-# Step 3: Create the fault and simulation on the Static Lines system
+### Step 3: Create the fault and simulation on the Static Lines system
 
 First, we construct the perturbation, by properly computing the new Ybus on the system:
 
@@ -82,7 +82,7 @@ We can obtain the initial conditions as:
 show_states_initial_value(sim)
 ```
 
-# Step 4: Run the simulation of the Static Lines System
+### Step 4: Run the simulation of the Static Lines System
 
 ```@repl dyn_lines
 #Run the simulation
@@ -93,7 +93,7 @@ execute!(
 )
 ```
 
-# Step 5: Store the solution
+### Step 5: Store the solution
 
 ```@repl dyn_lines
 results = read_results(sim)
@@ -104,7 +104,7 @@ zoom = [
 ];
 ```
 
-# Step 3.1: Create the fault and simulation on the Dynamic Lines system
+### Step 3.1: Create the fault and simulation on the Dynamic Lines system
 
 An important aspect to consider is that DynamicLines must not be considered in the computation of the Ybus. First we construct the Dynamic Line, by finding the Line named "BUS 2-BUS 3-i_1", and then adding it to the system.
 
@@ -141,7 +141,7 @@ Ybus_change_dyn = NetworkSwitch(
 )
 ```
 
-# Step 4.1: Run the simulation of the Dynamic Lines System
+### Step 4.1: Run the simulation of the Dynamic Lines System
 
 Now, we construct the simulation:
 
@@ -172,7 +172,7 @@ We can obtain the initial conditions as:
 show_states_initial_value(sim_dyn)
 ```
 
-# Step 5.1: Store the solution
+### Step 5.1: Store the solution
 
 ```@repl dyn_lines
 results_dyn = read_results(sim_dyn)
