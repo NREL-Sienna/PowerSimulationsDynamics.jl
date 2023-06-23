@@ -11,7 +11,7 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test24.jl"))
+omib_sys = build_system(PSIDTestSystems, "psid_test_gfoll_inverter")
 
 ##################################################
 ############### SOLVE PROBLEM ####################

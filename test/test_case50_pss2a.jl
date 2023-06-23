@@ -40,7 +40,7 @@ genrou_machine() = PSY.RoundRotorQuadratic(;
 
 #Shafts
 
-single_mass_shaft() = PSY.SingleMass(H = 4.00, D = 0.00)
+single_mass_shaft() = PSY.SingleMass(; H = 4.00, D = 0.00)
 
 #AVR SEXS
 
@@ -54,7 +54,7 @@ sexs_avr() = PSY.SEXS(;
 
 #Prime Mover
 
-fixed_torque() = PSY.TGFixed(efficiency = 1.0)
+fixed_torque() = PSY.TGFixed(; efficiency = 1.0)
 
 #PSS2A
 

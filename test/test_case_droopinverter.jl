@@ -11,8 +11,7 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ############### LOAD DATA ########################
 ##################################################
 
-include(joinpath(TEST_FILES_DIR, "data_tests/test23.jl"))
-
+omib_sys = build_system(PSIDTestSystems, "psid_test_droop_inverter")
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
@@ -28,8 +27,7 @@ t_offset = 9.0
 Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 
 @testset "Test 23 Droop Inverter ResidualModel" begin
-    path = (joinpath(pwd(), "test-23"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -84,8 +82,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
 end
 
 @testset "Test 23 Droop Inverter MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-23"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(

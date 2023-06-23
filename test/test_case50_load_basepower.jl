@@ -1,16 +1,15 @@
 """
 Test basepowers load models:
 Builds a OMIB system with a load. Tests that the active power flow
-across the single branch does not change when the base power of the 
+across the single branch does not change when the base power of the
 load is changed. Includes a LoadChange and LoadTrip to ensure that
-base power scaling is handled properly in the perturbation. 
+base power scaling is handled properly in the perturbation.
 """
 
 include(joinpath(TEST_FILES_DIR, "data_tests", "dynamic_test_data.jl"))
-include(joinpath(TEST_FILES_DIR, "data_tests", "data_utils.jl"))
 
 function standard_load(b)
-    return StandardLoad(
+    return StandardLoad(;
         name = "test-load",
         available = true,
         bus = b,
@@ -31,7 +30,7 @@ function standard_load(b)
 end
 
 function dyn_gen_classic(generator)
-    return DynamicGenerator(
+    return DynamicGenerator(;
         name = get_name(generator),
         ω_ref = 1.0,
         machine = machine_classic(),
@@ -43,7 +42,7 @@ function dyn_gen_classic(generator)
 end
 
 OMIB_dir = joinpath(TEST_FILES_DIR, "data_tests", "OMIB.raw")
-omib_sys = System(OMIB_dir, runchecks = false)
+omib_sys = System(OMIB_dir; runchecks = false)
 add_source_to_ref(omib_sys)
 b = get_component(Bus, omib_sys, "BUS 2")
 l = standard_load(b)
@@ -64,10 +63,10 @@ execute!(sim, Rodas5())
 results = read_results(sim)
 _, P_trip_original = get_activepower_branch_flow(results, "BUS 1-BUS 2-i_1", :to)
 
-# Change base power of load, setpoints, and perturbation such that 
-# the result should be identical to the original system. 
+# Change base power of load, setpoints, and perturbation such that
+# the result should be identical to the original system.
 OMIB_dir = joinpath(TEST_FILES_DIR, "data_tests", "OMIB.raw")
-omib_sys = System(OMIB_dir, runchecks = false)
+omib_sys = System(OMIB_dir; runchecks = false)
 add_source_to_ref(omib_sys)
 b = get_component(Bus, omib_sys, "BUS 2")
 l = standard_load(b)
