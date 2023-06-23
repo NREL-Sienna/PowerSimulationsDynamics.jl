@@ -12,6 +12,7 @@ The perturbation increase the reference power (analogy for mechanical power) fro
 ##################################################
 
 omib_sys = build_system(PSIDTestSystems, "psid_test_gfoll_inverter")
+case_inv = [g for g in get_components(DynamicInjection, omib_sys)][1]
 
 ##################################################
 ############### SOLVE PROBLEM ####################
