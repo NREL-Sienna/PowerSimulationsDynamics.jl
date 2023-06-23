@@ -323,6 +323,7 @@ function _add_callback!(
     affect = get_affect(inputs, get_system(sim), pert)
     callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
     push!(tstops, pert.time)
+    return
 end
 
 function _get_diffeq_problem(
