@@ -19,10 +19,9 @@ const PSY = PowerSystems
 ## Load the system
 
 ```@repl sys_240bus
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "test", "data_tests")
-sys = System(joinpath(file_dir, "WECC_240_dynamic.json"); runchecks = false)
-# Transform loads to constant impedance
-include(joinpath(pkgdir(PowerSimulationsDynamics), "test/utils/get_results.jl"))
+sys = build_system(PSIDSystems, "WECC 240 Bus")
+
+# Transform the system's load
 for l in get_components(PSY.StandardLoad, sys)
     transform_load_to_constant_impedance(l)
 end

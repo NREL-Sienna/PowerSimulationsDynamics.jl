@@ -23,8 +23,7 @@ using Plots
 ### Step 2: Data creation
 
 ```@repl dyn_lines
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "docs", "src", "tutorials", "data")
-threebus_sys = System(joinpath(file_dir, "threebus_sys.json"));
+threebus_sys = build_system(PSIDTestSystems, "Three Bus Dynamic data Example System")
 ```
 
 In addition, we will create a new copy of the system on which we will simulate the same case, but will consider dynamic lines:

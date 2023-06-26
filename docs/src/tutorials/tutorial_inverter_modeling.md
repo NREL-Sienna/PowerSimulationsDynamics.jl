@@ -25,12 +25,7 @@ const PSY = PowerSystems
 Create the system
 
 ```@repl inv_sys
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "docs", "src", "tutorials", "data")
-sys = System(joinpath(file_dir, "14bus.raw"), joinpath(file_dir, "dyn_data.dyr"), runchecks = false)
-include(joinpath(pkgdir(PowerSimulationsDynamics), "test/utils/get_results.jl"))
-for l in get_components(StandardLoad, sys) # hide
-    transform_load_to_constant_impedance(l) # hide
-end # hide
+sys = build_system(PSIDSystems, "14 Bus Base Case")
 ```
 
 Define Simulation Problem with a 20 second simulation period and the branch trip at t = 1.0:
@@ -112,12 +107,7 @@ res.eigenvalues
 Reload the system for this example:
 
 ```@repl inv_sys
-sys = System(joinpath(file_dir, "14bus.raw"), joinpath(file_dir, "dyn_data.dyr"), runchecks = false)
-# Transform loads to constant impedance
-include(joinpath(pkgdir(PowerSimulationsDynamics), "test/utils/get_results.jl"))
-for l in get_components(StandardLoad, sys)
-    transform_load_to_constant_impedance(l)
-end
+sys = build_system(PSIDS)
 
 # We want to remove the generator 6 and the dynamic component attached to it.
 thermal_gen = get_component(ThermalStandard, sys, "generator-6-1")

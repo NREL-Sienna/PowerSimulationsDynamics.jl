@@ -1,7 +1,7 @@
 # PowerSimulationsDynamics.jl
 
 ```@meta
-CurrentModule = PowerSystems
+CurrentModule = PowerSimulationsDynamics
 ```
 
 ## Overview
@@ -15,6 +15,17 @@ the academic components are derived from [Power System Modelling and Scripting](
 Inverter models support both commercial models, such as REPC, REEC and REGC type of models; and academic models obtained
 from grid-following and grid-forming literature such as in ["A Virtual Synchronous Machine implementation for
 distributed control of power converters in SmartGrids"](https://www.sciencedirect.com/science/article/pii/S0378779615000024)
+
+The background work on `PowerSimulationsDynamics.jl` is explained in[Revisiting Power Systems Time-domain Simulation Methods and Models](https://arxiv.org/pdf/2301.10043.pdf)
+
+```bibtex
+   @article{lara2023revisiting,
+  title={Revisiting Power Systems Time-domain Simulation Methods and Models},
+  author={Lara, Jose Daniel and Henriquez-Auba, Rodrigo and Ramasubramanian, Deepak and Dhople, Sairaj and Callaway, Duncan S and Sanders, Seth},
+  journal={arXiv preprint arXiv:2301.10043},
+  year={2023}
+}
+```
 
 ## Installation
 

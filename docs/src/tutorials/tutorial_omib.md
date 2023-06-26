@@ -25,8 +25,7 @@ PSID = PowerSimulationsDynamics
 ## Load the system
 
 ```@repl tutorial_omib
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "docs", "src", "tutorials", "data")
-omib_sys = System(joinpath(file_dir, "omib_sys.json"), runchecks = false)
+omib_sys = build_system(PSIDSystems, "OMIB System")
 ```
 
 ## Build the simulation and initialize the problem
