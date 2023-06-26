@@ -1,48 +1,47 @@
-┌ Info: 2023-06-26T17:30:17.166 [4362:1]: Pre-Initializing Simulation States
+┌ Info: 2023-06-26T18:15:07.596 [4469:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:70
+┌ Info: 2023-06-26T18:15:07.597 [4469:1]: Pre-Initializing Simulation States
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:265
-┌ Info: 2023-06-26T17:30:17.166 [4362:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+┌ Info: 2023-06-26T18:15:07.597 [4469:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/qRmML/src/base.jl:407
-┌ Warning: 2023-06-26T17:30:17.191 [4362:1]: Unit generator-3631-NB set at the limit -0.14000000000000004. Q_max = 0.20000000000000004 Q_min = -0.14000000000000004
-└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/TDLGc/src/post_processing.jl:348
-┌ Warning: 2023-06-26T17:30:17.193 [4362:1]: Unit generator-6132-G set at the limit -1.47. Q_max = 1.47 Q_min = -1.47
-└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/TDLGc/src/post_processing.jl:348
-┌ Warning: 2023-06-26T17:30:17.193 [4362:1]: Unit generator-6433-E set at the limit 0.59. Q_max = 0.59 Q_min = -0.59
-└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/TDLGc/src/post_processing.jl:348
-┌ Info: 2023-06-26T17:30:17.195 [4362:1]: PowerFlow solve converged, the results have been stored in the system
+┌ Info: 2023-06-26T18:15:07.597 [4469:1]: PowerFlow solve converged, the results have been stored in the system
 └ @ PowerFlows /home/runner/.julia/packages/PowerFlows/TDLGc/src/nlsolve_ac_powerflow.jl:45
-┌ Info: 2023-06-26T17:30:17.195 [4362:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Info: 2023-06-26T18:15:07.597 [4469:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
 └ @ PowerSystems /home/runner/.julia/packages/PowerSystems/qRmML/src/base.jl:407
-┌ Info: 2023-06-26T17:30:26.152 [4362:1]: Residual from initial guess: max = 9.827763047809412e-10 at 1268, total = 2.3846225827075845e-8
+┌ Info: 2023-06-26T18:15:13.695 [4469:1]: Residual from initial guess: max = 1.004487742983784e-10 at 4, total = 1.4981559582778173e-9
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:101
-┌ Info: 2023-06-26T17:30:26.395 [4362:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+┌ Info: 2023-06-26T18:15:13.730 [4469:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:68
-┌ Info: 2023-06-26T17:30:26.396 [4362:1]: Attaching Perturbations
+┌ Info: 2023-06-26T18:15:13.730 [4469:1]: Attaching Perturbations
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:296
-┌ Info: 2023-06-26T17:30:27.003 [4362:1]: Simulations status = BUILT
-└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:426
-┌ Info: 2023-06-26T17:30:27.003 [4362:1]: 
+┌ Error: 2023-06-26T18:15:13.911 [4469:1]: MassMatrixModel failed to build
+│   exception = (InfrastructureSystems.ConflictingInputsError("Branch Line CORONADO    -1101-PALOVRDE    -1401-i_10 not existent or unavailable in the system. Use PSY.show_components(system, Line) to check valid component names"), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007fd6298e04b7, Ptr{Nothing} @0x00007fd629941655, Ptr{Nothing} @0x00007fd62994185d, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd6298faec4, Ptr{Nothing} @0x00007fd629901ca7, Ptr{Nothing} @0x00007fd62990425f, Ptr{Nothing} @0x00007fd62990472f, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd683b248f8, Ptr{Nothing} @0x00007fd6298f769b, Ptr{Nothing} @0x00007fd6298f781a, Ptr{Nothing} @0x00007fd6298f786a, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd698e14d64, Ptr{Nothing} @0x00007fd698e14787, Ptr{Nothing} @0x00007fd698e153d5, Ptr{Nothing} @0x00007fd698e162b1, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__sys_240bus at statement 8, Ptr{Nothing} @0x00007fd698e3116b, Ptr{Nothing} @0x00007fd698e319b9, Ptr{Nothing} @0x00007fd698e32d3a, Ptr{Nothing} @0x00007fd681de0837, Ptr{Nothing} @0x00007fd681de0afe, Ptr{Nothing} @0x00007fd681de14bf, Ptr{Nothing} @0x00007fd681de1b0f, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd683b248f8, Ptr{Nothing} @0x00007fd681de04d9, Ptr{Nothing} @0x00007fd681de063f, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd681ddf3c2, Ptr{Nothing} @0x00007fd681ddf3e6, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd681ddc524, Ptr{Nothing} @0x00007fd681ddd44e, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd698e09e20, Ptr{Nothing} @0x00007fd681d8cdfb, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd681d892be, Ptr{Nothing} @0x00007fd681d89cdf, Ptr{Nothing} @0x00007fd681d89e63, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd681d4ae85, Ptr{Nothing} @0x00007fd681d4afee, Ptr{Nothing} @0x00007fd681d4b458, Ptr{Nothing} @0x00007fd681d4b5a6, Ptr{Nothing} @0x00007fd681d4b5d2, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd698e14d64, Ptr{Nothing} @0x00007fd698e14787, Ptr{Nothing} @0x00007fd698e153d5, Ptr{Nothing} @0x00007fd698e162b1, Base.InterpreterIP in top-level CodeInfo for Main at statement 63, Ptr{Nothing} @0x00007fd698e3116b, Ptr{Nothing} @0x00007fd698e319b9, Ptr{Nothing} @0x00007fd698e32d3a, Ptr{Nothing} @0x00007fd6846d2e67, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd6844db30d, Ptr{Nothing} @0x00007fd683d3aaf3, Ptr{Nothing} @0x00007fd683d3ab0f, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd6847106aa, Ptr{Nothing} @0x00007fd68413d01f, Ptr{Nothing} @0x00007fd68413d128, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd698e5d845, Ptr{Nothing} @0x00007fd698e5e28e, Ptr{Nothing} @0x0000000000401068, Ptr{Nothing} @0x00007fd6999f1d8f, Ptr{Nothing} @0x00007fd6999f1e3f, Ptr{Nothing} @0x0000000000401098])
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:432
+┌ Info: 2023-06-26T18:15:13.955 [4469:1]: 
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     9.85s             819MiB    
+│                 Total measured:                     6.36s             334MiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    9.85s  100.0%    819MiB  100.0%
-│    Build Simulation Inputs                  1   8.01ms    0.1%   7.30MiB    0.9%
-│      Wrap Branches                          1   6.10μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1   4.59ms    0.0%   2.44MiB    0.3%
-│      Calculate MM, DAE_vector, Tota...      1    944μs    0.0%   1.90MiB    0.2%
-│      Wrap Static Injectors                  1    502μs    0.0%    288KiB    0.0%
-│    Pre-initialization                       1   36.0ms    0.4%   17.0MiB    2.1%
-│      Power Flow solution                    1   28.9ms    0.3%   13.0MiB    1.6%
-│      Initialize Static Injectors            1   1.00μs    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1   6.48ms    0.1%   3.75MiB    0.5%
-│    Calculate Jacobian                       1    7.87s   79.9%    610MiB   74.5%
-│    Make Model Function                      1   9.16ms    0.1%    126KiB    0.0%
-│    Initial Condition NLsolve refine...      1    1.31s   13.3%    169MiB   20.6%
-│    Build Perturbations                      1   19.5ms    0.2%    570KiB    0.1%
-│    Make DiffEq Problem                      1    587ms    6.0%   15.1MiB    1.8%
+│  Build Simulation                           1    6.36s  100.0%    334MiB  100.0%
+│    Build Simulation Inputs                  1   1.00ms    0.0%    225KiB    0.1%
+│      Wrap Branches                          1   7.00μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1    388μs    0.0%   43.9KiB    0.0%
+│      Calculate MM, DAE_vector, Tota...      1   31.1μs    0.0%   2.17KiB    0.0%
+│      Wrap Static Injectors                  1   78.5μs    0.0%   11.2KiB    0.0%
+│    Pre-initialization                       1   1.27ms    0.0%    326KiB    0.1%
+│      Power Flow solution                    1    799μs    0.0%    180KiB    0.1%
+│      Initialize Static Injectors            1   46.6μs    0.0%   3.16KiB    0.0%
+│      Initialize Dynamic Injectors           1    319μs    0.0%    129KiB    0.0%
+│    Calculate Jacobian                       1    4.87s   76.6%    317MiB   95.2%
+│    Make Model Function                      1   9.46ms    0.1%   95.7KiB    0.0%
+│    Initial Condition NLsolve refine...      1    1.25s   19.7%   11.8MiB    3.5%
+│    Build Perturbations                      1   21.4ms    0.3%    570KiB    0.2%
 │  ───────────────────────────────────────────────────────────────────────────────
 │ 
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:451
+┌ Error: 2023-06-26T18:15:14.663 [4469:1]: Execution failed
+│   exception = (ErrorException("The Simulation status is BUILD_FAILED. Can not continue, correct your inputs and build the simulation again."), Union{Ptr{Nothing}, Base.InterpreterIP}[Ptr{Nothing} @0x00007fd683d2c37b, Ptr{Nothing} @0x00007fd629943943, Ptr{Nothing} @0x00007fd629945086, Ptr{Nothing} @0x00007fd6299466a8, Ptr{Nothing} @0x00007fd629946938, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd683b248f8, Ptr{Nothing} @0x00007fd629942263, Ptr{Nothing} @0x00007fd6299422e6, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd698e14d64, Ptr{Nothing} @0x00007fd698e14787, Ptr{Nothing} @0x00007fd698e153d5, Ptr{Nothing} @0x00007fd698e162b1, Base.InterpreterIP in top-level CodeInfo for Main.__atexample__named__sys_240bus at statement 6, Ptr{Nothing} @0x00007fd698e3116b, Ptr{Nothing} @0x00007fd698e319b9, Ptr{Nothing} @0x00007fd698e32d3a, Ptr{Nothing} @0x00007fd681de0837, Ptr{Nothing} @0x00007fd681de0afe, Ptr{Nothing} @0x00007fd681de14bf, Ptr{Nothing} @0x00007fd681de1b0f, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd683b248f8, Ptr{Nothing} @0x00007fd681de04d9, Ptr{Nothing} @0x00007fd681de063f, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd681ddf3c2, Ptr{Nothing} @0x00007fd681ddf3e6, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd681ddc524, Ptr{Nothing} @0x00007fd681ddd44e, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd698e09e20, Ptr{Nothing} @0x00007fd681d8cdfb, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd681d892be, Ptr{Nothing} @0x00007fd681d89cdf, Ptr{Nothing} @0x00007fd681d89e63, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd681d4ae85, Ptr{Nothing} @0x00007fd681d4afee, Ptr{Nothing} @0x00007fd681d4b458, Ptr{Nothing} @0x00007fd681d4b5a6, Ptr{Nothing} @0x00007fd681d4b5d2, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd698e14d64, Ptr{Nothing} @0x00007fd698e14787, Ptr{Nothing} @0x00007fd698e153d5, Ptr{Nothing} @0x00007fd698e162b1, Base.InterpreterIP in top-level CodeInfo for Main at statement 63, Ptr{Nothing} @0x00007fd698e3116b, Ptr{Nothing} @0x00007fd698e319b9, Ptr{Nothing} @0x00007fd698e32d3a, Ptr{Nothing} @0x00007fd6846d2e67, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd6844db30d, Ptr{Nothing} @0x00007fd683d3aaf3, Ptr{Nothing} @0x00007fd683d3ab0f, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd6847106aa, Ptr{Nothing} @0x00007fd68413d01f, Ptr{Nothing} @0x00007fd68413d128, Ptr{Nothing} @0x00007fd698df8f1d, Ptr{Nothing} @0x00007fd698e5d845, Ptr{Nothing} @0x00007fd698e5e28e, Ptr{Nothing} @0x0000000000401068, Ptr{Nothing} @0x00007fd6999f1d8f, Ptr{Nothing} @0x00007fd6999f1e3f, Ptr{Nothing} @0x0000000000401098])
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:545
