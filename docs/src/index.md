@@ -18,7 +18,7 @@ distributed control of power converters in SmartGrids"](https://www.sciencedirec
 
 ## Installation
 
-The latest stable release of PowerSimulationsDynamics can be installed using the Julia package manager with
+The latest stable release of PowerSimulationsDynamics.jl can be installed using the Julia package manager with
 
 ```julia
 ] add PowerSimulationsDynamics
@@ -46,6 +46,6 @@ interfacing with distributed linear-solvers and GPU arrays.
 ``` ⠀
 
 ------------
-PowerSimulationsDynamics has been developed as part of the Scalable Integrated Infrastructure Planning
+PowerSimulationsDynamics.jl has been developed as part of the Scalable Integrated Infrastructure Planning
 (SIIP) initiative at the U.S. Department of Energy's National Renewable Energy
 Laboratory ([NREL](https://www.nrel.gov/))
