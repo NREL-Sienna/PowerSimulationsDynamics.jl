@@ -22,8 +22,8 @@ Check the [Project Section](https://github.com/NREL-Sienna/PowerSimulationsDynam
 
 ```julia
 julia> ]
-(v1.8) pkg> add PowerSystems
-(v1.8) pkg> add PowerSimulationsDynamics
+(v1.9) pkg> add PowerSystems
+(v1.9) pkg> add PowerSimulationsDynamics
 ```
 
 ## Usage
@@ -34,6 +34,19 @@ julia> ]
 using PowerSimulationsDynamics
 using PowerSystems
 ```
+
+## References
+
+The background work on `PowerSimulationsDynamics.jl` is explained in[Revisiting Power Systems Time-domain Simulation Methods and Models](https://arxiv.org/pdf/2301.10043.pdf)
+
+   ```bibtex
+   @article{lara2023revisiting,
+  title={Revisiting Power Systems Time-domain Simulation Methods and Models},
+  author={Lara, Jose Daniel and Henriquez-Auba, Rodrigo and Ramasubramanian, Deepak and Dhople, Sairaj and Callaway, Duncan S and Sanders, Seth},
+  journal={arXiv preprint arXiv:2301.10043},
+  year={2023}
+}
+   ```
 
 ## Development
 
