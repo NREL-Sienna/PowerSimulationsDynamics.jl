@@ -36,7 +36,7 @@ omib_sys = build_system(PSIDSystems, "OMIB System")
 
 ## Build the simulation and initialize the problem
 
-The next step is to create the simulation structure. This will create the indexing of our system that will be used to formulate the differential-algebraic system of equations. To do so, it is required to specify the perturbation that will occur in the system. `PowerSimulationsDynamics` supports multiple types of perturbations. See [`Perturbations`](@ref)
+The next step is to create the simulation structure. This will create the indexing of our system that will be used to formulate the differential-algebraic system of equations. To do so, it is required to specify the perturbation that will occur in the system. `PowerSimulationsDynamics` supports multiple types of perturbations. See [Perturbations](@ref)
 
 Here, we will use a Branch Trip perturbation, that is modeled by modifying the specifying which line we want to trip. In this case we disconnect one of the lines that connects BUS 1 and BUS 2, named "BUS 1-BUS 2-i_1".
 
