@@ -9,14 +9,15 @@ This tutorial briefly introduces how to create a system using `PowerSystems.jl` 
 ```@repl dyn_data
 using PowerSystems
 using PowerSimulationsDynamics
+using PowerSystemCaseBuilder
 const PSY = PowerSystems
 ```
 
-## Step 1: System description
+## System description
 
 Next we need to define the different elements required to run a simulation. To run a simulation in `PowerSimulationsDynamics`, it is required to define a `System` that contains the following components:
 
-## Static Components
+### Static Components
 
 We called static components to those that are used to run a Power Flow problem.
 
@@ -28,7 +29,7 @@ We called static components to those that are used to run a Power Flow problem.
  - The base of power used to define per unit values, in MVA as a `Float64` value.
  - The base frequency used in the system, in Hz as a `Float64` value.
 
-## Dynamic Components
+### Dynamic Components
 
 Dynamic components are those that define differential equations to run a transient simulation.
 
@@ -43,11 +44,10 @@ The following describes the system creation for the OMIB case.
 
 ## Static System creation
 
-To create the system you need to pass the location of the RAW file
+To create the system you need to load data from the raw filw
 
 ```@repl dyn_data
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "docs", "src", "tutorials", "data")
-omib_sys = System(joinpath(file_dir, "OMIB.raw"))
+omib_sys = build_system(PSYTestSystems, "psse_OMIB_sys")
 ```
 
 This system does not have an injection device in bus 1 (the reference bus).
