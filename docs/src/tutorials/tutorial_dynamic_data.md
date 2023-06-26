@@ -16,6 +16,7 @@ const PSY = PowerSystems;
 
 !!! note
     `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
+    For more details visit [PowerSystemCaseBuilder Documentation](https://nrel-sienna.github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/)
 
 ## System description
 
@@ -139,7 +140,7 @@ Then we can serialize our system data to a json file that can be later read as:
 
 ```@repl dyn_data
 file_dir = @__DIR__ #hide
-to_json(omib_sys, joinpath(file_dir, "omib_sys.json"), force = true)
+to_json(sys, joinpath(file_dir, "modified_sys.json"), force = true)
 ```
 
 ## Dynamic Lines case: Data creation

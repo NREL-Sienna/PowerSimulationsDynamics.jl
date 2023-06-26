@@ -1,4 +1,4 @@
-# Inverter Modeling simulation with [PowerSimulationsDynamics.jl](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl)
+# Inverter Modeling simulation
 
 **Originally Contributed by**: José Daniel Lara
 
@@ -25,6 +25,8 @@ using Plots
 
 !!! note
     `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
+    For more details visit [PowerSystemCaseBuilder Documentation](https://nrel-sienna.
+    github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/)
 
 Create the system
 
