@@ -16,9 +16,13 @@ It is recommended to check the OMIB tutorial first, since that includes more det
 using PowerSimulationsDynamics
 using PowerSystems
 using PowerNetworkMatrices
+using PowerSystemCaseBuilder
 using Sundials
 using Plots
 ```
+
+!!! note
+    `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
 
 ### Step 2: Data creation
 

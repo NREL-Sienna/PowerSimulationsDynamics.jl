@@ -1,4 +1,4 @@
-# One Machine against Infinite Bus (OMIB) simulation with [PowerSimulationsDynamics.jl](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl)
+# One Machine against Infinite Bus (OMIB) Simulation
 
 **Originally Contributed by**: Rodrigo Henriquez-Auba and José Daniel Lara
 
@@ -13,12 +13,17 @@ This tutorial presents a simulation of a two-bus system with an infinite bus (re
 
 ```@repl tutorial_omib
 using PowerSimulationsDynamics
+PSID = PowerSimulationsDynamics
+using PowerSystemCaseBuilder
 using PowerSystems
+const PSY = PowerSystems
 using Sundials
 using Plots
 gr()
-PSID = PowerSimulationsDynamics
 ```
+
+!!! note
+    `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
 
 `PowerSystems` (abbreviated with `PSY`) is used to properly define the data structure and establish an equilibrium point initial condition with a power flow routine, while `Sundials` is used to solve the problem defined in `PowerSimulationsDynamics`.
 
@@ -30,7 +35,7 @@ omib_sys = build_system(PSIDSystems, "OMIB System")
 
 ## Build the simulation and initialize the problem
 
-The next step is to create the simulation structure. This will create the indexing of our system that will be used to formulate the differential-algebraic system of equations. To do so, it is required to specify the perturbation that will occur in the system. `PowerSimulationsDynamics` supports multiple types of perturbations. See [`Perturbations`]()
+The next step is to create the simulation structure. This will create the indexing of our system that will be used to formulate the differential-algebraic system of equations. To do so, it is required to specify the perturbation that will occur in the system. `PowerSimulationsDynamics` supports multiple types of perturbations. See [`Perturbations`](@ref)
 
 Here, we will use a Branch Trip perturbation, that is modeled by modifying the specifying which line we want to trip. In this case we disconnect one of the lines that connects BUS 1 and BUS 2, named "BUS 1-BUS 2-i_1".
 
@@ -76,7 +81,8 @@ results = read_results(sim)
 ```
 
 `PowerSimulationsDynamics` has two functions to obtain different states of the solution:
- - `get_state_series(results, ("generator-102-1", :δ))`: can be used to obtain the solution as a tuple of time and the required state. In this case, we are obtaining the rotor angle `:δ` of the generator named "generator-102-1"`.
+
+- `get_state_series(results, ("generator-102-1", :δ))`: can be used to obtain the solution as a tuple of time and the required state. In this case, we are obtaining the rotor angle `:δ` of the generator named "generator-102-1"`.
 
 ```@repl tutorial_omib
 angle = get_state_series(results, ("generator-102-1", :δ));
@@ -85,7 +91,7 @@ plot(angle, xlabel = "time", ylabel = "rotor angle [rad]", label = "rotor angle"
 
 ![plot](figs/omib_angle.svg)
 
- - `get_voltage_magnitude_series(results, 102)`: can be used to obtain the voltage magnitude as a tuple of time and voltage. In this case, we are obtaining the voltage magnitude at bus 102 (where the generator is located).
+- `get_voltage_magnitude_series(results, 102)`: can be used to obtain the voltage magnitude as a tuple of time and voltage. In this case, we are obtaining the voltage magnitude at bus 102 (where the generator is located).
 
 ```@repl tutorial_omib
 volt = get_voltage_magnitude_series(results, 102);

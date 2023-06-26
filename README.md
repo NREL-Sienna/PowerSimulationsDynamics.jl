@@ -37,7 +37,7 @@ using PowerSystems
 
 ## References
 
-The background work on `PowerSimulationsDynamics.jl` is explained in[Revisiting Power Systems Time-domain Simulation Methods and Models](https://arxiv.org/pdf/2301.10043.pdf)
+The background work on `PowerSimulationsDynamics.jl` is explained in [Revisiting Power Systems Time-domain Simulation Methods and Models](https://arxiv.org/pdf/2301.10043.pdf)
 
 ```bibtex
    @article{lara2023revisiting,

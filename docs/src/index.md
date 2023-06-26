@@ -16,14 +16,14 @@ Inverter models support both commercial models, such as REPC, REEC and REGC type
 from grid-following and grid-forming literature such as in ["A Virtual Synchronous Machine implementation for
 distributed control of power converters in SmartGrids"](https://www.sciencedirect.com/science/article/pii/S0378779615000024)
 
-The background work on `PowerSimulationsDynamics.jl` is explained in[Revisiting Power Systems Time-domain Simulation Methods and Models](https://arxiv.org/pdf/2301.10043.pdf)
+The background work on `PowerSimulationsDynamics.jl` is explained in [Revisiting Power Systems Time-domain Simulation Methods and Models](https://arxiv.org/pdf/2301.10043.pdf)
 
 ```bibtex
-   @article{lara2023revisiting,
-  title={Revisiting Power Systems Time-domain Simulation Methods and Models},
-  author={Lara, Jose Daniel and Henriquez-Auba, Rodrigo and Ramasubramanian, Deepak and Dhople, Sairaj and Callaway, Duncan S and Sanders, Seth},
-  journal={arXiv preprint arXiv:2301.10043},
-  year={2023}
+@article{lara2023revisiting,
+title={Revisiting Power Systems Time-domain Simulation Methods and Models},
+author={Lara, Jose Daniel and Henriquez-Auba, Rodrigo and Ramasubramanian, Deepak and Dhople, Sairaj and Callaway, Duncan S and Sanders, Seth},
+journal={arXiv preprint arXiv:2301.10043},
+year={2023}
 }
 ```
 
@@ -49,8 +49,7 @@ all self-contained and return the model function evaluations. The Jacobian is ca
 using automatic differentiation through `ForwardDiff.jl`, that is used for both numerical
 integration and small signal analysis. Considering that the resulting models are differential-algebraic
 equations (DAE), the implementation focuses on the use of implicit solvers, in particular
-BDF and Rosenbrock methods since it has exceptional features applicable to large models — for instance,
-interfacing with distributed linear-solvers and GPU arrays.
+BDF and Rosenbrock methods.
 
 ```@raw html
 <img src="./assets/SoftwareLoop.jpg" width="65%"/>

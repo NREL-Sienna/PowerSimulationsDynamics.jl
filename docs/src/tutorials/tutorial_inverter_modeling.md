@@ -14,13 +14,17 @@ In the first portion of the tutorial we will simulate the system with the origin
 
 ```@repl inv_sys
 using PowerSimulationsDynamics
+using PowerSystemCaseBuilder
 using PowerSystems
+const PSY = PowerSystems
 using PowerFlows
 using Logging
 using Sundials
 using Plots
-const PSY = PowerSystems
 ```
+
+!!! note
+    `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
 
 Create the system
 
@@ -28,13 +32,16 @@ Create the system
 sys = build_system(PSIDSystems, "14 Bus Base Case")
 ```
 
+`PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system
+data.
+
 Define Simulation Problem with a 20 second simulation period and the branch trip at t = 1.0:
 
 ```@repl inv_sys
 sim = Simulation(
     ResidualModel, #Type of model used
     sys,         #system
-    file_dir,       #path for the simulation output
+    mktempdir(),       #path for the simulation output
     (0.0, 20.0), #time span
     BranchTrip(1.0, Line, "BUS 02-BUS 04-i_1");
     console_level = Logging.Info,
@@ -188,7 +195,7 @@ Define Simulation problem using the same parameters:
 sim = Simulation(
     ResidualModel, #Type of model used
     sys,         #system
-    file_dir,       #path for the simulation output
+    mktempdir(),       #path for the simulation output
     (0.0, 20.0), #time span
     BranchTrip(1.0, Line, "BUS 02-BUS 04-i_1");
     console_level = Logging.Info,
