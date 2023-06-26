@@ -1,24 +1,23 @@
 # Quick Start Guide
 
-You can access example data in the [Power Systems Test Data Repository](https://github.com/nrel-sienna/PowerSystemsTestData),
-the data can be downloaded with the `PowerSystems.jl` submodule `UtilsData`. Some systems are already provided in [PowerSystemCaseBuilder](https://github.com/nrel-sienna/PowerSystemCaseBuilder.jl).
+The data for these tutorials is provided in [PowerSystemCaseBuilder](https://github.com/nrel-sienna/PowerSystemCaseBuilder.jl). If you want to build your own case, take a look at the tutorial [Creating and Handling Data for Dynamic Simulations](@ref)
+
+For more details about loading data and adding more dynamic components check the
+[Creating a System with Dynamic devices](https://nrel-sienna.github.io/PowerSystems.jl/stable/modeler_guide/system_dynamic_data/)
+section of the documentation in `PowerSystems.jl`.
 
 ## Loading data
 
 Data can be loaded from a pss/e raw file and a pss/e dyr file.
 
 ```@repl quick_start_guide
-using PowerSystems, PowerSimulationsDynamics, PowerSystemCaseBuilder, Sundials, Plots, Logging
-logger = configure_logging(console_level = Logging.Error, file_level = Logging.Info)
-omib_sys = PowerSystemCaseBuilder.build_system(
-                PowerSystemCaseBuilder.PSSETestSystems,
-                "psse_OMIB_sys",
-                )
-```
+using PowerSystems
+using PowerSimulationsDynamics
+using PowerSystemCaseBuilder
+using Sundials
 
-For more details about loading data and adding more dynamic components check the
-[Creating a System with Dynamic devices](https://nrel-sienna.github.io/PowerSystems.jl/stable/modeler_guide/system_dynamic_data/)
-section of the documentation in `PowerSystems.jl`.
+omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
+```
 
 ## Define the Simulation
 
