@@ -45,7 +45,7 @@ To start we will define the data structures for the network.
 
 ## Three Bus case manual data creation
 
-The following describes the system creation for these dynamic simulation case.
+The following describes the system creation for this dynamic simulation case.
 
 ## Static System creation
 
