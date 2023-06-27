@@ -17,6 +17,7 @@ struct SimulationInputs
     mass_matrix::LinearAlgebra.Diagonal{Float64}
     global_vars_update_pointers::Dict{Int, Int}
     global_state_map::MAPPING_DICT
+    global_inner_var_map::Dict{String, Dict}
 
     function SimulationInputs(
         sys::PSY.System,
@@ -89,6 +90,7 @@ struct SimulationInputs
             mass_matrix,
             global_vars,
             MAPPING_DICT(),
+            Dict{String, Dict}()
         )
     end
 end

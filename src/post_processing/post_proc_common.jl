@@ -23,6 +23,27 @@ function make_global_state_map(inputs::SimulationInputs)
     return dic
 end
 
+function _get_inner_vars_map(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicGenerator}
+    index = get_inner_vars_index(wrapper)
+    inner_vars_enums = instances(generator_inner_vars)
+    return Dict(inner_vars_enums .=> index)
+end
+
+function _get_inner_vars_map(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter}
+    index = get_inner_vars_index(wrapper)
+    inner_vars_enums = instances(inverter_inner_vars)
+    return Dict(inner_vars_enums .=> index)
+end
+
+function make_inner_vars_map(inputs::SimulationInputs)
+    map = inputs.global_inner_var_map
+    device_wrappers = get_dynamic_injectors(inputs)
+    for d in device_wrappers
+        map[PSY.get_name(d.device)] = _get_inner_vars_map(d)
+    end
+    return map
+end
+
 function get_state_from_ix(global_index::MAPPING_DICT, idx::Int)
     for (name, device_ix) in global_index
         if idx ∈ values(device_ix)
