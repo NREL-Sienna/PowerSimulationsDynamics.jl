@@ -45,11 +45,11 @@ To start we will define the data structures for the network.
 
 ## Three Bus case manual data creation
 
-The following describes the system creation for the OMIB case.
+The following describes the system creation for these dynamic simulation case.
 
 ## Static System creation
 
-To create the system you need to load data from the raw file
+To create the system you need to load data using `PowerSystemCaseBuilder.jl`. This system was originally created from following [raw file](https://github.com/NREL-Sienna/PowerSystemsTestData/blob/master/psid_tests/data_tests/ThreeBusInverter.raw).  
 
 ```@repl dyn_data
 sys = build_system(PSIDSystems, "3 Bus Inverter Base"; force_build=true)

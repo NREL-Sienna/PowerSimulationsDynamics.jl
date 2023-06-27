@@ -27,6 +27,8 @@ using Plots
 
 ### Step 2: Data creation
 
+Load the system using `PowerSystemCaseBuilder.jl`:
+
 ```@repl dyn_lines
 threebus_sys = build_system(PSIDSystems, "Three Bus Dynamic data Example System")
 ```
