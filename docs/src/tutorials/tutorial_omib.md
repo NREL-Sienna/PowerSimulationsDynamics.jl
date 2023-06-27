@@ -30,6 +30,8 @@ gr()
 
 ## Load the system
 
+We load the system using `PowerSystemCaseBuilder.jl`:
+
 ```@repl tutorial_omib
 omib_sys = build_system(PSIDSystems, "OMIB System")
 ```

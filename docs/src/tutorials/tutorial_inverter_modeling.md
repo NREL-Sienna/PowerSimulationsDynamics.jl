@@ -28,14 +28,13 @@ using Plots
     For more details visit [PowerSystemCaseBuilder Documentation](https://nrel-sienna.
     github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/)
 
-Create the system
+Create the system using `PowerSystemCaseBuilder.jl`:
 
 ```@repl inv_sys
 sys = build_system(PSIDSystems, "14 Bus Base Case")
 ```
 
-`PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system
-data.
+`PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data.
 
 Define Simulation Problem with a 20 second simulation period and the branch trip at t = 1.0:
 
@@ -116,7 +115,7 @@ res.eigenvalues
 Reload the system for this example:
 
 ```@repl inv_sys
-sys = build_system(PSIDS)
+sys = build_system(PSIDSystems, "14 Bus Base Case")
 
 # We want to remove the generator 6 and the dynamic component attached to it.
 thermal_gen = get_component(ThermalStandard, sys, "generator-6-1")

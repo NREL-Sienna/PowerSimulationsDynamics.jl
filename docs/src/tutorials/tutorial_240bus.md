@@ -22,6 +22,8 @@ using OrdinaryDiffEq
 
 ## Load the system and transform load data
 
+To load the system we use `PowerSystemCaseBuilder.jl`:
+
 ```@repl sys_240bus
 # We remove the checks in this example to avoid large prints
 sys = build_system(PSIDSystems, "WECC 240 Bus"; runchecks = false)
