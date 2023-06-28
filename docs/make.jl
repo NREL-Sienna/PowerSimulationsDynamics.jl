@@ -14,6 +14,8 @@ makedocs(;
             "Dynamic Lines Simulation" => "tutorials/tutorial_dynamic_lines.md",
             "Inverter Modeling" => "tutorials/tutorial_inverter_modeling.md",
             "240 WECC solver comparison" => "tutorials/tutorial_240bus.md",
+            "Small-Signal Analysis" => "tutorials/tutorial_continuation_pf.md",
+            "Active Load Model" => "tutorials/tutorial_activeload.md",
         ],
         "Models" => "models.md",
         "Initialization" => "initialization.md",
