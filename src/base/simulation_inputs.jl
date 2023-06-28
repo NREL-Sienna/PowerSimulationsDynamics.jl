@@ -90,7 +90,7 @@ struct SimulationInputs
             mass_matrix,
             global_vars,
             MAPPING_DICT(),
-            Dict{String, Dict}()
+            Dict{String, Dict}(),
         )
     end
 end
