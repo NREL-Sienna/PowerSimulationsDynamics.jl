@@ -1,8 +1,8 @@
-#[PSSE 240 Bus Case system with Renewables](https://www.nrel.gov/grid/test-case-repository.html)
+# [PSSE 240 Bus Case system with Renewables](https://www.nrel.gov/grid/test-case-repository.html)
 
 **Originally Contributed by**: José Daniel Lara
 
-# Introduction
+## Introduction
 
 This tutorial will introduce the industry models of Renewable Energy the comparisons between DiffEq Integration techniques for comparison. We show the uses of Sundials and OrdinaryDiffEq to obtain the transient response of a system to a perturbation.
 
@@ -10,19 +10,25 @@ This tutorial will introduce the industry models of Renewable Energy the compari
 using PowerSimulationsDynamics
 using PowerSystemCaseBuilder
 using PowerSystems
+const PSY = PowerSystems
 using Sundials
 using Plots
 using OrdinaryDiffEq
-const PSY = PowerSystems
 ```
 
-## Load the system
+!!! note
+    `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
+    For more details visit [PowerSystemCaseBuilder Documentation](https://nrel-sienna.github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/)
+
+## Load the system and transform load data
+
+To load the system we use `PowerSystemCaseBuilder.jl`:
 
 ```@repl sys_240bus
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "test", "data_tests")
-sys = System(joinpath(file_dir, "WECC_240_dynamic.json"); runchecks = false)
-# Transform loads to constant impedance
-include(joinpath(pkgdir(PowerSimulationsDynamics), "test/utils/get_results.jl"))
+# We remove the checks in this example to avoid large prints
+sys = build_system(PSIDSystems, "WECC 240 Bus"; runchecks = false)
+
+# Transform the system's load
 for l in get_components(PSY.StandardLoad, sys)
     transform_load_to_constant_impedance(l)
 end

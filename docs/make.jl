@@ -11,8 +11,8 @@ makedocs(;
         "Tutorials" => Any[
             "Create Dynamic Data" => "tutorials/tutorial_dynamic_data.md",
             "OMIB" => "tutorials/tutorial_omib.md",
-            "Dynamic Lines simulation" => "tutorials/tutorial_dynamic_lines.md",
-            "Inverter modeling" => "tutorials/tutorial_inverter_modeling.md",
+            "Dynamic Lines Simulation" => "tutorials/tutorial_dynamic_lines.md",
+            "Inverter Modeling" => "tutorials/tutorial_inverter_modeling.md",
             "240 WECC solver comparison" => "tutorials/tutorial_240bus.md",
         ],
         "Models" => "models.md",

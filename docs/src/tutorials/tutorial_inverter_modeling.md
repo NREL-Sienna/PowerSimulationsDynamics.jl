@@ -1,4 +1,4 @@
-# Inverter Modeling simulation with [PowerSimulationsDynamics.jl](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl)
+# Inverter Modeling simulation
 
 **Originally Contributed by**: José Daniel Lara
 
@@ -14,24 +14,27 @@ In the first portion of the tutorial we will simulate the system with the origin
 
 ```@repl inv_sys
 using PowerSimulationsDynamics
+using PowerSystemCaseBuilder
 using PowerSystems
+const PSY = PowerSystems
 using PowerFlows
 using Logging
 using Sundials
 using Plots
-const PSY = PowerSystems
 ```
 
-Create the system
+!!! note
+    `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
+    For more details visit [PowerSystemCaseBuilder Documentation](https://nrel-sienna.
+    github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/)
+
+Create the system using `PowerSystemCaseBuilder.jl`:
 
 ```@repl inv_sys
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "docs", "src", "tutorials", "data")
-sys = System(joinpath(file_dir, "14bus.raw"), joinpath(file_dir, "dyn_data.dyr"), runchecks = false)
-include(joinpath(pkgdir(PowerSimulationsDynamics), "test/utils/get_results.jl"))
-for l in get_components(StandardLoad, sys) # hide
-    transform_load_to_constant_impedance(l) # hide
-end # hide
+sys = build_system(PSIDSystems, "14 Bus Base Case")
 ```
+
+`PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data.
 
 Define Simulation Problem with a 20 second simulation period and the branch trip at t = 1.0:
 
@@ -39,7 +42,7 @@ Define Simulation Problem with a 20 second simulation period and the branch trip
 sim = Simulation(
     ResidualModel, #Type of model used
     sys,         #system
-    file_dir,       #path for the simulation output
+    mktempdir(),       #path for the simulation output
     (0.0, 20.0), #time span
     BranchTrip(1.0, Line, "BUS 02-BUS 04-i_1");
     console_level = Logging.Info,
@@ -112,12 +115,7 @@ res.eigenvalues
 Reload the system for this example:
 
 ```@repl inv_sys
-sys = System(joinpath(file_dir, "14bus.raw"), joinpath(file_dir, "dyn_data.dyr"), runchecks = false)
-# Transform loads to constant impedance
-include(joinpath(pkgdir(PowerSimulationsDynamics), "test/utils/get_results.jl"))
-for l in get_components(StandardLoad, sys)
-    transform_load_to_constant_impedance(l)
-end
+sys = build_system(PSIDSystems, "14 Bus Base Case")
 
 # We want to remove the generator 6 and the dynamic component attached to it.
 thermal_gen = get_component(ThermalStandard, sys, "generator-6-1")
@@ -198,7 +196,7 @@ Define Simulation problem using the same parameters:
 sim = Simulation(
     ResidualModel, #Type of model used
     sys,         #system
-    file_dir,       #path for the simulation output
+    mktempdir(),       #path for the simulation output
     (0.0, 20.0), #time span
     BranchTrip(1.0, Line, "BUS 02-BUS 04-i_1");
     console_level = Logging.Info,

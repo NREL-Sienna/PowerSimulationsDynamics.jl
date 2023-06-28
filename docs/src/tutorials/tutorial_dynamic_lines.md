@@ -1,4 +1,4 @@
-# Line Modeling simulation with [PowerSimulationsDynamics.jl](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl)
+# Line Modeling Simulations
 
 **Originally Contributed by**: Rodrigo Henriquez-Auba and José Daniel Lara
 
@@ -16,15 +16,21 @@ It is recommended to check the OMIB tutorial first, since that includes more det
 using PowerSimulationsDynamics
 using PowerSystems
 using PowerNetworkMatrices
+using PowerSystemCaseBuilder
 using Sundials
 using Plots
 ```
 
+!!! note
+    `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
+    For more details visit [PowerSystemCaseBuilder Documentation](https://nrel-sienna.github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/)
+
 ### Step 2: Data creation
 
+Load the system using `PowerSystemCaseBuilder.jl`:
+
 ```@repl dyn_lines
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "docs", "src", "tutorials", "data")
-threebus_sys = System(joinpath(file_dir, "threebus_sys.json"));
+threebus_sys = build_system(PSIDSystems, "Three Bus Dynamic data Example System")
 ```
 
 In addition, we will create a new copy of the system on which we will simulate the same case, but will consider dynamic lines:
@@ -78,7 +84,7 @@ sim = Simulation(
 We can obtain the initial conditions as:
 
 ```@repl dyn_lines
-#Will print the initial states. It also give the symbols used to describe those states.
+#Print the initial states. It also give the symbols used to describe those states.
 show_states_initial_value(sim)
 ```
 
@@ -168,7 +174,7 @@ execute!(
 We can obtain the initial conditions as:
 
 ```@repl dyn_lines
-#Will print the initial states. It also give the symbols used to describe those states.
+#Print the initial states. It also give the symbols used to describe those states.
 show_states_initial_value(sim_dyn)
 ```
 
@@ -183,7 +189,7 @@ zoom_dyn = [
 ];
 ```
 
-# Step 6.1: Compare the solutions:
+### Step 6.1: Compare the solutions:
 
 We can observe the effect of Dynamic Lines
 
