@@ -355,16 +355,8 @@ mutable struct NetworkSwitch <: Perturbation
         ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int},
     )
         n_bus = size(ybus)[1]
-        if n_bus < 15_000
-            I = PNM._goderya(ybus)
-            if length(Set(I)) != n_bus
-                error("The Ybus provided has islands and can't be used in the simulation")
-            end
-        else
-            @warn(
-                "The number of buses in the Ybus provided is $n_bus and is too large to be verified for connectivity"
-            )
-        end
+        sub_nets = PNM.find_subnetworks(ybus, collect(1:n_bus))
+        length(sub_nets) > 1 && throw(IS.DataFormatError("Network not connected"))
         # TODO: Improve performance here
         ybus_rect = transform_ybus_to_rectangular(ybus)
         new(time, ybus_rect)
@@ -593,7 +585,7 @@ mutable struct LoadChange <: Perturbation
         signal::Symbol,
         ref_value::Float64,
     )
-        # Currently I'm assumming P_ref and Q_ref are constant impedance to 
+        # Currently I'm assumming P_ref and Q_ref are constant impedance to
         if signal ∈ [:P_ref, :Q_ref]
             @warn(
                 "P_ref and Q_ref signals will be deprecated. It will be assumed as a change in constant impedance for StandardLoads and a change in constant power for PowerLoads. Allowed signals are $(ACCEPTED_LOADCHANGE_REFS)"
@@ -617,7 +609,8 @@ function _find_device_index(inputs::SimulationInputs, device::PSY.ElectricLoad)
     return wrapped_device_ixs[1]
 end
 
-function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
+function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadChange)
+    sys_base_power = PSY.get_base_power(sys)
     wrapped_device_ix = _find_zip_load_ix(inputs, pert.device)
     ld = pert.device
     if !PSY.get_available(ld)
@@ -628,14 +621,15 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
     signal = pert.signal
     if isa(ld, PSY.PowerLoad)
         return (integrator) -> begin
+            base_power_conversion = PSY.get_base_power(ld) / sys_base_power
             P_old = PSY.get_active_power(ld)
             Q_old = PSY.get_reactive_power(ld)
             P_change = 0.0
             Q_change = 0.0
             if signal ∈ [:P_ref, :P_ref_power]
-                P_change = ref_value - P_old
+                P_change = (ref_value - P_old) * base_power_conversion
             elseif signal ∈ [:Q_ref, :Q_ref_power]
-                Q_change = ref_value - Q_old
+                Q_change = ref_value - Q_old * base_power_conversion
             else
                 error(
                     "Signal is not accepted for Constant PowerLoad. Please specify the correct signal type.",
@@ -651,36 +645,37 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadChange)
         end
     elseif isa(ld, PSY.StandardLoad)
         return (integrator) -> begin
+            base_power_conversion = PSY.get_base_power(ld) / sys_base_power
             wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
             # List all cases for StandardLoad changes
             if signal ∈ [:P_ref, :P_ref_impedance]
                 P_old = PSY.get_impedance_active_power(ld)
-                P_change = ref_value - P_old
+                P_change = (ref_value - P_old) * base_power_conversion
                 P_impedance = get_P_impedance(wrapped_zip)
                 set_P_impedance!(wrapped_zip, P_impedance + P_change)
             elseif signal ∈ [:Q_ref, :Q_ref_impedance]
                 Q_old = PSY.get_impedance_reactive_power(ld)
-                Q_change = ref_value - Q_old
+                Q_change = (ref_value - Q_old) * base_power_conversion
                 Q_impedance = get_Q_impedance(wrapped_zip)
                 set_Q_impedance!(wrapped_zip, Q_impedance + Q_change)
             elseif signal == :P_ref_power
                 P_old = PSY.get_constant_active_power(ld)
-                P_change = ref_value - P_old
+                P_change = (ref_value - P_old) * base_power_conversion
                 P_power = get_P_power(wrapped_zip)
                 set_P_power!(wrapped_zip, P_power + P_change)
             elseif signal == :Q_ref_power
                 Q_old = PSY.get_constant_reactive_power(ld)
-                Q_change = ref_value - Q_old
+                Q_change = (ref_value - Q_old) * base_power_conversion
                 Q_power = get_Q_power(wrapped_zip)
                 set_Q_power!(wrapped_zip, Q_power + Q_change)
             elseif signal == :P_ref_current
                 P_old = PSY.get_current_active_power(ld)
-                P_change = ref_value - P_old
+                P_change = (ref_value - P_old) * base_power_conversion
                 P_current = get_P_current(wrapped_zip)
                 set_P_current!(wrapped_zip, P_current + P_change)
             elseif signal == :Q_ref_current
                 Q_old = PSY.get_current_reactive_power(ld)
-                Q_change = ref_value - Q_old
+                Q_change = (ref_value - Q_old) * base_power_conversion
                 Q_current = get_Q_current(wrapped_zip)
                 set_Q_current!(wrapped_zip, Q_current + Q_change)
             else
@@ -728,7 +723,8 @@ mutable struct LoadTrip <: Perturbation
     device::PSY.ElectricLoad
 end
 
-function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
+function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadTrip)
+    sys_base_power = PSY.get_base_power(sys)
     wrapped_device_ix = _find_zip_load_ix(inputs, pert.device)
     ld = pert.device
     if !PSY.get_available(ld)
@@ -736,8 +732,9 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
         return
     end
     if isa(ld, PSY.PowerLoad)
-        P_trip = PSY.get_active_power(ld)
-        Q_trip = PSY.get_reactive_power(ld)
+        base_power_conversion = PSY.get_base_power(ld) / sys_base_power
+        P_trip = PSY.get_active_power(ld) * base_power_conversion
+        Q_trip = PSY.get_reactive_power(ld) * base_power_conversion
         return (integrator) -> begin
             PSY.set_available!(ld, false)
             wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
@@ -749,12 +746,13 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
             return
         end
     elseif isa(ld, PSY.StandardLoad)
-        P_power_trip = PSY.get_constant_active_power(ld)
-        Q_power_trip = PSY.get_constant_reactive_power(ld)
-        P_current_trip = PSY.get_current_active_power(ld)
-        Q_current_trip = PSY.get_current_reactive_power(ld)
-        P_impedance_trip = PSY.get_impedance_active_power(ld)
-        Q_impedance_trip = PSY.get_impedance_reactive_power(ld)
+        base_power_conversion = PSY.get_base_power(ld) / sys_base_power
+        P_power_trip = PSY.get_constant_active_power(ld) * base_power_conversion
+        Q_power_trip = PSY.get_constant_reactive_power(ld) * base_power_conversion
+        P_current_trip = PSY.get_current_active_power(ld) * base_power_conversion
+        Q_current_trip = PSY.get_current_reactive_power(ld) * base_power_conversion
+        P_impedance_trip = PSY.get_impedance_active_power(ld) * base_power_conversion
+        Q_impedance_trip = PSY.get_impedance_reactive_power(ld) * base_power_conversion
         return (integrator) -> begin
             PSY.set_available!(ld, false)
             wrapped_zip = get_static_loads(integrator.p)[wrapped_device_ix]
@@ -763,7 +761,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::LoadTrip)
             Q_power = get_Q_power(wrapped_zip)
             set_P_power!(wrapped_zip, P_power - P_power_trip)
             set_Q_power!(wrapped_zip, Q_power - Q_power_trip)
-            # Update Constant Current 
+            # Update Constant Current
             P_current = get_P_current(wrapped_zip)
             Q_current = get_Q_current(wrapped_zip)
             set_P_current!(wrapped_zip, P_current - P_current_trip)

@@ -91,7 +91,7 @@ end
 Builds the simulation object and conducts the indexing process. The original system is not modified and a copy its created and stored in the Simulation.
 
 # Arguments:
-- `::SimulationModel` : Type of Simulation Model. `ResidualModel` or `MassMatrixModel`. See [Models Section](https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/models/) for more details
+- `::SimulationModel` : Type of Simulation Model. `ResidualModel` or `MassMatrixModel`. See [Models Section](https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable/models/) for more details
 - `system::PowerSystems.System` : System data
 - `simulation_folder::String` : Folder directory
 - `tspan::NTuple{2, Float64}` : Time span for simulation
@@ -148,7 +148,7 @@ end
 Builds the simulation object and conducts the indexing process. The initial conditions are stored in the system.
 
 # Arguments:
-- `::SimulationModel` : Type of Simulation Model. `ResidualModel` or `MassMatrixModel`. See [Models Section](https://nrel-siip.github.io/PowerSimulationsDynamics.jl/stable/models/) for more details
+- `::SimulationModel` : Type of Simulation Model. `ResidualModel` or `MassMatrixModel`. See [Models Section](https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable/models/) for more details
 - `system::PowerSystems.System` : System data
 - `simulation_folder::String` : Folder directory
 - `tspan::NTuple{2, Float64}` : Time span for simulation
@@ -196,13 +196,14 @@ function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
     sim.inputs = SimulationInputs(T, get_system(sim), sim.frequency_reference)
     sim.status = BUILD_INCOMPLETE
+    sim.initialized = false
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
 end
 
 function configure_logging(sim::Simulation, file_mode; kwargs...)
-    return IS.configure_logging(
+    return IS.configure_logging(;
         console = true,
         console_stream = stderr,
         console_level = get(kwargs, :console_level, sim.console_level),
@@ -301,16 +302,28 @@ function _build_perturbations!(sim::Simulation)
     perturbations = sim.perturbations
     perturbations_count = length(perturbations)
     callback_vector = Vector{SciMLBase.DiscreteCallback}(undef, perturbations_count)
-    tstops = Vector{Float64}(undef, perturbations_count)
+    tstops = Float64[]
     for (ix, pert) in enumerate(perturbations)
-        @debug pert
-        condition = (x, t, integrator) -> t in [pert.time]
-        affect = get_affect(inputs, get_system(sim), pert)
-        callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
-        tstops[ix] = pert.time
+        _add_callback!(tstops, callback_vector, ix, pert, sim, inputs)
     end
     sim.tstops = tstops
     sim.callbacks = callback_vector
+    return
+end
+
+function _add_callback!(
+    tstops::Vector{Float64},
+    callback_vector::Vector{SciMLBase.DiscreteCallback},
+    ix::Int,
+    pert::T,
+    sim::Simulation,
+    inputs::SimulationInputs,
+) where {T <: Perturbation}
+    @debug pert
+    condition = (x, t, integrator) -> t in [pert.time]
+    affect = get_affect(inputs, get_system(sim), pert)
+    callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
+    push!(tstops, pert.time)
     return
 end
 
@@ -332,7 +345,7 @@ function _get_diffeq_problem(
         dx0,
         x0,
         get_tspan(sim),
-        simulation_inputs,
+        simulation_inputs;
         differential_vars = get_DAE_vector(simulation_inputs),
     )
     sim.status = BUILT
@@ -347,7 +360,7 @@ function _get_diffeq_problem(
     simulation_inputs = get_simulation_inputs(sim)
     sim.problem = SciMLBase.ODEProblem(
         SciMLBase.ODEFunction{true}(
-            model,
+            model;
             mass_matrix = get_mass_matrix(simulation_inputs),
             jac = jacobian,
             jac_prototype = jacobian.Jv,
@@ -427,16 +440,16 @@ function build!(sim; kwargs...)
     logger = configure_logging(sim, "w")
     Logging.with_logger(logger) do
         _build!(sim; kwargs...)
-        if sim.status == BUILT
-            string_buffer = IOBuffer()
-            TimerOutputs.print_timer(
-                string_buffer,
-                BUILD_TIMER,
-                sortby = :firstexec,
-                compact = true,
-            )
-            @info "\n$(String(take!(string_buffer)))\n"
-        end
+        #if sim.status == BUILT
+        string_buffer = IOBuffer()
+        TimerOutputs.print_timer(
+            string_buffer,
+            BUILD_TIMER;
+            sortby = :firstexec,
+            compact = true,
+        )
+        @info "\n$(String(take!(string_buffer)))\n"
+        #end
     end
     close(logger)
     return sim.status

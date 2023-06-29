@@ -4,57 +4,62 @@
 
 ## Introduction
 
-This tutorial briefly introduces how to create a system using `PowerSystems.jl` data structures. The tutorial will guide you to create the JSON data file for the tutorial 1. Start by calling `PowerSystems.jl`:
+This tutorial briefly introduces how to create a system using `PowerSystems.jl` data structures. For more details visit [`PowerSystems.jl` Documentation](https://nrel-sienna.github.io/PowerSystems.jl/stable/)
+
+Start by calling `PowerSystems.jl` and `PowerSystemCaseBuilder.jl`:
 
 ```@repl dyn_data
 using PowerSystems
-using PowerSimulationsDynamics
-const PSY = PowerSystems
+using PowerSystemCaseBuilder
+const PSY = PowerSystems;
 ```
 
-# Step 1: System description
+!!! note
+    `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
+    For more details visit [PowerSystemCaseBuilder Documentation](https://nrel-sienna.github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/)
+
+## System description
 
 Next we need to define the different elements required to run a simulation. To run a simulation in `PowerSimulationsDynamics`, it is required to define a `System` that contains the following components:
 
-## Static Components:
+### Static Components
 
 We called static components to those that are used to run a Power Flow problem.
 
- - Vector of `Bus` elements, that define all the buses in the network.
- - Vector of `Branch` elements, that define all the branches elements (that connect two buses) in the network.
- - Vector of `StaticInjection` elements, that define all the devices connected to buses that can inject (or withdraw) power. These static devices, typically generators, in `PowerSimulationsDynamics` are used to solve the Power Flow problem that determines the active and reactive power provided for each device.
- - Vector of `PowerLoad` elements, that define all the loads connected to buses that can withdraw current. These are also used to solve the Power Flow.
- - Vector of `Source` elements, that define source components behind a reactance that can inject or withdraw current.
- - The base of power used to define per unit values, in MVA as a `Float64` value.
- - The base frequency used in the system, in Hz as a `Float64` value.
+- Vector of `Bus` elements, that define all the buses in the network.
+- Vector of `Branch` elements, that define all the branches elements (that connect two buses) in the network.
+- Vector of `StaticInjection` elements, that define all the devices connected to buses that can inject (or withdraw) power. These static devices, typically generators, in `PowerSimulationsDynamics` are used to solve the Power Flow problem that determines the active and reactive power provided for each device.
+- Vector of `PowerLoad` elements, that define all the loads connected to buses that can withdraw current. These are also used to solve the Power Flow.
+- Vector of `Source` elements, that define source components behind a reactance that can inject or withdraw current.
+- The base of power used to define per unit values, in MVA as a `Float64` value.
+- The base frequency used in the system, in Hz as a `Float64` value.
 
-## Dynamic Components:
+### Dynamic Components
 
 Dynamic components are those that define differential equations to run a transient simulation.
 
- - Vector of `DynamicInjection` elements. These components must be attached to a `StaticInjection` that connects the power flow solution to the dynamic formulation of such device. `DynamicInjection` can be `DynamicGenerator` or `DynamicInverter`, and its specific formulation (i.e. differential equations) will depend on the specific components that define such device.
- - (Optional) Selecting which of the `Lines` (of the `Branch` vector) elements must be modeled of `DynamicLines` elements, that can be used to model lines with differential equations.
+- Vector of `DynamicInjection` elements. These components must be attached to a `StaticInjection` that connects the power flow solution to the dynamic formulation of such device. `DynamicInjection` can be `DynamicGenerator` or `DynamicInverter`, and its specific formulation (i.e. differential equations) will depend on the specific components that define such device.
+- (Optional) Selecting which of the `Lines` (of the `Branch` vector) elements must be modeled of `DynamicLines` elements, that can be used to model lines with differential equations.
 
 To start we will define the data structures for the network.
 
-## One Machine Infinite Bus case manual data creation
+## Three Bus case manual data creation
 
-The following describes the system creation for the OMIB case.
+The following describes the system creation for this dynamic simulation case.
 
 ## Static System creation
 
-To create the system you need to pass the location of the RAW file
+To create the system you need to load data using `PowerSystemCaseBuilder.jl`. This system was originally created from following [raw file](https://github.com/NREL-Sienna/PowerSystemsTestData/blob/master/psid_tests/data_tests/ThreeBusInverter.raw).  
 
 ```@repl dyn_data
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "docs", "src", "tutorials", "data")
-omib_sys = System(joinpath(file_dir, "OMIB.raw"))
+sys = build_system(PSIDSystems, "3 Bus Inverter Base"; force_build=true)
 ```
 
 This system does not have an injection device in bus 1 (the reference bus).
 We can add a source with small impedance directly as follows:
 
 ```@repl dyn_data
-slack_bus = [b for b in get_components(Bus, omib_sys) if b.bustype == BusTypes.REF][1]
+slack_bus = [b for b in get_components(Bus, sys) if get_bustype(b) == BusTypes.REF][1]
 inf_source = Source(
     name = "InfBus", #name
     available = true, #availability
@@ -64,17 +69,17 @@ inf_source = Source(
     R_th = 0.0, #Rth
     X_th = 5e-6, #Xth
 )
-add_component!(omib_sys, inf_source)
+add_component!(sys, inf_source)
 ```
 
 We just added a infinite source with $X_{th} = 5\cdot 10^{-6}$ pu. The system can be explored directly using functions like:
 
 ```@repl dyn_data
-show_components(omib_sys, Source)
+show_components(sys, Source)
 ```
 
 ```@repl dyn_data
-show_components(omib_sys, ThermalStandard)
+show_components(sys, ThermalStandard)
 ```
 
 By exploring those it can be seen that the generators are named as: `generator-bus_number-id`. Then, the generator attached at bus 2 is named `generator-102-1`.
@@ -112,7 +117,7 @@ pss_none() = PSSFixed(0.0)
 The next lines receives a static generator name, and creates a `DynamicGenerator` based on that specific static generator, with the specific components defined previously. This is a classic machine model without AVR, Turbine Governor and PSS.
 
 ```@repl dyn_data
-static_gen = get_component(Generator, omib_sys, "generator-102-1")
+static_gen = get_component(Generator, sys, "generator-102-1")
 
 dyn_gen = DynamicGenerator(
     name = get_name(static_gen),
@@ -128,13 +133,14 @@ dyn_gen = DynamicGenerator(
 The dynamic generator is added to the system by specifying the dynamic and static generator
 
 ```@repl dyn_data
-add_component!(omib_sys, dyn_gen, static_gen)
+add_component!(sys, dyn_gen, static_gen)
 ```
 
 Then we can serialize our system data to a json file that can be later read as:
 
 ```@repl dyn_data
-to_json(omib_sys, joinpath(file_dir, "omib_sys.json"), force = true)
+file_dir = @__DIR__ #hide
+to_json(sys, joinpath(file_dir, "modified_sys.json"), force = true)
 ```
 
 ## Dynamic Lines case: Data creation
@@ -143,9 +149,8 @@ We will now create a three bus system with one inverter and one generator.
 In order to do so, we will parse the following `ThreebusInverter.raw` network:
 
 ```@repl dyn_data
-sys_file_dir = joinpath(file_dir, "ThreeBusInverter.raw")
-threebus_sys = System(sys_file_dir)
-slack_bus = [b for b in get_components(Bus, threebus_sys) if b.bustype == BusTypes.REF][1]
+threebus_sys = build_system(PSIDSystems, "3 Bus Inverter Base")
+slack_bus = first(get_components(x -> get_bustype(x) == BusTypes.REF, Bus, threebus_sys))
 inf_source = Source(
     name = "InfBus", #name
     available = true, #availability
@@ -166,7 +171,10 @@ We will create specific functions to create the components of the inverter as fo
 
 ```@repl dyn_data
 #Define converter as an AverageConverter
-converter_high_power() = AverageConverter(rated_voltage = 138.0, rated_current = 100.0)
+converter_high_power() = AverageConverter(
+    rated_voltage = 138.0,
+    rated_current = 100.0
+    )
 
 #Define Outer Control as a composition of Virtual Inertia + Reactive Power Droop
 outer_control() = OuterControl(
@@ -178,7 +186,7 @@ outer_control() = OuterControl(
 inner_control() = VoltageModeControl(
     kpv = 0.59,     #Voltage controller proportional gain
     kiv = 736.0,    #Voltage controller integral gain
-    kffv = 0.0,     #Binary variable enabling the voltage feed-forward in output of current controllers
+    kffv = 0.0,     #Binary variable enabling voltage feed-forward in current controllers
     rv = 0.0,       #Virtual resistance in pu
     lv = 0.2,       #Virtual inductance in pu
     kpc = 1.27,     #Current controller proportional gain
@@ -191,7 +199,8 @@ inner_control() = VoltageModeControl(
 #Define DC Source as a FixedSource:
 dc_source_lv() = FixedDCSource(voltage = 600.0)
 
-#Define a Frequency Estimator as a PLL based on Vikram Kaura and Vladimir Blaskoc 1997 paper:
+#Define a Frequency Estimator as a PLL
+#based on Vikram Kaura and Vladimir Blaskoc 1997 paper:
 pll() = KauraPLL(
     ω_lp = 500.0, #Cut-off frequency for LowPass filter of PLL filter.
     kp_pll = 0.084,  #PLL proportional gain
@@ -207,6 +216,7 @@ We will construct the inverter later by specifying to which static device is ass
 ## Dynamic Generator definition
 
 Similarly we will construct a dynamic generator as follows:
+
 ```@repl dyn_data
 # Create the machine
 machine_oneDoneQ() = OneDOneQMachine(
@@ -264,7 +274,8 @@ for g in get_components(Generator, threebus_sys)
             tg_none(), #tg
             pss_none(), #pss
         )
-        #Attach the dynamic generator to the system by specifying the dynamic and static part
+        #Attach the dynamic generator to the system by
+        # specifying the dynamic and static components
         add_component!(threebus_sys, case_gen, g)
         #Find the generator at bus 103
     elseif get_number(get_bus(g)) == 103
@@ -288,9 +299,6 @@ end
 ### Save the system in a JSON file
 
 ```@repl dyn_data
-include(joinpath(pkgdir(PowerSimulationsDynamics), "test/utils/get_results.jl")) # hide
-for l in get_components(StandardLoad, threebus_sys) # hide
-    transform_load_to_constant_impedance(l) # hide
-end # hide
+file_dir = @__DIR__ #hide
 to_json(threebus_sys, joinpath(file_dir, "threebus_sys.json"), force = true)
 ```

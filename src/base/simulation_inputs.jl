@@ -17,6 +17,7 @@ struct SimulationInputs
     mass_matrix::LinearAlgebra.Diagonal{Float64}
     global_vars_update_pointers::Dict{Int, Int}
     global_state_map::MAPPING_DICT
+    global_inner_var_map::Dict{String, Dict}
 
     function SimulationInputs(
         sys::PSY.System,
@@ -28,7 +29,11 @@ struct SimulationInputs
         TimerOutputs.@timeit BUILD_TIMER "Wrap Branches" begin
             wrapped_branches = _wrap_dynamic_branches(sys, lookup)
             has_dyn_lines = !isempty(wrapped_branches)
-            branch_state_counts = 2 * length(wrapped_branches)
+            aux_states = 0
+            for br in wrapped_branches
+                aux_states += PSY.get_n_states(br)
+            end
+            branch_state_counts = aux_states
             injection_start = 2 * n_buses + branch_state_counts + 1
         end
 
@@ -85,6 +90,7 @@ struct SimulationInputs
             mass_matrix,
             global_vars,
             MAPPING_DICT(),
+            Dict{String, Dict}(),
         )
     end
 end
@@ -158,12 +164,12 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         @debug "Wrapping $(PSY.get_name(device))"
         dynamic_device = PSY.get_dynamic_injector(device)
         n_states = PSY.get_n_states(dynamic_device)
-        ix_range = range(injection_start, length = n_states)
-        ode_range = range(injection_count, length = n_states)
+        ix_range = range(injection_start; length = n_states)
+        ode_range = range(injection_count; length = n_states)
         bus_n = PSY.get_number(PSY.get_bus(device))
         bus_ix = lookup[bus_n]
         inner_vars_range =
-            range(inner_vars_count, length = get_inner_vars_count(dynamic_device))
+            range(inner_vars_count; length = get_inner_vars_count(dynamic_device))
         @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range"
         dynamic_device = PSY.get_dynamic_injector(device)
         @assert dynamic_device !== nothing
@@ -201,8 +207,8 @@ function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
             to_bus_number = PSY.get_number(arc.to)
             bus_ix_from = lookup[from_bus_number]
             bus_ix_to = lookup[to_bus_number]
-            ix_range = range(branches_start, length = n_states)
-            ode_range = range(branches_count, length = n_states)
+            ix_range = range(branches_start; length = n_states)
+            ode_range = range(branches_count; length = n_states)
             @debug "ix_range=$ix_range ode_range=$ode_range"
             wrapped_branches[ix] = BranchWrapper(
                 br,
@@ -237,6 +243,7 @@ function _wrap_static_injectors(sys::PSY.System, lookup::Dict{Int, Int})
 end
 
 function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
+    sys_base_power = PSY.get_base_power(sys)
     # This needs to change if we implement dynamic load models
     static_loads =
         PSY.get_components(x -> !isa(x, PSY.FixedAdmittance), PSY.ElectricLoad, sys)
@@ -249,18 +256,19 @@ function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int})
         # Optimize this dictionary push
         push!(get!(map_bus_load, bus, PSY.ElectricLoad[]), ld)
     end
-    return _construct_load_wrapper(lookup, map_bus_load)
+    return _construct_load_wrapper(lookup, map_bus_load, sys_base_power)
 end
 
 function _construct_load_wrapper(
     lookup::Dict{Int, Int},
     map_bus_load::Dict{PSY.Bus, Vector{PSY.ElectricLoad}},
+    sys_base_power,
 )
     container = Vector{StaticLoadWrapper}(undef, length(map_bus_load))
     for (ix, (bus, loads)) in enumerate(map_bus_load)
         bus_n = PSY.get_number(bus)
         bus_ix = lookup[bus_n]
-        container[ix] = StaticLoadWrapper(bus, loads, bus_ix)
+        container[ix] = StaticLoadWrapper(bus, loads, bus_ix, sys_base_power)
     end
     return container
 end

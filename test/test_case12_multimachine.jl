@@ -25,8 +25,7 @@ Ybus_change = NetworkSwitch(
 ) #New YBus
 
 @testset "Test 12 Multi Machine ResidualModel" begin
-    path = (joinpath(pwd(), "test-12"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -57,20 +56,19 @@ Ybus_change = NetworkSwitch(
         # Run simulation
         @test execute!(
             sim, #simulation structure
-            IDA(),#Sundials DAE Solver
+            IDA();#Sundials DAE Solver
             dtmax = 0.02, #keywords arguments
         ) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
         series = get_state_series(results, ("generator-102-1", :ω))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
 @testset "Test 12 Multi Machine MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-12"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation(
@@ -101,13 +99,13 @@ end
         # Run simulation
         @test execute!(
             sim, #simulation structure
-            Rodas4(),#Sundials DAE Solver
+            Rodas4();#Sundials DAE Solver
             dtmax = 0.02, #keywords arguments
         ) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
         series = get_state_series(results, ("generator-102-1", :ω))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

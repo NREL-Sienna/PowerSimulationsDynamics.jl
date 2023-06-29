@@ -23,6 +23,7 @@ function _nlsolve_call(
     jacobian::JacobianFunctionWrapper,
     f_tolerance::Float64,
     solver::Symbol,
+    show_trace::Bool,
 )
     df = NLsolve.OnceDifferentiable(
         f_eval,
@@ -38,7 +39,7 @@ function _nlsolve_call(
         ftol = f_tolerance,
         method = solver,
         iterations = MAX_NLSOLVE_INTERATIONS,
-        show_trace = true,
+        show_trace = show_trace,
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
 end
@@ -48,6 +49,7 @@ function _nlsolve_call(
     f_eval::Function,
     f_tolerance::Float64,
     solver::Symbol,
+    show_trace::Bool,
 )
     sys_solve = NLsolve.nlsolve(
         f_eval,
@@ -56,6 +58,7 @@ function _nlsolve_call(
         ftol = f_tolerance,
         iterations = MAX_NLSOLVE_INTERATIONS,
         method = solver,
+        show_trace = show_trace,
     ) # Solve using initial guess x0
     return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
 end
@@ -74,11 +77,11 @@ function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbo
 end
 
 function _sorted_residuals(residual::Vector{Float64})
-    if isapprox(sum(abs.(residual)), 0.0, atol = STRICT_NLSOLVE_F_TOLERANCE)
+    if isapprox(sum(abs.(residual)), 0.0; atol = STRICT_NLSOLVE_F_TOLERANCE)
         @debug "Residual is zero with tolerance $(STRICT_NLSOLVE_F_TOLERANCE)"
         return
     end
-    ix_sorted = sortperm(abs.(residual), rev = true)
+    ix_sorted = sortperm(abs.(residual); rev = true)
     show_residual = min(10, length(residual))
     for i in 1:show_residual
         ix = ix_sorted[i]
@@ -98,6 +101,9 @@ function _check_residual(
     @info "Residual from initial guess: max = $(val) at $ix, total = $sum_residual"
     if sum_residual > tolerance
         state_map = make_global_state_map(inputs)
+        for (k, val) in state_map
+            inputs.global_state_map[k] = val
+        end
         gen_name = ""
         state = ""
         for (gen, states) in state_map
@@ -108,12 +114,21 @@ function _check_residual(
                 end
             end
         end
-        error("The initial residual in $ix of the NLsolve function has a value of $val.
-               Generator = $gen_name, state = $state.
-               Error is too large to continue")
+        if gen_name != ""
+            error("The initial residual in the state located at $ix has a value of $val.
+                Generator = $gen_name, state = $state.
+               Residual error is too large to continue")
+        else
+            bus_no = ix > bus_count ? ix - bus_count : ix
+            component = ix > bus_count ? "imag" : "real"
+            error("The initial residual in the state located at $ix has a value of $val.
+                Voltage at bus = $bus_no, component = $component.
+                Error is too large to continue")
+        end
     end
     return
 end
+
 function refine_initial_condition!(
     sim::Simulation,
     model::SystemModel,
@@ -140,8 +155,9 @@ function refine_initial_condition!(
         end
         for solv in [:trust_region, :newton]
             @debug "Start NLSolve System Run with $(solv) and F_tol = $tol"
-            sys_solve = _nlsolve_call(initial_guess, f!, jacobian, tol, solv)
-            #sys_solve = _nlsolve_call(initial_guess, f!, tol, solv)
+            show_trace = sim.console_level <= Logging.Info
+            sys_solve = _nlsolve_call(initial_guess, f!, jacobian, tol, solv, show_trace)
+            #sys_solve = _nlsolve_call(initial_guess, f!, tol, solv, show_trace)
             failed(sys_solve) && return BUILD_FAILED
             converged = _convergence_check(sys_solve, tol, solv)
             @debug "Write initial guess vector using $solv with tol = $tol convergence = $converged"

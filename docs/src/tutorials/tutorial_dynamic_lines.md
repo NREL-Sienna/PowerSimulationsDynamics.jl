@@ -1,30 +1,36 @@
-# Line Modeling simulation with [PowerSimulationsDynamics.jl](https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl)
+# Line Modeling Simulations
 
 **Originally Contributed by**: Rodrigo Henriquez-Auba and José Daniel Lara
 
 ## Introduction
 
-This tutorial will introduce an example of considering dynamic lines in `PowerSimulationsDynamics`. 
+This tutorial will introduce an example of considering dynamic lines in `PowerSimulationsDynamics`.
 
 This tutorial presents a simulation of a three-bus system, with an infinite bus (represented as a voltage source behind an impedance) at bus 1, a one d- one q- machine on bus 2 and an inverter of 19 states, as a virtual synchronous machine at bus 3. The perturbation will be the trip of two of the three circuits (triplicating its resistance and impedance) of the line that connects bus 1 and bus 3. This case also consider a dynamic line model for connection between buses 2 and 3. We will compare it against a system without dynamic lines.
 
 It is recommended to check the OMIB tutorial first, since that includes more details and explanations on all definitions and functions.
 
-# Step 1: Package Initialization
+### Step 1: Package Initialization
 
 ```@repl dyn_lines
 using PowerSimulationsDynamics
 using PowerSystems
 using PowerNetworkMatrices
+using PowerSystemCaseBuilder
 using Sundials
 using Plots
 ```
 
-# Step 2: Data creation
+!!! note
+    `PowerSystemCaseBuilder.jl` is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function `build_system`.
+    For more details visit [PowerSystemCaseBuilder Documentation](https://nrel-sienna.github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/)
+
+### Step 2: Data creation
+
+Load the system using `PowerSystemCaseBuilder.jl`:
 
 ```@repl dyn_lines
-file_dir = joinpath(pkgdir(PowerSimulationsDynamics), "docs", "src", "tutorials", "data")
-threebus_sys = System(joinpath(file_dir, "threebus_sys.json"));
+threebus_sys = build_system(PSIDSystems, "Three Bus Dynamic data Example System")
 ```
 
 In addition, we will create a new copy of the system on which we will simulate the same case, but will consider dynamic lines:
@@ -33,7 +39,7 @@ In addition, we will create a new copy of the system on which we will simulate t
 threebus_sys_dyn = deepcopy(threebus_sys);
 ```
 
-# Step 3: Create the fault and simulation on the Static Lines system
+### Step 3: Create the fault and simulation on the Static Lines system
 
 First, we construct the perturbation, by properly computing the new Ybus on the system:
 
@@ -78,11 +84,11 @@ sim = Simulation(
 We can obtain the initial conditions as:
 
 ```@repl dyn_lines
-#Will print the initial states. It also give the symbols used to describe those states.
+#Print the initial states. It also give the symbols used to describe those states.
 show_states_initial_value(sim)
 ```
 
-# Step 4: Run the simulation of the Static Lines System
+### Step 4: Run the simulation of the Static Lines System
 
 ```@repl dyn_lines
 #Run the simulation
@@ -93,7 +99,7 @@ execute!(
 )
 ```
 
-# Step 5: Store the solution
+### Step 5: Store the solution
 
 ```@repl dyn_lines
 results = read_results(sim)
@@ -104,7 +110,7 @@ zoom = [
 ];
 ```
 
-# Step 3.1: Create the fault and simulation on the Dynamic Lines system
+### Step 3.1: Create the fault and simulation on the Dynamic Lines system
 
 An important aspect to consider is that DynamicLines must not be considered in the computation of the Ybus. First we construct the Dynamic Line, by finding the Line named "BUS 2-BUS 3-i_1", and then adding it to the system.
 
@@ -141,7 +147,7 @@ Ybus_change_dyn = NetworkSwitch(
 )
 ```
 
-# Step 4.1: Run the simulation of the Dynamic Lines System
+### Step 4.1: Run the simulation of the Dynamic Lines System
 
 Now, we construct the simulation:
 
@@ -168,11 +174,11 @@ execute!(
 We can obtain the initial conditions as:
 
 ```@repl dyn_lines
-#Will print the initial states. It also give the symbols used to describe those states.
+#Print the initial states. It also give the symbols used to describe those states.
 show_states_initial_value(sim_dyn)
 ```
 
-# Step 5.1: Store the solution
+### Step 5.1: Store the solution
 
 ```@repl dyn_lines
 results_dyn = read_results(sim_dyn)
@@ -183,7 +189,7 @@ zoom_dyn = [
 ];
 ```
 
-# Step 6.1: Compare the solutions:
+### Step 6.1: Compare the solutions:
 
 We can observe the effect of Dynamic Lines
 

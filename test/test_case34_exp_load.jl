@@ -19,7 +19,7 @@ sys_power = System(raw_file, dyr_file)
 sys_exp = System(raw_file, dyr_file)
 # Replace Constant Power loads for Exponential loads
 for l in collect(get_components(PSY.StandardLoad, sys_exp))
-    exp_load = PSY.ExponentialLoad(
+    exp_load = PSY.ExponentialLoad(;
         name = PSY.get_name(l),
         available = PSY.get_available(l),
         bus = PSY.get_bus(l),
@@ -67,10 +67,10 @@ end
         @test LinearAlgebra.norm(ss_power.eigenvalues - ss_exp.eigenvalues) < 1e-4
 
         # Solve Problems
-        @test execute!(sim_power, IDA(), abstol = 1e-9, saveat = 0.005) ==
+        @test execute!(sim_power, IDA(); abstol = 1e-9, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results_power = read_results(sim_power)
-        @test execute!(sim_exp, IDA(), abstol = 1e-9, saveat = 0.005) ==
+        @test execute!(sim_exp, IDA(); abstol = 1e-9, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results_exp = read_results(sim_exp)
 
@@ -89,7 +89,7 @@ end
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
@@ -125,10 +125,10 @@ end
         @test LinearAlgebra.norm(ss_power.eigenvalues - ss_exp.eigenvalues) < 1e-4
 
         # Solve Problems
-        @test execute!(sim_power, Rodas5P(), abstol = 1e-9, saveat = 0.005) ==
+        @test execute!(sim_power, Rodas5P(); abstol = 1e-9, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results_power = read_results(sim_power)
-        @test execute!(sim_exp, Rodas5P(), abstol = 1e-9, saveat = 0.005) ==
+        @test execute!(sim_exp, Rodas5P(); abstol = 1e-9, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
         results_exp = read_results(sim_exp)
 
@@ -144,6 +144,6 @@ end
 
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

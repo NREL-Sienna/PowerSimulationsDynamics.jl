@@ -15,8 +15,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test17.jl"))
 ##################################################
 
 @testset "Test 17 GENROU AVR ResidualModel" begin
-    path = (joinpath(pwd(), "test-psse-genrou-avr"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -45,20 +44,19 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test17.jl"))
         @test LinearAlgebra.norm(eigs - test17_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, IDA(), dtmax = 0.01) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, IDA(); dtmax = 0.01) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end
 
 @testset "Test 17 GENROU AVR MassMatrixModel" begin
-    path = (joinpath(pwd(), "test-psse-genrou-avr"))
-    !isdir(path) && mkdir(path)
+    path = mktempdir()
     try
         # Define Simulation Problem
         sim = Simulation!(
@@ -87,13 +85,13 @@ end
         @test LinearAlgebra.norm(eigs - test17_eigvals) < 1e-3
 
         # Solve problem
-        @test execute!(sim, Rodas4(), dtmax = 0.01) == PSID.SIMULATION_FINALIZED
+        @test execute!(sim, Rodas4(); dtmax = 0.01) == PSID.SIMULATION_FINALIZED
         results = read_results(sim)
 
         # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
     finally
         @info("removing test files")
-        rm(path, force = true, recursive = true)
+        rm(path; force = true, recursive = true)
     end
 end

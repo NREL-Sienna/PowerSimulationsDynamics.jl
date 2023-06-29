@@ -77,7 +77,7 @@ function _reduce_jacobian(
     alg_states = .!diff_states
     fx = @view jacobian[diff_states, diff_states]
     gy_temp = jacobian[alg_states, alg_states]
-    ixs = range(1, length = length(alg_states))
+    ixs = range(1; length = length(alg_states))
     # Locate indices where the algebraic variables are
     alg_ix = ixs[alg_states]
     # Update alg_changes to false if all elements on both row and columns are zeros

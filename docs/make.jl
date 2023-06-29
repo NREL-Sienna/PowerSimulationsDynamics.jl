@@ -1,8 +1,8 @@
 using Documenter, PowerSystems, DocStringExtensions, PowerSimulationsDynamics
 
-makedocs(
+makedocs(;
     modules = [PowerSimulationsDynamics],
-    format = Documenter.HTML(mathengine = Documenter.MathJax()),
+    format = Documenter.HTML(; mathengine = Documenter.MathJax()),
     sitename = "PowerSimulationsDynamics.jl",
     pages = Any[
         "Welcome Page" => "index.md",
@@ -11,9 +11,11 @@ makedocs(
         "Tutorials" => Any[
             "Create Dynamic Data" => "tutorials/tutorial_dynamic_data.md",
             "OMIB" => "tutorials/tutorial_omib.md",
-            "Dynamic Lines simulation" => "tutorials/tutorial_dynamic_lines.md",
-            "Inverter modeling" => "tutorials/tutorial_inverter_modeling.md",
+            "Dynamic Lines Simulation" => "tutorials/tutorial_dynamic_lines.md",
+            "Inverter Modeling" => "tutorials/tutorial_inverter_modeling.md",
             "240 WECC solver comparison" => "tutorials/tutorial_240bus.md",
+            "Small-Signal Analysis" => "tutorials/tutorial_continuation_pf.md",
+            "Active Load Model" => "tutorials/tutorial_activeload.md",
         ],
         "Models" => "models.md",
         "Initialization" => "initialization.md",
@@ -44,7 +46,7 @@ makedocs(
     ],
 )
 
-deploydocs(
+deploydocs(;
     repo = "github.com/NREL-Sienna/PowerSimulationsDynamics.jl.git",
     target = "build",
     branch = "gh-pages",

@@ -27,7 +27,7 @@ function configure_logging(;
     file_level = Logging.Info,
     filename = LOG_FILENAME,
 )
-    return IS.configure_logging(
+    return IS.configure_logging(;
         console = true,
         console_stream = stderr,
         console_level = console_level,

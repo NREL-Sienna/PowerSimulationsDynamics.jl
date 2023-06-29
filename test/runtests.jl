@@ -1,4 +1,3 @@
-using Revise
 using PowerSimulationsDynamics
 using PowerSystems
 using Test
@@ -9,6 +8,7 @@ using OrdinaryDiffEq
 using DelimitedFiles
 using DataFrames
 using InfrastructureSystems
+using PowerSystemCaseBuilder
 using PowerFlows
 using PowerNetworkMatrices
 import LinearAlgebra
@@ -25,6 +25,7 @@ const IS = InfrastructureSystems
 const PSY = PowerSystems
 const PSID = PowerSimulationsDynamics
 const PNM = PowerNetworkMatrices
+const PSB = PowerSystemCaseBuilder
 
 const DISABLED_TEST_FILES = []
 test_file_dir = isempty(dirname(@__FILE__)) ? "test" : dirname(@__FILE__)
@@ -101,6 +102,7 @@ function run_tests()
 
     include("utils/get_results.jl")
     include("utils/mock_structs.jl")
+    include("utils/data_utils.jl")
     include("./data_tests/dynamic_test_data.jl")
     include("./results/results_initial_conditions.jl")
     include("./results/results_eigenvalues.jl")

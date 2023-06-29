@@ -1,16 +1,3 @@
-function isvalid_device(
-    device::PSY.DynamicGenerator{M, S, A, TG, P},
-) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
-    if M == PSY.BaseMachine && A != PSY.AVRFixed
-        error("Device $(PSY.get_name(device)) uses a BaseMachine model with an AVR")
-    end
-    return
-end
-
-function isvalid_device(::PSY.DynamicInjection)
-    return
-end
-
 get_inner_vars_count(::PSY.DynamicGenerator) = GEN_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.DynamicInverter) = INV_INNER_VARS_SIZE
 get_inner_vars_count(::PSY.PeriodicVariableSource) = 0
@@ -77,7 +64,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
         input_port_mapping::Base.ImmutableDict{Int, Vector{Int}},
         ext::Dict{String, Any},
     ) where {T <: PSY.DynamicInjection}
-        isvalid_device(device)
+        is_valid(device)
 
         new{T}(
             device,
@@ -139,7 +126,7 @@ function DynamicWrapper(
 
     # Consider the special case when the static device is StandardLoad
     if isa(device, PSY.StandardLoad)
-        reactive_power = PF._get_total_q(device)
+        reactive_power = PF.get_total_q(device)
     else
         reactive_power = PSY.get_reactive_power(device)
     end
@@ -160,12 +147,18 @@ function DynamicWrapper(
         ode_range,
         bus_ix,
         Base.ImmutableDict(
-            sort!(device_states .=> ix_range, by = x -> x.second, rev = true)...,
+            sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
         ),
-        isempty(component_state_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
-        Base.ImmutableDict(component_state_mapping...),
-        isempty(input_port_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
-        Base.ImmutableDict(input_port_mapping...),
+        if isempty(component_state_mapping)
+            Base.ImmutableDict{Int, Vector{Int}}()
+        else
+            Base.ImmutableDict(component_state_mapping...)
+        end,
+        if isempty(input_port_mapping)
+            Base.ImmutableDict{Int, Vector{Int}}()
+        else
+            Base.ImmutableDict(input_port_mapping...)
+        end,
         Dict{String, Any}(),
     )
 end
@@ -202,12 +195,18 @@ function DynamicWrapper(
         ode_range,
         bus_ix,
         Base.ImmutableDict(
-            sort!(device_states .=> ix_range, by = x -> x.second, rev = true)...,
+            sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
         ),
-        isempty(component_state_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
-        Base.ImmutableDict(component_state_mapping...),
-        isempty(input_port_mapping) ? Base.ImmutableDict{Int, Vector{Int}}() :
-        Base.ImmutableDict(input_port_mapping...),
+        if isempty(component_state_mapping)
+            Base.ImmutableDict{Int, Vector{Int}}()
+        else
+            Base.ImmutableDict(component_state_mapping...)
+        end,
+        if isempty(input_port_mapping)
+            Base.ImmutableDict{Int, Vector{Int}}()
+        else
+            Base.ImmutableDict(input_port_mapping...)
+        end,
         Dict{String, Any}(),
     )
 end
@@ -366,6 +365,7 @@ struct StaticWrapper{T <: PSY.StaticInjection, V}
     P_ref::Base.RefValue{Float64}
     Q_ref::Base.RefValue{Float64}
     bus_ix::Int
+    ext::Dict{String, Any}
 end
 
 function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
@@ -378,6 +378,7 @@ function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
         Base.Ref(PSY.get_active_power(device)),
         Base.Ref(PSY.get_reactive_power(device)),
         bus_ix,
+        Dict{String, Any}(),
     )
 end
 
@@ -391,6 +392,7 @@ function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.Source}
         Base.Ref(PSY.get_active_power(device)),
         Base.Ref(PSY.get_reactive_power(device)),
         bus_ix,
+        Dict{String, Any}(),
     )
 end
 
@@ -400,6 +402,7 @@ get_bus_category(::StaticWrapper{<:PSY.StaticInjection, U}) where {U} = U
 # TODO: something smart to forward fields
 get_device(wrapper::StaticWrapper) = wrapper.device
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
+get_ext(wrapper::StaticWrapper) = wrapper.ext
 
 get_P_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
 get_Q_ref(wrapper::StaticWrapper) = wrapper.Q_ref[]
@@ -439,7 +442,12 @@ mutable struct StaticLoadWrapper
     bus_ix::Int
 end
 
-function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix::Int)
+function StaticLoadWrapper(
+    bus::PSY.Bus,
+    loads::Vector{PSY.ElectricLoad},
+    bus_ix::Int,
+    sys_base_power::Float64,
+)
     P_power = 0.0
     P_current = 0.0
     P_impedance = 0.0
@@ -449,16 +457,17 @@ function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix
 
     # Add ZIP Loads
     for ld in loads
+        base_power_conversion = PSY.get_base_power(ld) / sys_base_power
         if isa(ld, PSY.PowerLoad)
-            P_power += PSY.get_active_power(ld)
-            Q_power += PSY.get_reactive_power(ld)
+            P_power += PSY.get_active_power(ld) * base_power_conversion
+            Q_power += PSY.get_reactive_power(ld) * base_power_conversion
         elseif isa(ld, PSY.StandardLoad)
-            P_impedance += PSY.get_impedance_active_power(ld)
-            Q_impedance += PSY.get_impedance_reactive_power(ld)
-            P_current += PSY.get_current_active_power(ld)
-            Q_current += PSY.get_current_reactive_power(ld)
-            P_power += PSY.get_constant_active_power(ld)
-            Q_power += PSY.get_constant_reactive_power(ld)
+            P_impedance += PSY.get_impedance_active_power(ld) * base_power_conversion
+            Q_impedance += PSY.get_impedance_reactive_power(ld) * base_power_conversion
+            P_current += PSY.get_current_active_power(ld) * base_power_conversion
+            Q_current += PSY.get_current_reactive_power(ld) * base_power_conversion
+            P_power += PSY.get_constant_active_power(ld) * base_power_conversion
+            Q_power += PSY.get_constant_reactive_power(ld) * base_power_conversion
         end
     end
 
@@ -468,11 +477,12 @@ function StaticLoadWrapper(bus::PSY.Bus, loads::Vector{PSY.ElectricLoad}, bus_ix
     dict_names = Dict{String, Int}()
     if !isempty(exp_loads)
         for (ix, ld) in enumerate(exp_loads)
+            base_power_conversion = PSY.get_base_power(ld) / sys_base_power
             dict_names[PSY.get_name(ld)] = ix
             exp_params[ix] = ExpLoadParams(
-                PSY.get_active_power(ld),
+                PSY.get_active_power(ld) * base_power_conversion,
                 PSY.get_active_power_coefficient(ld),
-                PSY.get_reactive_power(ld),
+                PSY.get_reactive_power(ld) * base_power_conversion,
                 PSY.get_reactive_power_coefficient(ld),
             )
         end
