@@ -165,7 +165,7 @@ function _frequency(
 end
 
 """
-Function to obtain the frequency time series of a grid-following inverter with KauraPLL out of the DAE Solution. It is dispatched via the OuterControl and FrequencyEstimator type.
+Function to obtain the frequency time series of a grid-following inverter with ReducedOrderPLL out of the DAE Solution. It is dispatched via the OuterControl and FrequencyEstimator type.
 
 """
 function _frequency(
@@ -181,6 +181,29 @@ function _frequency(
     ts, vpll_q = post_proc_state_series(res, (name, :vq_pll), dt)
     _, ε_pll = post_proc_state_series(res, (name, :ε_pll), dt)
     pi_output = [pi_block(x, y, kp_pll, ki_pll)[1] for (x, y) in zip(vpll_q, ε_pll)]
+    ω_pll = pi_output .+ 1.0 #See Hug ISGT-EUROPE2018 eqn. 9
+    return ts, ω_pll
+end
+
+"""
+Function to obtain the frequency time series of a grid-following inverter with KauraPLL out of the DAE Solution. It is dispatched via the OuterControl and FrequencyEstimator type.
+
+"""
+function _frequency(
+    ::PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
+    freq_estimator::PSY.KauraPLL,
+    name::String,
+    res::SimulationResults,
+    dynamic_device::G,
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicInverter}
+    kp_pll = PSY.get_kp_pll(freq_estimator)
+    ki_pll = PSY.get_ki_pll(freq_estimator)
+    ts, vpll_q = post_proc_state_series(res, (name, :vq_pll), dt)
+    _, vpll_d = post_proc_state_series(res, (name, :vd_pll), dt)
+    _, ε_pll = post_proc_state_series(res, (name, :ε_pll), dt)
+    pi_output =
+        [pi_block(x, y, kp_pll, ki_pll)[1] for (x, y) in zip(atan.(vpll_q, vpll_d), ε_pll)]
     ω_pll = pi_output .+ 1.0 #See Hug ISGT-EUROPE2018 eqn. 9
     return ts, ω_pll
 end
