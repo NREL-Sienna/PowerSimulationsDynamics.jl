@@ -211,7 +211,7 @@ Vr3 -0.0986
 │ Time Span                  │ (0.0, 20.0) │
 │ Total Time Steps           │ 342         │
 │ Number of States           │ 86          │
-│ Total solve time           │ 2.01314293  │
+│ Total solve time           │ 1.787099021 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(Bus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
            plot!(
@@ -442,25 +442,25 @@ Simulation Summary
 │ Number of States        │ 94             │
 │ Number of Perturbations │ 1              │
 └─────────────────────────┴────────────────┘</code></pre><p>We can verify the small signal stability of the system before running the simulation:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res = small_signal_analysis(sim)</code><code class="nohighlight hljs ansi" style="display:block;">The system is small signal stable</code></pre><p>Exploring the eigenvalues:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res.eigenvalues</code><code class="nohighlight hljs ansi" style="display:block;">66-element Vector{ComplexF64}:
-   -2268.086722670927 - 6832.691906127054im
-   -2268.086722670927 + 6832.691906127054im
-   -2094.489677809015 - 6527.127111961708im
-   -2094.489677809015 + 6527.127111961708im
-  -1615.3518213143116 - 290.9590763918993im
-  -1615.3518213143116 + 290.9590763918993im
+  -2268.0867226709233 - 6832.691906127055im
+  -2268.0867226709233 + 6832.691906127055im
+  -2094.4896778090088 - 6527.127111961696im
+  -2094.4896778090088 + 6527.127111961696im
+  -1615.3518213143143 - 290.9590763918999im
+  -1615.3518213143143 + 290.9590763918999im
   -1000.0000000000008 + 0.0im
-  -1000.0000000000003 + 0.0im
-   -999.9999999999998 + 0.0im
-    -999.999999999999 + 0.0im
+  -1000.0000000000002 + 0.0im
+              -1000.0 + 0.0im
+   -999.9999999999993 + 0.0im
                       ⋮
-  -1.0079674062477373 + 0.0im
-   -0.936317786962561 + 0.0im
-  -0.7915469983862414 + 0.0im
-   -0.620396330619022 + 0.0im
+  -1.0079674062478294 + 0.0im
+  -0.9363177869625027 + 0.0im
+  -0.7915469983862312 + 0.0im
+  -0.6203963306190455 + 0.0im
                  -0.5 + 0.0im
-  -0.2525713087059708 + 0.0im
- -0.23628223522847258 - 7.659993787462879im
- -0.23628223522847258 + 7.659993787462879im
+  -0.2525713087060531 + 0.0im
+ -0.23628223522840464 - 7.6599937874629065im
+ -0.23628223522840464 + 7.6599937874629065im
                   0.0 + 0.0im</code></pre><p>We execute the simulation</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; execute!(sim, IDA(); abstol = 1e-8)</code><code class="nohighlight hljs ansi" style="display:block;">SIMULATION_FINALIZED::BUILD_STATUS = 6</code></pre><p>Using <code>PowerSimulationsDynamics</code> tools for exploring the results, we can plot all the voltage results for the buses</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; result = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;">Simulation Results Summary
 ┌────────────────────────────┬─────────────┐
 │ Property                   │ Value       │
@@ -470,7 +470,7 @@ Simulation Summary
 │ Time Span                  │ (0.0, 20.0) │
 │ Total Time Steps           │ 569         │
 │ Number of States           │ 94          │
-│ Total solve time           │ 0.278266624 │
+│ Total solve time           │ 0.291747023 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(Bus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
            plot!(
@@ -489,4 +489,4 @@ Simulation Summary
                ylabel = &quot;Speed [pu]&quot;,
                label = &quot;$(get_name(g)) - ω&quot;,
            );
-       end</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; state_series = get_state_series(result, (&quot;Battery&quot;, :ω_oc))</code><code class="nohighlight hljs ansi" style="display:block;">([0.0, 0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.256  …  19.315145307816785, 19.37646125220342, 19.437777196590055, 19.49909314097669, 19.62172502974996, 19.70711532558467, 19.79250562141938, 19.87789591725409, 19.9632862130888, 20.0], [1.0, 0.999999999999997, 1.0000000000000386, 1.0000000000002491, 1.0000000000006428, 1.0000000000005582, 1.0000000000003035, 1.000000000000358, 1.0000000000004967, 1.000000000000362  …  1.0000955877706168, 1.0000959541986867, 1.000096297471668, 1.0000965440633924, 1.0000965873172238, 1.000096242314912, 1.000095715031244, 1.0000952238986638, 1.0000949711015104, 1.0000949846931326])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines Simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Wednesday 28 June 2023 06:58">Wednesday 28 June 2023</span>. Using Julia version 1.9.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+       end</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; state_series = get_state_series(result, (&quot;Battery&quot;, :ω_oc))</code><code class="nohighlight hljs ansi" style="display:block;">([0.0, 0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.064, 0.128, 0.256  …  19.315140167359424, 19.37644768484352, 19.437755202327615, 19.49906271981171, 19.621677754779903, 19.707059527522656, 19.79244130026541, 19.877823073008162, 19.963204845750916, 20.0], [1.0, 0.999999999999997, 1.0000000000000386, 1.0000000000002491, 1.0000000000006428, 1.0000000000005582, 1.0000000000003035, 1.000000000000358, 1.0000000000004967, 1.000000000000362  …  1.000095587526671, 1.0000959538974594, 1.0000962971844696, 1.000096543878788, 1.0000965875429688, 1.0000962428278177, 1.0000957156804129, 1.0000952244197194, 1.000094971235317, 1.0000949847095189])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines Simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Friday 7 July 2023 16:57">Friday 7 July 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
