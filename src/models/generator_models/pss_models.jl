@@ -434,6 +434,185 @@ function mdl_pss_ode!(
     return
 end
 
+function mdl_pss_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2B}},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
+
+    #Get Signal Input Integer
+    pss = PSY.get_pss(dynamic_device)
+    #Remote bus control not supported
+
+    basepower = PSY.get_base_power(dynamic_device)
+    Sbase = get_system_base_power(dynamic_device)
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(dynamic_device, typeof(pss))
+    ω = device_states[external_ix[1]]
+
+    #Get Input Signal 1
+    u_1 = get_pss_input_signal(
+        Val(PSY.get_input_code_1(pss)),
+        device_states,
+        inner_vars,
+        ω_sys,
+        dynamic_device,
+    )
+
+    if PSY.get_input_code_1(pss) == 3
+        u_1 = u_1 * (Sbase / basepower) * ω
+    end
+
+    #Get Input Signal 2
+    u_2 = get_pss_input_signal(
+        Val(PSY.get_input_code_2(pss)),
+        device_states,
+        inner_vars,
+        ω_sys,
+        dynamic_device,
+    )
+
+    if PSY.get_input_code_2(pss) == 3
+        u_2 = u_2 * (Sbase / basepower) * ω
+    end
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, PSY.PSS2B)
+
+    #Define inner states for component
+    internal_states = @view device_states[local_ix]
+    x_p1 = internal_states[1]
+    x_p2 = internal_states[2]
+    x_p3 = internal_states[3]
+    x_p4 = internal_states[4]
+    x_p5 = internal_states[5]
+    x_p6 = internal_states[6]
+    x_p7 = internal_states[7]
+    x_p8 = internal_states[8]
+    x_p9 = internal_states[9]
+    x_p10 = internal_states[10]
+    x_p11 = internal_states[11]
+    x_p12 = internal_states[12]
+    x_p13 = internal_states[13]
+    x_p14 = internal_states[14]
+    x_p15 = internal_states[15]
+    x_p16 = internal_states[16]
+    x_p17 = internal_states[17]
+
+    # Get Parameters
+    M_rtf = PSY.get_M_rtf(pss)
+    N_rtf = PSY.get_N_rtf(pss)
+    Tw1 = PSY.get_Tw1(pss)
+    Tw2 = PSY.get_Tw2(pss)
+    T6 = PSY.get_T6(pss)
+    Tw3 = PSY.get_Tw3(pss)
+    Tw4 = PSY.get_Tw4(pss)
+    T7 = PSY.get_T7(pss)
+    Ks2 = PSY.get_Ks2(pss)
+    Ks3 = PSY.get_Ks3(pss)
+    T8 = PSY.get_T8(pss)
+    T9 = PSY.get_T9(pss)
+    Ks1 = PSY.get_Ks1(pss)
+    T1 = PSY.get_T1(pss)
+    T2 = PSY.get_T2(pss)
+    T3 = PSY.get_T3(pss)
+    T4 = PSY.get_T4(pss)
+    T10 = PSY.get_T10(pss)
+    T11 = PSY.get_T11(pss)
+    Vs1_min, Vs1_max = PSY.get_Vs1_lim(pss)
+    Vs2_min, Vs2_max = PSY.get_Vs2_lim(pss)
+    Vst_min, Vst_max = PSY.get_Vst_lim(pss)
+
+    # Clamp inputs
+    u_1 = clamp(u_1, Vs1_min, Vs1_max)
+    u_2 = clamp(u_2, Vs2_min, Vs2_max)
+
+    # Compute block derivatives
+    y_w_1_1, dxp1_dt = high_pass(u_1, x_p1, Tw1, Tw1)
+
+    # To bypass second washout, of the first signal use Tw2 = 0.0
+    y_w_2_1 = y_w_1_1
+    dxp2_dt = 0.0
+
+    if Tw2 != 0.0
+        y_w_2_1, dxp2_dt = high_pass(y_w_1_1, x_p2, Tw2, Tw2)
+    end
+
+    # To bypass use T6 = 0.0
+    yt_1 = y_w_2_1
+    dxp3_dt = 0.0
+
+    if T6 != 0.0
+        yt_1, dxp3_dt = low_pass(y_w_2_1, x_p3, 1.0, T6)
+    end
+
+    y_w_1_2, dxp4_dt = high_pass(u_2, x_p4, Tw3, Tw3)
+
+    # To bypass second washout, of the second signal use Tw4 = 0.0
+    y_w_2_2 = y_w_1_2
+    dxp5_dt = 0.0
+
+    if Tw4 != 0.0
+        y_w_2_2, dxp5_dt = high_pass(y_w_1_2, x_p5, Tw4, Tw4)
+    end
+
+    # To bypass use T7 = 0.0
+    yt_2 = y_w_2_2
+    dxp6_dt = 0.0
+
+    if T7 != 0.0
+        yt_2, dxp6_dt = low_pass(y_w_2_2, x_p6, Ks2, T7)
+    end
+
+    # To bypass use M = N = 0
+    y_rtf, dxp7_dt, dxp8_dt, dxp9_dt, dxp10_dt, dxp11_dt, dxp12_dt, dxp13_dt, dxp14_dt =
+        ramp_tracking_filter(
+            yt_1 + Ks3 * yt_2,
+            x_p7,
+            x_p8,
+            x_p9,
+            x_p10,
+            x_p11,
+            x_p12,
+            x_p13,
+            x_p14,
+            T9,
+            T8,
+            M_rtf,
+            N_rtf,
+        )
+
+    yll_1, dxp15_dt = lead_lag(Ks1 * (y_rtf - x_p6), x_p15, 1.0, T1, T2)
+    yll_2, dxp16_dt = lead_lag(yll_1, x_p16, 1.0, T3, T4)
+    yll_3, dxp17_dt = lead_lag(yll_2, x_p17, 1.0, T10, T11)
+
+    #Compute 17 states PSS ODE
+    output_ode[local_ix[1]] = dxp1_dt
+    output_ode[local_ix[2]] = dxp2_dt
+    output_ode[local_ix[3]] = dxp3_dt
+    output_ode[local_ix[4]] = dxp4_dt
+    output_ode[local_ix[5]] = dxp5_dt
+    output_ode[local_ix[6]] = dxp6_dt
+    output_ode[local_ix[7]] = dxp7_dt
+    output_ode[local_ix[8]] = dxp8_dt
+    output_ode[local_ix[9]] = dxp9_dt
+    output_ode[local_ix[10]] = dxp10_dt
+    output_ode[local_ix[11]] = dxp11_dt
+    output_ode[local_ix[12]] = dxp12_dt
+    output_ode[local_ix[13]] = dxp13_dt
+    output_ode[local_ix[14]] = dxp14_dt
+    output_ode[local_ix[15]] = dxp15_dt
+    output_ode[local_ix[16]] = dxp16_dt
+    output_ode[local_ix[17]] = dxp17_dt
+
+    #Compute PSS output signal and update inner vars
+    inner_vars[V_pss_var] = clamp(yll_3, Vst_min, Vst_max)
+    return
+end
+
 #Currently not working properly.
 #=
 function mdl_pss_ode!(
