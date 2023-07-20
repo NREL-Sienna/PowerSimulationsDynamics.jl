@@ -58,6 +58,10 @@ function post_proc_state_series(
     dt::Union{Nothing, Float64},
 )
     global_state_index = get_global_index(res)
+    if !haskey(global_state_index, ref[1])
+        @error "$(keys(global_state_index))"
+        error("State $(ref[2]) device $(ref[1]) not found in the system. ")
+    end
     ix = get(global_state_index[ref[1]], ref[2], 0)
     return _post_proc_state_series(get_solution(res), ix, dt)
 end
