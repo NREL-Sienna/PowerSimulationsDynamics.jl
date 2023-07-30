@@ -191,6 +191,8 @@ function mdl_inner_ode!(
     lf = PSY.get_lf(filter)
     ωad = PSY.get_ωad(inner_control)
     kad = PSY.get_kad(inner_control)
+    limit_method = PSY.get_I_lim_type(inner_control)
+    limit_value = PSY.get_I_max(inner_control)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.VoltageModeControl)
@@ -226,10 +228,28 @@ function mdl_inner_ode!(
     Id_cnv_ref = Id_pi - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
     Iq_cnv_ref = Iq_pi + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
 
+    #Limit current reference to protect silicon switching devices
+    if limit_method == 1.0 # Instantaneous Current Limiting Technique (square)
+        Id_cnv_ref2 = clamp(Id_cnv_ref, -limit_value/sqrt(2), limit_value/sqrt(2))
+        Iq_cnv_ref2 = clamp(Iq_cnv_ref,-limit_value/sqrt(2), limit_value/sqrt(2))
+    elseif limit_method == 2.0 # Magnitude Limiting Technique (circle)
+        theta = atan(Iq_cnv_ref,Id_cnv_ref)
+        if (Id_cnv_ref^2 + Iq_cnv_ref^2)^(1/2) > limit_value 
+            Id_cnv_ref2 = limit_value*cos(theta)
+            Iq_cnv_ref2 = limit_value*sin(theta)
+        else
+            Id_cnv_ref2 = Id_cnv_ref
+            Iq_cnv_ref2 = Iq_cnv_ref
+        end
+    else # No current limiting
+        Id_cnv_ref2 = Id_cnv_ref
+        Iq_cnv_ref2 = Iq_cnv_ref
+    end
+
     ## SRF Current Control ##
     #Current Control PI Blocks
-    Vd_pi, dγd_dt = pi_block(Id_cnv_ref - I_dq_cnv[d], γ_d, kpc, kic)
-    Vq_pi, dγq_dt = pi_block(Iq_cnv_ref - I_dq_cnv[q], γ_q, kpc, kic)
+    Vd_pi, dγd_dt = pi_block(Id_cnv_ref2 - I_dq_cnv[d], γ_d, kpc, kic)
+    Vq_pi, dγq_dt = pi_block(Iq_cnv_ref2 - I_dq_cnv[q], γ_q, kpc, kic)
     #PI Integrator (internal state)
     output_ode[local_ix[3]] = dγd_dt
     output_ode[local_ix[4]] = dγq_dt
@@ -289,6 +309,8 @@ function mdl_inner_ode!(
     kic = PSY.get_kic(inner_control)
     kffv = PSY.get_kffv(inner_control)
     lf = PSY.get_lf(filter)
+    limit_method = PSY.get_I_lim_type(inner_control)
+    limit_value = PSY.get_I_max(inner_control)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.CurrentModeControl)
@@ -306,9 +328,27 @@ function mdl_inner_ode!(
     Id_cnv_ref = inner_vars[Id_oc_var]
     Iq_cnv_ref = inner_vars[Iq_oc_var]
 
+    # Apply current limiting
+    if limit_method == 1.0 # Instantaneous Current Limiting Technique (square)
+        Id_cnv_ref2 = clamp(Id_cnv_ref, -limit_value/sqrt(2), limit_value/sqrt(2))
+        Iq_cnv_ref2 = clamp(Iq_cnv_ref,-limit_value/sqrt(2), limit_value/sqrt(2))
+    elseif limit_method == 2.0 # Magnitude Limiting Technique (circle)
+        theta = atan(Iq_cnv_ref,Id_cnv_ref)
+        if (Id_cnv_ref^2 + Iq_cnv_ref^2)^(1/2) > limit_value 
+            Id_cnv_ref2 = limit_value*cos(theta)
+            Iq_cnv_ref2 = limit_value*sin(theta)
+        else
+            Id_cnv_ref2 = Id_cnv_ref
+            Iq_cnv_ref2 = Iq_cnv_ref
+        end
+    else # No current limiting
+        Id_cnv_ref2 = Id_cnv_ref
+        Iq_cnv_ref2 = Iq_cnv_ref
+    end
+
     #Current Control PI Blocks
-    Vd_pi, dγd_dt = pi_block(Id_cnv_ref - I_dq_cnv[d], γ_d, kpc, kic)
-    Vq_pi, dγq_dt = pi_block(Iq_cnv_ref - I_dq_cnv[q], γ_q, kpc, kic)
+    Vd_pi, dγd_dt = pi_block(Id_cnv_ref2 - I_dq_cnv[d], γ_d, kpc, kic)
+    Vq_pi, dγq_dt = pi_block(Iq_cnv_ref2 - I_dq_cnv[q], γ_q, kpc, kic)
     #PI Integrator (internal state)
     output_ode[local_ix[1]] = dγd_dt
     output_ode[local_ix[2]] = dγq_dt
