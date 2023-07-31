@@ -137,6 +137,26 @@ end
     end
 end
 
+@testset "Simulation kwargs: disable_timer_outputs" begin
+    path = mktempdir()
+    try
+        #Define Simulation Problem
+        sim = Simulation(
+            ResidualModel,
+            omib_sys, #system
+            path,
+            (0.0, 30.0); #time span
+            system_to_file = true,
+            console_level = Logging.Error,
+            disable_timer_outputs = true,
+        )
+        @test sim.status == PSID.BUILT
+    finally
+        @info("removing test files")
+        rm(path; force = true, recursive = true)
+    end
+end
+
 @testset "Hybrid Line Indexing" begin
     ## Create threebus system with more dyn lines ##
     three_bus_file_dir = joinpath(TEST_FILES_DIR, "data_tests/ThreeBusInverter.raw")
