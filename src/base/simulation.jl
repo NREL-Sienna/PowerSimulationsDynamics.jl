@@ -379,9 +379,11 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     # Branches are a super set of Lines. Passing both kwargs will
     # be redundant.
-    TimerOutputs.reset_timer!(BUILD_TIMER)
     if get(kwargs, :disable_timer_outputs, false)
-        TimerOutputs.disable_timer!(BUILD_PROBLEMS_TIMER)
+        TimerOutputs.disable_timer!(BUILD_TIMER)
+    else
+        TimerOutputs.enable_timer!(BUILD_TIMER)
+        TimerOutputs.reset_timer!(BUILD_TIMER)
     end
 
     TimerOutputs.@timeit BUILD_TIMER "Build Simulation" begin
