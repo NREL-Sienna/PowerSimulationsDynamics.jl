@@ -104,7 +104,7 @@ Builds the simulation object and conducts the indexing process. The original sys
 - `system_to_file::Bool` : Default `false`. Serializes the initialized system
 - `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
 - `file_level::Logging` : Default `Logging.Info`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
-- `disable_timer_output::Bool` : Default `false`. Allows the user to display timer information about the construction and initilization of the Simulation.
+- `disable_timer_outputs::Bool` : Default `false`. Allows the user to display timer information about the construction and initilization of the Simulation.
 """
 function Simulation!(
     ::Type{T},
@@ -161,7 +161,7 @@ Builds the simulation object and conducts the indexing process. The initial cond
 - `system_to_file::Bool` : Default `false`. Serializes the initialized system
 - `console_level::Logging` : Default `Logging.Warn`. Sets the level of logging output to the console. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
 - `file_level::Logging` : Default `Logging.Info`. Sets the level of logging output to file. Can be set to `Logging.Error`, `Logging.Warn`, `Logging.Info` or `Logging.Debug`
-- `disable_timer_output::Bool` : Default `false`. Allows the user to display timer information about the construction and initilization of the Simulation.
+- `disable_timer_outputs::Bool` : Default `false`. Allows the user to display timer information about the construction and initilization of the Simulation.
 """
 function Simulation(
     ::Type{T},
@@ -379,9 +379,11 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     # Branches are a super set of Lines. Passing both kwargs will
     # be redundant.
-    TimerOutputs.reset_timer!(BUILD_TIMER)
     if get(kwargs, :disable_timer_outputs, false)
-        TimerOutputs.disable_timer!(BUILD_PROBLEMS_TIMER)
+        TimerOutputs.disable_timer!(BUILD_TIMER)
+    else
+        TimerOutputs.enable_timer!(BUILD_TIMER)
+        TimerOutputs.reset_timer!(BUILD_TIMER)
     end
 
     TimerOutputs.@timeit BUILD_TIMER "Build Simulation" begin
