@@ -180,6 +180,22 @@ function compute_field_voltage(
 end
 
 """
+Function to obtain the pss output time series of a Dynamic Generator model out of the DAE Solution. It receives the simulation inputs,
+the dynamic device and bus voltage. It is dispatched for device type to compute the specific output.
+
+"""
+function compute_pss_output(
+    res::SimulationResults,
+    dynamic_device::G,
+    dt::Union{Nothing, Float64},
+) where {G <: PSY.DynamicGenerator}
+
+    #Get PSS
+    pss = PSY.get_pss(dynamic_device)
+    return _pss_output(pss, PSY.get_name(dynamic_device), res, dt)
+end
+
+"""
 Function to obtain the mechanical torque time series of a Dynamic Generator model out of the DAE Solution. It receives the simulation inputs,
 the dynamic device and bus voltage. It is dispatched for device type to compute the specific torque.
 
@@ -751,6 +767,148 @@ function _field_voltage(
         end
     end
     return ts, Vf
+end
+
+"""
+Function to obtain the field voltage time series of a Dynamic Generator with avr ESST1A.
+
+"""
+function _field_voltage(
+    avr::PSY.ESST1A,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    # Obtain state Va
+    ts, Va = post_proc_state_series(res, (name, :Va), dt)
+
+    # Obtain field current
+    _, Ifd = post_proc_field_current_series(res, name, dt)
+
+    # Obtain PSS output
+    _, Vs = post_proc_pss_output_series(res, name, dt)
+
+    # Get parameters
+    VOS = PSY.get_PSS_flags(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    Kc = PSY.get_Kc(avr)
+    K_lr = PSY.get_K_lr(avr)
+    I_lr = PSY.get_I_lr(avr)
+
+    # Obtain machine's terminal voltage
+    bus_str = split(name, "-")[2]
+    bus_num = parse(Int, bus_str)
+    _, Vt = get_voltage_magnitude_series(res, bus_num; dt = dt)
+
+    # Compute auxiliary arrays
+    Itemp = similar(Ifd)
+    Iresult = similar(Ifd)
+
+    for (ix, Ifd_ix) in enumerate(Ifd)
+        Itemp[ix] = K_lr * (Ifd_ix - I_lr)
+        Iresult[ix] = Itemp[ix] > 0.0 ? Itemp[ix] : 0.0
+    end
+
+    # Compute Va_sum
+    Va_sum = similar(Va)
+
+    if VOS == 1
+        for (ix, Va_ix) in enumerate(Va)
+            Va_sum[ix] = Va_ix - Iresult[ix]
+        end
+    elseif VOS == 2
+        for (ix, Va_ix) in enumerate(Va)
+            Va_sum[ix] = Va_ix - Iresult[ix] + Vs[ix]
+        end
+    end
+
+    # Compute field voltage
+    Vf = similar(Va_sum)
+    for (ix, Va_sum_ix) in enumerate(Va_sum)
+        Vf[ix] = clamp(Va_sum_ix, Vt[ix] * Vr_min, Vt[ix] * Vr_max - Kc * Ifd[ix])
+    end
+
+    return ts, Vf
+end
+
+"""
+Function to obtain the pss output time series of a Dynamic Generator with pss PSSFixed.
+
+"""
+function _pss_output(
+    pss::PSY.PSSFixed,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, _ = post_proc_state_series(res, (name, :δ), dt)
+    return ts, zeros(length(ts))
+end
+
+"""
+Function to obtain the pss output time series of a Dynamic Generator with pss IEEEST.
+
+"""
+function _pss_output(
+    pss::PSY.IEEEST,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    # Obtain states
+    ts, x_p2 = post_proc_state_series(res, (name, :x_p2), dt)
+    _, x_p3 = post_proc_state_series(res, (name, :x_p3), dt)
+    _, x_p4 = post_proc_state_series(res, (name, :x_p4), dt)
+    _, x_p5 = post_proc_state_series(res, (name, :x_p5), dt)
+    _, x_p6 = post_proc_state_series(res, (name, :x_p6), dt)
+    _, x_p7 = post_proc_state_series(res, (name, :x_p7), dt)
+
+    # Get Parameters
+    A1 = PSY.get_A1(pss)
+    A2 = PSY.get_A2(pss)
+    A5 = PSY.get_A5(pss)
+    A6 = PSY.get_A6(pss)
+    T1 = PSY.get_T1(pss)
+    T2 = PSY.get_T2(pss)
+    T3 = PSY.get_T3(pss)
+    T4 = PSY.get_T4(pss)
+    T5 = PSY.get_T5(pss)
+    T6 = PSY.get_T6(pss)
+    Ks = PSY.get_Ks(pss)
+    Ls_min, Ls_max = PSY.get_Ls_lim(pss)
+    V_cu = PSY.get_Vcu(pss)
+    V_cl = PSY.get_Vcl(pss)
+
+    # Compute intermediate variables
+    y_f = similar(x_p2)
+    y_LL1 = similar(x_p2)
+    y_LL2 = similar(x_p2)
+    y_out = similar(x_p2)
+
+    for (ix, _) in enumerate(x_p2)
+        y_f[ix], _, _ = lead_lag_2nd_mass_matrix(x_p2[ix], x_p3[ix], x_p4[ix], A1, A2, A5, A6)
+        y_LL1[ix], _ = lead_lag_mass_matrix(y_f[ix], x_p5[ix], 1.0, T1, T2)
+        y_LL2[ix], _ = lead_lag_mass_matrix(y_LL1[ix], x_p6[ix], 1.0, T3, T4)
+        y_out[ix], _ = high_pass_mass_matrix(y_LL2[ix], x_p7[ix], Ks * T5, T6)    
+    end
+
+    # Compute V_ss
+    V_ss = clamp.(y_out, Ls_min, Ls_max)
+
+    # Obtain machine's terminal voltage
+    bus_str = split(name, "-")[2]
+    bus_num = parse(Int, bus_str)
+    # TODO: Figure out how to compensate terminal voltage
+    _, V_ct = get_voltage_magnitude_series(res, bus_num; dt = dt)
+
+    # Compute PSS output signal
+    V_pss = similar(V_ss)
+
+    for (ix, V_ss_ix) in enumerate(V_ss)
+        V_pss[ix] = output_pss_limiter(V_ss_ix, V_ct[ix], V_cl, V_cu)
+    end
+
+    return ts, V_pss
 end
 
 """
