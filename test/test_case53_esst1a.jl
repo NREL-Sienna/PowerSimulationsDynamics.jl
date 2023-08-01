@@ -110,7 +110,6 @@ esst1a_avr() = ESST1A(;
         results = read_results(sim)
 
         # Obtain results
-
         t_psid, v2_psid = get_voltage_magnitude_series(results, 2)
         _, v3_psid = get_voltage_magnitude_series(results, 3)
         _, ω_psid = get_state_series(results, ("generator-2-1", :ω))
@@ -121,15 +120,14 @@ esst1a_avr() = ESST1A(;
         t_psse = M[:, 1]
         v2_psse = M[:, 2]
         v3_psse = M[:, 3]
-        omega_psse = M[:, 4]
+        ω_psse = M[:, 4]
         efd_psse = M[:, 5]
 
         # Test Transient Simulation Results
-
         @test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
         @test LinearAlgebra.norm(v2_psid - v2_psse, Inf) <= 1e-3
         @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 1e-3
-        @test LinearAlgebra.norm(omega_psid - omega_psse, Inf) <= 1e-3
+        @test LinearAlgebra.norm(ω_psid - ω_psse, Inf) <= 1e-3
         @test LinearAlgebra.norm(efd_psid - efd_psse, Inf) <= 5e-2
 
     finally
