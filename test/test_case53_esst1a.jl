@@ -34,8 +34,8 @@ esst1a_avr() = ESST1A(;
     Tb1 = 20.0,
     Ka = 200.0,
     Ta = 0.1,
-    Va_lim = (min=2.1, max=6.3),
-    Vr_lim = (min=0.0, max=6.0),
+    Va_lim = (min = 2.1, max = 6.3),
+    Vr_lim = (min = 0.0, max = 6.0),
     Kc = 0.5,
     Kf = 0.01,
     Tf = 0.01,
@@ -67,7 +67,7 @@ esst1a_avr() = ESST1A(;
         remove_component!(sys, dynamic_injector)
 
         # Define the new dynamic injector
-        dyn_gen = DynamicGenerator(
+        dyn_gen = DynamicGenerator(;
             name = get_name(g),
             machine = deepcopy(get_machine(dynamic_injector)),
             shaft = deepcopy(get_shaft(dynamic_injector)),
@@ -117,7 +117,7 @@ esst1a_avr() = ESST1A(;
         _, efd_psid = get_field_voltage_series(results, "generator-2-1")
 
         # Obtain PSSE results
-        M = get_csv_data(CSV_file)
+        M = get_csv_data(csv_file)
         t_psse = M[:, 1]
         v2_psse = M[:, 2]
         v3_psse = M[:, 3]

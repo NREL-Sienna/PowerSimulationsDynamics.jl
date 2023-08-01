@@ -886,10 +886,11 @@ function _pss_output(
     y_out = similar(x_p2)
 
     for (ix, _) in enumerate(x_p2)
-        y_f[ix], _, _ = lead_lag_2nd_mass_matrix(x_p2[ix], x_p3[ix], x_p4[ix], A1, A2, A5, A6)
+        y_f[ix], _, _ =
+            lead_lag_2nd_mass_matrix(x_p2[ix], x_p3[ix], x_p4[ix], A1, A2, A5, A6)
         y_LL1[ix], _ = lead_lag_mass_matrix(y_f[ix], x_p5[ix], 1.0, T1, T2)
         y_LL2[ix], _ = lead_lag_mass_matrix(y_LL1[ix], x_p6[ix], 1.0, T3, T4)
-        y_out[ix], _ = high_pass_mass_matrix(y_LL2[ix], x_p7[ix], Ks * T5, T6)    
+        y_out[ix], _ = high_pass_mass_matrix(y_LL2[ix], x_p7[ix], Ks * T5, T6)
     end
 
     # Compute V_ss
