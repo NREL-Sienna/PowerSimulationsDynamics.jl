@@ -87,7 +87,7 @@ pss2b_pss() = PSY.PSS2B(;
     Vst_lim = (-0.1, 0.1),
 )
 
-@testset "Test 52 PSS2B ResidualModel" begin
+@testset "Test 53 PSS2B ResidualModel" begin
     path = joinpath(pwd(), "test-psse-pss2b")
     !isdir(path) && mkdir(path)
     try
@@ -141,7 +141,7 @@ pss2b_pss() = PSY.PSS2B(;
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test52_x0_init
+        for (k, v) in test53_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 

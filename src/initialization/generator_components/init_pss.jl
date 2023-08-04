@@ -404,6 +404,158 @@ function initialize_pss!(
     return
 end
 
+function initialize_pss!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2C}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
+    #Get Signal Input Integer
+    pss = PSY.get_pss(dynamic_device)
+    #Remote bus control not supported
+
+    basepower = PSY.get_base_power(dynamic_device)
+    Sbase = get_system_base_power(dynamic_device)
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(dynamic_device, typeof(pss))
+    ω = device_states[external_ix[1]]
+
+    #Get Input Signal 1
+    u_1 = get_pss_input_signal(
+        Val(PSY.get_input_code_1(pss)),
+        device_states,
+        inner_vars,
+        1.0,
+        dynamic_device,
+    )
+
+    if PSY.get_input_code_1(pss) == 3
+        u_1 = u_1 * (Sbase / basepower) * ω
+    end
+
+    #Get Input Signal 2
+    u_2 = get_pss_input_signal(
+        Val(PSY.get_input_code_2(pss)),
+        device_states,
+        inner_vars,
+        1.0,
+        dynamic_device,
+    )
+
+    if PSY.get_input_code_2(pss) == 3
+        u_2 = u_2 * (Sbase / basepower) * ω
+    end
+
+    #Obtain PSS States
+    pss_ix = get_local_state_ix(dynamic_device, typeof(pss))
+    pss_states = @view device_states[pss_ix]
+
+    # Get Required Parameters
+    M_rtf = PSY.get_M_rtf(pss)
+    N_rtf = PSY.get_N_rtf(pss)
+    Tw1 = PSY.get_Tw1(pss)
+    Tw3 = PSY.get_Tw3(pss)
+    T9 = PSY.get_T9(pss)
+    Vs1_min, Vs1_max = PSY.get_Vs1_lim(pss)
+    Vs2_min, Vs2_max = PSY.get_Vs2_lim(pss)
+    Tcomp = PSY.get_Tcomp(pss)
+
+    #Error for inputs outside limits
+    if u_1 < Vs1_min || u_1 > Vs1_max
+        error("First input for PSS $(PSY.get_name(dynamic_device)) is outside the limits")
+    end
+
+    if u_2 < Vs2_min || u_2 > Vs2_max
+        error("Second input for PSS $(PSY.get_name(dynamic_device)) is outside the limits")
+    end
+
+    #Error non-valid parameters
+    if M_rtf * N_rtf > 8
+        error(
+            "M*N cannot be greater than 8. Correct data in PSS associated with $(PSY.get_name(dynamic_device))",
+        )
+    end
+
+    if Tw1 < eps()
+        error(
+            "Tw1 is not allowed to be zero. Correct data in PSS associated with $(PSY.get_name(dynamic_device))",
+        )
+    end
+
+    if Tw3 < eps()
+        error(
+            "Tw3 is not allowed to be zero. Correct data in PSS associated with $(PSY.get_name(dynamic_device))",
+        )
+    end
+
+    if T9 < eps()
+        error(
+            "T9 is not allowed to be zero. Correct data in PSS associated with $(PSY.get_name(dynamic_device))",
+        )
+    end
+
+    if Tcomp < eps()
+        error(
+            "Tcomp is not allowed to be zero. Correct data in PSS associated with $(PSY.get_name(dynamic_device))",
+        )
+    end
+
+    #Compute steady-state values
+    x_p1 = -u_1
+    x_p2 = 0.0
+    x_p3 = 0.0
+
+    x_p4 = -u_2
+    x_p5 = 0.0
+    x_p6 = 0.0
+
+    x_p7 = 0.0
+    x_p8 = 0.0
+    x_p9 = 0.0
+    x_p10 = 0.0
+    x_p11 = 0.0
+    x_p12 = 0.0
+    x_p13 = 0.0
+    x_p14 = 0.0
+
+    x_p15 = 0.0
+    x_p16 = 0.0
+    x_p17 = 0.0
+    x_p18 = 0.0
+
+    # TODO: Washout Block for compensated frequency is not implemented yet, so temporarily its state is kept as zero
+    x_p19 = 0.0
+
+    # Initialize hysteresis_binary_logic as 1
+    PSY.set_hysteresis_binary_logic!(pss, 1)
+
+    #Update Inner Vars
+    inner_vars[V_pss_var] = 0.0
+
+    #Update States
+    pss_states[1] = x_p1
+    pss_states[2] = x_p2
+    pss_states[3] = x_p3
+    pss_states[4] = x_p4
+    pss_states[5] = x_p5
+    pss_states[6] = x_p6
+    pss_states[7] = x_p7
+    pss_states[8] = x_p8
+    pss_states[9] = x_p9
+    pss_states[10] = x_p10
+    pss_states[11] = x_p11
+    pss_states[12] = x_p12
+    pss_states[13] = x_p13
+    pss_states[14] = x_p14
+    pss_states[15] = x_p15
+    pss_states[16] = x_p16
+    pss_states[17] = x_p17
+    pss_states[18] = x_p18
+    pss_states[19] = x_p19
+    return
+end
+
 #Currently not working properly.
 #=
 function initialize_pss!(
