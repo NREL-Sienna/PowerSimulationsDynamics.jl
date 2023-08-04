@@ -93,7 +93,7 @@ esst1a_avr() = ESST1A(;
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test53_x0_init
+        for (k, v) in test55_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
