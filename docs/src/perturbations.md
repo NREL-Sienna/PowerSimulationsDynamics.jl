@@ -30,6 +30,12 @@ Triping one circuit can be modeled by doubling the impedance, i.e., dividing by 
 new_yb = [0.0 - 10.0im 0.0 + 10.0im
           0.0 + 10.0im 0.0 - 10.0im]
 ```
+To apply a Network Switch, we require to use a sparse matrix, so we can do this by simply:
+
+```julia
+using SparseArrays
+new_yb = sparse(new_yb)
+```
 
 Then, this perturbation ocurring at ``t = 1.0`` seconds can be included as:
 ```julia
@@ -47,6 +53,7 @@ new_yb2 = [10000.0 - 20.0im  0.0 + 20.0im
 Then, this perturbation ocurring at ``t = 1.0`` seconds can be included as:
 
 ```julia
+new_yb2 = sparse(new_yb2)
 ns2 = NetworkSwitch(1.0, new_yb2)
 ```
 
@@ -60,6 +67,7 @@ new_yb3 = [0.0 - 10.0im 0.0 + 10.0im
 and the perturbation as:
 
 ```julia
+new_yb3 = sparse(new_yb3)
 ns3 = NetworkSwitch(1.05, new_yb3)
 ```
 

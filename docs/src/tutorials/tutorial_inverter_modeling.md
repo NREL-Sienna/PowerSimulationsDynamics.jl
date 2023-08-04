@@ -146,7 +146,7 @@ add_component!(sys, storage)
 A good sanity check it running a power flow on the system to make sure all the components are properly scaled and that the system is properly balanced. We can use `PowerSystems` to perform this check. We can get the results back and perform a sanity check.
 
 ```@repl inv_sys
-res = run_powerflow(sys)
+res = solve_powerflow(ACPowerFlow(), sys)
 res["bus_results"]
 ```
 
