@@ -35,17 +35,36 @@ using PowerSimulationsDynamics
 using PowerSystems
 ```
 
-## References
+## Citing PowerSystems.jl
 
-The background work on `PowerSimulationsDynamics.jl` is explained in [Revisiting Power Systems Time-domain Simulation Methods and Models](https://arxiv.org/pdf/2301.10043.pdf)
+[Paper describing `PowerSimulationsDynamics.jl`](https://arxiv.org/abs/2308.02921)
 
 ```bibtex
-   @article{lara2023revisiting,
-  title={Revisiting Power Systems Time-domain Simulation Methods and Models},
-  author={Lara, Jose Daniel and Henriquez-Auba, Rodrigo and Ramasubramanian, Deepak and Dhople, Sairaj and Callaway, Duncan S and Sanders, Seth},
-  journal={arXiv preprint arXiv:2301.10043},
-  year={2023}
+@misc{lara2023powersimulationsdynamicsjl,
+      title={PowerSimulationsDynamics.jl -- An Open Source Modeling Package for Modern Power Systems with Inverter-Based Resources}, 
+      author={Jose Daniel Lara and Rodrigo Henriquez-Auba and Matthew Bossart and Duncan S. Callaway and Clayton Barrows},
+      year={2023},
+      eprint={2308.02921},
+      archivePrefix={arXiv},
+      primaryClass={eess.SY}
 }
+```
+
+
+## References
+
+The background work on `PowerSimulationsDynamics.jl` is explained in [Revisiting Power Systems Time-domain Simulation Methods and Models](https://ieeexplore.ieee.org/document/10213230)
+
+```bibtex
+@ARTICLE{revLaraDynamics,
+  author={Lara, Jose Daniel and Henriquez-Auba, Rodrigo and Ramasubramanian, Deepak and Dhople, Sairaj and Callaway, Duncan S. and Sanders, Seth},
+  journal={IEEE Transactions on Power Systems}, 
+  title={Revisiting Power Systems Time-domain Simulation Methods and Models}, 
+  year={2023},
+  volume={},
+  number={},
+  pages={1-16},
+  doi={10.1109/TPWRS.2023.3303291}}
 ```
 
 ## Development
