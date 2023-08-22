@@ -35,7 +35,7 @@ using PowerSimulationsDynamics
 using PowerSystems
 ```
 
-## Citing PowerSystems.jl
+## Citing PowerSimulationsDynamics.jl
 
 [Paper describing `PowerSimulationsDynamics.jl`](https://arxiv.org/abs/2308.02921)
 
