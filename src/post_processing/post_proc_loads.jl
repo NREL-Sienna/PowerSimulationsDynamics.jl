@@ -118,6 +118,8 @@ function compute_output_current(
     #      require to properly have access to it in the SimResults.
     #TODO: Load is assumed to be connected. We need proper ways of keep tracking when
     #      something is disconnected
+    settings_unit_cache = deepcopy(res.system.units_settings.unit_system)
+    PSY.set_units_base_system!(res.system, "SYSTEM_BASE")
     solution = res.solution
     if dt === nothing
         ix_t = unique(i -> solution.t[i], eachindex(solution.t))
@@ -137,6 +139,7 @@ function compute_output_current(
     I_R = (P .* V_R + Q .* V_I) ./ V_mag .^ 2
     I_I = (P .* V_I - Q .* V_R) ./ V_mag .^ 2
 
+    PSY.set_units_base_system!(res.system, settings_unit_cache)
     return ts, I_R, I_I
 end
 
@@ -155,6 +158,8 @@ function compute_output_current(
     #      require to properly have access to it in the SimResults.
     #TODO: Load is assumed to be connected. We need proper ways of keep tracking when
     #      something is disconnected
+    settings_unit_cache = deepcopy(res.system.units_settings.unit_system)
+    PSY.set_units_base_system!(res.system, "SYSTEM_BASE")
     solution = res.solution
     if dt === nothing
         ix_t = unique(i -> solution.t[i], eachindex(solution.t))
@@ -174,6 +179,8 @@ function compute_output_current(
         P .* V_R .* (V_mag .^ (α - 2.0) ./ V0^α) + Q .* V_I .* (V_mag .^ (β - 2.0) ./ V0^β)
     I_I =
         P .* V_I .* (V_mag .^ (α - 2.0) ./ V0^α) - Q .* V_R .* (V_mag .^ (β - 2.0) ./ V0^β)
+
+    PSY.set_units_base_system!(res.system, settings_unit_cache)
     return ts, I_R, I_I
 end
 
@@ -192,6 +199,8 @@ function compute_output_current(
     #      require to properly have access to it in the SimResults.
     #TODO: Load is assumed to be connected. We need proper ways of keep tracking when
     #      something is disconnected
+    settings_unit_cache = deepcopy(res.system.units_settings.unit_system)
+    PSY.set_units_base_system!(res.system, "SYSTEM_BASE")
     solution = res.solution
     if dt === nothing
         ix_t = unique(i -> solution.t[i], eachindex(solution.t))
@@ -218,5 +227,7 @@ function compute_output_current(
 
     I_R = I_R_power + I_R_current + I_R_impedance
     I_I = I_I_power + I_I_current + I_I_impedance
+
+    PSY.set_units_base_system!(res.system, settings_unit_cache)
     return ts, I_R, I_I
 end
