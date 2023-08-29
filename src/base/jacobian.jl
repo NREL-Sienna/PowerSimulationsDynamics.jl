@@ -71,7 +71,9 @@ function JacobianFunctionWrapper(
     if sparse_retrieve_loop > 0
         for _ in 1:sparse_retrieve_loop
             temp = zeros(n, n)
+            rng_state = copy(Random.default_rng())
             Jf(temp, x0 + Random.randn(n))
+            copy!(Random.default_rng(), rng_state)
             jac .+= abs.(temp)
         end
         Jv = SparseArrays.sparse(jac)
@@ -104,7 +106,9 @@ function JacobianFunctionWrapper(
     if sparse_retrieve_loop > 0
         for _ in 1:sparse_retrieve_loop
             temp = zeros(n, n)
+            rng_state = copy(Random.default_rng())
             Jf(temp, x0 + Random.randn(n))
+            copy!(Random.default_rng(), rng_state)
             jac .+= abs.(temp)
         end
         Jv = SparseArrays.sparse(jac .+ mass_matrix)
