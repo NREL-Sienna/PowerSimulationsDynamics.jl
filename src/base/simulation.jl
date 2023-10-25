@@ -88,7 +88,7 @@ end
         kwargs...,
     end
 
-Builds the simulation object and conducts the indexing process. The original system is not modified and a copy its created and stored in the Simulation.
+Builds the simulation object and conducts the indexing process. The initial conditions are stored in the system.
 
 # Arguments:
 - `::SimulationModel` : Type of Simulation Model. `ResidualModel` or `MassMatrixModel`. See [Models Section](https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable/models/) for more details
@@ -145,7 +145,7 @@ end
         kwargs...,
     end
 
-Builds the simulation object and conducts the indexing process. The initial conditions are stored in the system.
+Builds the simulation object and conducts the indexing process. The original system is not modified and a copy its created and stored in the Simulation.
 
 # Arguments:
 - `::SimulationModel` : Type of Simulation Model. `ResidualModel` or `MassMatrixModel`. See [Models Section](https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable/models/) for more details
