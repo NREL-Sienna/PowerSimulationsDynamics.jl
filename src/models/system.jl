@@ -37,10 +37,22 @@ function (m::SystemModel{ResidualModel, C})(
     return
 end
 
-function system_residual!(
+function system_residual_with_delays!(
     out::AbstractVector{T},
     dx::AbstractVector{U},
     x::AbstractVector{V},
+    inputs::SimulationInputs,
+    cache::Cache,
+    t::Float64,
+)
+    return _system_residual!(out, dx, x, Function[], inputs, cache, t)
+end
+
+function _system_residual!(
+    out::AbstractVector{T},
+    dx::AbstractVector{U},
+    x::AbstractVector{V},
+    h,
     inputs::SimulationInputs,
     cache::Cache,
     t::Float64,
@@ -67,8 +79,23 @@ function system_residual!(
         device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
-
-        device!(
+        delays = h[get_ode_ouput_range(dynamic_device)]
+        if has_delays(dynamic_device)
+            device!(
+                device_states,
+                device_ode_output,
+                voltage_r[bus_ix],
+                voltage_i[bus_ix],
+                view(current_r, bus_ix),
+                view(current_i, bus_ix),
+                delays,
+                global_vars,
+                device_inner_vars,
+                dynamic_device,
+                t,
+            )
+        else
+            device!(
             device_states,
             device_ode_output,
             voltage_r[bus_ix],
@@ -80,6 +107,7 @@ function system_residual!(
             dynamic_device,
             t,
         )
+        end
         M_ = @view M[ix_range, ix_range]
         out[ix_range] .= device_ode_output .- M_ * dx[ix_range]
     end
