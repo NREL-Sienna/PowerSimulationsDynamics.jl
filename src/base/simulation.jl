@@ -373,6 +373,7 @@ function _get_diffeq_problem(
             simulation_inputs,
         )
     else
+        h = get_history_function(simulation_inputs)
         sim.problem = SciMLBase.DDEProblem()
     end
     sim.status = BUILT

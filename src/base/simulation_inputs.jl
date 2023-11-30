@@ -74,6 +74,11 @@ struct SimulationInputs
                 break
             end
         end
+
+        if has_delays
+            @info "The model has delays. Employ the correct solver"
+        end
+
         new(
             wrapped_injectors,
             wrapped_static_injectors,
