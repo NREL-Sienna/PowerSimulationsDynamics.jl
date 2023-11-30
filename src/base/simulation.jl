@@ -358,19 +358,23 @@ function _get_diffeq_problem(
     jacobian::JacobianFunctionWrapper,
 )
     simulation_inputs = get_simulation_inputs(sim)
-    sim.problem = SciMLBase.ODEProblem(
-        SciMLBase.ODEFunction{true}(
-            model;
-            mass_matrix = get_mass_matrix(simulation_inputs),
-            jac = jacobian,
-            jac_prototype = jacobian.Jv,
-            # Necessary to avoid unnecessary calculations in Rosenbrock methods
-            tgrad = (dT, u, p, t) -> dT .= false,
-        ),
-        sim.x0_init,
-        get_tspan(sim),
-        simulation_inputs,
-    )
+    if !get_has_delays(simulation_inputs)
+        sim.problem = SciMLBase.ODEProblem(
+            SciMLBase.ODEFunction{true}(
+                model;
+                mass_matrix = get_mass_matrix(simulation_inputs),
+                jac = jacobian,
+                jac_prototype = jacobian.Jv,
+                # Necessary to avoid unnecessary calculations in Rosenbrock methods
+                tgrad = (dT, u, p, t) -> dT .= false,
+            ),
+            sim.x0_init,
+            get_tspan(sim),
+            simulation_inputs,
+        )
+    else
+        sim.problem = SciMLBase.DDEProblem()
+    end
     sim.status = BUILT
     return
 end
