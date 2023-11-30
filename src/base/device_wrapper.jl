@@ -20,6 +20,9 @@ index(::Type{<:PSY.InnerControl}) = 4
 index(::Type{<:PSY.Converter}) = 5
 index(::Type{<:PSY.Filter}) = 6
 
+has_delays(::PSY.DynamicInjection) = false
+has_delays(::PSY.DynamicGenerator{M, T,....}) = true
+
 """
 Wraps DynamicInjection devices from PowerSystems to handle changes in controls and connection
 status, and allocate the required indexes of the state space.

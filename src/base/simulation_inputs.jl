@@ -18,6 +18,7 @@ struct SimulationInputs
     global_vars_update_pointers::Dict{Int, Int}
     global_state_map::MAPPING_DICT
     global_inner_var_map::Dict{String, Dict}
+    has_delays::Bool
 
     function SimulationInputs(
         sys::PSY.System,
@@ -26,6 +27,7 @@ struct SimulationInputs
         n_buses = get_n_buses(sys)
         Ybus, lookup = _get_ybus(sys)
 
+        has_delays = false
         TimerOutputs.@timeit BUILD_TIMER "Wrap Branches" begin
             wrapped_branches = _wrap_dynamic_branches(sys, lookup)
             has_dyn_lines = !isempty(wrapped_branches)
@@ -39,6 +41,7 @@ struct SimulationInputs
 
         TimerOutputs.@timeit BUILD_TIMER "Wrap Dynamic Injectors" begin
             wrapped_injectors = _wrap_dynamic_injector_data(sys, lookup, injection_start)
+            has_delays = system_has_delays.(wrapped_injectors)
             var_count = wrapped_injectors[end].ix_range[end]
         end
 
@@ -91,6 +94,7 @@ struct SimulationInputs
             global_vars,
             MAPPING_DICT(),
             Dict{String, Dict}(),
+            has_delays
         )
     end
 end
