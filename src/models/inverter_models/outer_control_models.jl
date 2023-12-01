@@ -10,6 +10,7 @@ end
 ### Auxiliary ODE calculations via Flags dispatch ###
 #####################################################
 
+### REPCA ###
 ### Active Controllers ###
 
 #Freq_Flag = 1
@@ -152,6 +153,7 @@ function _mdl_ode_RE_active_controller_AB!(
     return
 end
 
+### REPCA ###
 ### Reactive Controllers ###
 
 # Order of Flags are:
@@ -513,6 +515,169 @@ function _mdl_ode_RE_reactive_controller_AB!(
     #Update Inner Vars
     inner_vars[V_oc_var] = V_pi_sat - Vt_filt
     inner_vars[Iq_oc_var] = Q_ext / max(Vt_filt, VOLTAGE_DIVISION_LOWER_BOUND)
+    return
+end
+
+### BESS Controller ###
+### Active Controllers ###
+#Power_Flag = 3: Active Damping + Frequency Support
+function _mdl_ode_BESS_active_controller!(
+    active_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    active_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p_elec_out::ACCEPTED_REAL_TYPES,
+    ω_sys::ACCEPTED_REAL_TYPES,
+    Vt_filt::ACCEPTED_REAL_TYPES,
+    ::Val{3},
+    active_power_control::PSY.ActiveOuterBESSController,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveOuterBESSController,
+                PSY.ReactiveOuterBESSController,
+            },
+            IC,
+            DC,
+            P,
+            F,
+        },
+    },
+    inner_vars::AbstractVector,
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+
+    #Obtain external parameters
+    p_ref = get_P_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
+    # To do: Obtain proper frequency for a plant. For now using the system frequency.
+    ω_plant = ω_sys
+
+    #Obtain additional Active Power Controller parameters
+    T_rf = PSY.get_T_rf(active_power_control)
+    K_osc = PSY.get_K_osc(active_power_control)
+    K_w = PSY.get_K_w(active_power_control)
+    T_w = PSY.get_T_w(active_power_control)
+    T_l1 = PSY.get_T_l1(active_power_control)
+    T_l2 = PSY.get_T_l2(active_power_control)
+    T_lg1 = PSY.get_T_lg1(active_power_control)
+    T_lg2 = PSY.get_T_lg2(active_power_control)
+    K_d = PSY.get_K_d(active_power_control)
+    K_wd = PSY.get_K_wd(active_power_control) #Not used in the antiwindup: Assumed to be 1.0
+    K_pf = PSY.get_K_pf(active_power_control)
+    K_if = PSY.get_K_if(active_power_control)
+    db_p = PSY.get_db_p(active_power_control)
+    P_min, P_max = PSY.get_P_lim(active_power_control)
+    dP_min, dP_max = PSY.get_dP_lim(active_power_control) #Ramp limits not implemented
+
+    #Define internal states for outer control
+    Δf_m = active_controller_states[1]
+    x_w = active_controller_states[2]
+    x_l = active_controller_states[3]
+    x_lg = active_controller_states[4]
+    x_i = active_controller_states[5]
+
+    #Compute additional terms
+    ω_plant = ω_sys
+
+    # Compute filter of der
+    _, dΔf_dt = low_pass(ω_plant - ω_ref, Δf_m, 1.0, T_rf)
+
+    #Compute block derivatives for Power oscillation damping
+    y_washout, dxw_dt = high_pass(Δf_m, x_w, K_osc * K_w * T_w, T_w)
+    y_lead, dxl_dt = lead_lag(y_washout, x_l, 1.0, T_l1, T_l2)
+    y_lag, dxlg_dt = lead_lag(y_lead, x_lg, 1.0, T_lg1, T_lg2)
+    P_pod = clamp(y_lag, P_min, P_max)
+
+    if K_d != 0.0
+        # Enable Primary Freq. Regulation: Droop
+        dxi_dt = 0.0 # Set integrator derivative to zero
+        Δf_db = deadband_function(-Δf_m, -db_p, db_p)
+        P_f_reg_out = K_d * Δf_db
+    else
+        P_f_reg_out, dxi_dt = pi_block_nonwindup(-Δf_m, x_i, K_pf, K_if, P_min, P_max)
+    end
+    # Ramp power not considered
+    P_ref_outer = clamp(P_f_reg_out + p_ref - P_pod, P_min, P_max)
+
+    # Update differential equations
+    #Update ODEs
+    active_controller_ode[1] = dΔf_dt
+    active_controller_ode[2] = dxw_dt
+    active_controller_ode[3] = dxl_dt
+    active_controller_ode[4] = dxlg_dt
+    active_controller_ode[5] = dxi_dt
+
+    #Update Inner Vars: Ioc_pcmd
+    inner_vars[Id_oc_var] = P_ref_outer / Vt_filt
+    return
+end
+
+### BESS Controller ###
+### Reactive Controllers ###
+# Power_Flag = 2: Voltage Regulation
+function _mdl_ode_BESS_reactive_controller!(
+    reactive_controller_ode,
+    reactive_controller_states,
+    q_elec_out,
+    ::Val{2},
+    reactive_power_control::PSY.ReactiveOuterBESSController,
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            C,
+            PSY.OuterControl{
+                PSY.ActiveOuterBESSController,
+                PSY.ReactiveOuterBESSController,
+            },
+            IC,
+            DC,
+            P,
+            F,
+        },
+    },
+    inner_vars::AbstractVector,
+) where {
+    C <: PSY.Converter,
+    IC <: PSY.InnerControl,
+    DC <: PSY.DCSource,
+    P <: PSY.FrequencyEstimator,
+    F <: PSY.Filter,
+}
+    #Obtain external parameters
+    V_ref = get_V_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
+
+    #Obtain regulated voltage (assumed to be terminal voltage)
+    Vt = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
+
+    # Get Reactive Controller parameters
+    T_rv = PSY.get_T_rv(reactive_power_control)
+    db_q = PSY.get_db_q(reactive_power_control)
+    Kp_vr = PSY.get_Kp_vr(reactive_power_control)
+    Ki_vr = PSY.get_Ki_vr(reactive_power_control)
+    Q_min, Q_max = PSY.get_Q_lim(reactive_power_control)
+
+    #Define internal states for Reactive Control
+    V_m = reactive_controller_states[1]
+    x_vr = reactive_controller_states[2]
+
+    #Compute block derivatives REPCA
+    _, dVm_dt = low_pass(Vt, V_m, 1.0, T_rv)
+    db_out = deadband_function(V_ref - V_m, -db_q, db_q)
+
+    Q_pi, dxvr_dt = pi_block(db_out, x_vr, Kp_vr, Ki_vr)
+    Q_ext = clamp(Q_pi + q_ref, Q_min, Q_max)
+
+    #Update ODEs
+    reactive_controller_ode[1] = dVm_dt
+    reactive_controller_ode[2] = dxvr_dt
+
+    #Update Inner Vars
+    inner_vars[Iq_oc_var] = Q_ext / V_m
     return
 end
 
