@@ -11,7 +11,7 @@ The fault disconnects a circuit between buses 1 and 2, doubling its impedance.
 ##################################################
 
 threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_5shaft")
-solve_powerflow!(threebus_sys)
+solve_ac_powerflow!(threebus_sys)
 Ybus_fault = get_ybus_fault_threebus_sys(threebus_sys)
 
 ##################################################
