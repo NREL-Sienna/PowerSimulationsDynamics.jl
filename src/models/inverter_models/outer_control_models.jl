@@ -32,6 +32,7 @@ function _mdl_ode_RE_active_controller_AB!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -41,6 +42,7 @@ function _mdl_ode_RE_active_controller_AB!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external parameters
@@ -122,6 +124,7 @@ function _mdl_ode_RE_active_controller_AB!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -131,6 +134,7 @@ function _mdl_ode_RE_active_controller_AB!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external parameters
@@ -180,6 +184,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -189,6 +194,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external parameters
@@ -262,6 +268,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -271,6 +278,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain external parameters
     q_ref = get_Q_ref(dynamic_device)
@@ -337,6 +345,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -346,6 +355,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain external parameters
     V_ref = get_V_ref(dynamic_device)
@@ -443,6 +453,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -452,6 +463,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain external parameters
     V_ref = get_V_ref(dynamic_device)
@@ -533,6 +545,7 @@ function mdl_outer_ode!(
             DC,
             P,
             F,
+            L,
         },
     },
 ) where {
@@ -541,6 +554,7 @@ function mdl_outer_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -621,6 +635,7 @@ function mdl_outer_ode!(
             DC,
             P,
             F,
+            L,
         },
     },
 ) where {
@@ -629,6 +644,7 @@ function mdl_outer_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -711,6 +727,7 @@ function mdl_outer_ode!(
             DC,
             P,
             F,
+            L,
         },
     },
 ) where {
@@ -719,6 +736,7 @@ function mdl_outer_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -803,6 +821,7 @@ function mdl_outer_ode!(
             DC,
             P,
             F,
+            L,
         },
     },
 ) where {
@@ -811,6 +830,7 @@ function mdl_outer_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -897,6 +917,7 @@ function mdl_outer_ode!(
             DC,
             P,
             F,
+            L,
         },
     },
 ) where {
@@ -905,6 +926,7 @@ function mdl_outer_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component

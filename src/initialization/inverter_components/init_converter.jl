@@ -2,7 +2,7 @@ function initialize_converter!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
+        PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F, L},
     },
     inner_vars::AbstractVector,
 ) where {
@@ -11,13 +11,14 @@ function initialize_converter!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 } end
 
 function initialize_converter!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, F},
+        PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, F, L},
     },
     inner_vars::AbstractVector,
 ) where {
@@ -26,6 +27,7 @@ function initialize_converter!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Get inner vars
     V_R = inner_vars[Vr_cnv_var]
@@ -71,7 +73,7 @@ function initialize_converter!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{PSY.RenewableEnergyVoltageConverterTypeA, O, IC, DC, P, F},
+        PSY.DynamicInverter{PSY.RenewableEnergyVoltageConverterTypeA, O, IC, DC, P, F, L},
     },
     inner_vars::AbstractVector,
 ) where {
@@ -80,6 +82,7 @@ function initialize_converter!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Get inner vars
     Vr_filter = inner_vars[Vr_filter_var]

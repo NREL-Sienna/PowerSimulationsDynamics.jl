@@ -34,7 +34,7 @@ function _mdl_ode_RE_inner_controller_B!(
     ::Val{0},
     inner_control::PSY.RECurrentControlB,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
     },
     inner_vars::AbstractVector,
 ) where {
@@ -43,6 +43,7 @@ function _mdl_ode_RE_inner_controller_B!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain inner variables for component
     V_t = sqrt(inner_vars[Vr_filter_var]^2 + inner_vars[Vi_filter_var]^2)
@@ -88,7 +89,7 @@ function _mdl_ode_RE_inner_controller_B!(
     ::Val{1},
     inner_control::PSY.RECurrentControlB,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
     },
     inner_vars::AbstractVector,
 ) where {
@@ -97,6 +98,7 @@ function _mdl_ode_RE_inner_controller_B!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain inner variables for component
     V_t = sqrt(inner_vars[Vr_filter_var]^2 + inner_vars[Vi_filter_var]^2)
@@ -149,7 +151,7 @@ function mdl_inner_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F},
+        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, L},
     },
 ) where {
     C <: PSY.Converter,
@@ -157,6 +159,7 @@ function mdl_inner_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -258,7 +261,7 @@ function mdl_inner_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F},
+        PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F, L},
     },
 ) where {
     C <: PSY.Converter,
@@ -266,6 +269,7 @@ function mdl_inner_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -329,7 +333,7 @@ function mdl_inner_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F},
+        PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
     },
 ) where {
     C <: PSY.Converter,
@@ -337,6 +341,7 @@ function mdl_inner_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Get Current Controller parameters
     inner_control = PSY.get_inner_control(dynamic_device)

@@ -11,13 +11,14 @@ function mdl_freq_estimator_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F}},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F, L}},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -75,7 +76,7 @@ function mdl_freq_estimator_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F},
+        PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F, L},
     },
 ) where {
     C <: PSY.Converter,
@@ -83,6 +84,7 @@ function mdl_freq_estimator_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -135,7 +137,7 @@ function mdl_freq_estimator_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F},
+        PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F, L},
     },
 ) where {
     C <: PSY.Converter,
@@ -143,6 +145,7 @@ function mdl_freq_estimator_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Get parameters

@@ -11,7 +11,7 @@ function mdl_converter_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
+        PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F, L},
     },
 ) where {
     O <: PSY.OuterControl,
@@ -19,6 +19,7 @@ function mdl_converter_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain inner variables for component
@@ -41,13 +42,22 @@ function mdl_converter_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
+        PSY.DynamicInverter{
+            PSY.RenewableEnergyConverterTypeA,
+            O,
+            IC,
+            DC,
+            P,
+            PSY.RLFilter,
+            L,
+        },
     },
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain inner variables for component
     V_R = inner_vars[Vr_filter_var]
@@ -172,6 +182,7 @@ function mdl_converter_ode!(
             DC,
             P,
             PSY.LCLFilter,
+            L,
         },
     },
 ) where {
@@ -179,6 +190,7 @@ function mdl_converter_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain inner variables for component
     V_R = inner_vars[Vr_filter_var]
