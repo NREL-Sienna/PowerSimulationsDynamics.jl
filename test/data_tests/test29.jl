@@ -6,7 +6,7 @@ const PSY = PowerSystems
 include(joinpath(dirname(@__FILE__), "dynamic_test_data.jl"))
 
 ############### Data Network ########################
-threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusRenewable.raw")
+threebus_file_dir = joinpath(dirname(@__FILE__), "ThreeBusRenewable_RENA.raw")
 
 ### Case 2 Generators ###
 
