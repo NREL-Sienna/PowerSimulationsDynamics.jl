@@ -22,7 +22,20 @@ Static Components
 │ LoadZone        │ 1     │ false                  │ false         │
 │ StandardLoad    │ 3     │ false                  │ false         │
 │ ThermalStandard │ 2     │ false                  │ false         │
-└─────────────────┴───────┴────────────────────────┴───────────────┘</code></pre><p>This system does not have an injection device in bus 1 (the reference bus). We can add a source with small impedance directly as follows:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; slack_bus = [b for b in get_components(Bus, sys) if get_bustype(b) == BusTypes.REF][1]</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `BusTypes` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; inf_source = Source(
+└─────────────────┴───────┴────────────────────────┴───────────────┘</code></pre><p>This system does not have an injection device in bus 1 (the reference bus). We can add a source with small impedance directly as follows:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; slack_bus = [b for b in get_components(ACBus, sys) if get_bustype(b) == ACBusTypes.REF][1]</code><code class="nohighlight hljs ansi" style="display:block;">BUS 1 (ACBus):
+   number: 101
+   name: BUS 1
+   bustype: ACBusTypes.REF = 3
+   angle: 0.0
+   magnitude: 1.02
+   voltage_limits: (min = 0.9, max = 1.1)
+   base_voltage: 138.0
+   area: 1 (Area)
+   load_zone: 1 (LoadZone)
+   ext: Dict{String, Any}()
+   InfrastructureSystems.SystemUnitsSettings:
+      base_value: 100.0
+      unit_system: UnitSystem.SYSTEM_BASE = 0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; inf_source = Source(
            name = &quot;InfBus&quot;, #name
            available = true, #availability
            active_power = 0.0,
@@ -30,10 +43,26 @@ Static Components
            bus = slack_bus, #bus
            R_th = 0.0, #Rth
            X_th = 5e-6, #Xth
-       )</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `slack_bus` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(sys, inf_source)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `inf_source` not defined</code></pre><p>We just added a infinite source with <span>$X_{th} = 5\cdot 10^{-6}$</span> pu. The system can be explored directly using functions like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; show_components(sys, Source)</code><code class="nohighlight hljs ansi" style="display:block;">Source
-┌──────┬───────────┐
-│ name │ available │
-└──────┴───────────┘</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; show_components(sys, ThermalStandard)</code><code class="nohighlight hljs ansi" style="display:block;">ThermalStandard
+       )</code><code class="nohighlight hljs ansi" style="display:block;">
+InfBus (Source):
+   name: InfBus
+   available: true
+   bus: BUS 1 (ACBus)
+   active_power: 0.0
+   reactive_power: 0.0
+   R_th: 0.0
+   X_th: 5.0e-6
+   internal_voltage: 1.0
+   internal_angle: 0.0
+   dynamic_injector: nothing
+   services: 0-element Vector{Service}
+   ext: Dict{String, Any}()
+   internal: InfrastructureSystems.InfrastructureSystemsInternal</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(sys, inf_source)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>We just added a infinite source with <span>$X_{th} = 5\cdot 10^{-6}$</span> pu. The system can be explored directly using functions like:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; show_components(sys, Source)</code><code class="nohighlight hljs ansi" style="display:block;">Source
+┌────────┬───────────┐
+│ name   │ available │
+├────────┼───────────┤
+│ InfBus │ true      │
+└────────┴───────────┘</code></pre><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; show_components(sys, ThermalStandard)</code><code class="nohighlight hljs ansi" style="display:block;">ThermalStandard
 ┌─────────────────┬───────────┐
 │ name            │ available │
 ├─────────────────┼───────────┤
@@ -127,7 +156,21 @@ Static Components
            bus = slack_bus, #bus
            R_th = 0.0, #Rth
            X_th = 5e-6, #Xth
-       )</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `slack_bus` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(threebus_sys, inf_source)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `inf_source` not defined</code></pre><p>We will connect a One-d-one-q machine at bus 102, and a Virtual Synchronous Generator Inverter at bus 103. An inverter is composed by a <code>converter</code>, <code>outer control</code>, <code>inner control</code>, <code>dc source</code>, <code>frequency estimator</code> and a <code>filter</code>.</p><h2 id="Dynamic-Inverter-definition"><a class="docs-heading-anchor" href="#Dynamic-Inverter-definition">Dynamic Inverter definition</a><a id="Dynamic-Inverter-definition-1"></a><a class="docs-heading-anchor-permalink" href="#Dynamic-Inverter-definition" title="Permalink"></a></h2><p>We will create specific functions to create the components of the inverter as follows:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Define converter as an AverageConverter
+       )</code><code class="nohighlight hljs ansi" style="display:block;">
+InfBus (Source):
+   name: InfBus
+   available: true
+   bus: BUS 1 (ACBus)
+   active_power: 0.0
+   reactive_power: 0.0
+   R_th: 0.0
+   X_th: 5.0e-6
+   internal_voltage: 1.0
+   internal_angle: 0.0
+   dynamic_injector: nothing
+   services: 0-element Vector{Service}
+   ext: Dict{String, Any}()
+   internal: InfrastructureSystems.InfrastructureSystemsInternal</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(threebus_sys, inf_source)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>We will connect a One-d-one-q machine at bus 102, and a Virtual Synchronous Generator Inverter at bus 103. An inverter is composed by a <code>converter</code>, <code>outer control</code>, <code>inner control</code>, <code>dc source</code>, <code>frequency estimator</code> and a <code>filter</code>.</p><h2 id="Dynamic-Inverter-definition"><a class="docs-heading-anchor" href="#Dynamic-Inverter-definition">Dynamic Inverter definition</a><a id="Dynamic-Inverter-definition-1"></a><a class="docs-heading-anchor-permalink" href="#Dynamic-Inverter-definition" title="Permalink"></a></h2><p>We will create specific functions to create the components of the inverter as follows:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Define converter as an AverageConverter
        converter_high_power() = AverageConverter(
            rated_voltage = 138.0,
            rated_current = 100.0
@@ -214,4 +257,4 @@ Static Components
                #Attach the dynamic inverter to the system
                add_component!(threebus_sys, case_inv, g)
            end
-       end</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h3 id="Save-the-system-in-a-JSON-file"><a class="docs-heading-anchor" href="#Save-the-system-in-a-JSON-file">Save the system in a JSON file</a><a id="Save-the-system-in-a-JSON-file-1"></a><a class="docs-heading-anchor-permalink" href="#Save-the-system-in-a-JSON-file" title="Permalink"></a></h3><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; to_json(threebus_sys, joinpath(file_dir, &quot;threebus_sys.json&quot;), force = true)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../execute/">« Simulation Execution</a><a class="docs-footer-nextpage" href="../tutorial_omib/">OMIB »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 4 December 2023 23:43">Monday 4 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+       end</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h3 id="Save-the-system-in-a-JSON-file"><a class="docs-heading-anchor" href="#Save-the-system-in-a-JSON-file">Save the system in a JSON file</a><a id="Save-the-system-in-a-JSON-file-1"></a><a class="docs-heading-anchor-permalink" href="#Save-the-system-in-a-JSON-file" title="Permalink"></a></h3><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; to_json(threebus_sys, joinpath(file_dir, &quot;threebus_sys.json&quot;), force = true)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../execute/">« Simulation Execution</a><a class="docs-footer-nextpage" href="../tutorial_omib/">OMIB »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 7 December 2023 19:26">Thursday 7 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
