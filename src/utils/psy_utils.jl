@@ -148,3 +148,8 @@ function transform_load_to_constant_power(load::PSY.StandardLoad)
     PSY.set_max_impedance_reactive_power!(load, 0.0)
     return
 end
+
+# TO REMOVE AFTER UPDATE IN PSY
+function PSY.get_reactive_power_limits(x::PSY.Source)
+    return (min = -Inf, max = Inf)
+end
