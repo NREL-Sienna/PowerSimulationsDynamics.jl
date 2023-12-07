@@ -40,7 +40,7 @@ function get_load_by_name(system, name)
 end
 
 function get_bus_by_number(system, number)
-    for b in get_components(Bus, system)
+    for b in get_components(ACBus, system)
         if get_number(b) == number
             return b
         end

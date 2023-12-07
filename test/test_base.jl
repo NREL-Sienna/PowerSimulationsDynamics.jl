@@ -48,7 +48,7 @@ end
         @test isa(dic_control_refs, Dict)
 
         o_system = System(joinpath(path1, "input_system.json"))
-        for b in get_components(Bus, o_system)
+        for b in get_components(ACBus, o_system)
             b_sys = get_component(Bus, omib_sys, get_name(b))
             b_file = get_component(Bus, omib_sys_file, get_name(b))
             @test get_angle(b) == get_angle(b_sys)
@@ -85,7 +85,7 @@ end
         )
         @test sim.status == PSID.BUILT
         m_system = System(joinpath(path2, "initialized_system.json"))
-        for b in get_components(Bus, m_system)
+        for b in get_components(ACBus, m_system)
             b_sys = get_component(Bus, omib_sys, get_name(b))
             b_file = get_component(Bus, omib_sys_file, get_name(b))
             @test get_angle(b) == get_angle(b_sys)
