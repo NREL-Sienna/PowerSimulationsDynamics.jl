@@ -5,7 +5,8 @@ function add_source_to_ref(sys::PSY.System, X_th::Float64)
             error("A device is already attached to the REF bus")
     end
 
-    slack_bus = [b for b in PSY.get_components(Bus, sys) if b.bustype == ACBusTypes.REF][1]
+    slack_bus =
+        [b for b in PSY.get_components(ACBus, sys) if b.bustype == ACBusTypes.REF][1]
     inf_source = Source(;
         name = "InfBus", #name
         available = true, #availability
@@ -26,7 +27,8 @@ function add_source_to_ref(sys::PSY.System)
             error("A device is already attached to the REF bus")
     end
 
-    slack_bus = [b for b in PSY.get_components(Bus, sys) if b.bustype == ACBusTypes.REF][1]
+    slack_bus =
+        [b for b in PSY.get_components(ACBus, sys) if b.bustype == ACBusTypes.REF][1]
     inf_source = Source(;
         name = "InfBus", #name
         available = true, #availability
@@ -44,7 +46,7 @@ function get_ybus_fault_threebus_sys(sys)
     fault_branch =
         filter!(x -> get_name(x) != "BUS 1-BUS 3-i_1", collect(get_components(Branch, sys)))
     sorted_buses =
-        sort!(collect(get_components(Bus, threebus_sys)); by = x -> get_number(x))
+        sort!(collect(get_components(ACBus, threebus_sys)); by = x -> get_number(x))
     Ybus_fault = PNM.Ybus(fault_branch, sorted_buses)[:, :]
     return Ybus_fault
 end
