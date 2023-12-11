@@ -61,6 +61,17 @@ end
 
 function (J::JacobianFunctionWrapper{NoDelays})(
     JM::U,
+    x::AbstractVector{Float64},
+    h,
+    p,
+    t,
+) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
+    J(JM, x)
+    return
+end
+
+function (J::JacobianFunctionWrapper)(
+    JM::U,
     dx::AbstractVector{Float64},
     x::AbstractVector{Float64},
     p,
@@ -193,6 +204,43 @@ function JacobianFunctionWrapper(
         x0,
         mass_matrix,
     )
+end
+
+function JacobianFunctionWrapper(
+    m!::SystemModel{MassMatrixModel, HasDelays},
+    x0_guess::Vector{Float64};
+    # Improve the heuristic to do sparsity detection
+    sparse_retrieve_loop::Int = 0, #max(3, length(x0_guess) ÷ 100),
+)
+    x0 = deepcopy(x0_guess)
+    n = length(x0)
+
+    h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0  #Possilby the problem? Should pass the h that is stored in the problem instead of redefining?
+    m_ = (residual, x) -> m!(residual, x, h, nothing, 0.0)
+    jconfig = ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
+    Jf = (Jv, x) -> begin
+        @debug "Evaluating Jacobian Function"
+        ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
+        return
+    end
+    jac = zeros(n, n)
+    if sparse_retrieve_loop > 0
+        for _ in 1:sparse_retrieve_loop
+            temp = zeros(n, n)
+            rng_state = copy(Random.default_rng())
+            Jf(temp, x0 + Random.randn(n))
+            copy!(Random.default_rng(), rng_state)
+            jac .+= abs.(temp)
+        end
+        Jv = SparseArrays.sparse(jac)
+    elseif sparse_retrieve_loop == 0
+        Jv = jac
+    else
+        throw(IS.ConflictingInputsError("negative sparse_retrieve_loop not valid"))
+    end
+    Jf(Jv, x0)
+    mass_matrix = get_mass_matrix(m!.inputs)
+    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0, mass_matrix)
 end
 
 function get_jacobian(

@@ -182,6 +182,7 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range"
         dynamic_device = PSY.get_dynamic_injector(device)
         @assert dynamic_device !== nothing
+        #TODO - add bus_size to the dynamic injector -- allows you to index into the voltages.
         wrapped_injector[ix] = DynamicWrapper(
             device,
             dynamic_device,
