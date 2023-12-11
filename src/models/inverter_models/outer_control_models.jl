@@ -535,6 +535,8 @@ function mdl_outer_ode!(
             F,
         },
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -623,6 +625,8 @@ function mdl_outer_ode!(
             F,
         },
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -713,6 +717,8 @@ function mdl_outer_ode!(
             F,
         },
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -805,6 +811,8 @@ function mdl_outer_ode!(
             F,
         },
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,
@@ -899,6 +907,8 @@ function mdl_outer_ode!(
             F,
         },
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     IC <: PSY.InnerControl,

@@ -40,6 +40,8 @@ function mdl_filter_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter}},
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -121,6 +123,8 @@ function mdl_filter_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter}},
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,

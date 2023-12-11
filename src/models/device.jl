@@ -25,6 +25,7 @@ function device!(
     global_vars::AbstractArray{T},
     inner_vars::AbstractArray{T},
     dynamic_device::DynamicWrapper{DynG},
+    h,
     t,
 ) where {DynG <: PSY.DynamicGenerator, T <: ACCEPTED_REAL_TYPES}
     if get_connection_status(dynamic_device) < 1.0
@@ -41,13 +42,13 @@ function device!(
     _update_inner_vars!(device_states, output_ode, sys_ω, inner_vars, dynamic_device)
 
     #Obtain ODEs and Mechanical Power for Turbine Governor
-    mdl_tg_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
+    mdl_tg_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device, h, t)
 
     #Obtain ODEs for PSS
-    mdl_pss_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
+    mdl_pss_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device, h, t)
 
     #Obtain ODEs for AVR
-    mdl_avr_ode!(device_states, output_ode, inner_vars, dynamic_device)
+    mdl_avr_ode!(device_states, output_ode, inner_vars, dynamic_device, h, t)
 
     #Obtain ODEs for Machine
     mdl_machine_ode!(
@@ -57,10 +58,12 @@ function device!(
         current_r,
         current_i,
         dynamic_device,
+        h,
+        t,
     )
 
     #Obtain ODEs for PSY.Shaft
-    mdl_shaft_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
+    mdl_shaft_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device, h, t)
     return
 end
 
@@ -142,6 +145,7 @@ function device!(
     global_vars::AbstractArray{T},
     inner_vars::AbstractArray{T},
     dynamic_device::DynamicWrapper{DynI},
+    h,
     t,
 ) where {DynI <: PSY.DynamicInverter, T <: ACCEPTED_REAL_TYPES}
     if get_connection_status(dynamic_device) < 1.0
@@ -164,19 +168,27 @@ function device!(
     _update_inner_vars!(device_states, output_ode, sys_ω, inner_vars, dynamic_device)
 
     #Obtain ODES for DC side
-    mdl_DCside_ode!(device_states, output_ode, sys_ω, inner_vars, dynamic_device)
+    mdl_DCside_ode!(device_states, output_ode, sys_ω, inner_vars, dynamic_device, h, t)
 
     #Obtain ODEs for PLL
-    mdl_freq_estimator_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
+    mdl_freq_estimator_ode!(
+        device_states,
+        output_ode,
+        inner_vars,
+        sys_ω,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain ODEs for OuterLoop
-    mdl_outer_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device)
+    mdl_outer_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device, h, t)
 
     #Obtain inner controller ODEs and modulation commands
-    mdl_inner_ode!(device_states, output_ode, inner_vars, dynamic_device)
+    mdl_inner_ode!(device_states, output_ode, inner_vars, dynamic_device, h, t)
 
     #Obtain converter relations
-    mdl_converter_ode!(device_states, output_ode, inner_vars, dynamic_device)
+    mdl_converter_ode!(device_states, output_ode, inner_vars, dynamic_device, h, t)
 
     #Obtain ODEs for output filter
     mdl_filter_ode!(
@@ -187,6 +199,8 @@ function device!(
         inner_vars,
         sys_ω,
         dynamic_device,
+        h,
+        t,
     )
 
     return
@@ -219,6 +233,7 @@ function device!(
     ::AbstractArray{T},
     ::AbstractArray{T},
     dynamic_device::DynamicWrapper{PSY.PeriodicVariableSource},
+    h,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     ω_θ = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
@@ -643,6 +658,7 @@ function device!(
     global_vars::AbstractArray{T},
     ::AbstractArray{T},
     dynamic_wrapper::DynamicWrapper{PSY.SingleCageInductionMachine},
+    h,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
@@ -726,6 +742,7 @@ function device!(
     global_vars::AbstractArray{T},
     ::AbstractArray{T},
     dynamic_wrapper::DynamicWrapper{PSY.SimplifiedSingleCageInductionMachine},
+    h,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
@@ -822,6 +839,7 @@ function device!(
     global_vars::AbstractArray{T},
     ::AbstractArray{T},
     dynamic_wrapper::DynamicWrapper{PSY.CSVGN1},
+    h,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
@@ -930,6 +948,7 @@ function device!(
     global_vars::AbstractArray{T},
     ::AbstractArray{T},
     dynamic_wrapper::DynamicWrapper{PSY.ActiveConstantPowerLoad},
+    h,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
@@ -1076,6 +1095,7 @@ function device!(
     global_vars::AbstractArray{T},
     inner_vars::AbstractArray{T},
     dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    h,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     Freq_Flag = PSY.get_Freq_Flag(get_device(dynamic_device))

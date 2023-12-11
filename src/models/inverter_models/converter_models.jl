@@ -13,6 +13,8 @@ function mdl_converter_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F},
     },
+    h,
+    t,
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -43,6 +45,8 @@ function mdl_converter_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
     },
+    h,
+    t,
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -174,6 +178,8 @@ function mdl_converter_ode!(
             PSY.LCLFilter,
         },
     },
+    h,
+    t,
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
