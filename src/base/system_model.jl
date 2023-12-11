@@ -1,8 +1,11 @@
-struct SystemModel{T <: SimulationModel, C <: Cache}
+struct SystemModel{T <: SimulationModel, D <: DelayModel, C <: Cache}
     inputs::SimulationInputs
     cache::C
 end
 
-function SystemModel{T}(inputs, cache::U) where {T <: SimulationModel, U <: Cache}
-    return SystemModel{T, U}(inputs, cache)
+function SystemModel{T, D}(
+    inputs,
+    cache::U,
+) where {T <: SimulationModel, D <: DelayModel, U <: Cache}
+    return SystemModel{T, D, U}(inputs, cache)
 end
