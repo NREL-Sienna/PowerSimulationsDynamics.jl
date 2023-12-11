@@ -42,12 +42,12 @@ Dynamic Components
 ┌──────────────────┬───────┐
 │ Type             │ Count │
 ├──────────────────┼───────┤
-│ DynamicGenerator │ 1     │
-│ DynamicGenerator │ 3     │
-│ DynamicGenerator │ 41    │
-│ DynamicGenerator │ 36    │
 │ DynamicGenerator │ 6     │
+│ DynamicGenerator │ 36    │
+│ DynamicGenerator │ 3     │
 │ DynamicGenerator │ 22    │
+│ DynamicGenerator │ 1     │
+│ DynamicGenerator │ 41    │
 │ DynamicInverter  │ 37    │
 └──────────────────┴───────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Transform the system&#39;s load
        for l in get_components(PSY.StandardLoad, sys)
@@ -357,25 +357,25 @@ Iter     f(x) inf-norm    Step 2-norm
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     24.0s            5.03GiB    
+│                 Total measured:                     28.8s            5.17GiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    24.0s  100.0%   5.03GiB  100.0%
-│    Build Simulation Inputs                  1    2.53s   10.5%    169MiB    3.3%
-│      Wrap Branches                          1   9.84μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1    1.46s    6.1%    113MiB    2.2%
-│      Calculate MM, DAE_vector, Tota...      1    240ms    1.0%   19.9MiB    0.4%
-│      Wrap Static Injectors                  1    239ms    1.0%   6.53MiB    0.1%
-│    Pre-initialization                       1    5.64s   23.5%    456MiB    8.9%
-│      Power Flow solution                    1    1.36s    5.6%   72.0MiB    1.4%
-│      Initialize Static Injectors            1    772ns    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1    4.28s   17.8%    384MiB    7.5%
-│    Calculate Jacobian                       1    12.4s   51.6%   4.16GiB   82.7%
-│    Make Model Function                      1   18.8μs    0.0%   30.9KiB    0.0%
-│    Initial Condition NLsolve refine...      1    3.05s   12.7%    254MiB    4.9%
-│    Build Perturbations                      1    130μs    0.0%   11.6KiB    0.0%
-│    Make DiffEq Problem                      1    403ms    1.7%   9.25MiB    0.2%
+│  Build Simulation                           1    28.8s  100.0%   5.17GiB  100.0%
+│    Build Simulation Inputs                  1    2.41s    8.4%    165MiB    3.1%
+│      Wrap Branches                          1   9.29μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1    1.42s    4.9%    113MiB    2.1%
+│      Calculate MM, DAE_vector, Tota...      1    234ms    0.8%   19.9MiB    0.4%
+│      Wrap Static Injectors                  1    224ms    0.8%   6.53MiB    0.1%
+│    Pre-initialization                       1    7.89s   27.4%    560MiB   10.6%
+│      Power Flow solution                    1    1.76s    6.1%   81.8MiB    1.5%
+│      Initialize Static Injectors            1    501ns    0.0%     0.00B    0.0%
+│      Initialize Dynamic Injectors           1    6.12s   21.3%    478MiB    9.0%
+│    Calculate Jacobian                       1    12.6s   43.7%   4.18GiB   80.7%
+│    Make Model Function                      1   6.22ms    0.0%    126KiB    0.0%
+│    Initial Condition NLsolve refine...      1    5.19s   18.0%    267MiB    5.0%
+│    Build Perturbations                      1    173ms    0.6%   12.4MiB    0.2%
+│    Make DiffEq Problem                      1    522ms    1.8%   16.1MiB    0.3%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -398,7 +398,7 @@ Simulation Summary
 │ Time Span                  │ (0.0, 20.0)  │
 │ Total Time Steps           │ 2015         │
 │ Number of States           │ 2164         │
-│ Total solve time           │ 17.359737149 │
+│ Total solve time           │ 19.780504662 │
 └────────────────────────────┴──────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101_ida = get_voltage_magnitude_series(res_ida, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101_ida);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_ida.svg" alt="plot"/></p><h2 id="Run-the-simulation-using-Rodas4()"><a class="docs-heading-anchor" href="#Run-the-simulation-using-Rodas4()">Run the simulation using Rodas4()</a><a id="Run-the-simulation-using-Rodas4()-1"></a><a class="docs-heading-anchor-permalink" href="#Run-the-simulation-using-Rodas4()" title="Permalink"></a></h2><p>In this case, we will use a MassMatrixModel formulation, for more details about the formulation checkout the <a href="https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable/models/">Models Section</a> in <code>PowerSimulationsDynamics.jl</code> documentation</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim_rodas = Simulation(
            MassMatrixModel,
            sys, #system
@@ -427,25 +427,25 @@ Iter     f(x) inf-norm    Step 2-norm
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     7.54s             816MiB    
+│                 Total measured:                     7.31s             815MiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    7.54s  100.0%    816MiB  100.0%
-│    Build Simulation Inputs                  1   6.82ms    0.1%   7.32MiB    0.9%
-│      Wrap Branches                          1   4.99μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1   4.43ms    0.1%   2.44MiB    0.3%
-│      Calculate MM, DAE_vector, Tota...      1    570μs    0.0%   1.90MiB    0.2%
-│      Wrap Static Injectors                  1    431μs    0.0%    290KiB    0.0%
-│    Pre-initialization                       1   18.3ms    0.2%   9.09MiB    1.1%
-│      Power Flow solution                    1   12.2ms    0.2%   5.18MiB    0.6%
-│      Initialize Static Injectors            1    642ns    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1   5.66ms    0.1%   3.75MiB    0.5%
-│    Calculate Jacobian                       1    6.05s   80.2%    614MiB   75.2%
-│    Make Model Function                      1   6.37ms    0.1%    126KiB    0.0%
-│    Initial Condition NLsolve refine...      1    977ms   12.9%    169MiB   20.7%
-│    Build Perturbations                      1   15.6ms    0.2%    570KiB    0.1%
-│    Make DiffEq Problem                      1    468ms    6.2%   15.6MiB    1.9%
+│  Build Simulation                           1    7.31s  100.0%    815MiB  100.0%
+│    Build Simulation Inputs                  1   6.29ms    0.1%   7.32MiB    0.9%
+│      Wrap Branches                          1   6.39μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1   3.90ms    0.1%   2.44MiB    0.3%
+│      Calculate MM, DAE_vector, Tota...      1    587μs    0.0%   1.90MiB    0.2%
+│      Wrap Static Injectors                  1    421μs    0.0%    290KiB    0.0%
+│    Pre-initialization                       1   19.8ms    0.3%   9.09MiB    1.1%
+│      Power Flow solution                    1   14.5ms    0.2%   5.18MiB    0.6%
+│      Initialize Static Injectors            1    972ns    0.0%     0.00B    0.0%
+│      Initialize Dynamic Injectors           1   4.91ms    0.1%   3.75MiB    0.5%
+│    Calculate Jacobian                       1    5.83s   79.8%    614MiB   75.3%
+│    Make Model Function                      1   6.24ms    0.1%    126KiB    0.0%
+│    Initial Condition NLsolve refine...      1    975ms   13.3%    169MiB   20.7%
+│    Build Perturbations                      1   15.4ms    0.2%    570KiB    0.1%
+│    Make DiffEq Problem                      1    450ms    6.2%   15.5MiB    1.9%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -475,5 +475,5 @@ Simulation Summary
 │ Time Span                  │ (0.0, 20.0)  │
 │ Total Time Steps           │ 2002         │
 │ Number of States           │ 2164         │
-│ Total solve time           │ 28.336838842 │
-└────────────────────────────┴──────────────┘</code></pre><h2 id="Compare-the-results"><a class="docs-heading-anchor" href="#Compare-the-results">Compare the results</a><a id="Compare-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Compare-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected. For both of the solution techniques.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101 = get_voltage_magnitude_series(res_rodas, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101, label = &quot;RODAS4&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(v1101_ida, label = &quot;IDA&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 7 December 2023 19:26">Thursday 7 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+│ Total solve time           │ 28.378984977 │
+└────────────────────────────┴──────────────┘</code></pre><h2 id="Compare-the-results"><a class="docs-heading-anchor" href="#Compare-the-results">Compare the results</a><a id="Compare-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Compare-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected. For both of the solution techniques.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101 = get_voltage_magnitude_series(res_rodas, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101, label = &quot;RODAS4&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(v1101_ida, label = &quot;IDA&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 11 December 2023 18:29">Monday 11 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
