@@ -1,44 +1,44 @@
-┌ Info: 2023-10-25T19:40:52.559 [4685:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
+┌ Info: 2023-12-12T01:26:59.404 [5157:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:70
-┌ Info: 2023-10-25T19:40:52.603 [4685:1]: Pre-Initializing Simulation States
+┌ Info: 2023-12-12T01:26:59.434 [5157:1]: Pre-Initializing Simulation States
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:265
-┌ Info: 2023-10-25T19:40:52.603 [4685:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
-└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/9ugJZ/src/base.jl:395
-┌ Info: 2023-10-25T19:40:53.978 [4685:1]: PowerFlow solve converged, the results have been stored in the system
-└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/TDLGc/src/nlsolve_ac_powerflow.jl:45
-┌ Info: 2023-10-25T19:40:53.978 [4685:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
-└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/9ugJZ/src/base.jl:395
-┌ Info: 2023-10-25T19:41:03.796 [4685:1]: Residual from initial guess: max = 4.212807880321634e-11 at 4, total = 5.4841867599494955e-11
+┌ Info: 2023-12-12T01:26:59.434 [5157:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/gXgwy/src/base.jl:395
+┌ Info: 2023-12-12T01:27:00.593 [5157:1]: PowerFlow solve converged, the results have been stored in the system
+└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/2Elwp/src/nlsolve_ac_powerflow.jl:47
+┌ Info: 2023-12-12T01:27:00.593 [5157:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/gXgwy/src/base.jl:395
+┌ Info: 2023-12-12T01:27:10.773 [5157:1]: Residual from initial guess: max = 4.212807880321634e-11 at 4, total = 5.4841923110646186e-11
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:101
-┌ Info: 2023-10-25T19:41:03.822 [4685:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+┌ Info: 2023-12-12T01:27:10.793 [5157:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:68
-┌ Info: 2023-10-25T19:41:03.822 [4685:1]: Attaching Perturbations
+┌ Info: 2023-12-12T01:27:10.793 [5157:1]: Attaching Perturbations
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:296
-┌ Info: 2023-10-25T19:41:04.550 [4685:1]: Simulations status = BUILT
+┌ Info: 2023-12-12T01:27:11.311 [5157:1]: Simulations status = BUILT
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:428
-┌ Info: 2023-10-25T19:41:04.550 [4685:1]: 
+┌ Info: 2023-12-12T01:27:11.311 [5157:1]: 
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     14.8s             911MiB    
+│                 Total measured:                     13.9s             921MiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    14.8s  100.0%    911MiB  100.0%
-│    Build Simulation Inputs                  1    2.86s   19.3%    161MiB   17.6%
-│      Wrap Branches                          1   18.7μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1    1.59s   10.7%   92.7MiB   10.2%
-│      Calculate MM, DAE_vector, Tota...      1   87.7ms    0.6%   7.07MiB    0.8%
-│      Wrap Static Injectors                  1   87.0ms    0.6%   2.54MiB    0.3%
-│    Pre-initialization                       1    3.85s   26.0%    270MiB   29.7%
-│      Power Flow solution                    1    1.38s    9.3%   49.2MiB    5.4%
-│      Initialize Static Injectors            1    466ms    3.1%   27.9MiB    3.1%
-│      Initialize Dynamic Injectors           1    2.01s   13.6%    193MiB   21.2%
-│    Calculate Jacobian                       1    5.32s   35.9%    420MiB   46.1%
-│    Make Model Function                      1   8.83ms    0.1%   98.3KiB    0.0%
-│    Initial Condition NLsolve refine...      1    2.04s   13.8%   26.7MiB    2.9%
-│    Build Perturbations                      1    288ms    1.9%   16.7MiB    1.8%
-│    Make DiffEq Problem                      1    431ms    2.9%   16.2MiB    1.8%
+│  Build Simulation                           1    13.9s  100.0%    921MiB  100.0%
+│    Build Simulation Inputs                  1    2.04s   14.6%    150MiB   16.3%
+│      Wrap Branches                          1   10.9μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1    1.13s    8.1%   91.3MiB    9.9%
+│      Calculate MM, DAE_vector, Tota...      1   63.7ms    0.5%   6.96MiB    0.8%
+│      Wrap Static Injectors                  1   88.3ms    0.6%   2.51MiB    0.3%
+│    Pre-initialization                       1    4.32s   31.1%    295MiB   32.1%
+│      Power Flow solution                    1    1.20s    8.6%   38.9MiB    4.2%
+│      Initialize Static Injectors            1    1.51s   10.9%   29.5MiB    3.2%
+│      Initialize Dynamic Injectors           1    1.61s   11.6%    227MiB   24.7%
+│    Calculate Jacobian                       1    3.86s   27.8%    415MiB   45.1%
+│    Make Model Function                      1   6.73ms    0.0%   95.3KiB    0.0%
+│    Initial Condition NLsolve refine...      1    3.17s   22.8%   30.5MiB    3.3%
+│    Build Perturbations                      1    192ms    1.4%   13.6MiB    1.5%
+│    Make DiffEq Problem                      1    320ms    2.3%   15.4MiB    1.7%
 │  ───────────────────────────────────────────────────────────────────────────────
 │ 
 └ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:453

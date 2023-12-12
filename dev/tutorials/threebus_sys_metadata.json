@@ -5,16 +5,16 @@
     "time_series_resolution_milliseconds": 0,
     "component_counts": [
         {
+            "type": "ACBus",
+            "count": 3
+        },
+        {
             "type": "Arc",
             "count": 3
         },
         {
             "type": "Area",
             "count": 1
-        },
-        {
-            "type": "Bus",
-            "count": 3
         },
         {
             "type": "DynamicGenerator",

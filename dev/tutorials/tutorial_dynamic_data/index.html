@@ -15,17 +15,17 @@ Static Components
 ┌─────────────────┬───────┬────────────────────────┬───────────────┐
 │ Type            │ Count │ Has Static Time Series │ Has Forecasts │
 ├─────────────────┼───────┼────────────────────────┼───────────────┤
+│ ACBus           │ 3     │ false                  │ false         │
 │ Arc             │ 3     │ false                  │ false         │
 │ Area            │ 1     │ false                  │ false         │
-│ Bus             │ 3     │ false                  │ false         │
 │ Line            │ 3     │ false                  │ false         │
 │ LoadZone        │ 1     │ false                  │ false         │
 │ StandardLoad    │ 3     │ false                  │ false         │
 │ ThermalStandard │ 2     │ false                  │ false         │
-└─────────────────┴───────┴────────────────────────┴───────────────┘</code></pre><p>This system does not have an injection device in bus 1 (the reference bus). We can add a source with small impedance directly as follows:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; slack_bus = [b for b in get_components(Bus, sys) if get_bustype(b) == BusTypes.REF][1]</code><code class="nohighlight hljs ansi" style="display:block;">BUS 1 (Bus):
+└─────────────────┴───────┴────────────────────────┴───────────────┘</code></pre><p>This system does not have an injection device in bus 1 (the reference bus). We can add a source with small impedance directly as follows:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; slack_bus = [b for b in get_components(ACBus, sys) if get_bustype(b) == ACBusTypes.REF][1]</code><code class="nohighlight hljs ansi" style="display:block;">BUS 1 (ACBus):
    number: 101
    name: BUS 1
-   bustype: BusTypes.REF = 3
+   bustype: ACBusTypes.REF = 3
    angle: 0.0
    magnitude: 1.02
    voltage_limits: (min = 0.9, max = 1.1)
@@ -47,7 +47,7 @@ Static Components
 InfBus (Source):
    name: InfBus
    available: true
-   bus: BUS 1 (Bus)
+   bus: BUS 1 (ACBus)
    active_power: 0.0
    reactive_power: 0.0
    R_th: 0.0
@@ -84,7 +84,7 @@ InfBus (Source):
    name: generator-102-1
    available: true
    status: true
-   bus: BUS 2 (Bus)
+   bus: BUS 2 (ACBus)
    active_power: 0.7
    reactive_power: 0.0
    rating: 3.333526661060325
@@ -95,7 +95,7 @@ InfBus (Source):
    base_power: 100.0
    time_limits: nothing
    must_run: false
-   prime_mover: PrimeMovers.OT = 19
+   prime_mover_type: PrimeMovers.OT = 19
    fuel: ThermalFuels.OTHER = 14
    services: 0-element Vector{Service}
    time_at_status: 10000.0
@@ -141,27 +141,14 @@ Static Components
 ┌─────────────────┬───────┬────────────────────────┬───────────────┐
 │ Type            │ Count │ Has Static Time Series │ Has Forecasts │
 ├─────────────────┼───────┼────────────────────────┼───────────────┤
+│ ACBus           │ 3     │ false                  │ false         │
 │ Arc             │ 3     │ false                  │ false         │
 │ Area            │ 1     │ false                  │ false         │
-│ Bus             │ 3     │ false                  │ false         │
 │ Line            │ 3     │ false                  │ false         │
 │ LoadZone        │ 1     │ false                  │ false         │
 │ StandardLoad    │ 3     │ false                  │ false         │
 │ ThermalStandard │ 2     │ false                  │ false         │
-└─────────────────┴───────┴────────────────────────┴───────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; slack_bus = first(get_components(x -&gt; get_bustype(x) == BusTypes.REF, Bus, threebus_sys))</code><code class="nohighlight hljs ansi" style="display:block;">BUS 1 (Bus):
-   number: 101
-   name: BUS 1
-   bustype: BusTypes.REF = 3
-   angle: 0.0
-   magnitude: 1.02
-   voltage_limits: (min = 0.9, max = 1.1)
-   base_voltage: 138.0
-   area: 1 (Area)
-   load_zone: 1 (LoadZone)
-   ext: Dict{String, Any}()
-   InfrastructureSystems.SystemUnitsSettings:
-      base_value: 100.0
-      unit_system: UnitSystem.SYSTEM_BASE = 0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; inf_source = Source(
+└─────────────────┴───────┴────────────────────────┴───────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; slack_bus = first(get_components(x -&gt; get_bustype(x) == BusTypes.REF, Bus, threebus_sys))</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `BusTypes` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; inf_source = Source(
            name = &quot;InfBus&quot;, #name
            available = true, #availability
            active_power = 0.0,
@@ -173,7 +160,7 @@ Static Components
 InfBus (Source):
    name: InfBus
    available: true
-   bus: BUS 1 (Bus)
+   bus: BUS 1 (ACBus)
    active_power: 0.0
    reactive_power: 0.0
    R_th: 0.0
@@ -270,4 +257,4 @@ InfBus (Source):
                #Attach the dynamic inverter to the system
                add_component!(threebus_sys, case_inv, g)
            end
-       end</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h3 id="Save-the-system-in-a-JSON-file"><a class="docs-heading-anchor" href="#Save-the-system-in-a-JSON-file">Save the system in a JSON file</a><a id="Save-the-system-in-a-JSON-file-1"></a><a class="docs-heading-anchor-permalink" href="#Save-the-system-in-a-JSON-file" title="Permalink"></a></h3><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; to_json(threebus_sys, joinpath(file_dir, &quot;threebus_sys.json&quot;), force = true)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../execute/">« Simulation Execution</a><a class="docs-footer-nextpage" href="../tutorial_omib/">OMIB »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 25 October 2023 19:45">Wednesday 25 October 2023</span>. Using Julia version 1.9.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+       end</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h3 id="Save-the-system-in-a-JSON-file"><a class="docs-heading-anchor" href="#Save-the-system-in-a-JSON-file">Save the system in a JSON file</a><a id="Save-the-system-in-a-JSON-file-1"></a><a class="docs-heading-anchor-permalink" href="#Save-the-system-in-a-JSON-file" title="Permalink"></a></h3><pre><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; to_json(threebus_sys, joinpath(file_dir, &quot;threebus_sys.json&quot;), force = true)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../execute/">« Simulation Execution</a><a class="docs-footer-nextpage" href="../tutorial_omib/">OMIB »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 12 December 2023 01:30">Tuesday 12 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
