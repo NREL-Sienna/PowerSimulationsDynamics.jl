@@ -34,7 +34,7 @@ function test_dera_residual(freqflag_value, csv_file, init_cond, eigs_value)
     try
         threebus_sys = System(raw_file; runchecks = false)
         for g in get_components(ThermalStandard, threebus_sys)
-            g.bus.bustype == BusTypes.REF && remove_component!(threebus_sys, g)
+            g.bus.bustype == ACBusTypes.REF && remove_component!(threebus_sys, g)
         end
         add_source_to_ref(threebus_sys)
         for g in get_components(ThermalStandard, threebus_sys)
@@ -99,7 +99,7 @@ function test_dera_massmatrix(freqflag_value, csv_file, init_cond, eigs_value)
     try
         threebus_sys = System(raw_file; runchecks = false)
         for g in get_components(ThermalStandard, threebus_sys)
-            g.bus.bustype == BusTypes.REF && remove_component!(threebus_sys, g)
+            g.bus.bustype == ACBusTypes.REF && remove_component!(threebus_sys, g)
         end
         add_source_to_ref(threebus_sys)
         for g in get_components(ThermalStandard, threebus_sys)

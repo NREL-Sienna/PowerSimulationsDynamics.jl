@@ -4,8 +4,8 @@ struct PQBus <: BusCategory end
 struct SLACKBus <: BusCategory end
 
 const BUS_MAP = Dict(
-    PSY.BusTypes.REF => SLACKBus,
-    PSY.BusTypes.PV => PVBus,
-    PSY.BusTypes.SLACK => SLACKBus,
-    PSY.BusTypes.PQ => PQBus,
+    PSY.ACBusTypes.REF => SLACKBus,
+    PSY.ACBusTypes.PV => PVBus,
+    PSY.ACBusTypes.SLACK => SLACKBus,
+    PSY.ACBusTypes.PQ => PQBus,
 )

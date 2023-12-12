@@ -10,7 +10,7 @@ and the generator located in bus 3.
 ##################################################
 
 threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_simple_marconato")
-solve_powerflow!(threebus_sys)
+solve_ac_powerflow!(threebus_sys)
 Ybus_fault = get_ybus_fault_threebus_sys(threebus_sys)
 
 ##################################################

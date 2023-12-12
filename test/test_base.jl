@@ -21,7 +21,8 @@ end
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
         fault_branch.r = 0.00
         fault_branch.x = 0.1
-        Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
+        Ybus_fault =
+            PNM.Ybus([fault_branch], collect(get_components(ACBus, omib_sys)))[:, :]
 
         Ybus_change = NetworkSwitch(
             1.0, #change at t = 1.0
@@ -47,7 +48,7 @@ end
         @test isa(dic_control_refs, Dict)
 
         o_system = System(joinpath(path1, "input_system.json"))
-        for b in get_components(Bus, o_system)
+        for b in get_components(ACBus, o_system)
             b_sys = get_component(Bus, omib_sys, get_name(b))
             b_file = get_component(Bus, omib_sys_file, get_name(b))
             @test get_angle(b) == get_angle(b_sys)
@@ -65,7 +66,8 @@ end
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
         fault_branch.r = 0.00
         fault_branch.x = 0.1
-        Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
+        Ybus_fault =
+            PNM.Ybus([fault_branch], collect(get_components(ACBus, omib_sys)))[:, :]
 
         Ybus_change = NetworkSwitch(
             1.0, #change at t = 1.0
@@ -83,11 +85,11 @@ end
         )
         @test sim.status == PSID.BUILT
         m_system = System(joinpath(path2, "initialized_system.json"))
-        for b in get_components(Bus, m_system)
+        for b in get_components(ACBus, m_system)
             b_sys = get_component(Bus, omib_sys, get_name(b))
             b_file = get_component(Bus, omib_sys_file, get_name(b))
             @test get_angle(b) == get_angle(b_sys)
-            if get_bustype(b) == PSY.BusTypes.REF
+            if get_bustype(b) == PSY.ACBusTypes.REF
                 @test get_angle(b) == get_angle(b_file)
             else
                 @test get_angle(b) != get_angle(b_file)
@@ -107,7 +109,8 @@ end
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
         fault_branch.r = 0.00
         fault_branch.x = 0.1
-        Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
+        Ybus_fault =
+            PNM.Ybus([fault_branch], collect(get_components(ACBus, omib_sys)))[:, :]
 
         Ybus_change = NetworkSwitch(
             1.0, #change at t = 1.0
@@ -285,7 +288,7 @@ end
     gen = PSY.get_component(ThermalStandard, sys, "generator-102-1")
     PSY.set_available!(gen, false)
     b = PSY.get_component(Bus, sys, "BUS 2")
-    PSY.set_bustype!(b, PSY.BusTypes.PQ)
+    PSY.set_bustype!(b, PSY.ACBusTypes.PQ)
     #Create Simulation without Gen 2 starting from steady-state with Gen 2
     sim_trip_gen = Simulation(
         ResidualModel,
@@ -695,7 +698,8 @@ end
         fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
         fault_branch.r = 0.00
         fault_branch.x = 0.1
-        Ybus_fault = PNM.Ybus([fault_branch], collect(get_components(Bus, omib_sys)))[:, :]
+        Ybus_fault =
+            PNM.Ybus([fault_branch], collect(get_components(ACBus, omib_sys)))[:, :]
 
         Ybus_change = NetworkSwitch(
             1.0, #change at t = 1.0

@@ -1,7 +1,7 @@
 function initialize_filter!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter}},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter, L}},
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -9,6 +9,7 @@ function initialize_filter!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #PowerFlow Data
     P0 = PSY.get_active_power(static)
@@ -92,7 +93,7 @@ end
 function initialize_filter!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter}},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter, L}},
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -100,6 +101,7 @@ function initialize_filter!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #PowerFlow Data
     P0 = PSY.get_active_power(static)

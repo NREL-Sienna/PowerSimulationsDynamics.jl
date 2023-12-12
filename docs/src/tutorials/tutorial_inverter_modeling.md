@@ -66,7 +66,7 @@ Using `PowerSimulationsDynamics` tools for exploring the results, we can plot al
 ```@repl inv_sys
 result = read_results(sim)
 p = plot();
-for b in get_components(Bus, sys)
+for b in get_components(ACBus, sys)
     voltage_series = get_voltage_magnitude_series(result, get_number(b))
     plot!(
         p,
@@ -226,7 +226,7 @@ Using `PowerSimulationsDynamics` tools for exploring the results, we can plot al
 ```@repl inv_sys
 result = read_results(sim)
 p = plot();
-for b in get_components(Bus, sys)
+for b in get_components(ACBus, sys)
     voltage_series = get_voltage_magnitude_series(result, get_number(b))
     plot!(
         p,

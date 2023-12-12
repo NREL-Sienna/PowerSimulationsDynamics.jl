@@ -57,4 +57,4 @@ for br in fault_branches
         br.x = 4 * br.x
     end
 end
-Ybus_fault = PNM.Ybus(fault_branches, collect(get_components(Bus, threebus_sys)))[:, :];
+Ybus_fault = PNM.Ybus(fault_branches, collect(get_components(ACBus, threebus_sys)))[:, :];

@@ -441,7 +441,7 @@ function _update_inner_vars!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, F}},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, F, L}},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -449,6 +449,7 @@ function _update_inner_vars!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     return
 end
@@ -459,13 +460,22 @@ function _update_inner_vars!(
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, PSY.RLFilter},
+        PSY.DynamicInverter{
+            PSY.RenewableEnergyConverterTypeA,
+            O,
+            IC,
+            DC,
+            P,
+            PSY.RLFilter,
+            L,
+        },
     },
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     V_R = inner_vars[Vr_inv_var]
     V_I = inner_vars[Vi_inv_var]
@@ -578,6 +588,7 @@ function _update_inner_vars!(
             DC,
             P,
             PSY.LCLFilter,
+            L,
         },
     },
 ) where {
@@ -585,6 +596,7 @@ function _update_inner_vars!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     filter_ix = get_local_state_ix(dynamic_device, PSY.LCLFilter)
     filter_states = @view device_states[filter_ix]

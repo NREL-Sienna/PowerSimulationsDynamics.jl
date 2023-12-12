@@ -9,6 +9,7 @@ function initialize_outer!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -18,6 +19,7 @@ function initialize_outer!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -74,6 +76,7 @@ function initialize_outer!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -83,6 +86,7 @@ function initialize_outer!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -138,6 +142,7 @@ function initialize_outer!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -147,6 +152,7 @@ function initialize_outer!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -201,6 +207,7 @@ function initialize_outer!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -210,6 +217,7 @@ function initialize_outer!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #Obtain external states inputs for component
@@ -283,6 +291,7 @@ function initialize_outer!(
             DC,
             P,
             F,
+            L,
         },
     },
     inner_vars::AbstractVector,
@@ -292,6 +301,7 @@ function initialize_outer!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     # Read inner vars
     Vr_filter = inner_vars[Vr_filter_var]

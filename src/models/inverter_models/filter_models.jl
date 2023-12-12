@@ -39,13 +39,14 @@ function mdl_filter_ode!(
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter}},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter, L}},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
 
     #external_ix = get_input_port_ix(dynamic_device, PSY.LCLFilter)
@@ -120,13 +121,14 @@ function mdl_filter_ode!(
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter}},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter, L}},
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain inner variables for component
     basepower = PSY.get_base_power(dynamic_device)

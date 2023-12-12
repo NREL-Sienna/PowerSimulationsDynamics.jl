@@ -1,7 +1,7 @@
 function initialize_frequency_estimator!(
     device_states,
     static::PSY.StaticInjection,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F}},
+    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F, L}},
     inner_vars::AbstractVector,
 ) where {
     C <: PSY.Converter,
@@ -9,6 +9,7 @@ function initialize_frequency_estimator!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     Vr_filter = inner_vars[Vr_filter_var]
     Vi_filter = inner_vars[Vi_filter_var]
@@ -66,7 +67,7 @@ function initialize_frequency_estimator!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F},
+        PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F, L},
     },
     inner_vars::AbstractVector,
 ) where {
@@ -75,6 +76,7 @@ function initialize_frequency_estimator!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     Vr_filter = inner_vars[Vr_filter_var]
     Vi_filter = inner_vars[Vi_filter_var]
@@ -128,7 +130,7 @@ function initialize_frequency_estimator!(
     device_states,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F},
+        PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F, L},
     },
     inner_vars::AbstractVector,
 ) where {
@@ -137,6 +139,7 @@ function initialize_frequency_estimator!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
+    L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Get parameters
     pll_control = PSY.get_freq_estimator(dynamic_device)
