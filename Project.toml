@@ -1,7 +1,7 @@
 name = "PowerSimulationsDynamics"
 uuid = "398b2ede-47ed-4edc-b52e-69e4a48b4336"
 authors = ["Jose Daniel Lara, Rodrigo Henriquez"]
-version = "0.12.3"
+version = "0.13.0"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -30,7 +30,7 @@ FastClosures = "^0.3"
 ForwardDiff = "~v0.10"
 InfrastructureSystems = "^1.21"
 NLsolve = "4"
-PowerSystems = "^3"
+PowerSystems = "^3.1.2"
 PowerFlows = "^0.6"
 PowerNetworkMatrices = "^0.9"
 PrettyTables = "1, 2"
