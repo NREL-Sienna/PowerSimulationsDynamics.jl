@@ -191,6 +191,16 @@ function _small_signal_analysis(
     return _small_signal_analysis(jacwrapper.Jv, jacwrapper.x, inputs, multimachine)
 end
 
+"""
+    small_signal_analysis(
+            sim::Simulation,
+    )
+
+Returns the Small Signal Output object that contains the eigenvalues and participation factors.
+
+# Arguments
+- `sim::Simulation` : Small Signal Output object that contains the eigenvalues and participation factors
+"""
 function small_signal_analysis(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     inputs = get_simulation_inputs(sim)
     x_eval = get(kwargs, :operating_point, get_initial_conditions(sim))
