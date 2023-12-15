@@ -203,6 +203,9 @@ Returns the Small Signal Output object that contains the eigenvalues and partici
 """
 function small_signal_analysis(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     inputs = get_simulation_inputs(sim)
+    if !(isempty(inputs.delays))
+        return error("Small signal analysis not compatible with system model with delays")
+    end
     x_eval = get(kwargs, :operating_point, get_initial_conditions(sim))
     return _small_signal_analysis(T, inputs, x_eval, sim.multimachine)
 end

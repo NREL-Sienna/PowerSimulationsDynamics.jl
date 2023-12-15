@@ -289,7 +289,10 @@ end
 function _get_jacobian(sim::Simulation{MassMatrixModel})
     inputs = get_simulation_inputs(sim)
     x0_init = get_initial_conditions(sim)
-    return JacobianFunctionWrapper(MassMatrixModel(inputs, x0_init, JacobianCache), x0_init)
+    return JacobianFunctionWrapper(
+        MassMatrixModel(inputs, x0_init, JacobianCache),
+        x0_init,
+    )
 end
 
 function _build_perturbations!(sim::Simulation)
@@ -392,10 +395,8 @@ function _get_diffeq_problem(
         SciMLBase.DDEFunction{true}(
             model;
             mass_matrix = get_mass_matrix(simulation_inputs),
-            jac = jacobian,              #Fails after time of delay if autodiff=true with non-zero delays
+            jac = jacobian,
             jac_prototype = jacobian.Jv,
-            # Necessary to avoid unnecessary calculations in Rosenbrock methods
-            #tgrad = (dT, u, h, p, t) -> dT .= false,      #Doesn't work with passing tgrad yet
         ),
         sim.x0_init,
         h,
@@ -450,7 +451,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                     model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Initial Condition NLsolve refinement" begin
-                    refine_initial_condition!(sim, model, jacobian)
+                    refine_initial_condition!(sim, model, jacobian)    #Jacobian errors 
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Build Perturbations" begin
                     _build_perturbations!(sim)
