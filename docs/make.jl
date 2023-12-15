@@ -22,7 +22,7 @@ makedocs(;
         "Small Signal" => "small.md",
         "Reference Frames" => "reference_frames.md",
         "Perturbations" => "perturbations.md",
-        "Delays" => "delays.md",
+        "Time Delays" => "time_delays.md",
         "Industrial Renewable Models" => "generic.md",
         "Generator Component Library" => Any[
             "Machine" => "component_models/machines.md",
