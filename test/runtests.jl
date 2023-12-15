@@ -1,5 +1,3 @@
-using Revise
-using PlotlyJS
 using PowerSimulationsDynamics
 using PowerSystems
 using Test

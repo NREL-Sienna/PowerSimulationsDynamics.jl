@@ -108,19 +108,19 @@ csv_file_degov_delay_speed =
         @test LinearAlgebra.norm(ω_pw_delay - ω_psid_delay, Inf) <= 3.1e-5
 
         #Plotting for debug (add PlotlyJS):
-#=         t1 = PlotlyJS.scatter(; x = t_pw, y = ω_pw_nodelay, name = "speed-pw -- no delay")
-        t2 = PlotlyJS.scatter(;
-            x = t_psid,
-            y = ω_psid_nodelay,
-            name = "speed-psid -- no delay",
-        )
-        t3 = PlotlyJS.scatter(; x = t_pw, y = ω_pw_delay, name = "speed-pw -- 1s delay")
-        t4 = PlotlyJS.scatter(;
-            x = t_psid,
-            y = ω_psid_delay,
-            name = "speed-psid -- 1s delay",
-        )
-        display(PlotlyJS.plot([t1, t2, t3, t4])) =#
+        #=         t1 = PlotlyJS.scatter(; x = t_pw, y = ω_pw_nodelay, name = "speed-pw -- no delay")
+                t2 = PlotlyJS.scatter(;
+                    x = t_psid,
+                    y = ω_psid_nodelay,
+                    name = "speed-psid -- no delay",
+                )
+                t3 = PlotlyJS.scatter(; x = t_pw, y = ω_pw_delay, name = "speed-pw -- 1s delay")
+                t4 = PlotlyJS.scatter(;
+                    x = t_psid,
+                    y = ω_psid_delay,
+                    name = "speed-psid -- 1s delay",
+                )
+                display(PlotlyJS.plot([t1, t2, t3, t4])) =#
 
     finally
         @info("removing test files")

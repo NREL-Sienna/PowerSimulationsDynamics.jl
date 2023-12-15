@@ -45,6 +45,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
     ix_range::Vector{Int}
     ode_range::Vector{Int}
     bus_ix::Int
+    bus_size::Int
     global_index::Base.ImmutableDict{Symbol, Int}
     component_state_mapping::Base.ImmutableDict{Int, Vector{Int}}
     input_port_mapping::Base.ImmutableDict{Int, Vector{Int}}
@@ -65,6 +66,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
         ix_range,
         ode_range,
         bus_ix::Int,
+        bus_size::Int,
         global_index::Base.ImmutableDict{Symbol, Int},
         component_state_mapping::Base.ImmutableDict{Int, Vector{Int}},
         input_port_mapping::Base.ImmutableDict{Int, Vector{Int}},
@@ -87,6 +89,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
             Vector{Int}(ix_range),
             Vector{Int}(ode_range),
             bus_ix,
+            bus_size,
             global_index,
             component_state_mapping,
             input_port_mapping,
@@ -119,6 +122,7 @@ function DynamicWrapper(
     device::T,
     dynamic_device::D,
     bus_ix::Int,
+    bus_size::Int,
     ix_range,
     ode_range,
     inner_var_range,
@@ -152,6 +156,7 @@ function DynamicWrapper(
         ix_range,
         ode_range,
         bus_ix,
+        bus_size,
         Base.ImmutableDict(
             sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
         ),
@@ -173,6 +178,7 @@ function DynamicWrapper(
     device::PSY.ThermalStandard,
     dynamic_device::PSY.AggregateDistributedGenerationA,
     bus_ix::Int,
+    bus_size::Int,
     ix_range,
     ode_range,
     inner_var_range,
@@ -200,6 +206,7 @@ function DynamicWrapper(
         ix_range,
         ode_range,
         bus_ix,
+        bus_size,
         Base.ImmutableDict(
             sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
         ),
@@ -221,6 +228,7 @@ function DynamicWrapper(
     device::PSY.Source,
     dynamic_device::D,
     bus_ix::Int,
+    bus_size::Int,
     ix_range,
     ode_range,
     inner_var_range,
@@ -246,6 +254,7 @@ function DynamicWrapper(
         collect(ix_range),
         collect(ode_range),
         bus_ix,
+        bus_size,
         Base.ImmutableDict(Dict(device_states .=> ix_range)...),
         Base.ImmutableDict{Int, Vector{Int}}(),
         Base.ImmutableDict{Int, Vector{Int}}(),
