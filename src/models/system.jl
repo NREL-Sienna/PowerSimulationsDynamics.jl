@@ -11,14 +11,29 @@ function ResidualModel(
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    return SystemModel{ResidualModel, NoDelays}(inputs, Ctype{U}(system_residual!, inputs))
+    if isempty(inputs.delays)
+        return SystemModel{ResidualModel, NoDelays}(
+            inputs,
+            Ctype{U}(system_residual!, inputs),
+        )
+    else
+        error(
+            "Cannot use ResidualModel for a system model with delays. Remove delays or use MassMatrixModel",
+        )
+    end
 end
 
 """
 Instantiate an ResidualModel for ODE inputs.
 """
 function ResidualModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
-    return SystemModel{ResidualModel, NoDelays}(inputs, Ctype(system_residual!, inputs))
+    if isempty(inputs.delays)
+        return SystemModel{ResidualModel, NoDelays}(inputs, Ctype(system_residual!, inputs))
+    else
+        error(
+            "Cannot use ResidualModel for a system model with delays. Remove delays or use MassMatrixModel",
+        )
+    end
 end
 
 function (m::SystemModel{ResidualModel, NoDelays, C})(

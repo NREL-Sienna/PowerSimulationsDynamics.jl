@@ -3,6 +3,7 @@
 # in SparseDiffTools
 
 struct JacobianFunctionWrapper{
+    D <: DelayModel,
     F,
     T <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}},
 } <: Function
@@ -13,12 +14,12 @@ struct JacobianFunctionWrapper{
 end
 
 # This version of the function is type unstable should only be used for non-critial ops
-function (J::JacobianFunctionWrapper)(x::AbstractVector{Float64})
+function (J::JacobianFunctionWrapper{NoDelays})(x::AbstractVector{Float64})
     J.x .= x
     return J.Jf(J.Jv, x)
 end
 
-function (J::JacobianFunctionWrapper)(
+function (J::JacobianFunctionWrapper{NoDelays})(
     JM::U,
     x::AbstractVector{Float64},
 ) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
@@ -27,7 +28,17 @@ function (J::JacobianFunctionWrapper)(
     return
 end
 
-function (J::JacobianFunctionWrapper)(
+function (J::JacobianFunctionWrapper{HasDelays})(
+    JM::U,
+    x::AbstractVector{Float64},
+) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
+    h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x[idxs] : x
+    J.x .= x
+    J.Jf(JM, x, h, 0.0)
+    return
+end
+
+function (J::JacobianFunctionWrapper{NoDelays})(
     JM::U,
     x::AbstractVector{Float64},
     p,
@@ -37,18 +48,18 @@ function (J::JacobianFunctionWrapper)(
     return
 end
 
-function (J::JacobianFunctionWrapper)(
+function (J::JacobianFunctionWrapper{HasDelays})(
     JM::U,
     x::AbstractVector{Float64},
     h,
     p,
     t,
 ) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
-    J(JM, x)
+    J.Jf(JM, x, h, t)
     return
 end
 
-function (J::JacobianFunctionWrapper)(
+function (J::JacobianFunctionWrapper{NoDelays})(
     JM::U,
     dx::AbstractVector{Float64},
     x::AbstractVector{Float64},
@@ -95,7 +106,12 @@ function JacobianFunctionWrapper(
     end
     Jf(Jv, x0)
     mass_matrix = get_mass_matrix(m!.inputs)
-    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0, mass_matrix)
+    return JacobianFunctionWrapper{NoDelays, typeof(Jf), typeof(Jv)}(
+        Jf,
+        Jv,
+        x0,
+        mass_matrix,
+    )
 end
 
 function JacobianFunctionWrapper(
@@ -130,7 +146,12 @@ function JacobianFunctionWrapper(
     end
     Jf(Jv, x0)
     mass_matrix = get_mass_matrix(m!.inputs)
-    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0, mass_matrix)
+    return JacobianFunctionWrapper{NoDelays, typeof(Jf), typeof(Jv)}(
+        Jf,
+        Jv,
+        x0,
+        mass_matrix,
+    )
 end
 
 function JacobianFunctionWrapper(
@@ -141,15 +162,15 @@ function JacobianFunctionWrapper(
 )
     x0 = deepcopy(x0_guess)
     n = length(x0)
-
-    h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0  #Possilby the problem? Should pass the h that is stored in the problem instead of redefining?
-    m_ = (residual, x) -> m!(residual, x, h, nothing, 0.0)
-    jconfig = ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
-    Jf = (Jv, x) -> begin
-        @debug "Evaluating Jacobian Function"
-        ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
-        return
-    end
+    Jf =
+        (Jv, x, h, t) -> begin
+            @debug "Evaluating Jacobian Function"
+            m_ = (residual, x) -> m!(residual, x, h, nothing, t)
+            jconfig =
+                ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
+            ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
+            return
+        end
     jac = zeros(n, n)
     if sparse_retrieve_loop > 0
         for _ in 1:sparse_retrieve_loop
@@ -165,9 +186,13 @@ function JacobianFunctionWrapper(
     else
         throw(IS.ConflictingInputsError("negative sparse_retrieve_loop not valid"))
     end
-    Jf(Jv, x0)
     mass_matrix = get_mass_matrix(m!.inputs)
-    return JacobianFunctionWrapper{typeof(Jf), typeof(Jv)}(Jf, Jv, x0, mass_matrix)
+    return JacobianFunctionWrapper{HasDelays, typeof(Jf), typeof(Jv)}(
+        Jf,
+        Jv,
+        x0,
+        mass_matrix,
+    )
 end
 
 function get_jacobian(
