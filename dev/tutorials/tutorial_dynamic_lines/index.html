@@ -32,7 +32,8 @@ Dynamic Components
 │ DynamicGenerator │ 1     │
 │ DynamicInverter  │ 1     │
 └──────────────────┴───────┘</code></pre><p>In addition, we will create a new copy of the system on which we will simulate the same case, but will consider dynamic lines:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; threebus_sys_dyn = deepcopy(threebus_sys);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h3 id="Step-3:-Create-the-fault-and-simulation-on-the-Static-Lines-system"><a class="docs-heading-anchor" href="#Step-3:-Create-the-fault-and-simulation-on-the-Static-Lines-system">Step 3: Create the fault and simulation on the Static Lines system</a><a id="Step-3:-Create-the-fault-and-simulation-on-the-Static-Lines-system-1"></a><a class="docs-heading-anchor-permalink" href="#Step-3:-Create-the-fault-and-simulation-on-the-Static-Lines-system" title="Permalink"></a></h3><p>First, we construct the perturbation, by properly computing the new Ybus on the system:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Make a copy of the original system
-       sys2 = deepcopy(threebus_sys)</code><code class="nohighlight hljs ansi" style="display:block;">System
+       sys2 = deepcopy(threebus_sys)
+       #Triplicates the impedance of the line named &quot;BUS 1-BUS 3-i_1&quot;</code><code class="nohighlight hljs ansi" style="display:block;">System
 ┌───────────────────┬─────────────┐
 │ Property          │ Value       │
 ├───────────────────┼─────────────┤
@@ -64,8 +65,7 @@ Dynamic Components
 ├──────────────────┼───────┤
 │ DynamicGenerator │ 1     │
 │ DynamicInverter  │ 1     │
-└──────────────────┴───────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Triplicates the impedance of the line named &quot;BUS 1-BUS 3-i_1&quot;
-       fault_branches = get_components(ACBranch, sys2)</code><code class="nohighlight hljs ansi" style="display:block;">ACBranch Counts:
+└──────────────────┴───────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; fault_branches = get_components(ACBranch, sys2)</code><code class="nohighlight hljs ansi" style="display:block;">ACBranch Counts:
 Line: 3</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for br in fault_branches
            if get_name(br) == &quot;BUS 1-BUS 3-i_1&quot;
                br.r = 3 * br.r
@@ -73,17 +73,18 @@ Line: 3</code><br/><code class="language-julia-repl hljs" style="display:block;"
                b_new = (from = br.b.from / 3, to = br.b.to / 3)
                br.b = b_new
            end
-       end</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Obtain the new Ybus
-       Ybus_fault = Ybus(sys2).data</code><code class="nohighlight hljs ansi" style="display:block;">3×3 SparseArrays.SparseMatrixCSC{ComplexF64, Int64} with 9 stored entries:
+       end
+       #Obtain the new Ybus</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ybus_fault = Ybus(sys2).data
+       #Define Fault: Change of YBus</code><code class="nohighlight hljs ansi" style="display:block;">3×3 SparseArrays.SparseMatrixCSC{ComplexF64, Int64} with 9 stored entries:
    0.91954-10.9011im   -0.689655+8.27586im   -0.229885+2.75862im
  -0.689655+8.27586im    0.714334-8.78642im  -0.0246792+1.11056im
- -0.229885+2.75862im  -0.0246792+1.11056im    0.254564-3.33585im</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Define Fault: Change of YBus
-       Ybus_change = NetworkSwitch(
+ -0.229885+2.75862im  -0.0246792+1.11056im    0.254564-3.33585im</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ybus_change = NetworkSwitch(
            1.0, #change at t = 1.0
            Ybus_fault, #New YBus
        );</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>Now, we construct the simulation:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Time span of our simulation
-       tspan = (0.0, 30.0)</code><code class="nohighlight hljs ansi" style="display:block;">(0.0, 30.0)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Define Simulation
-       sim = Simulation(
+       tspan = (0.0, 30.0)
+       
+       #Define Simulation</code><code class="nohighlight hljs ansi" style="display:block;">(0.0, 30.0)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim = Simulation(
            ResidualModel, #Type of model used
            threebus_sys, #system
            pwd(), #folder to output results
@@ -167,21 +168,21 @@ ii_filter 0.6923
 │ Time Span                  │ (0.0, 30.0) │
 │ Total Time Steps           │ 1607        │
 │ Number of States           │ 33          │
-│ Total solve time           │ 2.540545395 │
+│ Total solve time           │ 2.025990013 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; series2 = get_voltage_magnitude_series(results, 102)</code><code class="nohighlight hljs ansi" style="display:block;">([0.0, 0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.052000000000000005, 0.07200000000000001, 0.09200000000000001  …  29.83954153464911, 29.85954153464911, 29.87954153464911, 29.89954153464911, 29.91954153464911, 29.93954153464911, 29.95954153464911, 29.97954153464911, 29.999541534649108, 30.0], [1.0142000000000002, 1.0142000000001268, 1.0142000000001326, 1.0142000000001927, 1.01420000000014, 1.014200000000125, 1.0142000000001052, 1.0142000000000875, 1.014200000000071, 1.0142000000000564  …  1.0140816770731866, 1.0140823112693007, 1.014082942782033, 1.0140835715610201, 1.014084197556437, 1.0140848207190878, 1.0140854410003357, 1.0140860583521254, 1.0140866727269917, 1.0140866867751974])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; zoom = [
            (series2[1][ix], series2[2][ix]) for
            (ix, s) in enumerate(series2[1]) if (s &gt; 0.90 &amp;&amp; s &lt; 1.6)
        ];</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h3 id="Step-3.1:-Create-the-fault-and-simulation-on-the-Dynamic-Lines-system"><a class="docs-heading-anchor" href="#Step-3.1:-Create-the-fault-and-simulation-on-the-Dynamic-Lines-system">Step 3.1: Create the fault and simulation on the Dynamic Lines system</a><a id="Step-3.1:-Create-the-fault-and-simulation-on-the-Dynamic-Lines-system-1"></a><a class="docs-heading-anchor-permalink" href="#Step-3.1:-Create-the-fault-and-simulation-on-the-Dynamic-Lines-system" title="Permalink"></a></h3><p>An important aspect to consider is that DynamicLines must not be considered in the computation of the Ybus. First we construct the Dynamic Line, by finding the Line named &quot;BUS 2-BUS 3-i_1&quot;, and then adding it to the system.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # get component return the Branch on threebus_sys_dyn named &quot;BUS 2-BUS 3-i_1&quot;
-       dyn_branch = DynamicBranch(get_component(Line, threebus_sys_dyn,&quot;BUS 2-BUS 3-i_1&quot;))</code><code class="nohighlight hljs ansi" style="display:block;">
+       dyn_branch = DynamicBranch(get_component(Line, threebus_sys_dyn,&quot;BUS 2-BUS 3-i_1&quot;))
+       # Adding a dynamic line will immediately remove the static line from the system.</code><code class="nohighlight hljs ansi" style="display:block;">
 BUS 2-BUS 3-i_1 (DynamicBranch):
    branch: BUS 2-BUS 3-i_1 (Line)
    n_states: 2
    states: [:Il_R, :Il_I]
-   internal: InfrastructureSystems.InfrastructureSystemsInternal</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Adding a dynamic line will immediately remove the static line from the system.
-       add_component!(threebus_sys_dyn, dyn_branch)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>Similarly, we construct the Ybus fault by creating a copy of the original system, but removing the Line &quot;BUS 2-BUS 3-i_1&quot; to avoid considering it in the Ybus:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Make a copy of the original system
-       sys3 = deepcopy(threebus_sys);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Remove Line &quot;BUS 2-BUS 3-i_1&quot;
-       remove_component!(Line, sys3, &quot;BUS 2-BUS 3-i_1&quot;)</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Triplicates the impedance of the line named &quot;BUS 1-BUS 2-i_1&quot;
-       fault_branches2 = get_components(Line, sys3)</code><code class="nohighlight hljs ansi" style="display:block;">Line Counts:
+   internal: InfrastructureSystems.InfrastructureSystemsInternal</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(threebus_sys_dyn, dyn_branch)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>Similarly, we construct the Ybus fault by creating a copy of the original system, but removing the Line &quot;BUS 2-BUS 3-i_1&quot; to avoid considering it in the Ybus:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Make a copy of the original system
+       sys3 = deepcopy(threebus_sys);
+       #Remove Line &quot;BUS 2-BUS 3-i_1&quot;</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; remove_component!(Line, sys3, &quot;BUS 2-BUS 3-i_1&quot;)
+       #Triplicates the impedance of the line named &quot;BUS 1-BUS 2-i_1&quot;</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; fault_branches2 = get_components(Line, sys3)</code><code class="nohighlight hljs ansi" style="display:block;">Line Counts:
 Line: 2</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for br in fault_branches2
            if get_name(br) == &quot;BUS 1-BUS 3-i_1&quot;
                br.r = 3 * br.r
@@ -189,15 +190,15 @@ Line: 2</code><br/><code class="language-julia-repl hljs" style="display:block;"
                b_new = (from = br.b.from / 3, to = br.b.to / 3)
                br.b = b_new
            end
-       end</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Obtain the new Ybus
-       Ybus_fault_dyn = Ybus(sys3).data</code><code class="nohighlight hljs ansi" style="display:block;">3×3 SparseArrays.SparseMatrixCSC{ComplexF64, Int64} with 7 stored entries:
+       end
+       #Obtain the new Ybus</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ybus_fault_dyn = Ybus(sys3).data
+       #Define Fault: Change of YBus</code><code class="nohighlight hljs ansi" style="display:block;">3×3 SparseArrays.SparseMatrixCSC{ComplexF64, Int64} with 7 stored entries:
    0.91954-10.9011im  -0.689655+8.27586im  -0.229885+2.75862im
  -0.689655+8.27586im   0.689655-8.17586im            ⋅
- -0.229885+2.75862im            ⋅           0.229885-2.72529im</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; #Define Fault: Change of YBus
-       Ybus_change_dyn = NetworkSwitch(
+ -0.229885+2.75862im            ⋅           0.229885-2.72529im</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; Ybus_change_dyn = NetworkSwitch(
            1.0, #change at t = 1.0
            Ybus_fault_dyn, #New YBus
-       )</code><code class="nohighlight hljs ansi" style="display:block;">NetworkSwitch(1.0, sparse([1, 2, 3, 4, 5, 6, 1, 2, 4, 5  …  5, 6, 1, 2, 4, 5, 1, 3, 4, 6], [1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6], [0.9195402298850576, -0.6896551724137931, -0.2298850574712644, 10.901149425287358, -8.275862068965518, -2.7586206896551726, -0.6896551724137931, 0.6896551724137931, -8.275862068965518, 8.175862068965518  …  -0.6896551724137931, -0.2298850574712644, 8.275862068965518, -8.175862068965518, -0.6896551724137931, 0.6896551724137931, 2.7586206896551726, -2.7252873563218394, -0.2298850574712644, 0.2298850574712644], 6, 6))</code></pre><h3 id="Step-4.1:-Run-the-simulation-of-the-Dynamic-Lines-System"><a class="docs-heading-anchor" href="#Step-4.1:-Run-the-simulation-of-the-Dynamic-Lines-System">Step 4.1: Run the simulation of the Dynamic Lines System</a><a id="Step-4.1:-Run-the-simulation-of-the-Dynamic-Lines-System-1"></a><a class="docs-heading-anchor-permalink" href="#Step-4.1:-Run-the-simulation-of-the-Dynamic-Lines-System" title="Permalink"></a></h3><p>Now, we construct the simulation:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Define Simulation
+       )</code><code class="nohighlight hljs ansi" style="display:block;">NetworkSwitch(1.0, sparse([1, 2, 3, 4, 5, 6, 1, 2, 4, 5  …  5, 6, 1, 2, 4, 5, 1, 3, 4, 6], [1, 1, 1, 1, 1, 1, 2, 2, 2, 2  …  4, 4, 5, 5, 5, 5, 6, 6, 6, 6], [0.9195402298850576, -0.6896551724137931, -0.2298850574712644, 10.901149425287358, -8.275862068965518, -2.7586206896551726, -0.6896551724137931, 0.6896551724137931, -8.275862068965518, 8.175862068965518  …  -0.6896551724137931, -0.2298850574712644, 8.275862068965518, -8.175862068965518, -0.6896551724137931, 0.6896551724137931, 2.7586206896551726, -2.7252873563218394, -0.2298850574712644, 0.2298850574712644], 6, 6))</code></pre><h3 id="Step-4.1:-Run-the-simulation-of-the-Dynamic-Lines-System"><a class="docs-heading-anchor" href="#Step-4.1:-Run-the-simulation-of-the-Dynamic-Lines-System">Step 4.1: Run the simulation of the Dynamic Lines System</a><a id="Step-4.1:-Run-the-simulation-of-the-Dynamic-Lines-System-1"></a><a class="docs-heading-anchor-permalink" href="#Step-4.1:-Run-the-simulation-of-the-Dynamic-Lines-System" title="Permalink"></a></h3><p>Now, we construct the simulation:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Define Simulation
        sim_dyn = Simulation(
            ResidualModel, #Type of model used
            threebus_sys_dyn, #system
@@ -289,8 +290,8 @@ Il_I -0.06381
 │ Time Span                  │ (0.0, 30.0) │
 │ Total Time Steps           │ 1721        │
 │ Number of States           │ 35          │
-│ Total solve time           │ 1.382533826 │
+│ Total solve time           │ 1.283277254 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; series2_dyn = get_voltage_magnitude_series(results_dyn, 102);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; zoom_dyn = [
            (series2_dyn[1][ix], series2_dyn[2][ix]) for
            (ix, s) in enumerate(series2_dyn[1]) if (s &gt; 0.90 &amp;&amp; s &lt; 1.6)
-       ];</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h3 id="Step-6.1:-Compare-the-solutions:"><a class="docs-heading-anchor" href="#Step-6.1:-Compare-the-solutions:">Step 6.1: Compare the solutions:</a><a id="Step-6.1:-Compare-the-solutions:-1"></a><a class="docs-heading-anchor-permalink" href="#Step-6.1:-Compare-the-solutions:" title="Permalink"></a></h3><p>We can observe the effect of Dynamic Lines</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(series2_dyn, label = &quot;V_gen_dyn&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(series2, label = &quot;V_gen_st&quot;, xlabel = &quot;Time [s]&quot;, ylabel = &quot;Voltage [pu]&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/plot_dynlines.svg" alt="plot"/></p><p>that looks quite similar. The differences can be observed in the zoom plot:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(zoom_dyn, label = &quot;V_gen_dyn&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(zoom, label = &quot;V_gen_st&quot;, xlabel = &quot;Time [s]&quot;, ylabel = &quot;Voltage [pu]&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/plot_dynlines_zoom.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_omib/">« OMIB</a><a class="docs-footer-nextpage" href="../tutorial_inverter_modeling/">Inverter Modeling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 12 December 2023 01:37">Tuesday 12 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+       ];</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h3 id="Step-6.1:-Compare-the-solutions:"><a class="docs-heading-anchor" href="#Step-6.1:-Compare-the-solutions:">Step 6.1: Compare the solutions:</a><a id="Step-6.1:-Compare-the-solutions:-1"></a><a class="docs-heading-anchor-permalink" href="#Step-6.1:-Compare-the-solutions:" title="Permalink"></a></h3><p>We can observe the effect of Dynamic Lines</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(series2_dyn, label = &quot;V_gen_dyn&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(series2, label = &quot;V_gen_st&quot;, xlabel = &quot;Time [s]&quot;, ylabel = &quot;Voltage [pu]&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/plot_dynlines.svg" alt="plot"/></p><p>that looks quite similar. The differences can be observed in the zoom plot:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(zoom_dyn, label = &quot;V_gen_dyn&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(zoom, label = &quot;V_gen_st&quot;, xlabel = &quot;Time [s]&quot;, ylabel = &quot;Voltage [pu]&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/plot_dynlines_zoom.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_omib/">« OMIB</a><a class="docs-footer-nextpage" href="../tutorial_inverter_modeling/">Inverter Modeling »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 4 January 2024 20:50">Thursday 4 January 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
