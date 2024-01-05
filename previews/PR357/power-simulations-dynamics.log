@@ -1,0 +1,44 @@
+┌ Info: 2024-01-05T18:02:14.565 [5358:1]: The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/frequency_reference.jl:70
+┌ Info: 2024-01-05T18:02:14.593 [5358:1]: Pre-Initializing Simulation States
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:265
+┌ Info: 2024-01-05T18:02:14.593 [5358:1]: Unit System changed to UnitSystem.SYSTEM_BASE = 0
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/diJIg/src/base.jl:395
+┌ Info: 2024-01-05T18:02:16.266 [5358:1]: PowerFlow solve converged, the results have been stored in the system
+└ @ PowerFlows /home/runner/.julia/packages/PowerFlows/8MBjq/src/nlsolve_ac_powerflow.jl:47
+┌ Info: 2024-01-05T18:02:16.266 [5358:1]: Unit System changed to UnitSystem.DEVICE_BASE = 1
+└ @ PowerSystems /home/runner/.julia/packages/PowerSystems/diJIg/src/base.jl:395
+┌ Info: 2024-01-05T18:02:28.808 [5358:1]: Residual from initial guess: max = 4.212807880321634e-11 at 4, total = 5.4841923110646186e-11
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:115
+┌ Info: 2024-01-05T18:02:28.847 [5358:1]: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:82
+┌ Info: 2024-01-05T18:02:28.847 [5358:1]: Attaching Perturbations
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:299
+┌ Info: 2024-01-05T18:02:29.359 [5358:1]: Simulations status = BUILT
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:462
+┌ Info: 2024-01-05T18:02:29.359 [5358:1]: 
+│  ───────────────────────────────────────────────────────────────────────────────
+│                                                      Time          Allocations  
+│                                                ───────────────   ───────────────
+│                 Total measured:                     16.7s             808MiB    
+│ 
+│  Section                               ncalls     time    %tot     alloc    %tot
+│  ───────────────────────────────────────────────────────────────────────────────
+│  Build Simulation                           1    16.7s  100.0%    808MiB  100.0%
+│    Build Simulation Inputs                  1    1.90s   11.4%    126MiB   15.6%
+│      Wrap Branches                          1   10.4μs    0.0%      208B    0.0%
+│      Wrap Dynamic Injectors                 1    1.05s    6.3%   78.8MiB    9.8%
+│      Calculate MM, DAE_vector, Tota...      1    113ms    0.7%   6.28MiB    0.8%
+│      Wrap Static Injectors                  1   60.1ms    0.4%   1.63MiB    0.2%
+│    Pre-initialization                       1    4.78s   28.7%    229MiB   28.3%
+│      Power Flow solution                    1    1.71s   10.3%   41.5MiB    5.1%
+│      Initialize Static Injectors            1    2.19s   13.1%   27.5MiB    3.4%
+│      Initialize Dynamic Injectors           1    878ms    5.3%    160MiB   19.8%
+│    Calculate Jacobian                       1    4.51s   27.0%    396MiB   49.1%
+│    Make Model Function                      1   6.18ms    0.0%    122KiB    0.0%
+│    Initial Condition NLsolve refine...      1    4.96s   29.8%   29.7MiB    3.7%
+│    Build Perturbations                      1    222ms    1.3%   13.3MiB    1.6%
+│    Make DiffEq Problem                      1    285ms    1.7%   13.9MiB    1.7%
+│  ───────────────────────────────────────────────────────────────────────────────
+│ 
+└ @ PowerSimulationsDynamics /home/runner/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:487
