@@ -289,7 +289,10 @@ end
 function _get_jacobian(sim::Simulation{MassMatrixModel})
     inputs = get_simulation_inputs(sim)
     x0_init = get_initial_conditions(sim)
-    return JacobianFunctionWrapper(MassMatrixModel(inputs, x0_init, JacobianCache), x0_init)
+    return JacobianFunctionWrapper(
+        MassMatrixModel(inputs, x0_init, JacobianCache),
+        x0_init,
+    )
 end
 
 function _build_perturbations!(sim::Simulation)
@@ -329,7 +332,7 @@ end
 
 function _get_diffeq_problem(
     sim::Simulation,
-    model::SystemModel{ResidualModel},
+    model::SystemModel{ResidualModel, NoDelays},
     jacobian::JacobianFunctionWrapper,
 )
     x0 = get_initial_conditions(sim)
@@ -354,7 +357,7 @@ end
 
 function _get_diffeq_problem(
     sim::Simulation,
-    model::SystemModel{MassMatrixModel},
+    model::SystemModel{MassMatrixModel, NoDelays},
     jacobian::JacobianFunctionWrapper,
 )
     simulation_inputs = get_simulation_inputs(sim)
@@ -372,6 +375,37 @@ function _get_diffeq_problem(
         simulation_inputs,
     )
     sim.status = BUILT
+    return
+end
+
+function get_history_function(simulation_inputs)
+    x0 = get_initial_conditions(simulation_inputs)
+    h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0
+    return h
+end
+
+function _get_diffeq_problem(
+    sim::Simulation,
+    model::SystemModel{MassMatrixModel, HasDelays},
+    jacobian::JacobianFunctionWrapper,
+)
+    simulation_inputs = get_simulation_inputs(sim)
+    h = get_history_function(sim)
+    sim.problem = SciMLBase.DDEProblem(
+        SciMLBase.DDEFunction{true}(
+            model;
+            mass_matrix = get_mass_matrix(simulation_inputs),
+            jac = jacobian,
+            jac_prototype = jacobian.Jv,
+        ),
+        sim.x0_init,
+        h,
+        get_tspan(sim),
+        simulation_inputs;
+        constant_lags = filter!(x -> x != 0, unique(simulation_inputs.delays)),
+    )
+    sim.status = BUILT
+
     return
 end
 
@@ -417,7 +451,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                     model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Initial Condition NLsolve refinement" begin
-                    refine_initial_condition!(sim, model, jacobian)
+                    refine_initial_condition!(sim, model, jacobian)    #Jacobian errors 
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Build Perturbations" begin
                     _build_perturbations!(sim)

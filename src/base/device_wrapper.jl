@@ -20,6 +20,12 @@ index(::Type{<:PSY.InnerControl}) = 4
 index(::Type{<:PSY.Converter}) = 5
 index(::Type{<:PSY.Filter}) = 6
 
+get_delays(::PSY.DynamicInjection) = nothing
+get_delays(
+    dynamic_injector::PSY.DynamicGenerator{M, S, A, PSY.DEGOV, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS} =
+    [PSY.get_Td(PSY.get_prime_mover(dynamic_injector))]
+
 """
 Wraps DynamicInjection devices from PowerSystems to handle changes in controls and connection
 status, and allocate the required indexes of the state space.
@@ -39,6 +45,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
     ix_range::Vector{Int}
     ode_range::Vector{Int}
     bus_ix::Int
+    bus_size::Int
     global_index::Base.ImmutableDict{Symbol, Int}
     component_state_mapping::Base.ImmutableDict{Int, Vector{Int}}
     input_port_mapping::Base.ImmutableDict{Int, Vector{Int}}
@@ -59,6 +66,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
         ix_range,
         ode_range,
         bus_ix::Int,
+        bus_size::Int,
         global_index::Base.ImmutableDict{Symbol, Int},
         component_state_mapping::Base.ImmutableDict{Int, Vector{Int}},
         input_port_mapping::Base.ImmutableDict{Int, Vector{Int}},
@@ -81,6 +89,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
             Vector{Int}(ix_range),
             Vector{Int}(ode_range),
             bus_ix,
+            bus_size,
             global_index,
             component_state_mapping,
             input_port_mapping,
@@ -113,6 +122,7 @@ function DynamicWrapper(
     device::T,
     dynamic_device::D,
     bus_ix::Int,
+    bus_size::Int,
     ix_range,
     ode_range,
     inner_var_range,
@@ -146,6 +156,7 @@ function DynamicWrapper(
         ix_range,
         ode_range,
         bus_ix,
+        bus_size,
         Base.ImmutableDict(
             sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
         ),
@@ -167,6 +178,7 @@ function DynamicWrapper(
     device::PSY.ThermalStandard,
     dynamic_device::PSY.AggregateDistributedGenerationA,
     bus_ix::Int,
+    bus_size::Int,
     ix_range,
     ode_range,
     inner_var_range,
@@ -194,6 +206,7 @@ function DynamicWrapper(
         ix_range,
         ode_range,
         bus_ix,
+        bus_size,
         Base.ImmutableDict(
             sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
         ),
@@ -215,6 +228,7 @@ function DynamicWrapper(
     device::PSY.Source,
     dynamic_device::D,
     bus_ix::Int,
+    bus_size::Int,
     ix_range,
     ode_range,
     inner_var_range,
@@ -240,6 +254,7 @@ function DynamicWrapper(
         collect(ix_range),
         collect(ode_range),
         bus_ix,
+        bus_size,
         Base.ImmutableDict(Dict(device_states .=> ix_range)...),
         Base.ImmutableDict{Int, Vector{Int}}(),
         Base.ImmutableDict{Int, Vector{Int}}(),

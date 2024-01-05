@@ -8,11 +8,25 @@ NLsolveWrapper() = NLsolveWrapper(Vector{Float64}(), false, true)
 converged(sol::NLsolveWrapper) = sol.converged
 failed(sol::NLsolveWrapper) = sol.failed
 
-function _get_model_closure(model::SystemModel{MassMatrixModel}, ::Vector{Float64})
+function _get_model_closure(
+    model::SystemModel{MassMatrixModel, NoDelays},
+    ::Vector{Float64},
+)
     return (residual, x) -> model(residual, x, nothing, 0.0)
 end
 
-function _get_model_closure(model::SystemModel{ResidualModel}, x0::Vector{Float64})
+function _get_model_closure(
+    model::SystemModel{MassMatrixModel, HasDelays},
+    x0::Vector{Float64},
+)
+    h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0
+    return (residual, x) -> model(residual, x, h, nothing, 0.0)
+end
+
+function _get_model_closure(
+    model::SystemModel{ResidualModel, NoDelays},
+    x0::Vector{Float64},
+)
     dx0 = zeros(length(x0))
     return (residual, x) -> model(residual, dx0, x, nothing, 0.0)
 end

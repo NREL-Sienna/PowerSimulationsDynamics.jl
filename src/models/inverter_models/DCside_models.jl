@@ -14,6 +14,8 @@ function mdl_DCside_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, PSY.FixedDCSource, P, F, L},
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
