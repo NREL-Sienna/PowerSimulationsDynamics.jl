@@ -60,6 +60,7 @@ function (J::JacobianFunctionWrapper{HasDelays})(
 end
 
 function (J::JacobianFunctionWrapper{NoDelays})(
+<<<<<<< HEAD
     JM::U,
     x::AbstractVector{Float64},
     h,
@@ -71,6 +72,8 @@ function (J::JacobianFunctionWrapper{NoDelays})(
 end
 
 function (J::JacobianFunctionWrapper{NoDelays})(
+=======
+>>>>>>> f336ececd8d00911b90d888d62e056bc05791fbf
     JM::U,
     dx::AbstractVector{Float64},
     x::AbstractVector{Float64},
