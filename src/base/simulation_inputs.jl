@@ -205,7 +205,9 @@ function get_system_delays(sys::PSY.System)
     delays = []
     for injector in get_injectors_with_dynamics(sys)
         device_delays = get_delays(PSY.get_dynamic_injector(injector))
-        !isnothing(device_delays) && push!(delays, device_delays)
+        if !isnothing(device_delays)
+            delays = vcat(delays, device_delays)
+        end
     end
     return delays
 end
