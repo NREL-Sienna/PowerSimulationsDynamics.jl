@@ -206,47 +206,6 @@ function JacobianFunctionWrapper(
     )
 end
 
-function JacobianFunctionWrapper(
-    m!::SystemModel{MassMatrixModel, HasDelays},
-    x0_guess::Vector{Float64};
-    # Improve the heuristic to do sparsity detection
-    sparse_retrieve_loop::Int = 0, #max(3, length(x0_guess) ÷ 100),
-)
-    x0 = deepcopy(x0_guess)
-    n = length(x0)
-    Jf =
-        (Jv, x, h, t) -> begin
-            @debug "Evaluating Jacobian Function"
-            m_ = (residual, x) -> m!(residual, x, h, nothing, t)
-            jconfig =
-                ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
-            ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
-            return
-        end
-    jac = zeros(n, n)
-    if sparse_retrieve_loop > 0
-        for _ in 1:sparse_retrieve_loop
-            temp = zeros(n, n)
-            rng_state = copy(Random.default_rng())
-            Jf(temp, x0 + Random.randn(n))
-            copy!(Random.default_rng(), rng_state)
-            jac .+= abs.(temp)
-        end
-        Jv = SparseArrays.sparse(jac)
-    elseif sparse_retrieve_loop == 0
-        Jv = jac
-    else
-        throw(IS.ConflictingInputsError("negative sparse_retrieve_loop not valid"))
-    end
-    mass_matrix = get_mass_matrix(m!.inputs)
-    return JacobianFunctionWrapper{HasDelays, typeof(Jf), typeof(Jv)}(
-        Jf,
-        Jv,
-        x0,
-        mass_matrix,
-    )
-end
-
 function get_jacobian(
     ::Type{T},
     inputs::SimulationInputs,
