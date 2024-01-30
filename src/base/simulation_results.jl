@@ -36,16 +36,22 @@ Internal function to obtain as a Vector of Float64 of a specific state. It recei
 global index for a state.
 
 """
-function _post_proc_state_series(solution, ix::Int, dt::Union{Nothing, Float64})
-    if dt === nothing
-        ix_t = unique(i -> solution.t[i], eachindex(solution.t))
-        ts = solution.t[ix_t]
-        state = solution[ix, ix_t]
-    else
-        ts = range(0; stop = solution.t[end], step = dt)
-        state = solution(collect(ts); idxs = ix)
-    end
+function _post_proc_state_series(solution, ix::Int, dt::Nothing)
+    ix_t = unique(i -> solution.t[i], eachindex(solution.t))
+    ts = solution.t[ix_t]
+    state = solution[ix, ix_t]
     return ts, state
+end
+
+function _post_proc_state_series(solution, ix::Int, dt::Float64)
+    ts = range(0; stop = solution.t[end], step = dt)
+    state = solution(collect(ts); idxs = ix)
+    return ts, state
+end
+
+function _post_proc_state_series(solution, ix::Int, dt::Vector{Float64})
+    state = solution(dt; idxs = ix)
+    return dt, state
 end
 
 """
@@ -55,7 +61,7 @@ containing the name of the Dynamic Device and the symbol of the state.
 function post_proc_state_series(
     res::SimulationResults,
     ref::Tuple{String, Symbol},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     global_state_index = get_global_index(res)
     if !haskey(global_state_index, ref[1])
@@ -73,7 +79,7 @@ of the Dynamic Device.
 function post_proc_voltage_current_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )::NTuple{5, Vector{Float64}}
     #Note: Type annotation since get_dynamic_injector is type unstable and solution is Union{Nothing, DAESol}
     system = get_system(res)
@@ -104,7 +110,7 @@ function post_proc_voltage_series(
     solution,
     bus_ix::Int,
     n_buses::Int,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     bus_ix < 0 && error("Bus number $(bus_number) not found.")
     ts, V_R = _post_proc_state_series(solution, bus_ix, dt)
@@ -120,7 +126,7 @@ string name of the Dynamic Injection device.
 function post_proc_real_current_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, _, _, I_R, _ = post_proc_voltage_current_series(res, name, dt)
     return ts, I_R
@@ -133,7 +139,7 @@ string name of the Dynamic Injection device.
 function post_proc_imaginary_current_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, _, _, _, I_I = post_proc_voltage_current_series(res, name, dt)
     return ts, I_I
@@ -147,7 +153,7 @@ string name of the Dynamic Injection device.
 function post_proc_activepower_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, V_R, V_I, I_R, I_I = post_proc_voltage_current_series(res, name, dt)
     return ts, V_R .* I_R + V_I .* I_I
@@ -161,7 +167,7 @@ string name of the Dynamic Injection device.
 function post_proc_reactivepower_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, V_R, V_I, I_R, I_I = post_proc_voltage_current_series(res, name, dt)
     return ts, V_I .* I_R - V_R .* I_I
@@ -175,7 +181,7 @@ string name of the Dynamic Injection device.
 function post_proc_field_current_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     system = get_system(res)
     bus_lookup = get_bus_lookup(res)
@@ -197,7 +203,7 @@ string name of the Dynamic Injection device.
 function post_proc_field_voltage_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     system = get_system(res)
     device = PSY.get_component(PSY.StaticInjection, system, name)
@@ -214,7 +220,7 @@ name of the Dynamic Injection device.
 function post_proc_pss_output_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     system = get_system(res)
     device = PSY.get_component(PSY.StaticInjection, system, name)
@@ -231,7 +237,7 @@ string name of the Dynamic Injection device.
 function post_proc_mechanical_torque_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     system = get_system(res)
     device = PSY.get_component(PSY.StaticInjection, system, name)
@@ -247,7 +253,7 @@ The current is computed through the `from` bus into the `to` bus.
 function post_proc_branch_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     system = get_system(res)
     bus_lookup = get_bus_lookup(res)
@@ -275,7 +281,7 @@ Function to compute the frequency of a Dynamic Injection component.
 function post_proc_frequency_series(
     res::SimulationResults,
     name::String,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     system = get_system(res)
     device = PSY.get_component(PSY.StaticInjection, system, name)
@@ -290,7 +296,7 @@ end
     get_state_series(
         res::SimulationResults,
         ref::Tuple{String, Symbol};
-        dt::Union{Nothing, Float64} = nothing
+        dt::Union{Nothing, Float64, Vector{Float64}} = nothing
     )
     end
 
