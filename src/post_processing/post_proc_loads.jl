@@ -8,7 +8,7 @@ function compute_output_current(
     dynamic_device::PSY.SingleCageInductionMachine,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     #Obtain Data
     sys = get_system(res)
@@ -58,7 +58,7 @@ function compute_output_current(
     dynamic_device::PSY.SimplifiedSingleCageInductionMachine,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     #Obtain Data
     sys = get_system(res)
@@ -112,7 +112,7 @@ function compute_output_current(
     device::PSY.PowerLoad,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     #TODO: We should dispatch this using the ZipLoad model that we have, but that would
     #      require to properly have access to it in the SimResults.
@@ -152,7 +152,7 @@ function compute_output_current(
     device::PSY.ExponentialLoad,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     #TODO: We should dispatch this using the ZipLoad model that we have, but that would
     #      require to properly have access to it in the SimResults.
@@ -193,7 +193,7 @@ function compute_output_current(
     device::PSY.StandardLoad,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     #TODO: We should dispatch this using the ZipLoad model that we have, but that would
     #      require to properly have access to it in the SimResults.

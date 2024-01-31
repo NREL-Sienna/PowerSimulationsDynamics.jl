@@ -73,7 +73,7 @@ function compute_output_current(
     dynamic_device::PSY.PeriodicVariableSource,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     name = PSY.get_name(dynamic_device)
     ts, Vt_internal = post_proc_state_series(res, (name, :Vt), dt)

@@ -8,7 +8,7 @@ function compute_output_current(
     dynamic_device::I,
     ::Vector{Float64},
     ::Vector{Float64},
-    ::Union{Nothing, Float64},
+    ::Union{Nothing, Float64, Vector{Float64}},
 ) where {I <: PSY.DynamicInjection}
 
     #Return error
@@ -27,7 +27,7 @@ function compute_output_current(
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicGenerator}
 
     #Obtain Data
@@ -59,7 +59,7 @@ function compute_output_current(
     dynamic_device::PSY.AggregateDistributedGenerationA,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
 
     #Obtain Data
@@ -152,7 +152,7 @@ function compute_field_current(
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicGenerator}
 
     #Obtain Data
@@ -171,7 +171,7 @@ the dynamic device and bus voltage. It is dispatched for device type to compute 
 function compute_field_voltage(
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicGenerator}
 
     #Get AVR
@@ -187,7 +187,7 @@ the dynamic device and bus voltage. It is dispatched for device type to compute 
 function compute_pss_output(
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicGenerator}
 
     #Get PSS
@@ -203,7 +203,7 @@ the dynamic device and bus voltage. It is dispatched for device type to compute 
 function compute_mechanical_torque(
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicGenerator}
 
     #Get TG
@@ -218,7 +218,7 @@ Function to obtain the output frequency time series of a DynamicGenerator
 function compute_frequency(
     res::SimulationResults,
     dyn_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicGenerator}
     name = PSY.get_name(dyn_device)
     ts, ω = post_proc_state_series(res, (name, :ω), dt)
@@ -236,7 +236,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
 
@@ -270,7 +270,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
@@ -308,7 +308,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt)
@@ -349,7 +349,7 @@ function _machine_current(
     ::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt)
@@ -387,7 +387,7 @@ function _machine_current(
     ::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
@@ -429,7 +429,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
@@ -481,7 +481,7 @@ function _machine_current(
     V_I::Vector{Float64},
     base_power_ratio::Float64,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
@@ -526,7 +526,7 @@ function _field_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {M <: PSY.Machine}
     @warn("Field current is not supported in the machine type $(M). Returning zeros.")
     ts, _ = post_proc_state_series(res, (name, :δ), dt)
@@ -544,7 +544,7 @@ function _field_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential}}
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
@@ -598,7 +598,7 @@ function _field_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
@@ -645,7 +645,7 @@ function _field_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, δ = post_proc_state_series(res, (name, :δ), dt)
     _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
@@ -694,7 +694,7 @@ function _field_voltage(
     ::A,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {A <: PSY.AVR}
     return post_proc_state_series(res, (name, :Vf), dt)
 end
@@ -707,7 +707,7 @@ function _field_voltage(
     avr::PSY.AVRFixed,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     Vf0 = PSY.get_Vf(avr)
     ts, _ = post_proc_state_series(res, (name, :δ), dt)
@@ -723,7 +723,7 @@ function _field_voltage(
     avr::Union{PSY.ESAC1A, PSY.EXAC1},
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, Ve = post_proc_state_series(res, (name, :Ve), dt)
     _, Xad_Ifd = post_proc_field_current_series(res, name, dt)
@@ -741,7 +741,7 @@ function _field_voltage(
     avr::PSY.SCRX,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, Vr2 = post_proc_state_series(res, (name, :Vr2), dt)
     _, Ifd = post_proc_field_current_series(res, name, dt)
@@ -777,7 +777,7 @@ function _field_voltage(
     avr::PSY.ESST1A,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     # Obtain state Va
     ts, Va = post_proc_state_series(res, (name, :Va), dt)
@@ -839,7 +839,7 @@ function _pss_output(
     pss::PSY.PSSFixed,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     ts, _ = post_proc_state_series(res, (name, :δ), dt)
     return ts, zeros(length(ts))
@@ -853,7 +853,7 @@ function _pss_output(
     pss::PSY.IEEEST,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     # Obtain states
     ts, x_p2 = post_proc_state_series(res, (name, :x_p2), dt)
@@ -920,7 +920,7 @@ function _mechanical_torque(
     tg::PSY.TGFixed,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     # TODO: This will not plot correctly when changing P_ref in a callback
     ts, _ = _post_proc_state_series(res.solution, 1, dt)
@@ -939,7 +939,7 @@ function _mechanical_torque(
     tg::PSY.TGTypeI,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     # Get params
     Tc = PSY.get_Tc(tg)
@@ -967,7 +967,7 @@ function _mechanical_torque(
     tg::PSY.TGTypeII,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     # TODO: This will not plot correctly when changing P_ref in a callback
     # Get params
@@ -996,7 +996,7 @@ function _mechanical_torque(
     tg::PSY.SteamTurbineGov1,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     # TODO: This will not plot correctly when changing P_ref in a callback
     # Get params
@@ -1031,7 +1031,7 @@ function _mechanical_torque(
     tg::PSY.GasTG,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     # Get params
     D_turb = PSY.get_D_turb(tg)
@@ -1051,7 +1051,7 @@ function _mechanical_torque(
     tg::PSY.HydroTurbineGov,
     name::String,
     res::SimulationResults,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 )
     # Get params
     q_nl = PSY.get_q_nl(tg)

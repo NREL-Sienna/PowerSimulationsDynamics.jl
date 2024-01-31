@@ -8,7 +8,7 @@ function compute_output_current(
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
 
     #Obtain Data
@@ -43,7 +43,7 @@ function compute_field_current(
     dynamic_device::G,
     V_R::Vector{Float64},
     V_I::Vector{Float64},
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
     @warn("Field current does not exist in inverters. Returning zeros.")
     return (nothing, zeros(length(V_R)))
@@ -57,7 +57,7 @@ the dynamic device and bus voltage. It must return nothing since field voltage d
 function compute_field_voltage(
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
     @warn("Field voltage does not exist in inverters. Returning zeros.")
     _, state = _post_proc_state_series(res.solution, 1, dt)
@@ -72,7 +72,7 @@ the dynamic device and bus voltage. It must return nothing since mechanical torq
 function compute_mechanical_torque(
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
     @warn("Mechanical torque is not used in inverters. Returning zeros.")
     _, state = _post_proc_state_series(res.solution, 1, dt)
@@ -82,7 +82,7 @@ end
 function compute_frequency(
     res::SimulationResults,
     dyn_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
     outer_control = PSY.get_outer_control(dyn_device)
     frequency_estimator = PSY.get_freq_estimator(dyn_device)
@@ -106,7 +106,7 @@ function _frequency(
     name::String,
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
     ts, ω = post_proc_state_series(res, (name, :ω_oc), dt)
     return ts, ω
@@ -122,7 +122,7 @@ function _frequency(
     name::String,
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
     P_ref = PSY.get_P_ref(PSY.get_active_power_control(outer_control))
     ω_ref = PSY.get_ω_ref(dynamic_device)
@@ -145,7 +145,7 @@ function _frequency(
     name::String,
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {F <: PSY.FrequencyEstimator, G <: PSY.DynamicInverter}
     p_ref = PSY.get_P_ref(PSY.get_active_power_control(outer_control))
     q_ref = PSY.get_Q_ref(PSY.get_reactive_power_control(outer_control))
@@ -174,7 +174,7 @@ function _frequency(
     name::String,
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
     kp_pll = PSY.get_kp_pll(freq_estimator)
     ki_pll = PSY.get_ki_pll(freq_estimator)
@@ -195,7 +195,7 @@ function _frequency(
     name::String,
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
     kp_pll = PSY.get_kp_pll(freq_estimator)
     ki_pll = PSY.get_ki_pll(freq_estimator)
@@ -208,7 +208,10 @@ function _frequency(
     return ts, ω_pll
 end
 
-function _system_frequency_series(res::SimulationResults, dt::Union{Nothing, Float64})
+function _system_frequency_series(
+    res::SimulationResults,
+    dt::Union{Nothing, Float64, Vector{Float64}},
+)
     if get_global_vars_update_pointers(res)[GLOBAL_VAR_SYS_FREQ_INDEX] == 0
         ω_sys = 1.0
     else
@@ -234,7 +237,7 @@ function _output_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dynamic_device::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {C <: PSY.Converter, G <: PSY.DynamicInverter}
     ts, ir_filter = post_proc_state_series(res, (name, :ir_filter), dt)
     ts, ii_filter = post_proc_state_series(res, (name, :ii_filter), dt)
@@ -255,7 +258,7 @@ function _output_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     ::G,
-    dt::Union{Nothing, Float64},
+    dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
 
     #Get Converter parameters
