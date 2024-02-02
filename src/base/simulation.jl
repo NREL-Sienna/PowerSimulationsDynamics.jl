@@ -378,7 +378,7 @@ function _get_diffeq_problem(
     return
 end
 
-function get_history_function(simulation_inputs::SimulationInputs)
+function get_history_function(simulation_inputs::Simulation{MassMatrixModel})
     x0 = get_initial_conditions(simulation_inputs)
     h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0
     return h
