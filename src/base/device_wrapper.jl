@@ -24,7 +24,7 @@ get_delays(::PSY.DynamicInjection) = nothing
 get_delays(
     dynamic_injector::PSY.DynamicGenerator{M, S, A, PSY.DEGOV, P},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS} =
-    [PSY.get_Td(PSY.get_prime_mover(dynamic_injector))]
+    Float64[PSY.get_Td(PSY.get_prime_mover(dynamic_injector))]
 
 """
 Wraps DynamicInjection devices from PowerSystems to handle changes in controls and connection
