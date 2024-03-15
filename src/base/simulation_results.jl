@@ -45,7 +45,7 @@ end
 
 function _post_proc_state_series(solution, ix::Int, dt::Float64)
     ts = collect(range(0; stop = solution.t[end], step = dt))
-    state = solution(collect(ts); idxs = ix)
+    state = solution(ts; idxs = ix)
     return ts, state.u
 end
 
