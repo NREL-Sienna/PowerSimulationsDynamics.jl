@@ -167,7 +167,6 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
     inner_vars_count = 1
     sys_base_power = PSY.get_base_power(sys)
     sys_base_freq = PSY.get_frequency(sys)
-    bus_size = get_n_buses(sys)
     @assert !isempty(injector_data)
     for (ix, device) in enumerate(injector_data)
         @debug "Wrapping $(PSY.get_name(device))"
@@ -186,7 +185,6 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
             device,
             dynamic_device,
             bus_ix,
-            bus_size,
             ix_range,
             ode_range,
             inner_vars_range,

@@ -451,7 +451,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                     model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Initial Condition NLsolve refinement" begin
-                    refine_initial_condition!(sim, model, jacobian)    #Jacobian errors 
+                    refine_initial_condition!(sim, model, jacobian)
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Build Perturbations" begin
                     _build_perturbations!(sim)
