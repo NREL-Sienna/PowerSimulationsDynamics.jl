@@ -20,6 +20,12 @@ index(::Type{<:PSY.InnerControl}) = 4
 index(::Type{<:PSY.Converter}) = 5
 index(::Type{<:PSY.Filter}) = 6
 
+get_delays(::PSY.DynamicInjection) = nothing
+get_delays(
+    dynamic_injector::PSY.DynamicGenerator{M, S, A, PSY.DEGOV, P},
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS} =
+    Float64[PSY.get_Td(PSY.get_prime_mover(dynamic_injector))]
+
 """
 Wraps DynamicInjection devices from PowerSystems to handle changes in controls and connection
 status, and allocate the required indexes of the state space.

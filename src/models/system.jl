@@ -11,17 +11,32 @@ function ResidualModel(
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    return SystemModel{ResidualModel}(inputs, Ctype{U}(system_residual!, inputs))
+    if isempty(inputs.delays)
+        return SystemModel{ResidualModel, NoDelays}(
+            inputs,
+            Ctype{U}(system_residual!, inputs),
+        )
+    else
+        error(
+            "Cannot use ResidualModel for a system model with delays. Remove delays or use MassMatrixModel",
+        )
+    end
 end
 
 """
 Instantiate an ResidualModel for ODE inputs.
 """
 function ResidualModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
-    return SystemModel{ResidualModel}(inputs, Ctype(system_residual!, inputs))
+    if isempty(inputs.delays)
+        return SystemModel{ResidualModel, NoDelays}(inputs, Ctype(system_residual!, inputs))
+    else
+        error(
+            "Cannot use ResidualModel for a system model with delays. Remove delays or use MassMatrixModel",
+        )
+    end
 end
 
-function (m::SystemModel{ResidualModel, C})(
+function (m::SystemModel{ResidualModel, NoDelays, C})(
     out::AbstractArray{T},
     du::AbstractArray{U},
     u::AbstractArray{V},
@@ -78,6 +93,7 @@ function system_residual!(
             global_vars,
             device_inner_vars,
             dynamic_device,
+            nothing,
             t,
         )
         M_ = @view M[ix_range, ix_range]
@@ -152,9 +168,22 @@ end
 Instantiate a MassMatrixModel for ODE inputs.
 """
 function MassMatrixModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
-    return SystemModel{MassMatrixModel}(inputs, Ctype(system_mass_matrix!, inputs))
+    if isempty(inputs.delays)
+        return SystemModel{MassMatrixModel, NoDelays}(
+            inputs,
+            Ctype(system_mass_matrix!, inputs),
+        )
+    else
+        return SystemModel{MassMatrixModel, HasDelays}(
+            inputs,
+            Ctype(system_mass_matrix!, inputs),
+        )
+    end
 end
 
+"""
+Instantiate a MassMatrixModel for ForwardDiff calculations
+"""
 function MassMatrixModel(
     inputs::SimulationInputs,
     x0_init::Vector{T},
@@ -165,21 +194,42 @@ function MassMatrixModel(
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    return SystemModel{MassMatrixModel}(inputs, Ctype{U}(system_mass_matrix!, inputs))
+    if isempty(inputs.delays)
+        return SystemModel{MassMatrixModel, NoDelays}(
+            inputs,
+            Ctype{U}(system_mass_matrix!, inputs),
+        )
+    else
+        return SystemModel{MassMatrixModel, HasDelays}(
+            inputs,
+            Ctype{U}(system_mass_matrix!, inputs),
+        )
+    end
 end
 
-function (m::SystemModel{MassMatrixModel, C})(
+function (m::SystemModel{MassMatrixModel, NoDelays, C})(
     du::AbstractArray{T},
     u::AbstractArray{U},
     p,
     t,
 ) where {C <: Cache, U <: ACCEPTED_REAL_TYPES, T <: ACCEPTED_REAL_TYPES}
-    system_mass_matrix!(du, u, m.inputs, m.cache, t)
+    system_mass_matrix!(du, u, nothing, m.inputs, m.cache, t)
+end
+
+function (m::SystemModel{MassMatrixModel, HasDelays, C})(
+    du::AbstractArray{T},
+    u::AbstractArray{U},
+    h,
+    p,
+    t,
+) where {C <: Cache, U <: ACCEPTED_REAL_TYPES, T <: ACCEPTED_REAL_TYPES}
+    system_mass_matrix!(du, u, h, m.inputs, m.cache, t)
 end
 
 function system_mass_matrix!(
     dx::Vector{T},
     x::Vector{V},
+    h,
     inputs::SimulationInputs,
     cache::Cache,
     t,
@@ -216,6 +266,7 @@ function system_mass_matrix!(
             global_vars,
             device_inner_vars,
             dynamic_device,
+            h,
             t,
         )
         dx[ix_range] .= device_ode_output

@@ -13,6 +13,8 @@ function mdl_converter_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F, L},
     },
+    h,
+    t,
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -52,6 +54,8 @@ function mdl_converter_ode!(
             L,
         },
     },
+    h,
+    t,
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
@@ -185,6 +189,8 @@ function mdl_converter_ode!(
             L,
         },
     },
+    h,
+    t,
 ) where {
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
