@@ -44,14 +44,14 @@ function _post_proc_state_series(solution, ix::Int, dt::Nothing)
 end
 
 function _post_proc_state_series(solution, ix::Int, dt::Float64)
-    ts = range(0; stop = solution.t[end], step = dt)
-    state = solution(collect(ts); idxs = ix)
-    return ts, state
+    ts = collect(range(0; stop = solution.t[end], step = dt))
+    state = solution(ts; idxs = ix)
+    return ts, state.u
 end
 
 function _post_proc_state_series(solution, ix::Int, dt::Vector{Float64})
     state = solution(dt; idxs = ix)
-    return dt, state
+    return dt, state.u
 end
 
 """
