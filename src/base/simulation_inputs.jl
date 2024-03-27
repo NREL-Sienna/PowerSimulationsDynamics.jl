@@ -186,7 +186,7 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         injection_count += n_states
         injection_start += n_states
         inner_vars_count =
-            length(inner_vars_range) > 0 ? inner_vars_range[end] : inner_vars_count
+            length(inner_vars_range) > 0 ? (inner_vars_range[end] + 1) : inner_vars_count
     end
     return wrapped_injector
 end
