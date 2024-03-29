@@ -1,6 +1,7 @@
 function mdl_branch_ode!(
     device_states::AbstractArray{T},
     output_ode::AbstractArray{T},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r_from::T,
     voltage_i_from::T,
     voltage_r_to::T,
@@ -11,8 +12,7 @@ function mdl_branch_ode!(
     current_i_to::AbstractArray{T},
     branch::BranchWrapper,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    L = PSY.get_x(branch)
-    R = PSY.get_r(branch)
+    R, L = device_parameters
     ω_b = get_system_base_frequency(branch) * 2 * π
 
     Il_r = device_states[1]
@@ -30,6 +30,7 @@ end
 function mdl_transformer_Lshape_ode!(
     device_states::AbstractArray{T},
     output_ode::AbstractArray{T},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r_from::T,
     voltage_i_from::T,
     voltage_r_to::T,

@@ -1,4 +1,5 @@
 function mdl_source!(
+    device_parameters,
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -6,11 +7,9 @@ function mdl_source!(
     static_device::StaticWrapper{PSY.Source},
 ) where {T <: ACCEPTED_REAL_TYPES}
     #Load device parameters
-    V_R = get_V_ref(static_device) * cos(get_θ_ref(static_device))
-    V_I = get_V_ref(static_device) * sin(get_θ_ref(static_device))
-    # TODO: field forwarding
-    R_th = PSY.get_R_th(static_device.device)
-    X_th = PSY.get_X_th(static_device.device)
+    R_th, X_th, internal_voltage, internal_angle = device_parameters
+    V_R = internal_voltage * cos(internal_angle)
+    V_I = internal_voltage * sin(internal_angle)
     Zmag = R_th^2 + X_th^2
 
     #update current

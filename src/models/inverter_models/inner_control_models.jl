@@ -31,6 +31,7 @@ end
 function _mdl_ode_RE_inner_controller_B!(
     inner_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_controller_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::Val{0},
     inner_control::PSY.RECurrentControlB,
     dynamic_device::DynamicWrapper{
@@ -52,12 +53,19 @@ function _mdl_ode_RE_inner_controller_B!(
 
     #Get Current Controller parameters
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
-    dbd1, dbd2 = PSY.get_dbd_pnts(inner_control)
-    K_qv = PSY.get_K_qv(inner_control)
-    I_ql1, I_qh1 = PSY.get_Iqinj_lim(inner_control)
-    V_ref0 = PSY.get_V_ref0(inner_control)
-    T_rv = PSY.get_T_rv(inner_control)
-    T_iq = PSY.get_T_iq(inner_control)
+    Vdip_min,
+    Vdip_max,
+    T_rv,
+    dbd1,
+    dbd2,
+    K_qv,
+    I_ql1,
+    I_qh1,
+    V_ref0,
+    K_vp,
+    K_vi,
+    T_iq,
+    I_max = inner_controller_parameters
 
     #Read local states
     Vt_filt = inner_controller_states[1]
@@ -86,6 +94,7 @@ end
 function _mdl_ode_RE_inner_controller_B!(
     inner_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_controller_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::Val{1},
     inner_control::PSY.RECurrentControlB,
     dynamic_device::DynamicWrapper{
@@ -107,13 +116,19 @@ function _mdl_ode_RE_inner_controller_B!(
 
     #Get Current Controller parameters
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
-    K_vp = PSY.get_K_vp(inner_control)
-    K_vi = PSY.get_K_vi(inner_control)
-    V_ref0 = PSY.get_V_ref0(inner_control)
-    dbd1, dbd2 = PSY.get_dbd_pnts(inner_control)
-    K_qv = PSY.get_K_qv(inner_control)
-    I_ql1, I_qh1 = PSY.get_Iqinj_lim(inner_control)
-    T_rv = PSY.get_T_rv(inner_control)
+    Vdip_min,
+    Vdip_max,
+    T_rv,
+    dbd1,
+    dbd2,
+    K_qv,
+    I_ql1,
+    I_qh1,
+    V_ref0,
+    K_vp,
+    K_vi,
+    T_iq,
+    I_max = inner_controller_parameters
 
     #Read local states
     Vt_filt = inner_controller_states[1]
@@ -149,16 +164,16 @@ end
 function mdl_inner_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, L},
+        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, PSY.LCLFilter, L},
     },
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    F <: PSY.Filter,
     L <: Union{Nothing, PSY.InverterLimiter},
 }
 
@@ -178,22 +193,15 @@ function mdl_inner_ode!(
     Vdc = inner_vars[Vdc_var]
 
     #Get Voltage Controller parameters
-    inner_control = PSY.get_inner_control(dynamic_device)
     filter = PSY.get_filter(dynamic_device)
-    kpv = PSY.get_kpv(inner_control)
-    kiv = PSY.get_kiv(inner_control)
-    kffi = PSY.get_kffi(inner_control)
-    cf = PSY.get_cf(filter)
-    rv = PSY.get_rv(inner_control)
-    lv = PSY.get_lv(inner_control)
+    filter_ix_params = get_local_parameter_ix(dynamic_device, typeof(filter))
+    filter_params = @view device_parameters[filter_ix_params]
+    cf = filter_params[3]
+    lf = filter_params[1]
 
-    #Get Current Controller parameters
-    kpc = PSY.get_kpc(inner_control)
-    kic = PSY.get_kic(inner_control)
-    kffv = PSY.get_kffv(inner_control)
-    lf = PSY.get_lf(filter)
-    ωad = PSY.get_ωad(inner_control)
-    kad = PSY.get_kad(inner_control)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.VoltageModeControl)
+    internal_params = @view device_parameters[local_ix_params]
+    kpv, kiv, kffv, rv, lv, kpc, kic, kffi, ωad, kad = internal_params
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.VoltageModeControl)
@@ -259,6 +267,7 @@ end
 function mdl_inner_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F, L},
@@ -331,6 +340,7 @@ end
 function mdl_inner_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
@@ -349,16 +359,18 @@ function mdl_inner_ode!(
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.RECurrentControlB)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.RECurrentControlB)
     #Define internal states for Inner Control
     internal_states = @view device_states[local_ix]
     internal_ode = @view output_ode[local_ix]
-
+    internal_parameters = @view device_parameters[local_ix_params]
     # TODO: Voltage Dip Freeze logic
 
     #Dispatch inner controller ODE calculation
     _mdl_ode_RE_inner_controller_B!(
         internal_ode,
         internal_states,
+        internal_parameters,
         Val(Q_Flag),
         inner_control,
         dynamic_device,

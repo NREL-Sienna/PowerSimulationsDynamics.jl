@@ -9,6 +9,7 @@ end
 function mdl_freq_estimator_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F, L}},
@@ -27,10 +28,10 @@ function mdl_freq_estimator_ode!(
     Vi_filter = device_states[external_ix[2]]
 
     #Get parameters
-    pll_control = PSY.get_freq_estimator(dynamic_device)
-    ω_lp = PSY.get_ω_lp(pll_control)
-    kp_pll = PSY.get_kp_pll(pll_control)
-    ki_pll = PSY.get_ki_pll(pll_control)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.KauraPLL)
+    internal_params = @view device_parameters[local_ix_params]
+    ω_lp, kp_pll, ki_pll = internal_params
+
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2.0 * pi * f0
 
@@ -73,6 +74,7 @@ end
 function mdl_freq_estimator_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
@@ -134,6 +136,7 @@ end
 function mdl_freq_estimator_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
@@ -147,10 +150,10 @@ function mdl_freq_estimator_ode!(
     F <: PSY.Filter,
     L <: Union{Nothing, PSY.InverterLimiter},
 }
-
     #Get parameters
-    pll_control = PSY.get_freq_estimator(dynamic_device)
-    frequency = PSY.get_frequency(pll_control)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.FixedFrequency)
+    internal_params = @view device_parameters[local_ix_params]
+    frequency = internal_params[1]
 
     #Update inner_vars
     #PLL frequency

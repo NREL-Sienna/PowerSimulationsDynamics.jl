@@ -31,10 +31,13 @@ end
 function initialize_static_injection!(inputs::SimulationInputs)
     @debug "Updating Source internal voltage magnitude and angle"
     static_injection_devices = get_static_injectors(inputs)
+    parameters = get_parameters(inputs)
     if !isempty(static_injection_devices)
         try
             for s in static_injection_devices
-                initialize_static_device!(s)
+                p_range = get_p_range(s)
+                local_parameters = @view parameters[p_range]
+                initialize_static_device!(s, local_parameters)
             end
         catch e
             bt = catch_backtrace()
@@ -74,21 +77,14 @@ function initialize_dynamic_injection!(
 )
     @debug "Updating Dynamic Injection Component Initial Guess"
     initial_inner_vars = zeros(get_inner_vars_count(inputs))
+    parameters = get_parameters(inputs)
     try
         for dynamic_device in get_dynamic_injectors(inputs)
-            static = PSY.get_component(
-                dynamic_device.static_type,
-                system,
-                PSY.get_name(dynamic_device),
-            )
             @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
-            n_states = PSY.get_n_states(dynamic_device)
             _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
-            x0_device = initialize_dynamic_device!(dynamic_device, static, _inner_vars)
-            @assert length(x0_device) == n_states
-            ix_range = get_ix_range(dynamic_device)
-            initial_guess[ix_range] = x0_device
-            @debug _initialization_debug(dynamic_device, static, x0_device)
+            _parameters = @view parameters[get_p_range(dynamic_device)]
+            _states = @view initial_guess[get_ix_range(dynamic_device)]
+            initialize_dynamic_device!(dynamic_device, _inner_vars, _parameters, _states)
         end
     catch e
         bt = catch_backtrace()
@@ -102,15 +98,14 @@ function initialize_dynamic_branches!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
 )
+    parameters = get_parameters(inputs)
     try
         @debug "Initializing Dynamic Branches"
         for br in get_dynamic_branches(inputs)
             @debug "$(PSY.get_name(br)) -  $(typeof(br))"
-            n_states = PSY.get_n_states(br)
-            x0_branch = initialize_dynamic_device!(br)
-            IS.@assert_op length(x0_branch) == n_states
-            ix_range = get_ix_range(br)
-            initial_guess[ix_range] = x0_branch
+            _parameters = @view parameters[get_p_range(br)]
+            _states = @view initial_guess[get_ix_range(br)]
+            initialize_dynamic_device!(br, _parameters, _states)
         end
     catch e
         bt = catch_backtrace()
@@ -154,7 +149,7 @@ end
 
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-function _calculate_initial_guess!(x0_init::Vector{Float64}, sim::Simulation)
+function _calculate_initial_guess!(sim::Simulation)
     inputs = get_simulation_inputs(sim)
     @assert sim.status == BUILD_INCOMPLETE
     while sim.status == BUILD_INCOMPLETE
@@ -180,8 +175,8 @@ function _calculate_initial_guess!(x0_init::Vector{Float64}, sim::Simulation)
     return
 end
 
-function precalculate_initial_conditions!(x0_init::Vector{Float64}, sim::Simulation)
-    _calculate_initial_guess!(x0_init, sim)
+function precalculate_initial_conditions!(sim::Simulation)
+    _calculate_initial_guess!(sim)
     return sim.status != BUILD_FAILED
 end
 

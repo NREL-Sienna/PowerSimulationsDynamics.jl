@@ -1,5 +1,6 @@
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
     inner_vars::AbstractVector,
@@ -8,7 +9,7 @@ function initialize_avr!(
     Vf = inner_vars[Vf_var]
     #Update Control Refs
     avr = PSY.get_avr(dynamic_device)
-    set_V_ref(dynamic_device, Vf)
+    device_parameters[V_ref_ix] = Vf
     PSY.set_Vf!(avr, Vf)
     PSY.set_V_ref!(avr, Vf)
     return
@@ -16,6 +17,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
     inner_vars::AbstractVector,
@@ -32,12 +34,13 @@ function initialize_avr!(
     #Set V_ref
     PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vm)
     #Update Control Refs
-    set_V_ref(dynamic_device, Vm)
+    device_parameters[V_ref_ix] = Vm
     return
 end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
     inner_vars::AbstractVector,
@@ -49,12 +52,9 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Ka = PSY.get_Ka(avr)
-    Ke = PSY.get_Ke(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    Ae = PSY.get_Ae(avr)
-    Be = PSY.get_Be(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeI)
+    internal_params = @view device_parameters[local_ix_params]
+    Ka, Ke, Kf, _, _, Tf, _, Ae, Be = internal_params
     #Obtain saturated Vf
     Se_Vf = Ae * exp(Be * abs(Vf0))
 
@@ -77,7 +77,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        device_parameters[V_ref_ix] = sol_x0[1]
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeI)
         avr_states = @view device_states[avr_ix]
@@ -91,6 +91,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
     inner_vars::AbstractVector,
@@ -102,18 +103,21 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    K0 = PSY.get_K0(avr)
-    T1 = PSY.get_T1(avr)
-    T2 = PSY.get_T2(avr)
-    T3 = PSY.get_T3(avr)
-    T4 = PSY.get_T4(avr)
-    Te = PSY.get_Te(avr)
-    Tr = PSY.get_Tr(avr)
-    Ae = PSY.get_Ae(avr)
-    Be = PSY.get_Be(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeII)
+    internal_params = @view device_parameters[local_ix_params]
+    K0,
+    T1,
+    T2,
+    T3,
+    T4,
+    Te,
+    _,
+    Va_min,
+    Va_max,
+    Ae,
+    Be = internal_params
     #Obtain saturated Vf
     Se_Vf = Ae * (exp(Be * abs(Vf0)))
-    Va_min, Va_max = PSY.get_Va_lim(avr)
 
     #States of AVRTypeII are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr1, Vr2
@@ -139,7 +143,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        device_parameters[V_ref_ix] = sol_x0[1]
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeII)
         avr_states = @view device_states[avr_ix]
@@ -158,6 +162,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
     inner_vars::AbstractVector,
@@ -171,21 +176,25 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Tr = PSY.get_Tr(avr)
-    Tb = PSY.get_Tb(avr)
-    Tc = PSY.get_Tc(avr)
-    Ka = PSY.get_Ka(avr)
-    Ta = PSY.get_Ta(avr)
-    Va_min, Va_max = PSY.get_Va_lim(avr)
-    Te = PSY.get_Te(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    Kc = PSY.get_Kc(avr)
-    Kd = PSY.get_Kd(avr)
-    Ke = PSY.get_Ke(avr)
-    E1, E2 = PSY.get_E_sat(avr)
-    SE1, SE2 = PSY.get_Se(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    #Get parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.ESAC1A)
+    internal_params = @view device_parameters[local_ix_params]
+    Tr,
+    Tb,
+    Tc,
+    Ka,
+    Ta,
+    Va_min,
+    Va_max,
+    Te,
+    Kf,
+    Tf,
+    Kc,
+    Kd,
+    Ke,
+    Vr_min,
+    Vr_max = internal_params
+    inv_Tr = Tr < eps() ? 1.0 : 1.0 / Tr
     #Obtain saturation
     #Se_Vf = saturation_function(Vm)
 
@@ -249,7 +258,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        device_parameters[V_ref_ix] = sol_x0[1]
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, typeof(avr))
         avr_states = @view device_states[avr_ix]
@@ -263,6 +272,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
     inner_vars::AbstractVector,
@@ -274,9 +284,9 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Ta_Tb = PSY.get_Ta_Tb(avr)
-    K = PSY.get_K(avr)
-    V_min, V_max = PSY.get_V_lim(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SEXS)
+    internal_params = @view device_parameters[local_ix_params]
+    Ta_Tb, _, K, _, V_min, V_max = internal_params
 
     #States of AVRTypeI are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr
@@ -304,7 +314,8 @@ function initialize_avr!(
         end
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        device_parameters[V_ref_ix] = sol_x0[1]
+
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
         avr_states = @view device_states[avr_ix]
@@ -315,6 +326,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SCRX, TG, P}},
     inner_vars::AbstractVector,
@@ -386,7 +398,7 @@ function initialize_avr!(
         end
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        device_parameters[V_ref_ix] = sol_x0[1]
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.SCRX)
         avr_states = @view device_states[avr_ix]
@@ -397,6 +409,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
     inner_vars::AbstractVector,
@@ -410,13 +423,20 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Ka = PSY.get_Ka(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    Tc = PSY.get_Tc(avr)
-    Tb = PSY.get_Tb(avr)
-    Kc = PSY.get_Kc(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXST1)
+    internal_params = @view device_parameters[local_ix_params]
+    Tr,
+    Vi_min,
+    Vi_max,
+    Tc,
+    Tb,
+    Ka,
+    Ta,
+    Vr_min,
+    Vr_max,
+    Kc,
+    Kf,
+    Tf = internal_params
 
     # Check limits to field voltage 
     if (Vt * Vr_min - Kc * Ifd > Vf0) || (Vf0 > Vt * Vr_max - Kc * Ifd)
@@ -429,7 +449,7 @@ function initialize_avr!(
     Vref0 = Vt + Vf0 / Ka
 
     PSY.set_V_ref!(avr, Vref0)
-    set_V_ref(dynamic_device, Vref0)
+    device_parameters[V_ref_ix] = Vref0
 
     #States of EXST1_PTI are Vm, Vll, Vr, Vfb
 
@@ -445,6 +465,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXAC1, TG, P}},
     inner_vars::AbstractVector,
@@ -458,15 +479,22 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Tb = PSY.get_Tb(avr)
-    Tc = PSY.get_Tc(avr)
-    Ka = PSY.get_Ka(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    Kc = PSY.get_Kc(avr)
-    Kd = PSY.get_Kd(avr)
-    Ke = PSY.get_Ke(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    #Get parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXAC1)
+    internal_params = @view device_parameters[local_ix_params]
+    Tr,
+    Tb,
+    Tc,
+    Ka,
+    Ta,
+    Vr_min,
+    Vr_max,
+    Te,
+    Kf,
+    Tf,
+    Kc,
+    Kd,
+    Ke = internal_params
 
     #Solve Ve from rectifier function
     function f_Ve!(out, x)
@@ -498,7 +526,7 @@ function initialize_avr!(
 
     #Update V_ref
     PSY.set_V_ref!(avr, Vref0)
-    set_V_ref(dynamic_device, Vref0)
+    device_parameters[V_ref_ix] = Vref0
 
     #States of EXAC1 are Vm, Vr1, Vr2, Ve, Vr3
 
@@ -515,6 +543,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESST1A, TG, P}},
     inner_vars::AbstractVector,
@@ -557,7 +586,7 @@ function initialize_avr!(
     Vref0 = Vt + Va / Ka
 
     PSY.set_V_ref!(avr, Vref0)
-    set_V_ref(dynamic_device, Vref0)
+    device_parameters[V_ref_ix] = Vref0
 
     #States of ESST1A_PTI are Vm, Vr1, Vr2, Va, Vr3
 

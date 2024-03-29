@@ -458,15 +458,15 @@ end
 
     inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
-
     cref_affect_f = PSID.get_affect(inputs, threebus_sys, cref)
     ωref_affect_f = PSID.get_affect(inputs, threebus_sys, ωref)
-
     cref_affect_f(integrator_for_test)
     ωref_affect_f(integrator_for_test)
+    p_ix1 = PSID.get_p_range(inputs.dynamic_injectors[1])
+    p_ix2 = PSID.get_p_range(inputs.dynamic_injectors[2])
 
-    @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
-    @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
+    @test integrator_for_test.p[p_ix1][PSID.P_ref_ix] == 10.0
+    @test integrator_for_test.p[p_ix2][PSID.ω_ref_ix] == 0.9
 
     inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
     integrator_for_test = MockIntegrator(inputs)
@@ -516,11 +516,13 @@ end
 
     lref_affect_f(integrator_for_test)
     zip_load1 = first(filter(x -> PSY.get_name(x) == "BUS 1", inputs.static_loads))
-    @test PSID.get_P_impedance(zip_load1) == 10.0
+    p_ix1 = PSID.get_p_range(zip_load1)
+    @test integrator_for_test.p[p_ix1][5] == 10.0
     ltrip_affect_f(integrator_for_test)
     zip_load2 = first(filter(x -> PSY.get_name(x) == "BUS 2", inputs.static_loads))
-    @test PSID.get_P_impedance(zip_load2) == 0.0
-    @test PSID.get_Q_impedance(zip_load2) == 0.0
+    p_ix2 = PSID.get_p_range(zip_load2)
+    @test integrator_for_test.p[p_ix2][5] == 0.0
+    @test integrator_for_test.p[p_ix2][8] == 0.0
 end
 
 @testset "Global Index" begin
@@ -779,6 +781,7 @@ end
         gen,
         case_gen,
         1,
+        1:6,
         1:6,
         1:6,
         1:9,

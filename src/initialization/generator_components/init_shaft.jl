@@ -1,5 +1,6 @@
 function initialize_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
     inner_vars::AbstractVector,
@@ -7,6 +8,7 @@ function initialize_shaft!(
 
 function initialize_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
     inner_vars::AbstractVector,
@@ -22,21 +24,27 @@ function initialize_shaft!(
     ω_ex = ω
     ω_sys = ω
 
-    #Obtain parameters
-    shaft = PSY.get_shaft(dynamic_device)
-    D = PSY.get_D(shaft)
-    D_hp = PSY.get_D_hp(shaft)
-    D_ip = PSY.get_D_ip(shaft)
-    D_lp = PSY.get_D_lp(shaft)
-    D_ex = PSY.get_D_ex(shaft)
-    D_12 = PSY.get_D_12(shaft)
-    D_23 = PSY.get_D_23(shaft)
-    D_34 = PSY.get_D_34(shaft)
-    D_45 = PSY.get_D_45(shaft)
-    K_hp = PSY.get_K_hp(shaft)
-    K_ip = PSY.get_K_ip(shaft)
-    K_lp = PSY.get_K_lp(shaft)
-    K_ex = PSY.get_K_ex(shaft)
+    #Get parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SingleMass)
+    internal_params = @view device_parameters[local_ix_params]
+    _,
+    _,
+    _,
+    _,
+    _,
+    D,
+    D_hp,
+    D_ip,
+    D_lp,
+    D_ex,
+    D_12,
+    D_23,
+    D_34,
+    D_45,
+    K_hp,
+    K_ip,
+    K_lp,
+    K_ex = internal_params
 
     #Obtain inner vars
     τe = inner_vars[τe_var]

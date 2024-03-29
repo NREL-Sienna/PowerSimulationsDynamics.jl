@@ -25,15 +25,16 @@ function (m::SystemModel{ResidualModel, C})(
     out::AbstractArray{T},
     du::AbstractArray{U},
     u::AbstractArray{V},
-    p,
+    p::AbstractArray{W},
     t,
 ) where {
     C <: Cache,
     T <: ACCEPTED_REAL_TYPES,
     U <: ACCEPTED_REAL_TYPES,
     V <: ACCEPTED_REAL_TYPES,
+    W <: ACCEPTED_REAL_TYPES,
 }
-    system_residual!(out, du, u, m.inputs, m.cache, t)
+    system_residual!(out, du, u, p, m.inputs, m.cache, t)
     return
 end
 
@@ -41,10 +42,16 @@ function system_residual!(
     out::AbstractVector{T},
     dx::AbstractVector{U},
     x::AbstractVector{V},
+    p::AbstractVector{W},
     inputs::SimulationInputs,
     cache::Cache,
     t::Float64,
-) where {T <: ACCEPTED_REAL_TYPES, U <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
+) where {
+    T <: ACCEPTED_REAL_TYPES,
+    U <: ACCEPTED_REAL_TYPES,
+    V <: ACCEPTED_REAL_TYPES,
+    W <: ACCEPTED_REAL_TYPES,
+}
     update_global_vars!(cache, inputs, x)
     M = get_mass_matrix(inputs)
 
@@ -67,10 +74,12 @@ function system_residual!(
         device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
-
+        p_ix = get_p_range(dynamic_device)
+        device_parameters = view(p, p_ix)
         device!(
             device_states,
             device_ode_output,
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -86,7 +95,10 @@ function system_residual!(
 
     for static_load in get_static_loads(inputs)
         bus_ix = get_bus_ix(static_load)
+        p_ix = get_p_range(static_load)
+        device_parameters = view(p, p_ix)
         device!(
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -100,7 +112,10 @@ function system_residual!(
 
     for static_device in get_static_injectors(inputs)
         bus_ix = get_bus_ix(static_device)
+        p_ix = get_p_range(static_device)
+        device_parameters = view(p, p_ix)
         device!(
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -118,6 +133,8 @@ function system_residual!(
             dyn_branch = get_branch(dynamic_branch) # DynamicBranch
             branch = PSY.get_branch(dyn_branch) # Line or Transformer2W
             ix_range = get_ix_range(dynamic_branch)
+            p_ix = get_p_range(dynamic_branch)
+            branch_parameters = view(p, p_ix)
             branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
             branch_states = @view x[ix_range]
             bus_ix_from = get_bus_ix_from(dynamic_branch)
@@ -125,6 +142,7 @@ function system_residual!(
             branch!(
                 branch_states,
                 branch_output_ode,
+                branch_parameters,
                 #Get Voltage data
                 voltage_r[bus_ix_from],
                 voltage_i[bus_ix_from],
@@ -155,6 +173,9 @@ function MassMatrixModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype 
     return SystemModel{MassMatrixModel}(inputs, Ctype(system_mass_matrix!, inputs))
 end
 
+"""
+Instantiate a MassMatrixModel for ForwardDiff calculations
+"""
 function MassMatrixModel(
     inputs::SimulationInputs,
     x0_init::Vector{T},
@@ -171,19 +192,25 @@ end
 function (m::SystemModel{MassMatrixModel, C})(
     du::AbstractArray{T},
     u::AbstractArray{U},
-    p,
+    p::AbstractArray{V},
     t,
-) where {C <: Cache, U <: ACCEPTED_REAL_TYPES, T <: ACCEPTED_REAL_TYPES}
-    system_mass_matrix!(du, u, m.inputs, m.cache, t)
+) where {
+    C <: Cache,
+    U <: ACCEPTED_REAL_TYPES,
+    T <: ACCEPTED_REAL_TYPES,
+    V <: ACCEPTED_REAL_TYPES,
+}
+    system_mass_matrix!(du, u, p, m.inputs, m.cache, t)
 end
 
 function system_mass_matrix!(
-    dx::Vector{T},
-    x::Vector{V},
+    dx::AbstractArray{T},
+    x::AbstractArray{V},
+    p::AbstractArray{U},
     inputs::SimulationInputs,
     cache::Cache,
     t,
-) where {T <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
+) where {T <: ACCEPTED_REAL_TYPES, U <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
     update_global_vars!(cache, inputs, x)
 
     # Global quantities
@@ -205,10 +232,12 @@ function system_mass_matrix!(
         device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
-
+        p_ix = get_p_range(dynamic_device)
+        device_parameters = view(p, p_ix)
         device!(
             device_states,
             device_ode_output,
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -223,7 +252,10 @@ function system_mass_matrix!(
 
     for static_load in get_static_loads(inputs)
         bus_ix = get_bus_ix(static_load)
+        p_ix = get_p_range(static_load)
+        device_parameters = view(p, p_ix)
         device!(
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -237,7 +269,10 @@ function system_mass_matrix!(
 
     for static_device in get_static_injectors(inputs)
         bus_ix = get_bus_ix(static_device)
+        p_ix = get_p_range(static_device)
+        device_parameters = view(p, p_ix)
         device!(
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -255,6 +290,8 @@ function system_mass_matrix!(
             dyn_branch = get_branch(dynamic_branch) # DynamicBranch
             branch = PSY.get_branch(dyn_branch) # Line or Transformer2W
             ix_range = get_ix_range(dynamic_branch)
+            p_ix = get_p_range(dynamic_branch)
+            branch_parameters = view(p, p_ix)
             branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
             branch_states = @view x[ix_range]
             bus_ix_from = get_bus_ix_from(dynamic_branch)
@@ -262,6 +299,7 @@ function system_mass_matrix!(
             branch!(
                 branch_states,
                 branch_output_ode,
+                branch_parameters,
                 #Get Voltage data
                 voltage_r[bus_ix_from],
                 voltage_i[bus_ix_from],

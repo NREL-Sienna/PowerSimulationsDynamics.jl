@@ -9,6 +9,7 @@ end
 function mdl_converter_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F, L},
@@ -40,6 +41,7 @@ end
 function mdl_converter_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -68,22 +70,28 @@ function mdl_converter_ode!(
     Iq_cmd = inner_vars[Iq_ic_var]
 
     #Get Converter parameters
+    local_ix_params =
+        get_local_parameter_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
+    internal_params = @view device_parameters[local_ix_params]
+    T_g,
+    Rrpwr,
+    Brkpt,
+    Zerox,
+    Lvpl1,
+    Vo_lim,
+    Lv_pnt0,
+    Lv_pnt1,
+    Io_lim,
+    T_fltr,
+    K_hv,
+    Iqr_min,
+    Iqr_max,
+    Accel,
+    Q_ref,
+    R_source,
+    X_source = internal_params
     converter = PSY.get_converter(dynamic_device)
-    T_g = PSY.get_T_g(converter)
-    Rrpwr = PSY.get_Rrpwr(converter)
-    Brkpt = PSY.get_Brkpt(converter)
-    Zerox = PSY.get_Zerox(converter)
-    Lvpl1 = PSY.get_Lvpl1(converter)
-    Vo_lim = PSY.get_Vo_lim(converter)
-    Lv_pnt0, Lv_pnt1 = PSY.get_Lv_pnts(converter)
-    # Io_lim = PSY.get_Io_lim(converter)
-    T_fltr = PSY.get_T_fltr(converter)
-    K_hv = PSY.get_K_hv(converter)
-    Iqr_min, Iqr_max = PSY.get_Iqr_lims(converter)
     Lvpl_sw = PSY.get_Lvpl_sw(converter)
-    Q_ref = PSY.get_Q_ref(converter)
-    R_source = PSY.get_R_source(converter)
-    X_source = PSY.get_X_source(converter)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
@@ -173,6 +181,7 @@ end
 function mdl_converter_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{

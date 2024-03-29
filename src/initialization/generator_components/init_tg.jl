@@ -1,21 +1,26 @@
 function initialize_tg!(
     device_states,
+    device_parameters,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
     tg = PSY.get_prime_mover(dynamic_device)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.TGFixed)
+    internal_params = @view device_parameters[local_ix_params]
+    eff = internal_params[1]
     τm0 = inner_vars[τm_var]
-    eff = PSY.get_efficiency(tg)
+
     P_ref = τm0 / eff
-    PSY.set_P_ref!(tg, P_ref)
     #Update Control Refs
-    set_P_ref(dynamic_device, P_ref)
+    PSY.set_P_ref!(tg, P_ref)
+    device_parameters[P_ref_ix] = P_ref
     return
 end
 
 function initialize_tg!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
     inner_vars::AbstractVector,
@@ -23,17 +28,16 @@ function initialize_tg!(
 
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
-    #Get Parameters
+
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    Tc = PSY.get_Tc(tg)
-    T3 = PSY.get_T3(tg)
-    T4 = PSY.get_T4(tg)
-    T5 = PSY.get_T5(tg)
-    V_min, V_max = PSY.get_valve_position_limits(tg)
+    #Get Parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.TGTypeI)
+    internal_params = @view device_parameters[local_ix_params]
+    R, _, Tc, T3, T4, T5, V_min, V_max = internal_params
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     #Get References
-    ω_ref = get_ω_ref(dynamic_device)
+    ω_ref = device_parameters[ω_ref_ix]
     ω0 = 1.0
     function f!(out, x)
         P_ref = x[1]
@@ -62,7 +66,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        device_parameters[P_ref_ix] = sol_x0[1]
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeI)
         tg_states = @view device_states[tg_ix]
@@ -80,6 +84,7 @@ end
 
 function initialize_tg!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
     inner_vars::AbstractVector,
@@ -89,10 +94,11 @@ function initialize_tg!(
     τm0 = inner_vars[τm_var]
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
-    ω_ref = get_ω_ref(dynamic_device)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.TGTypeII)
+    internal_params = @view device_parameters[local_ix_params]
+    R, T1, T2 = internal_params
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
+    ω_ref = device_parameters[ω_ref_ix]
     ω0 = ω_ref
 
     function f!(out, x)
@@ -109,7 +115,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        device_parameters[P_ref_ix] = sol_x0[1]
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeII)
         tg_states = @view device_states[tg_ix]
@@ -120,6 +126,7 @@ end
 
 function initialize_tg!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
     inner_vars::AbstractVector,
@@ -128,13 +135,13 @@ function initialize_tg!(
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
     Δω = 0.0
-    #Get parameters
+
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    D_turb = PSY.get_D_turb(tg)
-    AT = PSY.get_AT(tg)
-    KT = PSY.get_Kt(tg)
-    V_min, V_max = PSY.get_V_lim(tg)
+    #Get parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.TGTypeI)
+    internal_params = @view device_parameters[local_ix_params]
+    R, _, _, _, AT, Kt, V_min, V_max, D_turb = internal_params
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     function f!(out, x)
         P_ref = x[1]
@@ -142,7 +149,7 @@ function initialize_tg!(
         x_g2 = x[3]
         x_g3 = x[4]
 
-        x_in = min((P_ref - inv_R * Δω), (AT + KT * (AT - x_g3)))
+        x_in = min((P_ref - inv_R * Δω), (AT + Kt * (AT - x_g3)))
         out[1] = (x_in - x_g1) #dx_g1/dt
         x_g1_sat = V_min < x_g1 < V_max ? x_g1 : max(V_min, min(V_max, x_g1))
         out[2] = (x_g1_sat - x_g2)
@@ -157,7 +164,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        device_parameters[P_ref_ix] = sol_x0[1]
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
@@ -170,6 +177,7 @@ end
 
 function initialize_tg!(
     device_states,
+    device_parameters,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
     inner_vars::AbstractVector,
@@ -178,14 +186,19 @@ function initialize_tg!(
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
     Δω = 0.0
-    #Get parameters
+
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
-    T3 = PSY.get_T3(tg)
-    V_min, V_max = PSY.get_valve_position_limits(tg)
-    D_T = PSY.get_D_T(tg)
+    #Get Parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SteamTurbineGov1)
+    internal_params = @view device_parameters[local_ix_params]
+    R,
+    T1,
+    V_min,
+    V_max,
+    T2,
+    T3,
+    D_T = internal_params
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     function f!(out, x)
         P_ref = x[1]
@@ -214,7 +227,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        device_parameters[P_ref_ix] = sol_x0[1]
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
@@ -226,6 +239,7 @@ end
 
 function initialize_tg!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.HydroTurbineGov, P}},
     inner_vars::AbstractVector,
@@ -234,17 +248,23 @@ function initialize_tg!(
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
     Δω = 0.0
-    #Get parameters
+
     tg = PSY.get_prime_mover(dynamic_device)
-    R = PSY.get_R(tg)
-    r = PSY.get_r(tg)
-    Tr = PSY.get_Tr(tg)
-    #Gate velocity limits not implemented
-    #VELM = PSY.get_VELM(tg)
-    G_min, G_max = PSY.get_gate_position_limits(tg)
-    At = PSY.get_At(tg)
-    D_T = PSY.get_D_T(tg)
-    q_nl = PSY.get_q_nl(tg)
+    #Get Parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.HydroTurbineGov)
+    internal_params = @view device_parameters[local_ix_params]
+    R,
+    r,
+    Tr,
+    Tf,
+    Tg,
+    VELM,   #Gate velocity limits not implemented
+    G_min,
+    G_max,
+    Tw,
+    At,
+    D_T,
+    q_nl = internal_params
 
     function f!(out, x)
         P_ref = x[1]
@@ -278,7 +298,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        device_parameters[P_ref_ix] = sol_x0[1]
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]

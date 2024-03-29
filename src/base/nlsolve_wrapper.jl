@@ -8,13 +8,21 @@ NLsolveWrapper() = NLsolveWrapper(Vector{Float64}(), false, true)
 converged(sol::NLsolveWrapper) = sol.converged
 failed(sol::NLsolveWrapper) = sol.failed
 
-function _get_model_closure(model::SystemModel{MassMatrixModel}, ::Vector{Float64})
-    return (residual, x) -> model(residual, x, nothing, 0.0)
+function _get_model_closure(
+    model::SystemModel{MassMatrixModel},
+    ::Vector{Float64},
+    p::Vector{Float64},
+)
+    return (residual, x) -> model(residual, x, p, 0.0)
 end
 
-function _get_model_closure(model::SystemModel{ResidualModel}, x0::Vector{Float64})
+function _get_model_closure(
+    model::SystemModel{ResidualModel},
+    x0::Vector{Float64},
+    p::Vector{Float64},
+)
     dx0 = zeros(length(x0))
-    return (residual, x) -> model(residual, dx0, x, nothing, 0.0)
+    return (residual, x) -> model(residual, dx0, x, p, 0.0)
 end
 
 function _nlsolve_call(
@@ -143,9 +151,10 @@ function refine_initial_condition!(
     converged = false
     initial_guess = get_initial_conditions(sim)
     inputs = get_simulation_inputs(sim)
+    parameters = get_parameters(inputs)
     bus_range = get_bus_range(inputs)
     powerflow_solution = deepcopy(initial_guess[bus_range])
-    f! = _get_model_closure(model, initial_guess)
+    f! = _get_model_closure(model, initial_guess, parameters)
     residual = similar(initial_guess)
     f!(residual, initial_guess)
     _check_residual(residual, inputs, MAX_INIT_RESIDUAL)

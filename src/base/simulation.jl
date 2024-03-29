@@ -263,7 +263,7 @@ function _pre_initialize_simulation!(sim::Simulation)
     _initialize_state_space(sim)
     if sim.initialized != true
         @info("Pre-Initializing Simulation States")
-        sim.initialized = precalculate_initial_conditions!(sim.x0_init, sim)
+        sim.initialized = precalculate_initial_conditions!(sim)
         if !sim.initialized
             error(
                 "The simulation failed to find an adequate initial guess for the initialization. Check the intialization routine.",
@@ -279,9 +279,11 @@ end
 function _get_jacobian(sim::Simulation{ResidualModel})
     inputs = get_simulation_inputs(sim)
     x0_init = get_initial_conditions(sim)
+    parameters = get_parameters(inputs)
     return JacobianFunctionWrapper(
         ResidualModel(inputs, x0_init, JacobianCache),
         x0_init,
+        parameters,
         # sparse_retrieve_loop = 0,
     )
 end
@@ -289,7 +291,12 @@ end
 function _get_jacobian(sim::Simulation{MassMatrixModel})
     inputs = get_simulation_inputs(sim)
     x0_init = get_initial_conditions(sim)
-    return JacobianFunctionWrapper(MassMatrixModel(inputs, x0_init, JacobianCache), x0_init)
+    parameters = get_parameters(inputs)
+    return JacobianFunctionWrapper(
+        MassMatrixModel(inputs, x0_init, JacobianCache),
+        x0_init,
+        parameters,
+    )
 end
 
 function _build_perturbations!(sim::Simulation)
@@ -335,6 +342,7 @@ function _get_diffeq_problem(
     x0 = get_initial_conditions(sim)
     dx0 = zeros(length(x0))
     simulation_inputs = get_simulation_inputs(sim)
+    p = get_parameters(simulation_inputs)
     sim.problem = SciMLBase.DAEProblem(
         SciMLBase.DAEFunction{true}(
             model;
@@ -345,7 +353,7 @@ function _get_diffeq_problem(
         dx0,
         x0,
         get_tspan(sim),
-        simulation_inputs;
+        p;
         differential_vars = get_DAE_vector(simulation_inputs),
     )
     sim.status = BUILT
@@ -358,6 +366,7 @@ function _get_diffeq_problem(
     jacobian::JacobianFunctionWrapper,
 )
     simulation_inputs = get_simulation_inputs(sim)
+    p = get_parameters(simulation_inputs)
     sim.problem = SciMLBase.ODEProblem(
         SciMLBase.ODEFunction{true}(
             model;
@@ -369,7 +378,7 @@ function _get_diffeq_problem(
         ),
         sim.x0_init,
         get_tspan(sim),
-        simulation_inputs,
+        p;
     )
     sim.status = BUILT
     return
@@ -480,7 +489,7 @@ function _prog_meter_enabled()
 end
 
 function _filter_kwargs(kwargs)
-    return Dict(k => v for (k, v) in kwargs if in(k, DIFFEQ_SOLVE_KWARGS))
+    return filter(x -> in(x[1], DIFFEQ_SOLVE_KWARGS), kwargs)
 end
 
 function _execute!(sim::Simulation, solver; kwargs...)

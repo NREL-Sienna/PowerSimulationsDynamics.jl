@@ -35,6 +35,7 @@ end
 function mdl_filter_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -59,14 +60,12 @@ function mdl_filter_ode!(
     Vi_cnv = inner_vars[Vi_cnv_var]
 
     #Get parameters
-    filter = PSY.get_filter(dynamic_device)
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0
-    lf = PSY.get_lf(filter)
-    rf = PSY.get_rf(filter)
-    cf = PSY.get_cf(filter)
-    lg = PSY.get_lg(filter)
-    rg = PSY.get_rg(filter)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.LCLFilter)
+    internal_params = @view device_parameters[local_ix_params]
+    lf, rf, cf, lg, rg = internal_params
+
     basepower = PSY.get_base_power(dynamic_device)
     sys_Sbase = get_system_base_power(dynamic_device)
 
@@ -117,6 +116,7 @@ end
 function mdl_filter_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -136,9 +136,9 @@ function mdl_filter_ode!(
     ratio_power = basepower / sys_Sbase
 
     #Obtain parameters
-    filt = PSY.get_filter(dynamic_device)
-    rf = PSY.get_rf(filt)
-    lf = PSY.get_lf(filt)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.RLFilter)
+    internal_params = @view device_parameters[local_ix_params]
+    rf, lf = internal_params
 
     Vr_cnv = inner_vars[Vr_cnv_var]
     Vi_cnv = inner_vars[Vi_cnv_var]

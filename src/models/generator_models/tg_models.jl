@@ -19,29 +19,33 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Update inner vars
-    P_ref = get_P_ref(device)
-    inner_vars[τm_var] = P_ref * PSY.get_efficiency(PSY.get_prime_mover(device))
-
+    local_ix_params = get_local_parameter_ix(device, PSY.TGFixed)
+    internal_params = @view device_parameters[local_ix_params]
+    efficiency = internal_params[1]
+    P_ref = device_parameters[P_ref_ix]
+    inner_vars[τm_var] = P_ref * efficiency
     return
 end
 
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = get_ω_ref(device)
-    P_ref = get_P_ref(device)
+    ω_ref = device_parameters[ω_ref_ix]
+    P_ref = device_parameters[P_ref_ix]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.TGTypeI)
@@ -57,14 +61,10 @@ function mdl_tg_ode!(
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    tg = PSY.get_prime_mover(device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    Ts = PSY.get_Ts(tg)
-    Tc = PSY.get_Tc(tg)
-    T3 = PSY.get_T3(tg)
-    T4 = PSY.get_T4(tg)
-    T5 = PSY.get_T5(tg)
-    V_min, V_max = PSY.get_valve_position_limits(tg)
+    local_ix_params = get_local_parameter_ix(device, PSY.TGTypeI)
+    internal_params = @view device_parameters[local_ix_params]
+    R, Ts, Tc, T3, T4, T5, V_min, V_max = internal_params
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     #Compute auxiliary parameters
     P_in_sat = clamp(P_ref + inv_R * (ω_ref - ω[1]), V_min, V_max)
@@ -88,14 +88,15 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = get_ω_ref(device)
-    P_ref = get_P_ref(device)
+    ω_ref = device_parameters[ω_ref_ix]
+    P_ref = device_parameters[P_ref_ix]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.TGTypeII)
@@ -108,11 +109,11 @@ function mdl_tg_ode!(
     external_ix = get_input_port_ix(device, PSY.TGTypeII)
     ω = @view device_states[external_ix]
 
-    #Get Parameters
-    tg = PSY.get_prime_mover(device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
+    #Get parameters
+    local_ix_params = get_local_parameter_ix(device, PSY.TGTypeII)
+    internal_params = @view device_parameters[local_ix_params]
+    R, T1, T2 = internal_params
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     #Compute block derivatives
     y_ll1, dxg_dt = lead_lag(inv_R * (ω_ref - ω[1]), xg, 1.0, T1, T2)
@@ -130,6 +131,7 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
@@ -138,7 +140,7 @@ function mdl_tg_ode!(
     #Obtain TG
     tg = PSY.get_prime_mover(device)
     #Obtain references
-    P_ref = get_P_ref(device)
+    P_ref = device_parameters[P_ref_ix]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, typeof(tg))
@@ -153,13 +155,16 @@ function mdl_tg_ode!(
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    tg = PSY.get_prime_mover(device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
-    V_min, V_max = PSY.get_valve_position_limits(tg)
-    T3 = PSY.get_T3(tg)
-    D_T = PSY.get_D_T(tg)
+    local_ix_params = get_local_parameter_ix(device, PSY.SteamTurbineGov1)
+    internal_params = @view device_parameters[local_ix_params]
+    R,
+    T1,
+    V_min,
+    V_max,
+    T2,
+    T3,
+    D_T = internal_params
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     #Compute auxiliary parameters
     ref_in = inv_R * (P_ref - (ω[1] - 1.0))
@@ -182,13 +187,14 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    P_ref = get_P_ref(device)
+    P_ref = device_parameters[P_ref_ix]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.GasTG)
@@ -204,18 +210,13 @@ function mdl_tg_ode!(
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    tg = PSY.get_prime_mover(device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
-    T3 = PSY.get_T3(tg)
-    D_turb = PSY.get_D_turb(tg)
-    AT = PSY.get_AT(tg)
-    KT = PSY.get_Kt(tg)
-    V_min, V_max = PSY.get_V_lim(tg)
+    local_ix_params = get_local_parameter_ix(device, PSY.GasTG)
+    internal_params = @view device_parameters[local_ix_params]
+    R, T1, T2, T3, AT, Kt, V_min, V_max, D_turb = internal_params
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     #Compute auxiliary parameters
-    x_in = min((P_ref - inv_R * (ω[1] - 1.0)), (AT + KT * (AT - x_g3)))
+    x_in = min((P_ref - inv_R * (ω[1] - 1.0)), (AT + Kt * (AT - x_g3)))
 
     #Compute block derivatives
     x_g1_sat, dxg1_dt = low_pass_nonwindup(x_in, x_g1, 1.0, T1, V_min, V_max)
@@ -239,14 +240,15 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.HydroTurbineGov, P}},
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    P_ref = get_P_ref(device)
-    ω_ref = get_ω_ref(device)
+    P_ref = device_parameters[P_ref_ix]
+    ω_ref = device_parameters[ω_ref_ix]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.HydroTurbineGov)
@@ -264,19 +266,20 @@ function mdl_tg_ode!(
     Δω = ω - ω_ref
 
     #Get Parameters
-    tg = PSY.get_prime_mover(device)
-    R = PSY.get_R(tg)
-    r = PSY.get_r(tg)
-    Tr = PSY.get_Tr(tg)
-    Tf = PSY.get_Tf(tg)
-    Tg = PSY.get_Tg(tg)
-
-    VELM = PSY.get_VELM(tg)
-    G_min, G_max = PSY.get_gate_position_limits(tg)
-    Tw = PSY.get_Tw(tg)
-    At = PSY.get_At(tg)
-    D_T = PSY.get_D_T(tg)
-    q_nl = PSY.get_q_nl(tg)
+    local_ix_params = get_local_parameter_ix(device, PSY.HydroTurbineGov)
+    internal_params = @view device_parameters[local_ix_params]
+    R,
+    r,
+    Tr,
+    Tf,
+    Tg,
+    VELM,
+    G_min,
+    G_max,
+    Tw,
+    At,
+    D_T,
+    q_nl = internal_params
 
     #Compute block derivatives
     c, dxg2_dt = pi_block_nonwindup(x_g1, x_g2, 1.0 / r, 1.0 / (r * Tr), G_min, G_max)

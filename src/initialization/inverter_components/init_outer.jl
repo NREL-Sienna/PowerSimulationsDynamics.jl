@@ -1,5 +1,6 @@
 function initialize_outer!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -36,6 +37,7 @@ function initialize_outer!(
     Vi_cnv = inner_vars[Vi_cnv_var]
     θ0_oc = atan(Vi_cnv, Vr_cnv)
 
+    ω_ref = device_parameters[ω_ref_ix]
     #Obtain additional expressions
     p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
@@ -49,24 +51,25 @@ function initialize_outer!(
     )
     outer_states = @view device_states[outer_ix]
     outer_states[1] = θ0_oc #θ_oc
-    outer_states[2] = get_ω_ref(dynamic_device) #ω
+    outer_states[2] = ω_ref
     outer_states[3] = q_elec_out #qm
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
-    #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    inner_vars[ω_oc_var] = ω_ref
+    device_parameters[P_ref_ix] = p_elec_out
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
+    device_parameters[Q_ref_ix] = q_elec_out
     return
 end
 
 function initialize_outer!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -121,18 +124,19 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = device_parameters[ω_ref_ix]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    device_parameters[P_ref_ix] = p_elec_out
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    device_parameters[Q_ref_ix] = q_elec_out
 end
 
 function initialize_outer!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -186,18 +190,19 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = device_parameters[ω_ref_ix]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    device_parameters[P_ref_ix] = p_elec_out
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    device_parameters[Q_ref_ix] = q_elec_out
 end
 
 function initialize_outer!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -260,16 +265,16 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = device_parameters[ω_ref_ix]
     inner_vars[Id_oc_var] = I_dq_cnv[d]
     inner_vars[Iq_oc_var] = I_dq_cnv[q]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    device_parameters[P_ref_ix] = p_elec_out
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    device_parameters[Q_ref_ix] = q_elec_out
     PSY.set_Q_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
@@ -279,6 +284,7 @@ end
 
 function initialize_outer!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -322,7 +328,7 @@ function initialize_outer!(
     ## Set references
     Vm = V_t
     PSY.set_Q_ref!(PSY.get_converter(dynamic_device), q_elec_out)
-    set_Q_ref(dynamic_device, q_elec_out)
+    device_parameters[Q_ref_ix] = q_elec_out
     PSY.set_Q_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
@@ -331,17 +337,18 @@ function initialize_outer!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_P_ref(dynamic_device, p_elec_out)
+    device_parameters[P_ref_ix] = p_elec_out
     PSY.set_V_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         Vm,
     )
-    set_V_ref(dynamic_device, Vm)
+    device_parameters[V_ref_ix] = Vm
 
     #Get Outer Controller parameters
-    q_ref = get_Q_ref(dynamic_device)
+    q_ref = device_parameters[Q_ref_ix]
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power_control(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag
 
     #Set state counter for variable number of states due to flags
@@ -360,9 +367,62 @@ function initialize_outer!(
     )
     internal_states = @view device_states[local_ix]
 
+    #Get all parameters once 
+    local_ix_params = get_local_parameter_ix(
+        dynamic_device,
+        PSY.OuterControl{
+            PSY.ActiveRenewableControllerAB,
+            PSY.ReactiveRenewableControllerAB,
+        },
+    )
+    internal_params = @view device_parameters[local_ix_params]
+    active_n_params = get_n_params(active_power_control)
+    active_ix_range_params = 1:active_n_params
+    active_params = @view internal_params[active_ix_range_params]
+    reactive_n_params = get_n_params(reactive_power_control)
+    reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
+    reactive_params = @view internal_params[reactive_ix_range_params]
+    K_pg,
+    K_ig,
+    T_p,
+    fdbd1,
+    fdbd2,
+    fe_min,
+    fe_max,
+    P_min,
+    P_max,
+    T_g,
+    D_dn,
+    D_up,
+    dP_min,
+    dP_max,
+    P_min_inner,
+    P_max_inner,
+    T_pord = active_params
+    T_fltr,
+    K_p,
+    K_i,
+    T_ft,
+    T_fv,
+    V_frz,     # V_frz not implemented yet
+    R_c,
+    X_c,
+    K_c,
+    e_min,
+    e_max,
+    dbd1,
+    dbd2,
+    Q_min,
+    Q_max,
+    T_p,
+    Q_min_inner,
+    Q_max_inner,
+    V_min,
+    V_max,
+    K_qp,
+    K_qi = reactive_params
+
     if Freq_Flag == 1
-        #Obtain Parameters
-        K_ig = PSY.get_K_ig(active_power_control)
         #Update States
         internal_states[state_ct] = p_elec_out
         internal_states[state_ct + 1] = p_elec_out / K_ig
@@ -387,9 +447,6 @@ function initialize_outer!(
     V_Flag = PSY.get_V_Flag(reactive_power_control)
     # Update references
     if Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
-        #Get Reactive Controller Parameters
-        K_i = PSY.get_K_i(reactive_power_control)
-        K_qi = PSY.get_K_qi(reactive_power_control)
         #Update states
         internal_states[state_ct] = q_elec_out
         internal_states[state_ct + 1] = q_elec_out / K_i
@@ -400,7 +457,6 @@ function initialize_outer!(
         inner_vars[V_oc_var] = 0.0
         inner_vars[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
     elseif Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
-        K_i = PSY.get_K_i(reactive_power_control)
         #Update states
         internal_states[state_ct] = q_ref
         internal_states[state_ct + 1] = q_ref / K_i
@@ -438,11 +494,6 @@ function initialize_outer!(
         inner_vars[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
     elseif Ref_Flag == 1 && PF_Flag == 0 && V_Flag == 0
         # TODO: Fix and debug this case when Q_Flag = 1
-        K_i = PSY.get_K_i(reactive_power_control)
-        K_qi = PSY.get_K_qi(reactive_power_control)
-        K_c = PSY.get_K_c(reactive_power_control)
-        R_c = PSY.get_R_c(reactive_power_control)
-        X_c = PSY.get_R_c(reactive_power_control)
         VC_Flag = PSY.get_VC_Flag(reactive_power_control)
         V_reg = sqrt(Vr_filter^2 + Vi_filter^2)
         # Compute input to the compensated voltage filter

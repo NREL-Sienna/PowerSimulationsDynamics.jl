@@ -1,5 +1,6 @@
 function initialize_filter!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter, L}},
     inner_vars::AbstractVector,
@@ -25,15 +26,12 @@ function initialize_filter!(
     Ii_filter = imag(I)
 
     #Get Parameters
-    filter = PSY.get_filter(dynamic_device)
-    lf = PSY.get_lf(filter)
-    rf = PSY.get_rf(filter)
-    cf = PSY.get_cf(filter)
-    lg = PSY.get_lg(filter)
-    rg = PSY.get_rg(filter)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.LCLFilter)
+    internal_params = @view device_parameters[local_ix_params]
+    lf, rf, cf, lg, rg = internal_params
 
     #Set parameters
-    ω_sys = get_ω_ref(dynamic_device)
+    ω_sys = device_parameters[ω_ref_ix]
 
     #To solve Vr_cnv, Vi_cnv, Ir_cnv, Ii_cnv, Vr_filter, Vi_filter
     function f!(out, x)
@@ -92,11 +90,21 @@ end
 
 function initialize_filter!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter, L}},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            PSY.RenewableEnergyConverterTypeA,
+            O,
+            IC,
+            DC,
+            P,
+            PSY.RLFilter,
+            L,
+        },
+    },
     inner_vars::AbstractVector,
 ) where {
-    C <: PSY.Converter,
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
@@ -120,9 +128,10 @@ function initialize_filter!(
     I_I = imag(I)
 
     #Get Parameters
-    filt = PSY.get_filter(dynamic_device)
-    rf = PSY.get_rf(filt)
-    lf = PSY.get_lf(filt)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.RLFilter)
+    internal_params = @view device_parameters[local_ix_params]
+    rf, lf = internal_params
+
     converter = PSY.get_converter(dynamic_device)
     R_source = PSY.get_R_source(converter)
     X_source = PSY.get_X_source(converter)

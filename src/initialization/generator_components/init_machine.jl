@@ -4,6 +4,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -21,9 +22,9 @@ function initialize_mach_shaft!(
 
     #Machine Data
     machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    #Assumption of Classical Machine: Xq = Xd_p
-    Xd_p = PSY.get_Xd_p(machine)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.BaseMachine)
+    internal_params = @view device_parameters[local_ix_params]
+    R, Xd_p, _ = internal_params
 
     δ0 = angle(V + (R + Xd_p * 1im) * I)
     ω0 = 1.0
@@ -62,6 +63,7 @@ function initialize_mach_shaft!(
         inner_vars[τm_var] = sol_x0[2]
         #Not necessary to update Vf for AVR in Base Machine. Update eq_p:
         PSY.set_eq_p!(machine, sol_x0[3])
+        internal_params[3] = sol_x0[3]
         inner_vars[Vf_var] = sol_x0[3]
     end
     return
@@ -73,6 +75,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -89,12 +92,9 @@ function initialize_mach_shaft!(
     I = conj(S0 / V)
 
     #Machine Data
-    machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xq_p = PSY.get_Xq_p(machine)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.OneDOneQMachine)
+    internal_params = @view device_parameters[local_ix_params]
+    R, Xd, Xq, Xd_p, Xq_p, _, _ = internal_params
 
     #States of OneDOneQMachine are [1] eq_p and [2] ed_p
     δ0 = angle(V + (R + Xq * 1im) * I)
@@ -155,6 +155,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SauerPaiMachine, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -263,6 +264,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -280,18 +282,9 @@ function initialize_mach_shaft!(
     I = conj(S0 / V)
 
     #Machine Data
-    machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xq_p = PSY.get_Xq_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
-    Xq_pp = PSY.get_Xq_pp(machine)
-    T_AA = PSY.get_T_AA(machine)
-    Td0_p = PSY.get_Td0_p(machine)
-    γd = PSY.get_γd(machine)
-    γq = PSY.get_γq(machine)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.MarconatoMachine)
+    internal_params = @view device_parameters[local_ix_params]
+    R, Xd, Xq, Xd_p, Xq_p, Xd_pp, Xq_pp, Td0_p, _, _, _, T_AA, γd, γq = internal_params
 
     #States of MarconatoMachine are [1] ψq, [2] ψd, [3] eq_p, [4] ed_p, [5] eq_pp and [6] ed_pp
     δ0 = angle(V + (R + Xq * 1im) * I)
@@ -367,6 +360,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
@@ -467,6 +461,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
@@ -486,14 +481,19 @@ function initialize_mach_shaft!(
     I = conj(S0 / V)
 
     #Machine Data
-    machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xq_p = PSY.get_Xq_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
-    Xq_pp = PSY.get_Xq_pp(machine)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AndersonFouadMachine)
+    internal_params = @view device_parameters[local_ix_params]
+    R,
+    Xd,
+    Xq,
+    Xd_p,
+    Xq_p,
+    Xd_pp,
+    Xq_pp,
+    _,
+    _,
+    _,
+    _ = internal_params
 
     #States of Anderson-Fouad are [1] ψq, [2] ψd, [3] eq_p, [4] ed_p, [5] eq_pp and [6] ed_pp
     δ0 = angle(V + (R + Xq * 1im) * I)
@@ -570,6 +570,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -660,6 +661,7 @@ end
 
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -684,26 +686,27 @@ function initialize_mach_shaft!(
 
     #Get parameters
     machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    Td0_p = PSY.get_Td0_p(machine)
-    Td0_pp = PSY.get_Td0_pp(machine)
-    Tq0_p = PSY.get_Tq0_p(machine)
-    Tq0_pp = PSY.get_Tq0_pp(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xq_p = PSY.get_Xq_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
+    local_ix_params = get_local_parameter_ix(dynamic_device, typeof(machine))
+    internal_params = @view device_parameters[local_ix_params]
+    R,
+    Td0_p,
+    Td0_pp,
+    Tq0_p,
+    Tq0_pp,
+    Xd,
+    Xq,
+    Xd_p,
+    Xq_p,
+    Xd_pp,
+    Xl,
+    γ_d1,
+    γ_q1,
+    γ_d2,
+    γ_q2,
+    γ_qd = internal_params
     Xq_pp = Xd_pp
-    Xl = PSY.get_Xl(machine)
-    Se = PSY.get_Se(machine)
     # Initialization doesn't consider saturation
     #Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
-    γ_d1 = PSY.get_γ_d1(machine)
-    γ_q1 = PSY.get_γ_q1(machine)
-    γ_d2 = PSY.get_γ_d2(machine)
-    γ_q2 = PSY.get_γ_q2(machine)
-    γ_qd = PSY.get_γ_qd(machine)
 
     ## Initialization ##
     ## Fluxes
@@ -812,6 +815,7 @@ end
 
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
@@ -831,21 +835,23 @@ function initialize_mach_shaft!(
     V = V_R + V_I * 1im
     I = conj(S0 / V)
 
-    #Get parameters
     machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    Td0_p = PSY.get_Td0_p(machine)
-    Td0_pp = PSY.get_Td0_pp(machine)
-    Tq0_pp = PSY.get_Tq0_pp(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
+    #Get parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SalientPoleQuadratic)
+    internal_params = @view device_parameters[local_ix_params]
+    R,
+    Td0_p,
+    Td0_pp,
+    Tq0_pp,
+    Xd,
+    Xq,
+    Xd_p,
+    Xd_pp,
+    Xl,
+    γ_d1,
+    γ_q1,
+    γ_d2 = internal_params
     Xq_pp = Xd_pp
-    Xl = PSY.get_Xl(machine)
-    γ_d1 = PSY.get_γ_d1(machine)
-    γ_q1 = PSY.get_γ_q1(machine)
-    γ_d2 = PSY.get_γ_d2(machine)
 
     ## Initialization ##
     E = V + (R + Xq * 1im) * I
@@ -934,6 +940,7 @@ end
 
 function initialize_mach_shaft!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
@@ -953,21 +960,23 @@ function initialize_mach_shaft!(
     V = V_R + V_I * 1im
     I = conj(S0 / V)
 
-    #Get parameters
     machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    Td0_p = PSY.get_Td0_p(machine)
-    Td0_pp = PSY.get_Td0_pp(machine)
-    Tq0_pp = PSY.get_Tq0_pp(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
+    #Get parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SalientPoleExponential)
+    internal_params = @view device_parameters[local_ix_params]
+    R,
+    Td0_p,
+    Td0_pp,
+    Tq0_pp,
+    Xd,
+    Xq,
+    Xd_p,
+    Xd_pp,
+    Xl,
+    γ_d1,
+    γ_q1,
+    γ_d2 = internal_params
     Xq_pp = Xd_pp
-    Xl = PSY.get_Xl(machine)
-    γ_d1 = PSY.get_γ_d1(machine)
-    γ_q1 = PSY.get_γ_q1(machine)
-    γ_d2 = PSY.get_γ_d2(machine)
     γ_qd = (Xq - Xl) / (Xd - Xl)
 
     ## Initialization ##
@@ -1073,6 +1082,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
+        device_parameters, 
 static::PSY.StaticInjection,
     dynamic_device::PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P}},
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
