@@ -13,6 +13,8 @@ function mdl_freq_estimator_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F, L}},
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -80,6 +82,8 @@ function mdl_freq_estimator_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F, L},
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -142,6 +146,8 @@ function mdl_freq_estimator_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F, L},
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,

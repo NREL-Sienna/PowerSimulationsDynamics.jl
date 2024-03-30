@@ -18,6 +18,8 @@ function mdl_machine_ode!(
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P}},
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
     #Obtain external states inputs for component
@@ -67,6 +69,8 @@ function mdl_machine_ode!(
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P}},
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
 
@@ -131,6 +135,8 @@ function mdl_machine_ode!(
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SauerPaiMachine, S, A, TG, P}},
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
     f0 = get_system_base_frequency(dynamic_device)
@@ -222,6 +228,8 @@ function mdl_machine_ode!(
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.MarconatoMachine, S, A, TG, P}},
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
     f0 = get_system_base_frequency(dynamic_device)
@@ -300,6 +308,8 @@ function mdl_machine_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SimpleMarconatoMachine, S, A, TG, P},
     },
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
     f0 = get_system_base_frequency(dynamic_device)
@@ -386,6 +396,8 @@ function mdl_machine_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
     },
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
     f0 = get_system_base_frequency(dynamic_device)
@@ -469,6 +481,8 @@ function mdl_machine_ode!(
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P}},
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
     f0 = get_system_base_frequency(dynamic_device)
@@ -545,6 +559,8 @@ function mdl_machine_ode!(
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
+    h,
+    t,
 ) where {
     M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential},
     S <: PSY.Shaft,
@@ -646,6 +662,8 @@ function mdl_machine_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
     },
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
     f0 = get_system_base_frequency(dynamic_device)
@@ -730,6 +748,8 @@ function mdl_machine_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
     },
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
     Sbase = get_system_base_power(dynamic_device)
     f0 = get_system_base_frequency(dynamic_device)
@@ -823,6 +843,8 @@ inner_vars,
 current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.FullMachine, S, A, TG, P}},
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device
@@ -905,6 +927,8 @@ inner_vars,
 current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleFullMachine, S, A, TG, P}},
+    h,
+    t,
 ) where {S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain indices for component w/r to device

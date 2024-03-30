@@ -9,7 +9,7 @@ converged(sol::NLsolveWrapper) = sol.converged
 failed(sol::NLsolveWrapper) = sol.failed
 
 function _get_model_closure(
-    model::SystemModel{MassMatrixModel},
+    model::SystemModel{MassMatrixModel, NoDelays},
     ::Vector{Float64},
     p::Vector{Float64},
 )
@@ -17,7 +17,16 @@ function _get_model_closure(
 end
 
 function _get_model_closure(
-    model::SystemModel{ResidualModel},
+    model::SystemModel{MassMatrixModel, HasDelays},
+    x0::Vector{Float64},
+    p::Vector{Float64},
+)
+    h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0
+    return (residual, x) -> model(residual, x, h, p, 0.0)
+end
+
+function _get_model_closure(
+    model::SystemModel{ResidualModel, NoDelays},
     x0::Vector{Float64},
     p::Vector{Float64},
 )

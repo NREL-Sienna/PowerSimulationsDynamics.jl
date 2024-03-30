@@ -5,6 +5,7 @@ using NLsolve
 using SciMLBase
 using Sundials
 using OrdinaryDiffEq
+using DelayDiffEq
 using DelimitedFiles
 using DataFrames
 using InfrastructureSystems

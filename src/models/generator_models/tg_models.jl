@@ -16,6 +16,17 @@ function mass_matrix_tg_entries!(
     return
 end
 
+function mass_matrix_tg_entries!(
+    mass_matrix,
+    tg::PSY.DEGOV,
+    global_index::Base.ImmutableDict{Symbol, Int64},
+)
+    mass_matrix[global_index[:x_ecb1], global_index[:x_ecb1]] =
+        PSY.get_T1(tg) * PSY.get_T2(tg)
+    mass_matrix[global_index[:x_a1], global_index[:x_a1]] = PSY.get_T5(tg) * PSY.get_T6(tg)
+    return
+end
+
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -23,6 +34,8 @@ function mdl_tg_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
+    h,
+    t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Update inner vars
@@ -41,6 +54,8 @@ function mdl_tg_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
+    h,
+    t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
@@ -92,6 +107,8 @@ function mdl_tg_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
+    h,
+    t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
@@ -135,6 +152,8 @@ function mdl_tg_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
+    h,
+    t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain TG
@@ -191,6 +210,8 @@ function mdl_tg_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
+    h,
+    t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
@@ -244,6 +265,8 @@ function mdl_tg_ode!(
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.HydroTurbineGov, P}},
+    h,
+    t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
@@ -296,5 +319,75 @@ function mdl_tg_ode!(
 
     #Update mechanical torque
     inner_vars[τm_var] = ((x_g4 - q_nl) * h * At - D_T * Δω * x_g3) / ω[1]
+    return
+end
+
+#Wrapper around h to handle delays of zero
+function get_delayed_value(h, t, delay, state, index)
+    if delay == 0
+        return state
+    else
+        return h(nothing, t - delay; idxs = index)
+    end
+end
+function mdl_tg_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
+    device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.DEGOV, P}},
+    h,
+    t,
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+
+    #Obtain references
+    P_ref = get_P_ref(device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(device, PSY.DEGOV)
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    x_ecb1 = internal_states[1]
+    x_ecb2 = internal_states[2]
+    x_a1 = internal_states[3]
+    x_a2 = internal_states[4]
+    x_a3 = internal_states[5]
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(device, PSY.DEGOV)
+    ω = @view device_states[external_ix]
+
+    #Get Parameters
+    tg = PSY.get_prime_mover(device)
+    T1 = PSY.get_T1(tg)
+    T2 = PSY.get_T2(tg)
+    T3 = PSY.get_T3(tg)
+    K = PSY.get_K(tg)
+    T4 = PSY.get_T4(tg)
+    T5 = PSY.get_T5(tg)
+    T6 = PSY.get_T6(tg)
+    Td = PSY.get_Td(tg)
+
+    #Compute block derivatives 
+    Δω = ω[1] - 1.0
+    y1, dx_ecb1, dx_ecb2 =
+        lead_lag_2nd_mass_matrix(-1.0 * Δω, x_ecb1, x_ecb2, T1, T1 * T2, T3, 0.0)
+    y2, dx_a1, dx_a2 = lead_lag_2nd_mass_matrix(y1, x_a1, x_a2, T5 + T6, T5 * T6, T4, 0.0)
+    y3, dx_a3 = integrator_windup(y2, x_a3, K, 1.0, -Inf, Inf)
+    P_m = y3 * (ω[1])
+    delayed_x_a3 = get_delayed_value(h, t, Td, x_a3, get_global_index(device)[:x_a3])
+    P_m = delayed_x_a3 * (ω[1])
+
+    #Compute 1 State TG ODE:
+    output_ode[local_ix[1]] = dx_ecb1
+    output_ode[local_ix[2]] = dx_ecb2
+    output_ode[local_ix[3]] = dx_a1
+    output_ode[local_ix[4]] = dx_a2
+    output_ode[local_ix[5]] = dx_a3
+
+    #Update mechanical torque
+    inner_vars[τm_var] = P_m / ω[1] #Fails when trying to assign a Dual to a cache of type Float? 
+
     return
 end

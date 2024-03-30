@@ -19,6 +19,7 @@ mutable struct SimulationInputs
     global_state_map::MAPPING_DICT
     global_inner_var_map::Dict{String, Dict}
     parameters::Vector{Float64}
+    delays::Vector
 
     function SimulationInputs(
         sys::PSY.System,
@@ -39,6 +40,7 @@ mutable struct SimulationInputs
         TimerOutputs.@timeit BUILD_TIMER "Wrap Dynamic Injectors" begin
             wrapped_injectors, state_count, parameter_count =
                 _wrap_dynamic_injector_data(sys, lookup, state_count, parameter_count)
+            delays = get_system_delays(sys)
             n_vars = state_count - 1
         end
 
@@ -80,6 +82,11 @@ mutable struct SimulationInputs
                 break
             end
         end
+
+        if !isempty(delays)
+            @info "System has delays. Use the correct solver for delay differential equations."
+        end
+
         new(
             wrapped_injectors,
             wrapped_static_injectors,
@@ -101,6 +108,7 @@ mutable struct SimulationInputs
             MAPPING_DICT(),
             Dict{String, Dict}(),
             initial_parameters,
+            delays,
         )
     end
 end
@@ -230,6 +238,17 @@ function _wrap_dynamic_injector_data(
         inner_vars_count += n_inner_vars
     end
     return wrapped_injector, state_count, parameter_count
+end
+
+function get_system_delays(sys::PSY.System)
+    delays = []
+    for injector in get_injectors_with_dynamics(sys)
+        device_delays = get_delays(PSY.get_dynamic_injector(injector))
+        if !isnothing(device_delays)
+            delays = vcat(delays, device_delays)
+        end
+    end
+    return delays
 end
 
 function _wrap_dynamic_branches(

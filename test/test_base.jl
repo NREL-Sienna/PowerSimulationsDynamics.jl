@@ -744,10 +744,14 @@ end
         series = get_state_series(results, ("generator-102-1", :δ); dt = 0.01)
         t = series[1]
         δ = series[2]
+        @test typeof(t) == Vector{Float64}
+        @test typeof(δ) == Vector{Float64}
         @test t[2] - t[1] == 0.01
         series = get_state_series(results, ("generator-102-1", :δ); dt = [0.02, 0.05])
         t = series[1]
         δ = series[2]
+        @test typeof(t) == Vector{Float64}
+        @test typeof(δ) == Vector{Float64}
         @test t[1] == 0.02
     finally
         @info("removing test files")

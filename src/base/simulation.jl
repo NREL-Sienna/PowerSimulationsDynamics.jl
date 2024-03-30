@@ -336,7 +336,7 @@ end
 
 function _get_diffeq_problem(
     sim::Simulation,
-    model::SystemModel{ResidualModel},
+    model::SystemModel{ResidualModel, NoDelays},
     jacobian::JacobianFunctionWrapper,
 )
     x0 = get_initial_conditions(sim)
@@ -362,7 +362,7 @@ end
 
 function _get_diffeq_problem(
     sim::Simulation,
-    model::SystemModel{MassMatrixModel},
+    model::SystemModel{MassMatrixModel, NoDelays},
     jacobian::JacobianFunctionWrapper,
 )
     simulation_inputs = get_simulation_inputs(sim)
@@ -381,6 +381,37 @@ function _get_diffeq_problem(
         p;
     )
     sim.status = BUILT
+    return
+end
+
+function get_history_function(simulation_inputs::Simulation{MassMatrixModel})
+    x0 = get_initial_conditions(simulation_inputs)
+    h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0
+    return h
+end
+
+function _get_diffeq_problem(
+    sim::Simulation,
+    model::SystemModel{MassMatrixModel, HasDelays},
+    jacobian::JacobianFunctionWrapper,
+)
+    simulation_inputs = get_simulation_inputs(sim)
+    h = get_history_function(sim)
+    sim.problem = SciMLBase.DDEProblem(
+        SciMLBase.DDEFunction{true}(
+            model;
+            mass_matrix = get_mass_matrix(simulation_inputs),
+            jac = jacobian,
+            jac_prototype = jacobian.Jv,
+        ),
+        sim.x0_init,
+        h,
+        get_tspan(sim),
+        simulation_inputs;
+        constant_lags = filter!(x -> x != 0, unique(simulation_inputs.delays)),
+    )
+    sim.status = BUILT
+
     return
 end
 

@@ -178,6 +178,29 @@ end
 function initialize_tg!(
     device_states,
     device_parameters,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.DEGOV, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+    tg = PSY.get_prime_mover(dynamic_device)
+    #Get mechanical torque to SyncMach
+    τm0 = inner_vars[τm_var]
+    PSY.set_P_ref!(tg, τm0)
+    set_P_ref(dynamic_device, τm0)
+    #Update states
+    tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
+    tg_states = @view device_states[tg_ix]
+    tg_states[1] = 0.0
+    tg_states[2] = 0.0
+    tg_states[3] = 0.0
+    tg_states[4] = 0.0
+    tg_states[5] = τm0
+    return
+end
+
+function initialize_tg!(
+    device_states,
+    device_parameters,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
     inner_vars::AbstractVector,
