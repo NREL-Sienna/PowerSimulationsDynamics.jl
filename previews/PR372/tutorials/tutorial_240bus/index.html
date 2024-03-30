@@ -44,12 +44,12 @@ Dynamic Components
 ┌──────────────────┬───────┐
 │ Type             │ Count │
 ├──────────────────┼───────┤
-│ DynamicGenerator │ 36    │
-│ DynamicGenerator │ 3     │
 │ DynamicGenerator │ 1     │
-│ DynamicGenerator │ 41    │
 │ DynamicGenerator │ 22    │
+│ DynamicGenerator │ 41    │
+│ DynamicGenerator │ 3     │
 │ DynamicGenerator │ 6     │
+│ DynamicGenerator │ 36    │
 │ DynamicInverter  │ 37    │
 └──────────────────┴───────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for l in get_components(PSY.StandardLoad, sys)
            transform_load_to_constant_impedance(l)
@@ -358,26 +358,26 @@ Iter     f(x) inf-norm    Step 2-norm
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     32.4s            6.11GiB    
+│                 Total measured:                     33.6s            6.10GiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    32.4s  100.0%   6.11GiB  100.0%
-│    Build Simulation Inputs                  1    3.25s   10.0%    185MiB    3.0%
-│      Wrap Branches                          1   10.2μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1    2.12s    6.5%    115MiB    1.8%
-│      Wrap Static Injectors                  1    225ms    0.7%   8.04MiB    0.1%
-│      Build initial parameters               1    181ms    0.6%   17.3MiB    0.3%
-│      Calculate MM, DAE_vector, Tota...      1    226ms    0.7%   18.1MiB    0.3%
-│    Pre-initialization                       1    6.59s   20.3%    506MiB    8.1%
-│      Power Flow solution                    1    1.06s    3.3%   44.1MiB    0.7%
-│      Initialize Static Injectors            1   1.13μs    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1    5.53s   17.0%    462MiB    7.4%
-│    Calculate Jacobian                       1    16.1s   49.8%   5.07GiB   82.9%
-│    Make Model Function                      1   22.7μs    0.0%   32.0KiB    0.0%
-│    Initial Condition NLsolve refine...      1    6.15s   18.9%    366MiB    5.9%
-│    Build Perturbations                      1    142μs    0.0%   75.1KiB    0.0%
-│    Make DiffEq Problem                      1    309ms    1.0%   9.73MiB    0.2%
+│  Build Simulation                           1    33.6s  100.0%   6.10GiB  100.0%
+│    Build Simulation Inputs                  1    3.48s   10.4%    185MiB    3.0%
+│      Wrap Branches                          1   13.5μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1    2.22s    6.6%    113MiB    1.8%
+│      Wrap Static Injectors                  1    275ms    0.8%   10.6MiB    0.2%
+│      Build initial parameters               1    204ms    0.6%   17.3MiB    0.3%
+│      Calculate MM, DAE_vector, Tota...      1    239ms    0.7%   18.1MiB    0.3%
+│    Pre-initialization                       1    6.94s   20.7%    497MiB    8.0%
+│      Power Flow solution                    1    1.16s    3.4%   43.9MiB    0.7%
+│      Initialize Static Injectors            1   1.56μs    0.0%     0.00B    0.0%
+│      Initialize Dynamic Injectors           1    5.79s   17.2%    453MiB    7.3%
+│    Calculate Jacobian                       1    16.5s   49.1%   5.06GiB   83.0%
+│    Make Model Function                      1   25.1μs    0.0%   32.0KiB    0.0%
+│    Initial Condition NLsolve refine...      1    6.34s   18.9%    367MiB    5.9%
+│    Build Perturbations                      1    123μs    0.0%   75.1KiB    0.0%
+│    Make DiffEq Problem                      1    320ms    1.0%   9.73MiB    0.2%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -400,7 +400,7 @@ Simulation Summary
 │ Time Span                  │ (0.0, 20.0)  │
 │ Total Time Steps           │ 2015         │
 │ Number of States           │ 2164         │
-│ Total solve time           │ 16.390597214 │
+│ Total solve time           │ 16.727728729 │
 └────────────────────────────┴──────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101_ida = get_voltage_magnitude_series(res_ida, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101_ida);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_ida.svg" alt="plot"/></p><h2 id="Run-the-simulation-using-Rodas4()"><a class="docs-heading-anchor" href="#Run-the-simulation-using-Rodas4()">Run the simulation using Rodas4()</a><a id="Run-the-simulation-using-Rodas4()-1"></a><a class="docs-heading-anchor-permalink" href="#Run-the-simulation-using-Rodas4()" title="Permalink"></a></h2><p>In this case, we will use a MassMatrixModel formulation, for more details about the formulation checkout the <a href="https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable/models/">Models Section</a> in <code>PowerSimulationsDynamics.jl</code> documentation</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim_rodas = Simulation(
            MassMatrixModel,
            sys, #system
@@ -419,131 +419,43 @@ Simulation Summary
 └ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/post_processing.jl:352
 [ Info: PowerFlow solve converged, the results have been stored in the system
 [ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
-┌ Error: MassMatrixModel failed to build
-│   exception =
-│    MethodError: no method matching system_mass_matrix!(::Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}, ::Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}, ::Nothing, ::PowerSimulationsDynamics.SimulationInputs, ::PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}, ::Float64)
-│    
-│    Closest candidates are:
-│      system_mass_matrix!(::AbstractArray{T}, ::AbstractArray{V}, ::Any, !Matched::AbstractArray{U}, !Matched::PowerSimulationsDynamics.SimulationInputs, !Matched::PowerSimulationsDynamics.Cache, !Matched::Any) where {T&lt;:Union{Float64, ForwardDiff.Dual}, U&lt;:Union{Float64, ForwardDiff.Dual}, V&lt;:Union{Float64, ForwardDiff.Dual}}
-│       @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/system.jl:252
-│    
-│    Stacktrace:
-│      [1] (::PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}})(du::Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}, u::Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}, p::Vector{Float64}, t::Float64)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/models/system.jl:234
-│      [2] (::PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}})(residual::Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}, x::Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:97
-│      [3] chunk_mode_jacobian!(result::Matrix{Float64}, f!::PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, y::Vector{Float64}, x::Vector{Float64}, cfg::ForwardDiff.JacobianConfig{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12, Tuple{Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}}})
-│        @ ForwardDiff ~/.julia/packages/ForwardDiff/PcZ48/src/jacobian.jl:183
-│      [4] jacobian!(result::Matrix{Float64}, f!::Function, y::Vector{Float64}, x::Vector{Float64}, cfg::ForwardDiff.JacobianConfig{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12, Tuple{Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}}}, ::Val{true})
-│        @ ForwardDiff ~/.julia/packages/ForwardDiff/PcZ48/src/jacobian.jl:80
-│      [5] jacobian!(result::Matrix{Float64}, f!::Function, y::Vector{Float64}, x::Vector{Float64}, cfg::ForwardDiff.JacobianConfig{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12, Tuple{Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}}})
-│        @ ForwardDiff ~/.julia/packages/ForwardDiff/PcZ48/src/jacobian.jl:76
-│      [6] (::PowerSimulationsDynamics.var&quot;#72#74&quot;{ForwardDiff.JacobianConfig{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12, Tuple{Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}, Vector{ForwardDiff.Dual{ForwardDiff.Tag{PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Float64}, Float64, 12}}}}, PowerSimulationsDynamics.var&quot;#71#73&quot;{PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, Vector{Float64}}, Int64})(Jv::Matrix{Float64}, x::Vector{Float64})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:101
-│      [7] PowerSimulationsDynamics.JacobianFunctionWrapper(m!::PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, x0_guess::Vector{Float64}, p::Vector{Float64}; sparse_retrieve_loop::Int64)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:119
-│      [8] PowerSimulationsDynamics.JacobianFunctionWrapper(m!::PowerSimulationsDynamics.SystemModel{MassMatrixModel, PowerSimulationsDynamics.NoDelays, PowerSimulationsDynamics.JacobianCache{typeof(PowerSimulationsDynamics.system_mass_matrix!), ForwardDiff.Dual{ForwardDiff.Tag{typeof(PowerSimulationsDynamics.system_mass_matrix!), Float64}, Float64, 12}}}, x0_guess::Vector{Float64}, p::Vector{Float64})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/jacobian.jl:88
-│      [9] _get_jacobian(sim::Simulation{MassMatrixModel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:295
-│     [10] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:454 [inlined]
-│     [11] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/RsWnF/src/TimerOutput.jl:237 [inlined]
-│     [12] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:453 [inlined]
-│     [13] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/RsWnF/src/TimerOutput.jl:237 [inlined]
-│     [14] _build!(sim::Simulation{MassMatrixModel}; kwargs::@Kwargs{console_level::Base.CoreLogging.LogLevel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:429
-│     [15] _build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:418 [inlined]
-│     [16] (::PowerSimulationsDynamics.var&quot;#124#125&quot;{@Kwargs{console_level::Base.CoreLogging.LogLevel}, Simulation{MassMatrixModel}})()
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:484
-│     [17] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:515
-│     [18] with_logger
-│        @ ./logging.jl:627 [inlined]
-│     [19] #build!#123
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:483 [inlined]
-│     [20] build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:481 [inlined]
-│     [21] Simulation(::Type{MassMatrixModel}, system::System, simulation_folder::String, tspan::Tuple{Float64, Float64}, perturbations::Vector{BranchTrip}; kwargs::@Kwargs{console_level::Base.CoreLogging.LogLevel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:188
-│     [22] Simulation
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:166 [inlined]
-│     [23] #Simulation#107
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:78 [inlined]
-│     [24] top-level scope
-│        @ REPL[1]:1
-│     [25] eval
-│        @ ./boot.jl:385 [inlined]
-│     [26] #21
-│        @ ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:721 [inlined]
-│     [27] cd(f::Documenter.Expanders.var&quot;#21#23&quot;{Module}, dir::String)
-│        @ Base.Filesystem ./file.jl:112
-│     [28] (::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module})()
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:720
-│     [29] (::IOCapture.var&quot;#4#7&quot;{DataType, Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
-│        @ IOCapture ~/.julia/packages/IOCapture/Rzdxd/src/IOCapture.jl:161
-│     [30] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:515
-│     [31] with_logger
-│        @ ./logging.jl:627 [inlined]
-│     [32] capture(f::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer)
-│        @ IOCapture ~/.julia/packages/IOCapture/Rzdxd/src/IOCapture.jl:158
-│     [33] runner(::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:719
-│     [34] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::Markdown.Code, ::Vararg{Any})
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/bYYzK/src/Utilities/Selectors.jl:170
-│     [35] expand(doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:42
-│     [36] runner(::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Documents.Document)
-│        @ Documenter.Builder ~/.julia/packages/Documenter/bYYzK/src/Builder.jl:226
-│     [37] dispatch(::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Documents.Document)
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/bYYzK/src/Utilities/Selectors.jl:170
-│     [38] #2
-│        @ ~/.julia/packages/Documenter/bYYzK/src/Documenter.jl:273 [inlined]
-│     [39] cd(f::Documenter.var&quot;#2#3&quot;{Documenter.Documents.Document}, dir::String)
-│        @ Base.Filesystem ./file.jl:112
-│     [40] makedocs(; debug::Bool, format::Documenter.Writers.HTMLWriter.HTML, kwargs::@Kwargs{modules::Vector{Module}, sitename::String, pages::Vector{Any}})
-│        @ Documenter ~/.julia/packages/Documenter/bYYzK/src/Documenter.jl:272
-│     [41] top-level scope
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
-│     [42] include(mod::Module, _path::String)
-│        @ Base ./Base.jl:495
-│     [43] exec_options(opts::Base.JLOptions)
-│        @ Base ./client.jl:318
-│     [44] _start()
-│        @ Base ./client.jl:552
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:474
+[ Info: Residual from initial guess: max = 9.82774084334892e-10 at 1268, total = 2.3309883363794544e-8
+Iter     f(x) inf-norm    Step 2-norm 
+------   --------------   --------------
+[ Info: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+[ Info: Attaching Perturbations
+[ Info: Simulations status = BUILT
 ┌ Info: 
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     4.92s             501MiB    
+│                 Total measured:                     11.4s            0.94GiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    4.92s  100.0%    501MiB  100.0%
-│    Build Simulation Inputs                  1   7.58ms    0.2%   8.60MiB    1.7%
-│      Wrap Branches                          1   7.18μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1   5.04ms    0.1%   3.34MiB    0.7%
-│      Wrap Static Injectors                  1    227μs    0.0%    168KiB    0.0%
-│      Build initial parameters               1    564μs    0.0%    514KiB    0.1%
-│      Calculate MM, DAE_vector, Tota...      1    530μs    0.0%   1.90MiB    0.4%
-│    Pre-initialization                       1   15.0ms    0.3%   8.84MiB    1.8%
-│      Power Flow solution                    1   10.7ms    0.2%   5.75MiB    1.1%
-│      Initialize Static Injectors            1    732ns    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1   3.82ms    0.1%   2.93MiB    0.6%
-│    Calculate Jacobian                       1    440ms    9.0%    113MiB   22.5%
+│  Build Simulation                           1    11.4s  100.0%   0.94GiB  100.0%
+│    Build Simulation Inputs                  1   7.66ms    0.1%   8.60MiB    0.9%
+│      Wrap Branches                          1   6.59μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1   4.59ms    0.0%   3.34MiB    0.3%
+│      Wrap Static Injectors                  1    228μs    0.0%    168KiB    0.0%
+│      Build initial parameters               1    537μs    0.0%    514KiB    0.1%
+│      Calculate MM, DAE_vector, Tota...      1    552μs    0.0%   1.90MiB    0.2%
+│    Pre-initialization                       1   15.2ms    0.1%   8.84MiB    0.9%
+│      Power Flow solution                    1   11.1ms    0.1%   5.75MiB    0.6%
+│      Initialize Static Injectors            1    942ns    0.0%     0.00B    0.0%
+│      Initialize Dynamic Injectors           1   3.67ms    0.0%   2.93MiB    0.3%
+│    Calculate Jacobian                       1    9.37s   82.3%    725MiB   74.9%
+│    Make Model Function                      1   6.82ms    0.1%    154KiB    0.0%
+│    Initial Condition NLsolve refine...      1    1.64s   14.4%    207MiB   21.3%
+│    Build Perturbations                      1   18.0ms    0.2%    627KiB    0.1%
+│    Make DiffEq Problem                      1    336ms    3.0%   17.7MiB    1.8%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
 ┌─────────────────────────┬───────────────────┐
 │ Property                │ Value             │
 ├─────────────────────────┼───────────────────┤
-│ Status                  │ BUILD_FAILED      │
+│ Status                  │ BUILT             │
 │ Simulation Type         │ Mass Matrix Model │
 │ Initialized?            │ Yes               │
 │ Multimachine system?    │ Yes               │
@@ -557,71 +469,14 @@ Simulation Summary
            atol = 1e-10,
            rtol = 1e-10,
            initializealg = NoInit(),
-       )</code><code class="nohighlight hljs ansi" style="display:block;">┌ Error: Execution failed
-│   exception =
-│    The Simulation status is BUILD_FAILED. Can not continue, correct your inputs and build the simulation again.
-│    Stacktrace:
-│      [1] error(s::String)
-│        @ Base ./error.jl:35
-│      [2] simulation_pre_step!(sim::Simulation{MassMatrixModel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:502
-│      [3] _execute!(sim::Simulation{MassMatrixModel}, solver::OrdinaryDiffEq.Rodas4{0, true, Nothing, typeof(OrdinaryDiffEq.DEFAULT_PRECS), Val{:forward}, true, nothing}; kwargs::@Kwargs{saveat::Float64, atol::Float64, rtol::Float64, initializealg::SciMLBase.NoInit})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:528
-│      [4] _execute!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:526 [inlined]
-│      [5] (::PowerSimulationsDynamics.var&quot;#130#131&quot;{@Kwargs{saveat::Float64, atol::Float64, rtol::Float64, initializealg::SciMLBase.NoInit}, Simulation{MassMatrixModel}, OrdinaryDiffEq.Rodas4{0, true, Nothing, typeof(OrdinaryDiffEq.DEFAULT_PRECS), Val{:forward}, true, nothing}})()
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:585
-│      [6] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:515
-│      [7] with_logger
-│        @ ./logging.jl:627 [inlined]
-│      [8] #execute!#129
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:583 [inlined]
-│      [9] top-level scope
-│        @ REPL[1]:1
-│     [10] eval
-│        @ ./boot.jl:385 [inlined]
-│     [11] #21
-│        @ ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:721 [inlined]
-│     [12] cd(f::Documenter.Expanders.var&quot;#21#23&quot;{Module}, dir::String)
-│        @ Base.Filesystem ./file.jl:112
-│     [13] (::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module})()
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:720
-│     [14] (::IOCapture.var&quot;#4#7&quot;{DataType, Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
-│        @ IOCapture ~/.julia/packages/IOCapture/Rzdxd/src/IOCapture.jl:161
-│     [15] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:515
-│     [16] with_logger
-│        @ ./logging.jl:627 [inlined]
-│     [17] capture(f::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer)
-│        @ IOCapture ~/.julia/packages/IOCapture/Rzdxd/src/IOCapture.jl:158
-│     [18] runner(::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:719
-│     [19] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::Markdown.Code, ::Vararg{Any})
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/bYYzK/src/Utilities/Selectors.jl:170
-│     [20] expand(doc::Documenter.Documents.Document)
-│        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:42
-│     [21] runner(::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Documents.Document)
-│        @ Documenter.Builder ~/.julia/packages/Documenter/bYYzK/src/Builder.jl:226
-│     [22] dispatch(::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Documents.Document)
-│        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/bYYzK/src/Utilities/Selectors.jl:170
-│     [23] #2
-│        @ ~/.julia/packages/Documenter/bYYzK/src/Documenter.jl:273 [inlined]
-│     [24] cd(f::Documenter.var&quot;#2#3&quot;{Documenter.Documents.Document}, dir::String)
-│        @ Base.Filesystem ./file.jl:112
-│     [25] makedocs(; debug::Bool, format::Documenter.Writers.HTMLWriter.HTML, kwargs::@Kwargs{modules::Vector{Module}, sitename::String, pages::Vector{Any}})
-│        @ Documenter ~/.julia/packages/Documenter/bYYzK/src/Documenter.jl:272
-│     [26] top-level scope
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
-│     [27] include(mod::Module, _path::String)
-│        @ Base ./Base.jl:495
-│     [28] exec_options(opts::Base.JLOptions)
-│        @ Base ./client.jl:318
-│     [29] _start()
-│        @ Base ./client.jl:552
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:587
-SIMULATION_FAILED::BUILD_STATUS = 7</code></pre><h2 id="Read-the-results"><a class="docs-heading-anchor" href="#Read-the-results">Read the results</a><a id="Read-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Read-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res_rodas = read_results(sim_rodas)</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><h2 id="Compare-the-results"><a class="docs-heading-anchor" href="#Compare-the-results">Compare the results</a><a id="Compare-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Compare-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected. For both of the solution techniques.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101 = get_voltage_magnitude_series(res_rodas, 1101);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching get_voltage_magnitude_series(::Nothing, ::Int64)
-
-Closest candidates are:
-  get_voltage_magnitude_series(!Matched::SimulationResults, ::Int64; dt)
-   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:327</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101, label = &quot;RODAS4&quot;);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `v1101` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(v1101_ida, label = &quot;IDA&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Saturday 30 March 2024 15:32">Saturday 30 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+       )</code><code class="nohighlight hljs ansi" style="display:block;">SIMULATION_FINALIZED::BUILD_STATUS = 6</code></pre><h2 id="Read-the-results"><a class="docs-heading-anchor" href="#Read-the-results">Read the results</a><a id="Read-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Read-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res_rodas = read_results(sim_rodas)</code><code class="nohighlight hljs ansi" style="display:block;">Simulation Results Summary
+┌────────────────────────────┬──────────────┐
+│ Property                   │ Value        │
+├────────────────────────────┼──────────────┤
+│ System Base Power [MVA]    │ 100.0        │
+│ System Base Frequency [Hz] │ 60.0         │
+│ Time Span                  │ (0.0, 20.0)  │
+│ Total Time Steps           │ 2002         │
+│ Number of States           │ 2164         │
+│ Total solve time           │ 34.941480022 │
+└────────────────────────────┴──────────────┘</code></pre><h2 id="Compare-the-results"><a class="docs-heading-anchor" href="#Compare-the-results">Compare the results</a><a id="Compare-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Compare-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected. For both of the solution techniques.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101 = get_voltage_magnitude_series(res_rodas, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101, label = &quot;RODAS4&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(v1101_ida, label = &quot;IDA&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Saturday 30 March 2024 22:07">Saturday 30 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
