@@ -169,7 +169,8 @@ end
 
 function JacobianFunctionWrapper(
     m!::SystemModel{MassMatrixModel, HasDelays},
-    x0_guess::Vector{Float64};
+    x0_guess::Vector{Float64},
+    p::Vector{Float64};
     # Improve the heuristic to do sparsity detection
     sparse_retrieve_loop::Int = 0, #max(3, length(x0_guess) ÷ 100),
 )
@@ -178,7 +179,7 @@ function JacobianFunctionWrapper(
     Jf =
         (Jv, x, h, t) -> begin
             @debug "Evaluating Jacobian Function"
-            m_ = (residual, x) -> m!(residual, x, h, nothing, t)
+            m_ = (residual, x) -> m!(residual, x, h, p, t)
             jconfig =
                 ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
             ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)

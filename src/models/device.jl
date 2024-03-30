@@ -74,7 +74,15 @@ function device!(
     )
 
     #Obtain ODEs for AVR
-    mdl_avr_ode!(device_states, output_ode, device_parameters, inner_vars, dynamic_device, h, t)
+    mdl_avr_ode!(
+        device_states,
+        output_ode,
+        device_parameters,
+        inner_vars,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain ODEs for Machine
     mdl_machine_ode!(
@@ -250,7 +258,15 @@ function device!(
     )
 
     #Obtain inner controller ODEs and modulation commands
-    mdl_inner_ode!(device_states, output_ode, device_parameters, inner_vars, dynamic_device, h, t)
+    mdl_inner_ode!(
+        device_states,
+        output_ode,
+        device_parameters,
+        inner_vars,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain converter relations
     mdl_converter_ode!(

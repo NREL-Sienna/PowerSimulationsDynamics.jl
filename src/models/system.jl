@@ -231,7 +231,7 @@ function (m::SystemModel{MassMatrixModel, NoDelays, C})(
     p,
     t,
 ) where {C <: Cache, U <: ACCEPTED_REAL_TYPES, T <: ACCEPTED_REAL_TYPES}
-    system_mass_matrix!(du, u, nothing, m.inputs, m.cache, t)
+    system_mass_matrix!(du, u, nothing, p, m.inputs, m.cache, t)
 end
 
 function (m::SystemModel{MassMatrixModel, HasDelays, C})(

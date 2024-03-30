@@ -709,15 +709,6 @@ get_params_symbol(::PSY.SteamTurbineGov1) = [:R_tg,
     :T2_tg,  #modified to make unique
     :T3_tg,  #modified to make unique
     :D_T]
-get_params_symbol(::PSY.TGTypeI) = [:R_tg,
-    :Ts,
-    :Tc,
-    :T3_tg, #modified to make unique
-    :T4_tg, #modified to make unique
-    :T5_tg, #modified to make unique
-    :valve_position_min,
-    :valve_position_max,
-]
 get_n_params(::PSY.HydroTurbineGov) = 12
 get_params(x::PSY.HydroTurbineGov) = [PSY.get_R(x),
     PSY.get_r(x),

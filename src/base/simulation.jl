@@ -397,6 +397,7 @@ function _get_diffeq_problem(
 )
     simulation_inputs = get_simulation_inputs(sim)
     h = get_history_function(sim)
+    p = get_parameters(simulation_inputs)
     sim.problem = SciMLBase.DDEProblem(
         SciMLBase.DDEFunction{true}(
             model;
@@ -407,7 +408,7 @@ function _get_diffeq_problem(
         sim.x0_init,
         h,
         get_tspan(sim),
-        simulation_inputs;
+        p;
         constant_lags = filter!(x -> x != 0, unique(simulation_inputs.delays)),
     )
     sim.status = BUILT
