@@ -164,10 +164,10 @@ I_i = \left(\frac{S_\text{motor}}{S_\text{base}}\right) (i_{qs} + v_{ds} B_{sh})
 
 ### Active Constant Power Load Model
 
-The following 12-state model Active Load model  that measures the AC side using a Phase-Lock-Loop (PLL) and regulates a DC voltage to supply a resistor $r_L$. This model induces a CPL-like behavior as it tries to maintain a fixed DC voltage to supply ``P = v_\text{DC}^2 / r_L`` (based on [the following reference](https://www.sciencedirect.com/science/article/pii/S0142061516000740)). 
+The following 12-state model Active Load model  that measures the AC side using a Phase-Lock-Loop (PLL) and regulates a DC voltage to supply a resistor $r_L$. This model induces a CPL-like behavior as it tries to maintain a fixed DC voltage to supply ``P = v_\text{DC}^2 / r_L``. The model is based on [the following reference](https://www.sciencedirect.com/science/article/pii/S0142061516000740). 
 
-```math
 The complete model is given by:
+```math
 \begin{align}
     \dot{\theta} &= \Omega_b (\omega_\text{pll} - \omega_s) \tag{4a} \\
     \dot{\epsilon} &= v_\text{o}^\q \tag{4b}\\
