@@ -161,3 +161,24 @@ I_r = \left(\frac{S_\text{motor}}{S_\text{base}}\right) (i_{ds} - v_{qs} B_{sh})
 I_i = \left(\frac{S_\text{motor}}{S_\text{base}}\right) (i_{qs} + v_{ds} B_{sh}) 
 \end{align*}
 ```
+
+### Active Constant Power Load Model
+
+The following 12-state model Active Load model  that measures the AC side using a Phase-Lock-Loop (PLL) and regulates a DC voltage to supply a resistor $r_L$. This model induces a CPL-like behavior as it tries to maintain a fixed DC voltage to supply ``P = v_\text{DC}^2 / r_L`` (based on [the following reference](https://www.sciencedirect.com/science/article/pii/S0142061516000740)). 
+
+```math
+The complete model is given by:
+\begin{align}
+    \dot{\theta} &= \Omega_b (\omega_\text{pll} - \omega_s) \tag{4a} \\
+    \dot{\epsilon} &= v_\text{o}^\q \tag{4b}\\
+    \omega_\text{pll} &= \omega^\star + k^p_\text{pll} v_\text{o}^\q + k_\text{pll}^i \epsilon \tag{4c}\\
+    \dot{\zeta} &= v_\text{DC}^\star - v_\text{DC} \tag{4d} \\
+    i_\text{cv}^{\d,\star} &= k_\text{DC}^p ( v_\text{DC}^\star - v_\text{DC}) + k_\text{DC}^i \zeta \tag{4e}  \\
+    \frac{c_\text{DC}}{\Omega_b} \dot{v}_\text{DC} &= \frac{p_\text{cv}}{v_\text{DC}} - \frac{v_\text{DC}}{r_L} \tag{4f} \\
+    \dot{\gamma}_\d &= i_\text{cv}^\d - i_\text{cv}^{\d,\star} \tag{4g}\\
+    \dot{\gamma}_\q &= i_\text{cv}^\q - i_\text{cv}^{\q,\star} \tag{4h} \\
+    v_\text{cv}^{\d,\star} &= k_\text{pc}( i_\text{cv}^\d - i_\text{cv}^{\d,\star}) + k_\text{ic} \gamma_\d + \omega_\text{pll} l_f i_\text{cv}^\q \tag{4i}\\
+    v_\text{cv}^{\q,\star} &= k_\text{pc}( i_\text{cv}^\q - i_\text{cv}^{\q,\star}) + k_\text{ic} \gamma_\q - \omega_\text{pll} l_f i_\text{cv}^\d \tag{4j}
+\end{align}
+```
+Equations (4a)--(4c)  describes the PLL dynamics to lock the active load to the grid. Equations (4d)-(4e)  describes the DC Voltage Controller to steer the DC voltage to ``v_\text{DC}^\star``, while equation (4f) describes the DC voltage dynamics at the capacitor assuming an ideal converter. Finally, equations (4g)--(4j) describes the dynamics of the AC Current Controller. Additionally six states are defined for the LCL filter in a similar fashion of GFM inverters.
