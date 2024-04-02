@@ -173,11 +173,11 @@ The complete model is given by:
     \dot{\epsilon} &= v_\text{o}^q \tag{4b}\\
     \omega_\text{pll} &= \omega^\star + k^p_\text{pll} v_\text{o}^q + k_\text{pll}^i \epsilon \tag{4c}\\
     \dot{\zeta} &= v_\text{DC}^\star - v_\text{DC} \tag{4d} \\
-    i_\text{cv}^{\d,\star} &= k_\text{DC}^p ( v_\text{DC}^\star - v_\text{DC}) + k_\text{DC}^i \zeta \tag{4e}  \\
+    i_\text{cv}^{d,\star} &= k_\text{DC}^p ( v_\text{DC}^\star - v_\text{DC}) + k_\text{DC}^i \zeta \tag{4e}  \\
     \frac{c_\text{DC}}{\Omega_b} \dot{v}_\text{DC} &= \frac{p_\text{cv}}{v_\text{DC}} - \frac{v_\text{DC}}{r_L} \tag{4f} \\
     \dot{\gamma}_d &= i_\text{cv}^d - i_\text{cv}^{d,\star} \tag{4g}\\
     \dot{\gamma}_q &= i_\text{cv}^q - i_\text{cv}^{q,\star} \tag{4h} \\
-    v_\text{cv}^{d,\star} &= k_\text{pc}( i_\text{cv}^d - i_\text{cv}^{\d,\star}) + k_\text{ic} \gamma_d + \omega_\text{pll} l_f i_\text{cv}^q \tag{4i}\\
+    v_\text{cv}^{d,\star} &= k_\text{pc}( i_\text{cv}^d - i_\text{cv}^{d,\star}) + k_\text{ic} \gamma_d + \omega_\text{pll} l_f i_\text{cv}^q \tag{4i}\\
     v_\text{cv}^{q,\star} &= k_\text{pc}( i_\text{cv}^q - i_\text{cv}^{q,\star}) + k_\text{ic} \gamma_q - \omega_\text{pll} l_f i_\text{cv}^d \tag{4j}
 \end{align}
 ```
