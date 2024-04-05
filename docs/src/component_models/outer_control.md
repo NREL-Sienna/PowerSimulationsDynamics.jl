@@ -37,7 +37,7 @@ is the point of common coupling.
 ## Active Power Droop (P-droop) and Q-droop ```[OuterControl]```
 
 The following model represent a ``P\text{-}f`` droop model to represent how active
-power is going to be deployed. The constructor is ```OuterControl{ActivePowerControl, ReactivePowerDroop}```.
+power is going to be deployed. The constructor is ```OuterControl{ActivePowerDroop, ReactivePowerDroop}```.
 It defines a new SRF denoted as ``\theta_{\text{olc}}`` for the active power controller and
 uses a simple voltage droop for dispatching reactive power. Both active and reactive power are measured via a low-pass filter:
 
