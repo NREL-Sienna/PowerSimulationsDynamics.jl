@@ -78,7 +78,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         ω = PSID.get_frequency_series(results, "generator-102-1")
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -133,7 +133,7 @@ end
         ω = PSID.get_frequency_series(results, "generator-102-1")
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

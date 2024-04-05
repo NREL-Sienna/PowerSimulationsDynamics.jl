@@ -67,7 +67,7 @@ function get_frequency_reference!(
         end
         reference = _get_frequency_state(first(ref_devices))
     else
-        @info "The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency"
+        CRC.@ignore_derivatives @info "The reference Bus has a Source connected to it. The frequency reference model will change to ConstantFrequency"
         reference = 0
     end
     return reference

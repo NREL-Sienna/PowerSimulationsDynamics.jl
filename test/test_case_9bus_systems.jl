@@ -29,7 +29,7 @@
         @test execute!(sim, Rodas4()) == PSID.SIMULATION_FINALIZED
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

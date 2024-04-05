@@ -98,7 +98,7 @@ function test_renA_implicit(csv_file, init_cond, eigs_value, F_Flag)
         @test LinearAlgebra.norm(rpower - q_psse, 2) <= 1e-2
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -171,7 +171,7 @@ function test_renA_mass_matrix(csv_file, init_cond, eigs_value, F_Flag)
         @test LinearAlgebra.norm(rpower - q_psse, 2) <= 1e-2
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -307,7 +307,7 @@ function test_renA_implicit_dyr(dyr_file, csv_file, init_cond, eigs_value, tspan
         @test LinearAlgebra.norm((angl - angl_ref) - θ_psse .* pi / 180, 2) <= 1e-2
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -373,7 +373,7 @@ function test_renA_massmatrix_dyr(dyr_file, csv_file, init_cond, eigs_value, tsp
         @test LinearAlgebra.norm((angl - angl_ref) - θ_psse .* pi / 180, 2) <= 1e-2
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

@@ -65,7 +65,7 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -115,7 +115,7 @@ end
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

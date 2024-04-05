@@ -61,7 +61,7 @@ line_trip_csv_file =
         end
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -110,7 +110,7 @@ end
             @test LinearAlgebra.norm(ω - ω_psse, Inf) <= 0.1 # relaxed due to inconsistent PSSE outputs
         end
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

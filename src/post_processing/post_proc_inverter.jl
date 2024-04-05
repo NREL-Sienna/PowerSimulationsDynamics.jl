@@ -45,7 +45,7 @@ function compute_field_current(
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
-    @warn("Field current does not exist in inverters. Returning zeros.")
+    CRC.@ignore_derivatives @warn("Field current does not exist in inverters. Returning zeros.")
     return (nothing, zeros(length(V_R)))
 end
 
@@ -59,7 +59,7 @@ function compute_field_voltage(
     dynamic_device::G,
     dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
-    @warn("Field voltage does not exist in inverters. Returning zeros.")
+    CRC.@ignore_derivatives @warn("Field voltage does not exist in inverters. Returning zeros.")
     _, state = _post_proc_state_series(res.solution, 1, dt)
     return (nothing, zeros(length(state)))
 end
@@ -74,7 +74,7 @@ function compute_mechanical_torque(
     dynamic_device::G,
     dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {G <: PSY.DynamicInverter}
-    @warn("Mechanical torque is not used in inverters. Returning zeros.")
+    CRC.@ignore_derivatives @warn("Mechanical torque is not used in inverters. Returning zeros.")
     _, state = _post_proc_state_series(res.solution, 1, dt)
     return (nothing, zeros(length(state)))
 end

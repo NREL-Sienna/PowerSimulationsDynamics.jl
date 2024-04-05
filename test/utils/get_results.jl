@@ -53,7 +53,7 @@ end
 function get_csv_data(str::AbstractString)
     M_ = readdlm(str, ',')
     if !(diff(M_[1:10, 1])[1] > 0.0)
-        @warn "First column can't be identified as time, skipping clean up step"
+        CRC.@ignore_derivatives @warn "First column can't be identified as time, skipping clean up step"
         return M_
     end
     idx = unique(i -> M_[i, 1], 1:length(M_[:, 1]))

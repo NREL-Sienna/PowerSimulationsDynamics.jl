@@ -137,7 +137,7 @@ end
         @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 1e-3
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

@@ -45,7 +45,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/SEXS/ThreeBus_SEXS.dyr")
         @test isa(Vt, Vector{Float64})
         @test isa(ω, Vector{Float64})
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -83,7 +83,7 @@ end
         @test isa(Vt, Vector{Float64})
         @test isa(ω, Vector{Float64})
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

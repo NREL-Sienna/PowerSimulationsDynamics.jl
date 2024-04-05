@@ -65,7 +65,7 @@ Ybus_change = NetworkSwitch(
         series2 = get_mechanical_torque_series(results, "generator-101-1")
         series3 = get_mechanical_torque_series(results, "generator-102-1")
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -111,7 +111,7 @@ end
         series2 = get_mechanical_torque_series(results, "generator-101-1")
         series3 = get_mechanical_torque_series(results, "generator-102-1")
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

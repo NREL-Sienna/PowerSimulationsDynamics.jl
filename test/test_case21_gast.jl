@@ -67,7 +67,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/GAST/GAST_TEST.csv")
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -130,7 +130,7 @@ end
         @test LinearAlgebra.norm(δ - (δ_psse .* pi / 180), Inf) <= 1e-2
         @test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

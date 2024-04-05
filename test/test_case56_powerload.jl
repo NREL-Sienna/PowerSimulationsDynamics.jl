@@ -90,7 +90,7 @@ end
         @test LinearAlgebra.norm(p_power - p_standard, Inf) <= 1e-3
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -149,7 +149,7 @@ end
         @test LinearAlgebra.norm(p_power - p_standard, Inf) <= 1e-3
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

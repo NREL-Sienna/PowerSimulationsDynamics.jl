@@ -81,7 +81,7 @@ perturbation = BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
         #@test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         #@test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -143,7 +143,7 @@ end
         #@test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

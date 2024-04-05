@@ -131,7 +131,7 @@ esst1a_avr() = ESST1A(;
         @test LinearAlgebra.norm(efd_psid - efd_psse, Inf) <= 5e-2
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

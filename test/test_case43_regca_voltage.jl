@@ -102,7 +102,7 @@ PSY.set_dynamic_injector!(inverter, new_dynamic_injector)
 
         # No comparison
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -143,7 +143,7 @@ end
 
         # No comparison
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

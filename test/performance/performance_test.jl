@@ -30,7 +30,7 @@ try
         )
     end
 catch e
-    @error exception = (e, catch_backtrace())
+    CRC.@ignore_derivatives @error exception = (e, catch_backtrace())
 end
 
 try
@@ -54,7 +54,7 @@ try
         error("FAILED TO SOLVE")
     end
 catch e
-    @error exception = (e, catch_backtrace())
+    CRC.@ignore_derivatives @error exception = (e, catch_backtrace())
     open("execute_time.txt", "a") do io
         write(io, "| $(ARGS[1])- ResidualModel | FAILED TO TEST |\n")
     end
@@ -81,7 +81,7 @@ try
         error("FAILED TO SOLVE")
     end
 catch e
-    @error exception = (e, catch_backtrace())
+    CRC.@ignore_derivatives @error exception = (e, catch_backtrace())
     open("execute_time.txt", "a") do io
         write(io, "| $(ARGS[1])-MassMatrixModel | FAILED TO TEST |\n")
     end

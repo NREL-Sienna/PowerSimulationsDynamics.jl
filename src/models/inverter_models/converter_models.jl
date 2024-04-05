@@ -3,7 +3,7 @@ function mass_matrix_converter_entries!(
     converter::C,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {C <: PSY.Converter}
-    @debug "Using default mass matrix entries $C"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $C"
 end
 
 function mdl_converter_ode!(

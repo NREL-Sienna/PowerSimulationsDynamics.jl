@@ -81,12 +81,15 @@ import PowerFlows
 import PowerNetworkMatrices
 import TimerOutputs
 import FastClosures: @closure
+import ChainRulesCore
+import Zygote
 
 const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
 const PF = PowerFlows
 const PNM = PowerNetworkMatrices
+const CRC = ChainRulesCore
 
 using DocStringExtensions
 

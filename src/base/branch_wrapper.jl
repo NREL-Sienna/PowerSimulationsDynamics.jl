@@ -34,7 +34,7 @@ struct BranchWrapper
             ix_range,
             ode_range,
             p_range,
-            Base.ImmutableDict(Dict(branch_states .=> ix_range)...),
+            (ChainRulesCore.@ignore_derivatives Base.ImmutableDict(Dict(branch_states .=> ix_range)...)),
         )
     end
 end

@@ -87,7 +87,7 @@ function test_zipload_implicit(csv_file, eigs_value, load_model)
         @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 5e-2
         @test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -154,7 +154,7 @@ function test_zipload_mass_matrix(csv_file, eigs_value, load_model)
         @test LinearAlgebra.norm(v3_psid - v3_psse, Inf) <= 5e-2
         @test LinearAlgebra.norm(t_psid - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

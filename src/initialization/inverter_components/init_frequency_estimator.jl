@@ -45,7 +45,7 @@ function initialize_frequency_estimator!(
     x0 = [Vpll_d0, Vpll_q0, ϵ_pll0, θ0_pll]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in PLL failed")
+        CRC.@ignore_derivatives @warn("Initialization in PLL failed")
     else
         sol_x0 = sol.zero
 
@@ -109,7 +109,7 @@ function initialize_frequency_estimator!(
     x0 = [Vpll_q0, ϵ_pll0, θ0_pll]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in PLL failed")
+        CRC.@ignore_derivatives @warn("Initialization in PLL failed")
     else
         sol_x0 = sol.zero
 

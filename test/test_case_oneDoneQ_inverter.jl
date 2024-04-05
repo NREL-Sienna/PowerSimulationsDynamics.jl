@@ -60,7 +60,7 @@ threebus_sys = build_system(PSIDTestSystems, "psid_test_threebus_machine_vsm")
         t, ω_oc = get_state_series(results, ("generator-103-1", :ω_oc))
         @test length(t) == length(ω_oc)
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -118,7 +118,7 @@ end
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

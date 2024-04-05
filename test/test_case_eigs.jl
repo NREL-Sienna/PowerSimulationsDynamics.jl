@@ -31,7 +31,7 @@ eigs_andes_csv = joinpath(TEST_FILES_DIR, "benchmarks/andes/test36/eigs_tgov_and
         eigs_andes = parse.(Complex{Float64}, A)
         @test LinearAlgebra.norm(eigs - eigs_andes, 2) / length(eigs) < 1.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

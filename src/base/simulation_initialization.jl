@@ -13,23 +13,23 @@ function power_flow_solution!(
 )
     res = PF.solve_ac_powerflow!(sys)
     if !res
-        @error("PowerFlow failed to solve")
+        CRC.@ignore_derivatives @error("PowerFlow failed to solve")
         return BUILD_FAILED
     end
     bus_size = length(PSY.get_bus_numbers(sys))
-    @debug "Updating bus voltage magnitude and angle to match power flow result"
+    CRC.@ignore_derivatives @debug "Updating bus voltage magnitude and angle to match power flow result"
     for bus in PSY.get_components(PSY.Bus, sys)
         bus_n = PSY.get_number(bus)
         bus_ix = get_lookup(inputs)[bus_n]
         initial_guess[bus_ix] = PSY.get_magnitude(bus) * cos(PSY.get_angle(bus))
         initial_guess[bus_ix + bus_size] = PSY.get_magnitude(bus) * sin(PSY.get_angle(bus))
-        @debug "$(PSY.get_name(bus)) V_r = $(initial_guess[bus_ix]), V_i = $(initial_guess[bus_ix + bus_size])"
+        CRC.@ignore_derivatives @debug "$(PSY.get_name(bus)) V_r = $(initial_guess[bus_ix]), V_i = $(initial_guess[bus_ix + bus_size])"
     end
     return BUILD_INCOMPLETE
 end
 
 function initialize_static_injection!(inputs::SimulationInputs)
-    @debug "Updating Source internal voltage magnitude and angle"
+    CRC.@ignore_derivatives @debug "Updating Source internal voltage magnitude and angle"
     static_injection_devices = get_static_injectors(inputs)
     parameters = get_parameters(inputs)
     if !isempty(static_injection_devices)
@@ -41,7 +41,7 @@ function initialize_static_injection!(inputs::SimulationInputs)
             end
         catch e
             bt = catch_backtrace()
-            @error "Static Injection Failed to Initialize" exception = e, bt
+            CRC.@ignore_derivatives @error "Static Injection Failed to Initialize" exception = e, bt
             return BUILD_FAILED
         end
     end
@@ -65,7 +65,7 @@ function _initialization_debug(dynamic_device, static, x0_device::Vector{Float64
         0,
     )
     for (ix, state) in enumerate(PSY.get_states(dynamic_device))
-        @debug state residual[ix]
+        CRC.@ignore_derivatives @debug state residual[ix]
     end
     return
 end
@@ -75,12 +75,12 @@ function initialize_dynamic_injection!(
     inputs::SimulationInputs,
     system::PSY.System,
 )
-    @debug "Updating Dynamic Injection Component Initial Guess"
+    CRC.@ignore_derivatives @debug "Updating Dynamic Injection Component Initial Guess"
     initial_inner_vars = zeros(get_inner_vars_count(inputs))
     parameters = get_parameters(inputs)
     try
         for dynamic_device in get_dynamic_injectors(inputs)
-            @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
+            CRC.@ignore_derivatives @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
             _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
             _parameters = @view parameters[get_p_range(dynamic_device)]
             _states = @view initial_guess[get_ix_range(dynamic_device)]
@@ -88,7 +88,7 @@ function initialize_dynamic_injection!(
         end
     catch e
         bt = catch_backtrace()
-        @error "Dynamic Injection Failed to Initialize" exception = e, bt
+        CRC.@ignore_derivatives @error "Dynamic Injection Failed to Initialize" exception = e, bt
         return BUILD_FAILED
     end
     return BUILD_INCOMPLETE
@@ -100,16 +100,16 @@ function initialize_dynamic_branches!(
 )
     parameters = get_parameters(inputs)
     try
-        @debug "Initializing Dynamic Branches"
+        CRC.@ignore_derivatives @debug "Initializing Dynamic Branches"
         for br in get_dynamic_branches(inputs)
-            @debug "$(PSY.get_name(br)) -  $(typeof(br))"
+            CRC.@ignore_derivatives @debug "$(PSY.get_name(br)) -  $(typeof(br))"
             _parameters = @view parameters[get_p_range(br)]
             _states = @view initial_guess[get_ix_range(br)]
             initialize_dynamic_device!(br, _parameters, _states)
         end
     catch e
         bt = catch_backtrace()
-        @error "Dynamic Branches Failed to Initialize" exception = e, bt
+        CRC.@ignore_derivatives @error "Dynamic Branches Failed to Initialize" exception = e, bt
         return BUILD_FAILED
     end
     return BUILD_INCOMPLETE
@@ -140,7 +140,7 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
     end
 
     if !isempty(invalid_initial_guess)
-        @error("Invalid initial condition values $invalid_initial_guess")
+        CRC.@ignore_derivatives @error("Invalid initial condition values $invalid_initial_guess")
         return BUILD_FAILED
     end
 
@@ -153,7 +153,7 @@ function _calculate_initial_guess!(sim::Simulation)
     inputs = get_simulation_inputs(sim)
     @assert sim.status == BUILD_INCOMPLETE
     while sim.status == BUILD_INCOMPLETE
-        @debug "Start state intialization routine"
+        CRC.@ignore_derivatives @debug "Start state intialization routine"
         TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
             sim.status = power_flow_solution!(sim.x0_init, get_system(sim), inputs)
         end
@@ -168,7 +168,7 @@ function _calculate_initial_guess!(sim::Simulation)
                 sim.status = initialize_dynamic_branches!(sim.x0_init, inputs)
             end
         else
-            @debug "No Dynamic Branches in the system"
+            CRC.@ignore_derivatives @debug "No Dynamic Branches in the system"
         end
         sim.status = check_valid_values(sim.x0_init, inputs)
     end

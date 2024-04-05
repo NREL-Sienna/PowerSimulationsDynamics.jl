@@ -58,7 +58,7 @@ perturbation = ControlReferenceChange(0.1, case_gen, :P_ref, 0.6)
         t = series[1]
         V101 = series[2]
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -103,7 +103,7 @@ end
         t = series[1]
         V101 = series[2]
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

@@ -49,11 +49,11 @@ function test_sundials(solver)
         )
 
         #Solve problem
-        @info "$(solver)" @time execute!(sim, IDA(; linear_solver = solver))
+        CRC.@ignore_derivatives @info "$(solver)" @time execute!(sim, IDA(; linear_solver = solver))
         results = read_results(sim)
         @test SciMLBase.successful_retcode(results.solution)
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
     return

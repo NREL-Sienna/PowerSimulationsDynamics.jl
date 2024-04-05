@@ -58,7 +58,7 @@ function _reduce_jacobian(
         alg_states[alg_ix] .= alg_changes
         for b in alg_ix[.!alg_changes]
             name, state = get_state_from_ix(global_index, b)
-            @info "Algebraic state $(state) in device $(name) was removed from the reduced jacobian due to having only zeros in both rows and columns."
+            CRC.@ignore_derivatives @info "Algebraic state $(state) in device $(name) was removed from the reduced jacobian due to having only zeros in both rows and columns."
         end
     end
     gy = jacobian[alg_states, alg_states]
@@ -74,10 +74,10 @@ end
 function _get_eigenvalues(reduced_jacobian::AbstractArray{Float64}, multimachine::Bool)
     eigen_vals, R_eigen_vect = LinearAlgebra.eigen(Matrix(reduced_jacobian))
     if multimachine
-        @warn(
+        CRC.@ignore_derivatives @warn(
             "No Infinite Bus found. Confirm stability directly checking eigenvalues.\nIf all eigenvalues are on the left-half plane and only one eigenvalue is zero, the system is small signal stable."
         )
-        @debug(eigen_vals)
+        CRC.@ignore_derivatives @debug(eigen_vals)
     end
     if !isa(Vector{ComplexF64}, typeof(eigen_vals))
         eigen_vals = convert(Vector{ComplexF64}, eigen_vals)

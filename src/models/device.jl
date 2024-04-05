@@ -1,9 +1,9 @@
-function device_mass_matrix_entries!(::AbstractArray, ::DynamicWrapper{T}) where {T}
+function device_mass_matrix_entries!(::Any, ::DynamicWrapper{T}) where {T}
     error("Mass Matrix not implemented for models $T")
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix::AbstractArray,
+    mass_matrix::Any,
     dynamic_device::DynamicWrapper{DynG},
 ) where {DynG <: PSY.DynamicGenerator}
     global_index = get_global_index(dynamic_device)
@@ -16,7 +16,7 @@ function device_mass_matrix_entries!(
 end
 
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
@@ -142,7 +142,7 @@ function device!(
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix::AbstractArray{Float64},
+    mass_matrix::Any,
     dynamic_device::DynamicWrapper{DynI},
 ) where {DynI <: PSY.DynamicInverter}
     global_index = get_global_index(dynamic_device)
@@ -297,7 +297,7 @@ function device!(
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix::AbstractArray,
+    mass_matrix::Any,
     dynamic_device::DynamicWrapper{PSY.PeriodicVariableSource},
 )
     global_index = get_global_index(dynamic_device)
@@ -310,7 +310,7 @@ function mass_matrix_pvs_entries!(
     pvs::DynamicWrapper{PSY.PeriodicVariableSource},
     global_index::ImmutableDict{Symbol, Int64},
 )
-    @debug "Using default mass matrix entries $pvs"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $pvs"
 end
 
 function device!(
@@ -766,7 +766,7 @@ function _update_inner_vars!(
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix::AbstractArray,
+    mass_matrix::Any,
     dynamic_device::DynamicWrapper{T},
 ) where {
     T <: Union{PSY.SingleCageInductionMachine, PSY.SimplifiedSingleCageInductionMachine},
@@ -783,7 +783,7 @@ function mass_matrix_induction_entries!(
 ) where {
     T <: Union{PSY.SingleCageInductionMachine, PSY.SimplifiedSingleCageInductionMachine},
 }
-    @debug "Using default mass matrix entries $ind"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $ind"
 end
 
 """
@@ -965,7 +965,7 @@ function device!(
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix::AbstractArray,
+    mass_matrix::Any,
     dynamic_device::DynamicWrapper{PSY.CSVGN1},
 )
     global_index = get_global_index(dynamic_device)
@@ -978,7 +978,7 @@ function mass_matrix_csvgn1_entries!(
     csvgn1::DynamicWrapper{PSY.CSVGN1},
     global_index::ImmutableDict{Symbol, Int64},
 )
-    @debug "Using default mass matrix entries $csvgn1"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $csvgn1"
 end
 
 """
@@ -1071,7 +1071,7 @@ function device!(
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix::AbstractArray,
+    mass_matrix::Any,
     dynamic_device::DynamicWrapper{PSY.ActiveConstantPowerLoad},
 )
     global_index = get_global_index(dynamic_device)
@@ -1217,7 +1217,7 @@ function device!(
 end
 
 function device_mass_matrix_entries!(
-    mass_matrix::AbstractArray,
+    mass_matrix::Any,
     dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
 )
     global_index = get_global_index(dynamic_device)
@@ -1370,7 +1370,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     elseif Pf_Flag == 0
         _, dQ_V_dt = low_pass_mass_matrix(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
     else
-        @error @error "Unsupported value of PQ_Flag"
+        CRC.@ignore_derivatives @error CRC.@ignore_derivatives @error "Unsupported value of PQ_Flag"
     end
 
     #STATE Iq
@@ -1519,7 +1519,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     elseif Pf_Flag == 0
         _, dQ_V_dt = low_pass_mass_matrix(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
     else
-        @error "Unsupported value of PQ_Flag"
+        CRC.@ignore_derivatives @error "Unsupported value of PQ_Flag"
     end
 
     #STATE Iq

@@ -18,7 +18,7 @@ the returned logger.
 # Example
 ```julia
 logger = configure_logging(console_level = Logging.Info)
-@info "log message"
+CRC.@ignore_derivatives @info "log message"
 close(logger)
 ```
 """

@@ -37,7 +37,7 @@ global index for a state.
 
 """
 function _post_proc_state_series(solution, ix::Int, dt::Nothing)
-    ix_t = unique(i -> solution.t[i], eachindex(solution.t))
+    ix_t = eachindex(solution.t)  # unique involves try/catch?
     ts = solution.t[ix_t]
     state = solution[ix, ix_t]
     return ts, state
@@ -65,7 +65,7 @@ function post_proc_state_series(
 )
     global_state_index = get_global_index(res)
     if !haskey(global_state_index, ref[1])
-        @error "$(keys(global_state_index))"
+        CRC.@ignore_derivatives @error "$(keys(global_state_index))"
         error("State $(ref[2]) device $(ref[1]) not found in the system. ")
     end
     ix = get(global_state_index[ref[1]], ref[2], 0)
@@ -112,7 +112,7 @@ function post_proc_voltage_series(
     n_buses::Int,
     dt::Union{Nothing, Float64, Vector{Float64}},
 )
-    bus_ix < 0 && error("Bus number $(bus_number) not found.")
+   ## bus_ix < 0 && error("Bus number $(bus_number) not found.")
     ts, V_R = _post_proc_state_series(solution, bus_ix, dt)
     _, V_I = _post_proc_state_series(solution, bus_ix + n_buses, dt)
     return collect(ts), collect(V_R), collect(V_I)
@@ -326,7 +326,8 @@ Function to obtain the voltage magnitude series out of the DAE Solution.
 """
 function get_voltage_magnitude_series(res::SimulationResults, bus_number::Int; dt = nothing)
     n_buses = get_bus_count(res)
-    bus_ix = get(get_bus_lookup(res), bus_number, 0)
+#    bus_ix = get(get_bus_lookup(res), bus_number, 0)
+bus_ix = 1
     ts, V_R, V_I = post_proc_voltage_series(res.solution, bus_ix, n_buses, dt)
     return ts, sqrt.(V_R .^ 2 .+ V_I .^ 2)
 end

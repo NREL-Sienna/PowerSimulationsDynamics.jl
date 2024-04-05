@@ -54,7 +54,7 @@ tsteps = tspan[1]:step:tspan[2]
         @test LinearAlgebra.norm(Vt .- Vt_sim[2]) <= 5e-3
         @test LinearAlgebra.norm(θt .- θt_sim[2]) <= 5e-3
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -95,7 +95,7 @@ end
         @test LinearAlgebra.norm(Vt .- Vt_sim[2]) <= 5e-3
         @test LinearAlgebra.norm(θt .- θt_sim[2]) <= 5e-3
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

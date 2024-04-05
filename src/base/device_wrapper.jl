@@ -155,13 +155,13 @@ function DynamicWrapper(
     @assert allunique(device_parameters)    #mapping depends on unique parameters per device
 
     component_state_mapping, input_port_mapping =
-        state_port_mappings(dynamic_device, device_states)
-    component_parameter_mapping = parameter_mappings(dynamic_device, device_parameters)
+        @CRC.ignore_derivatives state_port_mappings(dynamic_device, device_states)
+    component_parameter_mapping = @CRC.ignore_derivatives parameter_mappings(dynamic_device, device_parameters)
     # Consider the special case when the static device is StandardLoad
     if isa(static_device, PSY.StandardLoad)
         reactive_power = PF.get_total_q(static_device)
     else
-        reactive_power = PSY.get_reactive_power(static_device)
+        reactive_power = @CRC.ignore_derivatives PSY.get_reactive_power(static_device) # TODO - goes to foreign call expression
     end
 
     return DynamicWrapper(
@@ -176,23 +176,23 @@ function DynamicWrapper(
         ode_range,
         p_range,
         bus_ix,
-        Base.ImmutableDict(
+        (ChainRulesCore.@ignore_derivatives Base.ImmutableDict(
             sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
-        ),
+        )),
         if isempty(component_state_mapping)
-            Base.ImmutableDict{Int, Vector{Int}}()
+            ChainRulesCore.@ignore_derivatives Base.ImmutableDict{Int, Vector{Int}}()
         else
-            Base.ImmutableDict(component_state_mapping...)
+            ChainRulesCore.@ignore_derivatives Base.ImmutableDict(component_state_mapping...)
         end,
         if isempty(component_parameter_mapping)
-            Base.ImmutableDict{Int, Vector{Int}}()
+            ChainRulesCore.@ignore_derivatives Base.ImmutableDict{Int, Vector{Int}}()
         else
-            Base.ImmutableDict(component_parameter_mapping...)
+            ChainRulesCore.@ignore_derivatives Base.ImmutableDict(component_parameter_mapping...)
         end,
         if isempty(input_port_mapping)
-            Base.ImmutableDict{Int, Vector{Int}}()
+            ChainRulesCore.@ignore_derivatives Base.ImmutableDict{Int, Vector{Int}}()
         else
-            Base.ImmutableDict(input_port_mapping...)
+            ChainRulesCore.@ignore_derivatives Base.ImmutableDict(input_port_mapping...)
         end,
         Dict{String, Any}(),
     )
@@ -213,7 +213,7 @@ function DynamicWrapper(
 
     component_state_mapping, input_port_mapping =
         state_port_mappings(dynamic_device, device_states)
-    @warn "Under/over voltage tripping and under/over frequency tripping are not yet implemented for AggregateDistributedGenerationA!"
+    CRC.@ignore_derivatives @warn "Under/over voltage tripping and under/over frequency tripping are not yet implemented for AggregateDistributedGenerationA!"
 
     return DynamicWrapper(
         dynamic_device,
@@ -522,9 +522,9 @@ set_Q_impedance!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_impedance
 
 function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, val::Int)
     if val == 0
-        @debug "Generator $(PSY.get_name(wrapper)) status set to off"
+        CRC.@ignore_derivatives @debug "Generator $(PSY.get_name(wrapper)) status set to off"
     elseif val == 1
-        @debug "Generator $(PSY.get_name(wrapper)) status set to on"
+        CRC.@ignore_derivatives @debug "Generator $(PSY.get_name(wrapper)) status set to on"
     else
         error("Invalid status $val. It can only take values 1 or 0")
     end

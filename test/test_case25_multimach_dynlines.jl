@@ -66,7 +66,7 @@ Pref_change = ControlReferenceChange(1.0, gen2, :P_ref, 0.9);
         @test LinearAlgebra.norm(v - v_pscad) <= 0.1
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -109,7 +109,7 @@ end
         @test LinearAlgebra.norm(v - v_pscad) <= 0.1
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

@@ -123,7 +123,7 @@ csv_file_degov_delay_speed =
                 display(PlotlyJS.plot([t1, t2, t3, t4])) =#
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -174,7 +174,7 @@ end
         @test sim.status == PSID.BUILD_FAILED
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

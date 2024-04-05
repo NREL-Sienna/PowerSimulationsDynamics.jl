@@ -1,25 +1,25 @@
 mutable struct SimulationInputs
-    dynamic_injectors::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
-    static_injectors::Vector
-    static_loads::Vector
-    dynamic_branches::Vector{BranchWrapper}
-    injection_n_states::Int
-    branches_n_states::Int
-    variable_count::Int
-    inner_vars_count::Int
-    bus_count::Int
-    ode_range::UnitRange{Int}
-    ybus_rectangular::SparseArrays.SparseMatrixCSC{Float64, Int}
-    dyn_lines::Bool
-    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int}
-    lookup::Dict{Int, Int}
-    DAE_vector::Vector{Bool}
-    mass_matrix::LinearAlgebra.Diagonal{Float64}
-    global_vars_update_pointers::Dict{Int, Int}
-    global_state_map::MAPPING_DICT
-    global_inner_var_map::Dict{String, Dict}
-    parameters::Vector{Float64}
-    delays::Vector
+    dynamic_injectors::Vector{DynamicWrapper{<:PSY.DynamicInjection}} #R4
+    static_injectors::Vector #R4
+    static_loads::Vector #R4
+    dynamic_branches::Vector{BranchWrapper} #R4
+    injection_n_states::Int #R4
+    branches_n_states::Int #R4
+    variable_count::Int #R4
+    inner_vars_count::Int #R4
+    bus_count::Int #R4
+    ode_range::UnitRange{Int} #R4
+    ybus_rectangular::SparseArrays.SparseMatrixCSC{Float64, Int} #R3
+    dyn_lines::Bool #R4
+    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int} #R3
+    lookup::Dict{Int, Int} #?
+    DAE_vector::Vector{Bool} #R4?
+    mass_matrix::LinearAlgebra.Diagonal{Float64} #R1 - remove!
+    global_vars_update_pointers::Dict{Int, Int} #R4?
+    global_state_map::MAPPING_DICT #R4?
+    global_inner_var_map::Dict{String, Dict} #R4? 
+    parameters::Vector{Float64} #R1 - revmoe? 
+    delays::Vector #R4
 
     function SimulationInputs(
         sys::PSY.System,
@@ -29,42 +29,44 @@ mutable struct SimulationInputs
         Ybus, lookup = _get_ybus(sys)
         state_count = 2 * n_buses + 1
         parameter_count = 1
-        TimerOutputs.@timeit BUILD_TIMER "Wrap Branches" begin
+        #TimerOutputs.@timeit BUILD_TIMER "Wrap Branches" begin
             wrapped_branches, state_count, parameter_count =
                 _wrap_dynamic_branches(sys, lookup, state_count, parameter_count)
             has_dyn_lines = !isempty(wrapped_branches)
-        end
+        #end
         n_branch_states = state_count - (2 * n_buses + 1)
         injection_start = state_count
 
-        TimerOutputs.@timeit BUILD_TIMER "Wrap Dynamic Injectors" begin
+        #TimerOutputs.@timeit BUILD_TIMER "Wrap Dynamic Injectors" begin
             wrapped_injectors, state_count, parameter_count =
                 _wrap_dynamic_injector_data(sys, lookup, state_count, parameter_count)
             delays = get_system_delays(sys)
             n_vars = state_count - 1
-        end
+        #end
 
-        TimerOutputs.@timeit BUILD_TIMER "Wrap Static Injectors" begin
+        #TimerOutputs.@timeit BUILD_TIMER "Wrap Static Injectors" begin
             wrapped_loads, parameter_count = _wrap_loads(sys, lookup, parameter_count)
             wrapped_static_injectors, parameter_count =
                 _wrap_static_injectors(sys, lookup, parameter_count)
-        end
+        #end
 
-        TimerOutputs.@timeit BUILD_TIMER "Build initial parameters" begin
-            initial_parameters = zeros(parameter_count)
-            _update_initial_parameters!(initial_parameters, wrapped_branches)
-            _update_initial_parameters!(initial_parameters, wrapped_injectors)
-            _update_initial_parameters!(initial_parameters, wrapped_loads)
-            _update_initial_parameters!(initial_parameters, wrapped_static_injectors)
-        end
+        #TimerOutputs.@timeit BUILD_TIMER "Build initial parameters" begin
+            initial_parameters_buffer = array_to_buffer(zeros(parameter_count - 1))
+            _update_initial_parameters!(initial_parameters_buffer, wrapped_branches)
+            _update_initial_parameters!(initial_parameters_buffer, wrapped_injectors)
+            _update_initial_parameters!(initial_parameters_buffer, wrapped_loads)
+            _update_initial_parameters!(initial_parameters_buffer, wrapped_static_injectors)
+            initial_parameters = buffer_to_array(initial_parameters_buffer)
+        #end
 
-        TimerOutputs.@timeit BUILD_TIMER "Calculate MM, DAE_vector, Total Shunts" begin
+        #TimerOutputs.@timeit BUILD_TIMER "Calculate MM, DAE_vector, Total Shunts" begin
             mass_matrix = _make_mass_matrix(wrapped_injectors, n_vars, n_buses)
             DAE_vector = _make_DAE_vector(mass_matrix, n_vars, n_buses)
             total_shunts = _make_total_shunts(wrapped_branches, n_buses)
-        end
+        #end
 
-        _adjust_states!(
+        #Needs work as a mutating function... Make non-mutating or pass Zygote.Buffer to the function 
+        _adjust_states!(    
             DAE_vector,
             mass_matrix,
             total_shunts,
@@ -84,7 +86,7 @@ mutable struct SimulationInputs
         end
 
         if !isempty(delays)
-            @info "System has delays. Use the correct solver for delay differential equations."
+            CRC.@ignore_derivatives @info "System has delays. Use the correct solver for delay differential equations."
         end
 
         new(
@@ -173,7 +175,9 @@ function _update_initial_parameters!(initial_parameters, wrapped_devices)
     for wrapped_device in wrapped_devices
         p = get_params(wrapped_device)
         p_range = get_p_range(wrapped_device)
-        initial_parameters[p_range] .= p
+        for (ix, i) in enumerate(p_range)
+            initial_parameters[i] = p[ix]
+        end 
     end
 end
 
@@ -200,14 +204,14 @@ function _wrap_dynamic_injector_data(
     injector_data = get_injectors_with_dynamics(sys)
     isempty(injector_data) && error("System doesn't contain any DynamicInjection devices")
     # TODO: Needs a better container that isn't parametrized on an abstract type
-    wrapped_injector = Vector(undef, length(injector_data))
+    wrapped_injector = Zygote.Buffer(Vector(undef, length(injector_data)))
     injection_count = 1
     inner_vars_count = 1
     sys_base_power = PSY.get_base_power(sys)
     sys_base_freq = PSY.get_frequency(sys)
     @assert !isempty(injector_data)
     for (ix, device) in enumerate(injector_data)
-        @debug "Wrapping $(PSY.get_name(device))"
+        ChainRulesCore.@ignore_derivatives @debug "Wrapping $(PSY.get_name(device))"
         dynamic_device = PSY.get_dynamic_injector(device)
         n_states = PSY.get_n_states(dynamic_device)
         n_params = _get_n_params(dynamic_device, device)
@@ -218,7 +222,7 @@ function _wrap_dynamic_injector_data(
         bus_n = PSY.get_number(PSY.get_bus(device))
         bus_ix = lookup[bus_n]
         inner_vars_range = range(inner_vars_count; length = n_inner_vars)
-        @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range p_range=$p_range"
+        CRC.@ignore_derivatives @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range p_range=$p_range"
         dynamic_device = PSY.get_dynamic_injector(device)
         @assert dynamic_device !== nothing
         wrapped_injector[ix] = DynamicWrapper(
@@ -237,7 +241,7 @@ function _wrap_dynamic_injector_data(
         parameter_count += n_params
         inner_vars_count += n_inner_vars
     end
-    return wrapped_injector, state_count, parameter_count
+    return copy(wrapped_injector), state_count, parameter_count
 end
 
 function get_system_delays(sys::PSY.System)
@@ -259,12 +263,12 @@ function _wrap_dynamic_branches(
 )
     sys_base_power = PSY.get_base_power(sys)
     sys_base_freq = PSY.get_frequency(sys)
-    dynamic_branches = get_dynamic_branches(sys)
-    wrapped_branches = Vector{BranchWrapper}(undef, length(dynamic_branches))
-    if !isempty(wrapped_branches)
+    dynamic_branches = CRC.@ignore_derivatives get_dynamic_branches(sys)    #See MWE on ignoring derivatives of get_components
+    wrapped_branches = Zygote.Buffer(Vector{BranchWrapper}(undef, length(dynamic_branches)))
+    if length(dynamic_branches) > 0
         branches_count = 1
         for (ix, br) in enumerate(dynamic_branches)
-            @debug "Wrapping Branch $(PSY.get_name(br))"
+            CRC.@ignore_derivatives @debug  "Wrapping Branch $(PSY.get_name(br))"
             arc = PSY.get_arc(br)
             n_states = PSY.get_n_states(br)
             from_bus_number = PSY.get_number(arc.from)
@@ -275,7 +279,7 @@ function _wrap_dynamic_branches(
             ode_range = range(branches_count; length = n_states)
             n_params = get_n_params(br)
             p_range = range(parameter_count; length = n_params)
-            @debug "ix_range=$ix_range ode_range=$ode_range p_range=$ode_range"
+            CRC.@ignore_derivatives @debug "ix_range=$ix_range ode_range=$ode_range p_range=$p_range"
             wrapped_branches[ix] = BranchWrapper(
                 br,
                 bus_ix_from,
@@ -291,9 +295,9 @@ function _wrap_dynamic_branches(
             parameter_count += n_params
         end
     else
-        @debug("System doesn't contain Dynamic Branches")
+        CRC.@ignore_derivatives @debug("System doesn't contain Dynamic Branches")
     end
-    return wrapped_branches, state_count, parameter_count
+    return copy(wrapped_branches), state_count, parameter_count
 end
 
 function _wrap_static_injectors(
@@ -302,8 +306,9 @@ function _wrap_static_injectors(
     parameter_count::Int,
 )
     static_injection_data = get_injection_without_dynamics(sys)
-    container = Vector{StaticWrapper}(undef, length(static_injection_data))
+    container = Zygote.Buffer(Vector{StaticWrapper}(undef, length(static_injection_data)))
     for (ix, ld) in enumerate(static_injection_data)
+        CRC.@ignore_derivatives @debug  "Wrapping Static Injector $(PSY.get_name(ld))"
         if isa(ld, PSY.FixedAdmittance)
             continue
         end
@@ -313,8 +318,9 @@ function _wrap_static_injectors(
         p_range = range(parameter_count; length = n_params)
         container[ix] = StaticWrapper(ld, bus_ix, p_range)
         parameter_count += n_params
+        CRC.@ignore_derivatives @debug  "p_range=$p_range"
     end
-    return container, parameter_count
+    return copy(container), parameter_count
 end
 
 function _wrap_loads(sys::PSY.System, lookup::Dict{Int, Int}, parameter_count::Int)
@@ -383,34 +389,28 @@ function _static_injection_inputs!(inputs::SimulationInputs, ::Vector{Int}, sys:
 end
 
 function _make_mass_matrix(wrapped_injectors, var_count::Int, n_buses::Int)
-    mass_matrix = LinearAlgebra.Diagonal(ones(var_count))
-    mass_matrix[1:(2 * n_buses), 1:(2 * n_buses)] .= 0.0
+    mass_matrix = array_to_buffer(LinearAlgebra.Diagonal(ones(var_count)))
+    for i in 1:(2 * n_buses)
+        mass_matrix[i,i] = 0.0 
+    end 
     for d in wrapped_injectors
         device_mass_matrix_entries!(mass_matrix, d)
     end
-    return mass_matrix
-end
-
-function _init_DAE_vector(var_count::Int, n_buses::Int)
-    DAE_vector = trues(var_count)
-    DAE_vector[1:(n_buses * 2)] .= false
-    return DAE_vector
+    return buffer_to_array(mass_matrix)
 end
 
 function _make_DAE_vector(mass_matrix::AbstractArray, var_count::Int, n_buses::Int)
-    DAE_vector = _init_DAE_vector(var_count, n_buses)
+    DAE_vector = vcat(falses(n_buses * 2), trues(var_count - (n_buses * 2)))
     bus_range = 1:(2 * n_buses)
-    ode_range = (2 * n_buses + 1):var_count
-    mass_buses = @view mass_matrix[bus_range, bus_range]
-    DAE_ode = @view DAE_vector[ode_range]
-    mass_ode = @view mass_matrix[ode_range, ode_range]
+    mass_buses = mass_matrix[bus_range, bus_range]
     for i in eachindex(DAE_vector[bus_range])
         IS.@assert_op DAE_vector[bus_range][i] == (mass_buses[i, i] > 0.0)
     end
-    for i in eachindex(DAE_ode)
-        DAE_ode[i] = (mass_ode[i, i] > 0.0)
+    DAE_vector_buf = array_to_buffer(DAE_vector)
+    for i in (2 * n_buses + 1):var_count
+        DAE_vector_buf[i] = (mass_matrix[i, i] > 0.0)
     end
-    return DAE_vector
+    return buffer_to_array(DAE_vector_buf)
 end
 
 function _get_shunt_values(br::PSY.Line)
@@ -422,7 +422,7 @@ function _get_shunt_values(::Union{PSY.TapTransformer, PSY.Transformer2W})
 end
 
 function _make_total_shunts(wrapped_branches, n_buses::Int)
-    shunts = SparseArrays.SparseMatrixCSC{Float64, Int}(zeros(2 * n_buses, 2 * n_buses))
+    shunts = array_to_buffer(zeros(2 * n_buses, 2 * n_buses))
     for br in wrapped_branches
         bus_ix_from = get_bus_ix_from(br)
         bus_ix_to = get_bus_ix_to(br)
@@ -432,7 +432,7 @@ function _make_total_shunts(wrapped_branches, n_buses::Int)
         shunts[bus_ix_from + n_buses, bus_ix_from] -= b_from
         shunts[bus_ix_to + n_buses, bus_ix_to] -= b_to
     end
-    return shunts
+    return SparseArrays.SparseMatrixCSC{Float64, Int}(copy(shunts))
 end
 
 function _adjust_states!(
@@ -448,7 +448,7 @@ function _adjust_states!(
     shunts = LinearAlgebra.diag(total_shunts[1:n_buses, (n_buses + 1):end])
     for (ix, val) in enumerate(shunts)
         if val > 0
-            @debug "Found shunt with value $val in bus index $ix"
+            CRC.@ignore_derivatives @error "Found shunt with value $val in bus index $ix"
             mass_matrix[ix, ix] =
                 mass_matrix[ix + n_buses, ix + n_buses] = val * line_constant
             DAE_vector[ix] = DAE_vector[ix + n_buses] = true

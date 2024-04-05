@@ -64,7 +64,7 @@ Ybus_change = NetworkSwitch(
             (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
         ]
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -110,7 +110,7 @@ end
             (ix, s) in enumerate(series[1]) if (s > 0.90 && s < 1.6)
         ]
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

@@ -82,7 +82,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse//EXAC1/results_PSSe.csv")
         @test LinearAlgebra.norm(ω_psid - ω_psse, Inf) <= 1e-3
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -146,7 +146,7 @@ end
         @test LinearAlgebra.norm(ω_psid - ω_psse, Inf) <= 1e-3
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

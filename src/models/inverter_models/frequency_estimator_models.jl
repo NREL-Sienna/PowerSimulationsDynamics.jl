@@ -3,7 +3,7 @@ function mass_matrix_freq_estimator_entries!(
     freq_estimator::P,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {P <: PSY.FrequencyEstimator}
-    @debug "Using default mass matrix entries $P"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $P"
 end
 
 function mdl_freq_estimator_ode!(

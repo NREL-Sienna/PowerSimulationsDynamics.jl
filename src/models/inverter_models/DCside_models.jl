@@ -3,7 +3,7 @@ function mass_matrix_DCside_entries!(
     dc_side::DC,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {DC <: PSY.DCSource}
-    @debug "Using default mass matrix entries $DC"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $DC"
 end
 
 function mdl_DCside_ode!(

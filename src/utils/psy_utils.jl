@@ -30,13 +30,13 @@ function get_injection_without_dynamics(sys::PSY.System)
 end
 
 function get_dynamic_branches(sys::PSY.System)
-    return PSY.get_components(x -> PSY.get_available(x), PSY.DynamicBranch, sys)
+    return PSY.get_components(PSY.DynamicBranch, sys) #x -> PSY.get_available(x), 
 end
 
 function _transform_all_lines!(sys::PSY.System)
     for br in PSY.get_components(PSY.DynamicBranch, sys)
         dyn_br = DynamicBranch(br)
-        @debug "Converted $(PSY.get_name(dyn_br)) to DynamicBranch"
+        CRC.@ignore_derivatives @debug "Converted $(PSY.get_name(dyn_br)) to DynamicBranch"
         add_component!(sys, dyn_br)
     end
 end
@@ -78,7 +78,7 @@ function transform_load_to_constant_impedance(load::PSY.StandardLoad)
 end
 
 function _compute_total_load_parameters(load::PSY.StandardLoad)
-    @warn "Load data is transformed under the assumption of a 1.0 p.u. Voltage Magnitude"
+    CRC.@ignore_derivatives @warn "Load data is transformed under the assumption of a 1.0 p.u. Voltage Magnitude"
     # Constant Power Data
     constant_active_power = PSY.get_constant_active_power(load)
     constant_reactive_power = PSY.get_constant_reactive_power(load)

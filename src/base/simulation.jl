@@ -193,12 +193,20 @@ function Simulation(
 end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
-    @info "Rebuilding the simulation after reset"
+    CRC.@ignore_derivatives @info "Rebuilding the simulation after reset"
     sim.inputs = SimulationInputs(T, get_system(sim), sim.frequency_reference)
     sim.status = BUILD_INCOMPLETE
     sim.initialized = false
     build!(sim)
-    @info "Simulation reset to status $(sim.status)"
+    CRC.@ignore_derivatives @info "Simulation reset to status $(sim.status)"
+    return
+end
+
+function _soft_reset!(sim::Simulation{T}) where {T <: SimulationModel}
+    sim.inputs = SimulationInputs(T, get_system(sim), sim.frequency_reference)
+    sim.status = BUILD_INCOMPLETE
+    sim.initialized = false
+    build!(sim)
     return
 end
 
@@ -220,7 +228,7 @@ end
 function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
     sim.inputs = SimulationInputs(T, simulation_system, sim.frequency_reference)
-    @debug "Simulation Inputs Created"
+    ChainRulesCore.@ignore_derivatives CRC.@ignore_derivatives @debug "Simulation Inputs Created"
     return
 end
 
@@ -236,7 +244,7 @@ function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel
     simulation_inputs = get_simulation_inputs(sim)
     x0_init = sim.x0_init
     if isempty(x0_init) && sim.initialized
-        @warn "Initial Conditions set to flat start"
+        CRC.@ignore_derivatives @warn "Initial Conditions set to flat start"
         sim.x0_init = _get_flat_start(simulation_inputs)
     elseif isempty(x0_init) && !sim.initialized
         sim.x0_init = _get_flat_start(simulation_inputs)
@@ -249,7 +257,7 @@ function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel
             )
         end
     elseif !isempty(x0_init) && !sim.initialized
-        @warn "initial_conditions were provided with initialize_simulation. User's initial_conditions will be overwritten."
+        CRC.@ignore_derivatives @warn "initial_conditions were provided with initialize_simulation. User's initial_conditions will be overwritten."
         if length(sim.x0_init) != get_variable_count(simulation_inputs)
             sim.x0_init = _get_flat_start(simulation_inputs)
         end
@@ -262,7 +270,7 @@ end
 function _pre_initialize_simulation!(sim::Simulation)
     _initialize_state_space(sim)
     if sim.initialized != true
-        @info("Pre-Initializing Simulation States")
+        CRC.@ignore_derivatives @info("Pre-Initializing Simulation States")
         sim.initialized = precalculate_initial_conditions!(sim)
         if !sim.initialized
             error(
@@ -270,7 +278,7 @@ function _pre_initialize_simulation!(sim::Simulation)
             )
         end
     else
-        @warn("Using existing initial conditions value for simulation initialization")
+        CRC.@ignore_derivatives @warn("Using existing initial conditions value for simulation initialization")
         sim.status = SIMULATION_INITIALIZED
     end
     return
@@ -300,9 +308,9 @@ function _get_jacobian(sim::Simulation{MassMatrixModel})
 end
 
 function _build_perturbations!(sim::Simulation)
-    @info "Attaching Perturbations"
+    CRC.@ignore_derivatives @info "Attaching Perturbations"
     if isempty(sim.perturbations)
-        @debug "The simulation has no perturbations"
+        CRC.@ignore_derivatives @debug "The simulation has no perturbations"
         return SciMLBase.CallbackSet(), [0.0]
     end
     inputs = get_simulation_inputs(sim)
@@ -326,7 +334,7 @@ function _add_callback!(
     sim::Simulation,
     inputs::SimulationInputs,
 ) where {T <: Perturbation}
-    @debug pert
+    CRC.@ignore_derivatives @debug pert
     condition = (x, t, integrator) -> t in [pert.time]
     affect = get_affect(inputs, get_system(sim), pert)
     callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
@@ -447,8 +455,72 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                     0
             end
             TimerOutputs.@timeit BUILD_TIMER "Pre-initialization" begin
-                _pre_initialize_simulation!(sim)
+                _pre_initialize_simulation!(sim)    #This is where the power flow is solved...
             end
+            if sim.status != BUILD_FAILED
+                simulation_inputs = get_simulation_inputs(sim)
+                TimerOutputs.@timeit BUILD_TIMER "Calculate Jacobian" begin
+                    jacobian = _get_jacobian(sim)
+                    @error typeof(jacobian)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Make Model Function" begin
+                    model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Initial Condition NLsolve refinement" begin
+                    refine_initial_condition!(sim, model, jacobian)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Build Perturbations" begin
+                    _build_perturbations!(sim)
+                end
+                TimerOutputs.@timeit BUILD_TIMER "Make DiffEq Problem" begin
+                    _get_diffeq_problem(sim, model, jacobian)
+                end
+                CRC.@ignore_derivatives @info "Simulations status = $(sim.status)"
+            else
+                CRC.@ignore_derivatives @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
+            end
+        catch e
+            bt = catch_backtrace()
+            CRC.@ignore_derivatives @error "$T failed to build" exception = e, bt
+            sim.status = BUILD_FAILED
+        end
+    end
+    return
+end
+
+function _simple_build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
+    #check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
+    # Branches are a super set of Lines. Passing both kwargs will
+    # be redundant.
+    #if get(kwargs, :disable_timer_outputs, false)
+    #    TimerOutputs.disable_timer!(BUILD_TIMER)
+    #else
+    #    TimerOutputs.enable_timer!(BUILD_TIMER)
+    #    TimerOutputs.reset_timer!(BUILD_TIMER)
+    #end
+
+    TimerOutputs.@timeit BUILD_TIMER "Build Simulation" begin
+        #try
+            #if get(kwargs, :all_branches_dynamic, false)
+            #    TimerOutputs.@timeit BUILD_TIMER "AC Branch Transform to Dynamic" begin
+            #        sys = get_system(sim)
+            #        transform_branches_to_dynamic(sys, PSY.ACBranch)
+            #    end
+            #elseif get(kwargs, :all_lines_dynamic, false)
+            #    TimerOutputs.@timeit BUILD_TIMER "Line Transform to Dynamic" begin
+            #        sys = get_system(sim)
+            #        transform_branches_to_dynamic(sys, PSY.Line)
+            #    end
+            #end
+            TimerOutputs.@timeit BUILD_TIMER "Build Simulation Inputs" begin
+                _build_inputs!(sim)
+                sim.multimachine =
+                    get_global_vars_update_pointers(sim.inputs)[GLOBAL_VAR_SYS_FREQ_INDEX] !=
+                    0
+            end
+            #TimerOutputs.@timeit BUILD_TIMER "Pre-initialization" begin
+            #    _pre_initialize_simulation!(sim)    #This is where the power flow is solved...
+            #end
             if sim.status != BUILD_FAILED
                 simulation_inputs = get_simulation_inputs(sim)
                 TimerOutputs.@timeit BUILD_TIMER "Calculate Jacobian" begin
@@ -466,18 +538,19 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                 TimerOutputs.@timeit BUILD_TIMER "Make DiffEq Problem" begin
                     _get_diffeq_problem(sim, model, jacobian)
                 end
-                @info "Simulations status = $(sim.status)"
+                CRC.@ignore_derivatives @info "Simulations status = $(sim.status)"
             else
-                @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
+                CRC.@ignore_derivatives @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
             end
-        catch e
-            bt = catch_backtrace()
-            @error "$T failed to build" exception = e, bt
-            sim.status = BUILD_FAILED
-        end
+        #catch e
+        #    bt = catch_backtrace()
+        #    CRC.@ignore_derivatives @error "$T failed to build" exception = e, bt
+        #    sim.status = BUILD_FAILED
+        #end
     end
     return
 end
+
 
 function build!(sim; kwargs...)
     logger = configure_logging(sim, "w")
@@ -491,7 +564,7 @@ function build!(sim; kwargs...)
             sortby = :firstexec,
             compact = true,
         )
-        @info "\n$(String(take!(string_buffer)))\n"
+        CRC.@ignore_derivatives @info "\n$(String(take!(string_buffer)))\n"
         #end
     end
     close(logger)
@@ -504,10 +577,10 @@ function simulation_pre_step!(sim::Simulation)
             "The Simulation status is $(sim.status). Can not continue, correct your inputs and build the simulation again.",
         )
     elseif sim.status == BUILT
-        @debug "Simulation status is $(sim.status)."
+        CRC.@ignore_derivatives @debug "Simulation status is $(sim.status)."
     elseif sim.status == SIMULATION_FINALIZED
         reset!(sim)
-        @info "The Simulation status is $(sim.status). Resetting the simulation"
+        CRC.@ignore_derivatives @info "The Simulation status is $(sim.status). Resetting the simulation"
     else
         error("Simulation status is $(sim.status). Can't continue.")
     end
@@ -525,7 +598,7 @@ function _filter_kwargs(kwargs)
 end
 
 function _execute!(sim::Simulation, solver; kwargs...)
-    @debug "status before execute" sim.status
+    CRC.@ignore_derivatives @debug "status before execute" sim.status
     simulation_pre_step!(sim)
     sim.status = SIMULATION_STARTED
     time_log = Dict{Symbol, Any}()
@@ -559,7 +632,45 @@ function _execute!(sim::Simulation, solver; kwargs...)
             solution,
         )
     else
-        @error("The simulation failed with return code $(solution.retcode)")
+        CRC.@ignore_derivatives @error("The simulation failed with return code $(solution.retcode)")
+        sim.status = SIMULATION_FAILED
+    end
+end
+
+function _simple_execute!(sim::Simulation, solver; kwargs...)
+    #simulation_pre_step!(sim)  #- replace with a "soft_pre_step" which only rebuilds parameters
+    sim.status = SIMULATION_STARTED
+    time_log = Dict{Symbol, Any}()
+    if get(kwargs, :auto_abstol, false)
+        cb = AutoAbstol(true, get(kwargs, :abstol, 1e-9))
+        callbacks = SciMLBase.CallbackSet((), tuple(push!(sim.callbacks, cb)...))
+    else
+        callbacks = SciMLBase.CallbackSet((), tuple(sim.callbacks...))
+    end
+
+    solution,
+    time_log[:timed_solve_time],
+    time_log[:solve_bytes_alloc],
+    time_log[:sec_in_gc] = @timed SciMLBase.solve(
+        sim.problem,
+        solver;
+        callback = callbacks,
+        tstops = !isempty(sim.tstops) ? [sim.tstops[1] ÷ 2, sim.tstops...] : [],
+        #progress = get(kwargs, :enable_progress_bar, _prog_meter_enabled()),
+        progress_steps = 1,
+        advance_to_tstop = !isempty(sim.tstops),
+        initializealg = SciMLBase.NoInit(),
+        _filter_kwargs(kwargs)...,
+    )
+    if SciMLBase.successful_retcode(solution)
+        sim.status = SIMULATION_FINALIZED
+        sim.results = SimulationResults(
+            get_simulation_inputs(sim),
+            get_system(sim),
+            time_log,
+            solution,
+        )
+    else
         sim.status = SIMULATION_FAILED
     end
 end
@@ -585,7 +696,7 @@ function execute!(sim::Simulation, solver; kwargs...)
         try
             _execute!(sim, solver; kwargs...)
         catch e
-            @error "Execution failed" exception = (e, catch_backtrace())
+            CRC.@ignore_derivatives @error "Execution failed" exception = (e, catch_backtrace())
             sim.status = SIMULATION_FAILED
         end
     end

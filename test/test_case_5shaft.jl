@@ -65,7 +65,7 @@ Ybus_change = NetworkSwitch(
         series3 = get_state_series(results, ("generator-103-1", :δ_ip))
         series4 = get_state_series(results, ("generator-103-1", :δ_ex))
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -109,7 +109,7 @@ end
         series3 = get_state_series(results, ("generator-103-1", :δ_ip))
         series4 = get_state_series(results, ("generator-103-1", :δ_ex))
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

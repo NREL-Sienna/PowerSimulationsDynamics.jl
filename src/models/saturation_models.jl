@@ -176,14 +176,14 @@ function current_limit_logic(
             Ip_max = I_max
         end
     else
-        @error "Unsupported value of PQ_Flag"
+        CRC.@ignore_derivatives @error "Unsupported value of PQ_Flag"
     end
     if Gen_Flag == 1
         Ip_min = 0
     elseif Gen_Flag == 0
         Ip_min = -Ip_max
     else
-        @error "Unsupported value of Gen_Flag"
+        CRC.@ignore_derivatives @error "Unsupported value of Gen_Flag"
     end
     Iq_min = -Iq_max
     return Ip_min, Ip_max, Iq_min, Iq_max

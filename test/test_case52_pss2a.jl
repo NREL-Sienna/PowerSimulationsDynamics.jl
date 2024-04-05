@@ -174,7 +174,7 @@ pss2a_pss() = PSY.PSS2A(;
         @test LinearAlgebra.norm(omega_psid - omega_psse, Inf) <= 1e-4
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

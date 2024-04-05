@@ -105,7 +105,7 @@ function test_scrx_implicit(dyr_file, csv_file, init_cond, eigs_value)
         #@test LinearAlgebra.norm(τm - τm_psse, Inf) <= 1e-2
         #@test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -183,7 +183,7 @@ function test_scrx_mass_matrix(dyr_file, csv_file, init_cond, eigs_value)
         #@test LinearAlgebra.norm(τm - τm_psse, Inf) <= 1e-2
         #@test LinearAlgebra.norm(t - round.(t_psse, digits = 3)) == 0.0
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

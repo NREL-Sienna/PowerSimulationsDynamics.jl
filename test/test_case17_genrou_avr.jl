@@ -50,7 +50,7 @@ include(joinpath(TEST_FILES_DIR, "data_tests/test17.jl"))
         # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -91,7 +91,7 @@ end
         # Obtain data for angles
         series = get_state_series(results, ("generator-102-1", :δ))
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

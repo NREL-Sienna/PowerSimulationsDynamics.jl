@@ -3,7 +3,7 @@ function mass_matrix_tg_entries!(
     tg::TG,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {TG <: PSY.TurbineGov}
-    @debug "Using default mass matrix entries $TG"
+    ChainRulesCore.@ignore_derivatives CRC.@ignore_derivatives @debug "Using default mass matrix entries $TG"
 end
 
 function mass_matrix_tg_entries!(

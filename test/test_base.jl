@@ -56,7 +56,7 @@ end
         end
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path1; force = true, recursive = true)
     end
 
@@ -97,7 +97,7 @@ end
         end
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path2; force = true, recursive = true)
     end
 end
@@ -135,7 +135,7 @@ end
         @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
               PSID.SIMULATION_FINALIZED
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path1; force = true, recursive = true)
     end
 end
@@ -155,7 +155,7 @@ end
         )
         @test sim.status == PSID.BUILT
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -754,7 +754,7 @@ end
         @test typeof(δ) == Vector{Float64}
         @test t[1] == 0.02
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

@@ -60,7 +60,7 @@ Ybus_change = NetworkSwitch(
         # Obtain data for voltages
         series = get_voltage_magnitude_series(results, 102)
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -100,7 +100,7 @@ end
         # Obtain data for voltages
         series = get_voltage_magnitude_series(results, 102)
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

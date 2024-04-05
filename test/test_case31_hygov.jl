@@ -74,7 +74,7 @@ csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/HYGOV/HYGOV_RESULTS.csv")
         @test LinearAlgebra.norm(Vt - Vt_psse, Inf) <= 1e-3
         @test LinearAlgebra.norm(ω - ω_psse, Inf) <= 1e-3
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -138,7 +138,7 @@ end
         @test LinearAlgebra.norm(Vt - Vt_psse, Inf) <= 1e-3
         @test LinearAlgebra.norm(ω - ω_psse, Inf) <= 1e-3
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
@@ -180,7 +180,7 @@ end
         @test execute!(sim, Rodas4()) == PSID.SIMULATION_FINALIZED
 
     finally
-        @info("removing test files")
+        CRC.@ignore_derivatives @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end

@@ -1,3 +1,32 @@
+#Utilities for convertin to and from Zygote.buffer
+function array_to_buffer(x::AbstractArray)
+    b = Zygote.Buffer(x)
+    for ix in eachindex(b)
+        b[ix] = x[ix]
+    end 
+    return b
+end 
+
+function array_to_buffer(x::SparseArrays.SparseMatrixCSC)
+    b = Zygote.Buffer(x)
+    for ix in eachindex(b)
+        b[ix] = x[ix]
+    end 
+    return b
+end 
+
+function array_to_buffer(x::LinearAlgebra.Diagonal)
+    b = Zygote.Buffer(x)
+    for ix in 1:size(x)[1]
+        b[ix, ix] = x[ix, ix]
+    end 
+    return b
+end
+function buffer_to_array(x::Zygote.Buffer)
+    return copy(x)
+end 
+
+
 
 get_params(
     d::DynamicWrapper{T},
@@ -760,7 +789,7 @@ get_params_symbol(::PSY.STAB1) =
 
 #STATIC INJECTION
 get_n_params(::PSY.StaticInjection) = 1
-get_params(x::PSY.StaticInjection) = [PSY.get_reactive_power(x)]
+get_params(x::PSY.StaticInjection) = [1.0] #[PSY.get_reactive_power(x)] #Goes to a foreign call expression eventually in InfrastructureSystems...
 get_params_symbol(::PSY.StaticInjection) = [:Q_ref]
 
 get_n_params(::PSY.StandardLoad) = 1
