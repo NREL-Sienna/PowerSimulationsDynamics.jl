@@ -168,7 +168,7 @@ ii_filter 0.6923
 │ Time Span                  │ (0.0, 30.0) │
 │ Total Time Steps           │ 1607        │
 │ Number of States           │ 33          │
-│ Total solve time           │ 2.481254888 │
+│ Total solve time           │ 2.507660176 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; series2 = get_voltage_magnitude_series(results, 102)</code><code class="nohighlight hljs ansi" style="display:block;">([0.0, 0.001, 0.002, 0.004, 0.008, 0.016, 0.032, 0.052000000000000005, 0.07200000000000001, 0.09200000000000001  …  29.83954153464911, 29.85954153464911, 29.87954153464911, 29.89954153464911, 29.91954153464911, 29.93954153464911, 29.95954153464911, 29.97954153464911, 29.999541534649108, 30.0], [1.0142000000000002, 1.0142000000001268, 1.0142000000001326, 1.0142000000001927, 1.01420000000014, 1.014200000000125, 1.0142000000001052, 1.0142000000000875, 1.014200000000071, 1.0142000000000564  …  1.0140816770731866, 1.0140823112693007, 1.014082942782033, 1.0140835715610201, 1.014084197556437, 1.0140848207190878, 1.0140854410003357, 1.0140860583521254, 1.0140866727269917, 1.0140866867751974])</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; zoom = [
            (series2[1][ix], series2[2][ix]) for
            (ix, s) in enumerate(series2[1]) if (s &gt; 0.90 &amp;&amp; s &lt; 1.6)
@@ -290,7 +290,7 @@ Il_I -0.06381
 │ Time Span                  │ (0.0, 30.0) │
 │ Total Time Steps           │ 1721        │
 │ Number of States           │ 35          │
-│ Total solve time           │ 2.317511514 │
+│ Total solve time           │ 2.386928516 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; series2_dyn = get_voltage_magnitude_series(results_dyn, 102);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; zoom_dyn = [
            (series2_dyn[1][ix], series2_dyn[2][ix]) for
            (ix, s) in enumerate(series2_dyn[1]) if (s &gt; 0.90 &amp;&amp; s &lt; 1.6)
