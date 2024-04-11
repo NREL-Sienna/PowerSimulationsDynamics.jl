@@ -328,8 +328,8 @@ function ybus_update!(
     return
 end
 
-function ybus_update!(integrator_params, branch::PSY.ACBranch, mult::Float64)
-    ybus_update!(integrator_params.ybus_rectangular, branch, integrator_params.lookup, mult)
+function ybus_update!(inputs, branch::PSY.ACBranch, mult::Float64)
+    ybus_update!(get_ybus(inputs), branch, get_lookup(inputs), mult)
     return
 end
 
@@ -372,7 +372,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::NetworkSwitch)
         # TODO: This code can be more performant using SparseMatrix methods
         for (i, v) in enumerate(pert.ybus_rectangular)
             @debug "Changing Ybus network"
-            inputs.ybus_rectangular[i] = v
+            get_ybus(inputs)[i] = v
         end
         return
     end

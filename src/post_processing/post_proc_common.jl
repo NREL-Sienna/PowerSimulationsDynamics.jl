@@ -1,5 +1,5 @@
 function make_global_state_map(inputs::SimulationInputs)
-    dic = inputs.global_state_map
+    dic = get_global_state_map(inputs)
     if !isempty(dic)
         return dic
     end

@@ -1,11 +1,3 @@
-function get_flat_start(inputs::SimulationInputs)
-    bus_count = get_bus_count(inputs)
-    var_count = get_variable_count(inputs)
-    initial_conditions = zeros(var_count)
-    initial_conditions[1:bus_count] .= 1.0
-    return initial_conditions
-end
-
 function power_flow_solution!(
     initial_guess::Vector{Float64},
     sys::PSY.System,
@@ -149,35 +141,114 @@ end
 
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-function _calculate_initial_guess!(sim::Simulation)
+function _calculate_initial_guess!(sim::Simulation, ::Val{POWERFLOW_AND_DEVICES})
+    @info("Pre-Initializing Simulation States")
     inputs = get_simulation_inputs(sim)
     @assert sim.status == BUILD_INCOMPLETE
     while sim.status == BUILD_INCOMPLETE
         @debug "Start state intialization routine"
         TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
-            sim.status = power_flow_solution!(sim.x0_init, get_system(sim), inputs)
+            sim.status = power_flow_solution!(sim.x0, get_system(sim), inputs)
         end
         TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
             sim.status = initialize_static_injection!(inputs)
         end
         TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
-            sim.status = initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
+            sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
         end
         if has_dyn_lines(inputs)
             TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
-                sim.status = initialize_dynamic_branches!(sim.x0_init, inputs)
+                sim.status = initialize_dynamic_branches!(sim.x0, inputs)
             end
         else
             @debug "No Dynamic Branches in the system"
         end
-        sim.status = check_valid_values(sim.x0_init, inputs)
+        sim.status = check_valid_values(sim.x0, inputs)
     end
     return
 end
 
-function precalculate_initial_conditions!(sim::Simulation)
-    _calculate_initial_guess!(sim)
-    return sim.status != BUILD_FAILED
+function _initialize_state_space(
+    sim::Simulation{T},
+    ::Val{POWERFLOW_AND_DEVICES},
+) where {T <: SimulationModel}
+    inputs = get_simulation_inputs(sim)
+    sim.x0 = _get_flat_start(inputs)
+    @info("Pre-Initializing Simulation States")
+    @assert sim.status == BUILD_INCOMPLETE
+    while sim.status == BUILD_INCOMPLETE
+        @debug "Start state intialization routine"
+        TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
+            sim.status = power_flow_solution!(sim.x0, get_system(sim), inputs)
+        end
+        TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
+            sim.status = initialize_static_injection!(inputs)
+        end
+        TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
+            sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
+        end
+        if has_dyn_lines(inputs)
+            TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
+                sim.status = initialize_dynamic_branches!(sim.x0, inputs)
+            end
+        else
+            @debug "No Dynamic Branches in the system"
+        end
+        sim.status = check_valid_values(sim.x0, inputs)
+    end
+end
+
+function _initialize_state_space(
+    sim::Simulation{T},
+    ::Val{DEVICES_ONLY},
+) where {T <: SimulationModel}
+    @info("Pre-Initializing Simulation States")
+    inputs = get_simulation_inputs(sim)
+    @assert sim.status == BUILD_INCOMPLETE
+    while sim.status == BUILD_INCOMPLETE
+        @debug "Start state intialization routine"
+        TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
+            sim.status = initialize_static_injection!(inputs)
+        end
+        TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
+            sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
+        end
+        if has_dyn_lines(inputs)
+            TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
+                sim.status = initialize_dynamic_branches!(sim.x0, inputs)
+            end
+        else
+            @debug "No Dynamic Branches in the system"
+        end
+        sim.status = check_valid_values(sim.x0, inputs)
+    end
+end
+
+function _initialize_state_space(
+    sim::Simulation{T},
+    ::Val{FLAT_START},
+) where {T <: SimulationModel}
+    simulation_inputs = get_simulation_inputs(sim)
+    sim.x0 = _get_flat_start(simulation_inputs)
+end
+
+function _initialize_state_space(
+    sim::Simulation{T},
+    ::Val{INITIALIZED},
+) where {T <: SimulationModel}
+    simulation_inputs = get_simulation_inputs(sim)
+    @assert sim.status == BUILD_INCOMPLETE
+    if length(sim.x0) != get_variable_count(simulation_inputs)
+        throw(
+            IS.ConflictingInputsError(
+                "The size of the provided initial state space does not match the model's state space.",
+            ),
+        )
+    end
+    @warn("Using existing initial conditions value for simulation initialization")
+    sim.x0 = deepcopy(sim.x0_init)
+    sim.status = SIMULATION_INITIALIZED
+    return
 end
 
 """
@@ -194,15 +265,15 @@ function read_initial_conditions(sim::Simulation)
     for bus in PSY.get_components(PSY.Bus, system)
         bus_n = PSY.get_number(bus)
         bus_ix = get_lookup(simulation_inputs)[bus_n]
-        V_R[bus_n] = get_initial_conditions(sim)[bus_ix]
-        V_I[bus_n] = get_initial_conditions(sim)[bus_ix + bus_size]
+        V_R[bus_n] = get_x0(sim)[bus_ix]
+        V_I[bus_n] = get_x0(sim)[bus_ix + bus_size]
         Vm[bus_n] = sqrt(
-            get_initial_conditions(sim)[bus_ix]^2 +
-            get_initial_conditions(sim)[bus_ix + bus_size]^2,
+            get_x0(sim)[bus_ix]^2 +
+            get_x0(sim)[bus_ix + bus_size]^2,
         )
         θ[bus_n] = atan(
-            get_initial_conditions(sim)[bus_ix + bus_size],
-            get_initial_conditions(sim)[bus_ix],
+            get_x0(sim)[bus_ix + bus_size],
+            get_x0(sim)[bus_ix],
         )
     end
     results = Dict{String, Any}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
@@ -212,7 +283,7 @@ function read_initial_conditions(sim::Simulation)
         global_index = get_global_index(device)
         x0_device = Dict{Symbol, Float64}()
         for s in states
-            x0_device[s] = get_initial_conditions(sim)[global_index[s]]
+            x0_device[s] = get_x0(sim)[global_index[s]]
         end
         results[name] = x0_device
     end
@@ -224,7 +295,7 @@ function read_initial_conditions(sim::Simulation)
             global_index = get_global_index(br)
             x0_br = Dict{Symbol, Float64}()
             for s in states
-                x0_br[s] = get_initial_conditions(sim)[global_index[s]]
+                x0_br[s] = get_x0(sim)[global_index[s]]
             end
             printed_name = "Line " * name
             results[printed_name] = x0_br

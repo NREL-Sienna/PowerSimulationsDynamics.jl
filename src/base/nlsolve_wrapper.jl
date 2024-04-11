@@ -119,7 +119,7 @@ function _check_residual(
     if sum_residual > tolerance
         state_map = make_global_state_map(inputs)
         for (k, val) in state_map
-            inputs.global_state_map[k] = val
+            get_global_state_map(inputs)[k] = val
         end
         gen_name = ""
         state = ""
@@ -136,6 +136,7 @@ function _check_residual(
                 Generator = $gen_name, state = $state.
                Residual error is too large to continue")
         else
+            bus_count = get_bus_count(inputs)
             bus_no = ix > bus_count ? ix - bus_count : ix
             component = ix > bus_count ? "imag" : "real"
             error("The initial residual in the state located at $ix has a value of $val.
@@ -150,15 +151,11 @@ function refine_initial_condition!(
     sim::Simulation,
     model::SystemModel,
     jacobian::JacobianFunctionWrapper,
+    ::Val{POWERFLOW_AND_DEVICES},
 )
     @assert sim.status != BUILD_INCOMPLETE
-
-    if sim.status == SIMULATION_INITIALIZED
-        @info "Simulation already initialized. Refinement not executed"
-        return
-    end
     converged = false
-    initial_guess = get_initial_conditions(sim)
+    initial_guess = get_x0(sim)
     inputs = get_simulation_inputs(sim)
     parameters = get_parameters(inputs)
     bus_range = get_bus_range(inputs)
@@ -205,6 +202,29 @@ function refine_initial_condition!(
     if maximum(pf_diff) > MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE
         @warn "The resulting voltages in the initial conditions differ from the power flow results"
     end
-
     return
+end
+
+function refine_initial_condition!(
+    sim::Simulation,
+    model::SystemModel,
+    jacobian::JacobianFunctionWrapper,
+    ::Val{DEVICES_ONLY},
+)
+    refine_initial_condition!(sim, model, jacobian, Val(POWERFLOW_AND_DEVICES))
+end
+
+function refine_initial_condition!(
+    sim::Simulation,
+    model::SystemModel,
+    jacobian::JacobianFunctionWrapper,
+    ::Val{FLAT_START},
+)
+end
+function refine_initial_condition!(
+    sim::Simulation,
+    model::SystemModel,
+    jacobian::JacobianFunctionWrapper,
+    ::Val{INITIALIZED},
+)
 end

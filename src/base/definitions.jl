@@ -220,7 +220,7 @@ const DIFFEQ_SOLVE_KWARGS = [
 """
 Defines the status of the simulation object
 """
-@enum BUILD_STATUS begin
+@enum STATUS begin
     BUILT = 0
     BUILD_IN_PROGRESS = 1
     BUILD_INCOMPLETE = 2
@@ -229,6 +229,26 @@ Defines the status of the simulation object
     SIMULATION_STARTED = 5
     SIMULATION_FINALIZED = 6
     SIMULATION_FAILED = 7
+end
+
+"""
+Defines the level of building simulation inputs
+"""
+@enum BUILD_INPUTS_LEVEL begin
+    BUILD_ONE = 1
+    BUILD_TWO = 2
+    BUILD_THREE = 3
+    BUILD_NONE = 4
+end
+
+"""
+Defines the level of initializing simulation
+"""
+@enum INITIALIZE_LEVEL begin
+    POWERFLOW_AND_DEVICES = 0
+    DEVICES_ONLY = 1
+    FLAT_START = 2
+    INITIALIZED = 3
 end
 
 const BUILD_TIMER = TimerOutputs.TimerOutput()
