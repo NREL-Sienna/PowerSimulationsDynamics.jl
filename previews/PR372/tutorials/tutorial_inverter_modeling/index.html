@@ -30,8 +30,8 @@ Dynamic Components
 ┌──────────────────┬───────┐
 │ Type             │ Count │
 ├──────────────────┼───────┤
-│ DynamicGenerator │ 1     │
 │ DynamicGenerator │ 4     │
+│ DynamicGenerator │ 1     │
 └──────────────────┴───────┘</code></pre><p><code>PowerSystemCaseBuilder.jl</code> is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data.</p><p>Define Simulation Problem with a 20 second simulation period and the branch trip at t = 1.0:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim = Simulation(
            ResidualModel, #Type of model used
            sys,         #system
@@ -47,7 +47,7 @@ Simulation Summary
 ├─────────────────────────┼────────────────┤
 │ Status                  │ BUILT          │
 │ Simulation Type         │ Residual Model │
-│ Initialized?            │ Yes            │
+│ Initialized?            │ No             │
 │ Multimachine system?    │ Yes            │
 │ Time Span               │ (0.0, 20.0)    │
 │ Number of States        │ 86             │
@@ -202,7 +202,7 @@ Vr1 0.0082
 Vr2 3.2875
 Ve 2.4472
 Vr3 -0.0986
-====================</code></pre><p>We execute the simulation with an additional tolerance for the solver set at 1e-8:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; execute!(sim, IDA(); abstol = 1e-8)</code><code class="nohighlight hljs ansi" style="display:block;">SIMULATION_FINALIZED::BUILD_STATUS = 6</code></pre><p>Using <code>PowerSimulationsDynamics</code> tools for exploring the results, we can plot all the voltage results for the buses:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; result = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;">Simulation Results Summary
+====================</code></pre><p>We execute the simulation with an additional tolerance for the solver set at 1e-8:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; execute!(sim, IDA(); abstol = 1e-8)</code><code class="nohighlight hljs ansi" style="display:block;">SIMULATION_FINALIZED::STATUS = 6</code></pre><p>Using <code>PowerSimulationsDynamics</code> tools for exploring the results, we can plot all the voltage results for the buses:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; result = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;">Simulation Results Summary
 ┌────────────────────────────┬─────────────┐
 │ Property                   │ Value       │
 ├────────────────────────────┼─────────────┤
@@ -211,7 +211,7 @@ Vr3 -0.0986
 │ Time Span                  │ (0.0, 20.0) │
 │ Total Time Steps           │ 342         │
 │ Number of States           │ 86          │
-│ Total solve time           │ 1.506339785 │
+│ Total solve time           │ 1.557656899 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(ACBus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
            plot!(
@@ -283,8 +283,8 @@ Dynamic Components
 ┌──────────────────┬───────┐
 │ Type             │ Count │
 ├──────────────────┼───────┤
-│ DynamicGenerator │ 1     │
 │ DynamicGenerator │ 4     │
+│ DynamicGenerator │ 1     │
 └──────────────────┴───────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; thermal_gen = get_component(ThermalStandard, sys, &quot;generator-6-1&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">generator-6-1 (ThermalStandard):
    name: generator-6-1
    available: true
@@ -404,8 +404,8 @@ Dynamic Components
 ┌──────────────────┬───────┐
 │ Type             │ Count │
 ├──────────────────┼───────┤
-│ DynamicGenerator │ 1     │
 │ DynamicGenerator │ 3     │
+│ DynamicGenerator │ 1     │
 └──────────────────┴───────┘</code></pre><p>Define Simulation problem using the same parameters:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim = Simulation(
            ResidualModel, #Type of model used
            sys,         #system
@@ -428,88 +428,86 @@ Dynamic Components
 │      [5] solve_ac_powerflow!
 │        @ ~/.julia/packages/PowerFlows/6nw6s/src/nlsolve_ac_powerflow.jl:33 [inlined]
 │      [6] power_flow_solution!(initial_guess::Vector{Float64}, sys::System, inputs::PowerSimulationsDynamics.SimulationInputs)
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:14
+│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:6
 │      [7] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:158 [inlined]
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:182 [inlined]
 │      [8] macro expansion
 │        @ ~/.julia/packages/TimerOutputs/RsWnF/src/TimerOutput.jl:237 [inlined]
-│      [9] _calculate_initial_guess!(sim::Simulation{ResidualModel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:157
-│     [10] precalculate_initial_conditions!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:179 [inlined]
-│     [11] _pre_initialize_simulation!(sim::Simulation{ResidualModel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:266
+│      [9] _initialize_state_space(sim::Simulation{ResidualModel}, ::Val{PowerSimulationsDynamics.POWERFLOW_AND_DEVICES})
+│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:181
+│     [10] _pre_initialize_simulation!(sim::Simulation{ResidualModel})
+│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:257
+│     [11] macro expansion
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:437 [inlined]
 │     [12] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:450 [inlined]
+│        @ ~/.julia/packages/TimerOutputs/RsWnF/src/TimerOutput.jl:237 [inlined]
 │     [13] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/RsWnF/src/TimerOutput.jl:237 [inlined]
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:436 [inlined]
 │     [14] macro expansion
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:449 [inlined]
-│     [15] macro expansion
 │        @ ~/.julia/packages/TimerOutputs/RsWnF/src/TimerOutput.jl:237 [inlined]
-│     [16] _build!(sim::Simulation{ResidualModel}; kwargs::@Kwargs{console_level::Base.CoreLogging.LogLevel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:430
-│     [17] _build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:419 [inlined]
-│     [18] (::PowerSimulationsDynamics.var&quot;#124#125&quot;{@Kwargs{console_level::Base.CoreLogging.LogLevel}, Simulation{ResidualModel}})()
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:485
-│     [19] with_logstate(f::Function, logstate::Any)
+│     [15] _build!(sim::Simulation{ResidualModel}; kwargs::@Kwargs{console_level::Base.CoreLogging.LogLevel})
+│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:417
+│     [16] _build!
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:406 [inlined]
+│     [17] (::PowerSimulationsDynamics.var&quot;#124#125&quot;{@Kwargs{console_level::Base.CoreLogging.LogLevel}, Simulation{ResidualModel}})()
+│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:477
+│     [18] with_logstate(f::Function, logstate::Any)
 │        @ Base.CoreLogging ./logging.jl:515
-│     [20] with_logger
+│     [19] with_logger
 │        @ ./logging.jl:627 [inlined]
-│     [21] #build!#123
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:484 [inlined]
-│     [22] build!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:482 [inlined]
-│     [23] Simulation(::Type{ResidualModel}, system::System, simulation_folder::String, tspan::Tuple{Float64, Float64}, perturbations::Vector{BranchTrip}; kwargs::@Kwargs{console_level::Base.CoreLogging.LogLevel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:188
-│     [24] Simulation
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:166 [inlined]
-│     [25] #Simulation#107
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:78 [inlined]
-│     [26] top-level scope
+│     [20] #build!#123
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:476 [inlined]
+│     [21] build!
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:474 [inlined]
+│     [22] Simulation(::Type{ResidualModel}, system::System, simulation_folder::String, tspan::Tuple{Float64, Float64}, perturbations::Vector{BranchTrip}; kwargs::@Kwargs{console_level::Base.CoreLogging.LogLevel})
+│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:204
+│     [23] Simulation
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:182 [inlined]
+│     [24] #Simulation#107
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:94 [inlined]
+│     [25] top-level scope
 │        @ REPL[1]:1
-│     [27] eval
+│     [26] eval
 │        @ ./boot.jl:385 [inlined]
-│     [28] #21
+│     [27] #21
 │        @ ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:721 [inlined]
-│     [29] cd(f::Documenter.Expanders.var&quot;#21#23&quot;{Module}, dir::String)
+│     [28] cd(f::Documenter.Expanders.var&quot;#21#23&quot;{Module}, dir::String)
 │        @ Base.Filesystem ./file.jl:112
-│     [30] (::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module})()
+│     [29] (::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module})()
 │        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:720
-│     [31] (::IOCapture.var&quot;#4#7&quot;{DataType, Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
+│     [30] (::IOCapture.var&quot;#4#7&quot;{DataType, Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
 │        @ IOCapture ~/.julia/packages/IOCapture/Rzdxd/src/IOCapture.jl:161
-│     [32] with_logstate(f::Function, logstate::Any)
+│     [31] with_logstate(f::Function, logstate::Any)
 │        @ Base.CoreLogging ./logging.jl:515
-│     [33] with_logger
+│     [32] with_logger
 │        @ ./logging.jl:627 [inlined]
-│     [34] capture(f::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer)
+│     [33] capture(f::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer)
 │        @ IOCapture ~/.julia/packages/IOCapture/Rzdxd/src/IOCapture.jl:158
-│     [35] runner(::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
+│     [34] runner(::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
 │        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:719
-│     [36] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::Markdown.Code, ::Vararg{Any})
+│     [35] dispatch(::Type{Documenter.Expanders.ExpanderPipeline}, ::Markdown.Code, ::Vararg{Any})
 │        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/bYYzK/src/Utilities/Selectors.jl:170
-│     [37] expand(doc::Documenter.Documents.Document)
+│     [36] expand(doc::Documenter.Documents.Document)
 │        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:42
-│     [38] runner(::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Documents.Document)
+│     [37] runner(::Type{Documenter.Builder.ExpandTemplates}, doc::Documenter.Documents.Document)
 │        @ Documenter.Builder ~/.julia/packages/Documenter/bYYzK/src/Builder.jl:226
-│     [39] dispatch(::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Documents.Document)
+│     [38] dispatch(::Type{Documenter.Builder.DocumentPipeline}, x::Documenter.Documents.Document)
 │        @ Documenter.Utilities.Selectors ~/.julia/packages/Documenter/bYYzK/src/Utilities/Selectors.jl:170
-│     [40] #2
+│     [39] #2
 │        @ ~/.julia/packages/Documenter/bYYzK/src/Documenter.jl:273 [inlined]
-│     [41] cd(f::Documenter.var&quot;#2#3&quot;{Documenter.Documents.Document}, dir::String)
+│     [40] cd(f::Documenter.var&quot;#2#3&quot;{Documenter.Documents.Document}, dir::String)
 │        @ Base.Filesystem ./file.jl:112
-│     [42] makedocs(; debug::Bool, format::Documenter.Writers.HTMLWriter.HTML, kwargs::@Kwargs{modules::Vector{Module}, sitename::String, pages::Vector{Any}})
+│     [41] makedocs(; debug::Bool, format::Documenter.Writers.HTMLWriter.HTML, kwargs::@Kwargs{modules::Vector{Module}, sitename::String, pages::Vector{Any}})
 │        @ Documenter ~/.julia/packages/Documenter/bYYzK/src/Documenter.jl:272
-│     [43] top-level scope
+│     [42] top-level scope
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
-│     [44] include(mod::Module, _path::String)
+│     [43] include(mod::Module, _path::String)
 │        @ Base ./Base.jl:495
-│     [45] exec_options(opts::Base.JLOptions)
+│     [44] exec_options(opts::Base.JLOptions)
 │        @ Base ./client.jl:318
-│     [46] _start()
+│     [45] _start()
 │        @ Base ./client.jl:552
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:475
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:467
 Simulation Summary
 ┌─────────────────────────┬────────────────┐
 │ Property                │ Value          │
@@ -528,19 +526,19 @@ Simulation Summary
 │      [1] error(s::String)
 │        @ Base ./error.jl:35
 │      [2] simulation_pre_step!(sim::Simulation{ResidualModel})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:503
+│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:495
 │      [3] _execute!(sim::Simulation{ResidualModel}, solver::Sundials.IDA{:Dense, Nothing, Nothing}; kwargs::@Kwargs{abstol::Float64})
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:529
+│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:521
 │      [4] _execute!
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:527 [inlined]
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:519 [inlined]
 │      [5] (::PowerSimulationsDynamics.var&quot;#130#131&quot;{@Kwargs{abstol::Float64}, Simulation{ResidualModel}, Sundials.IDA{:Dense, Nothing, Nothing}})()
-│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:586
+│        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:578
 │      [6] with_logstate(f::Function, logstate::Any)
 │        @ Base.CoreLogging ./logging.jl:515
 │      [7] with_logger
 │        @ ./logging.jl:627 [inlined]
 │      [8] #execute!#129
-│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:584 [inlined]
+│        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:576 [inlined]
 │      [9] top-level scope
 │        @ REPL[1]:1
 │     [10] eval
@@ -583,8 +581,8 @@ Simulation Summary
 │        @ Base ./client.jl:318
 │     [29] _start()
 │        @ Base ./client.jl:552
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:588
-SIMULATION_FAILED::BUILD_STATUS = 7</code></pre><p>Using <code>PowerSimulationsDynamics</code> tools for exploring the results, we can plot all the voltage results for the buses</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; result = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(ACBus, sys)
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:580
+SIMULATION_FAILED::STATUS = 7</code></pre><p>Using <code>PowerSimulationsDynamics</code> tools for exploring the results, we can plot all the voltage results for the buses</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; result = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(ACBus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
            plot!(
                p,
@@ -614,4 +612,4 @@ Closest candidates are:
 
 Closest candidates are:
   get_state_series(!Matched::SimulationResults, ::Tuple{String, Symbol}; dt)
-   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:310</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `state_series` not defined</code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines Simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Saturday 30 March 2024 22:07">Saturday 30 March 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:310</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `state_series` not defined</code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines Simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 11 April 2024 19:59">Thursday 11 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
