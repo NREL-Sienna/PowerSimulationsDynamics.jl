@@ -232,16 +232,6 @@ Defines the status of the simulation object
 end
 
 """
-Defines the level of building simulation inputs
-"""
-@enum BUILD_INPUTS_LEVEL begin
-    BUILD_ONE = 1
-    BUILD_TWO = 2
-    BUILD_THREE = 3
-    BUILD_NONE = 4
-end
-
-"""
 Defines the level of initializing simulation
 """
 @enum INITIALIZE_LEVEL begin

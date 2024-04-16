@@ -245,7 +245,7 @@ function get_jacobian(
 ) where {T <: SimulationModel}
     # Deepcopy avoid system modifications
     simulation_system = deepcopy(system)
-    inputs = SimulationInputs(T, simulation_system, ReferenceBus(), nothing, Val(BUILD_ONE))
+    inputs = SimulationInputs(T, simulation_system, ReferenceBus())
     p = get_parameters(inputs)
     x0_init = _get_flat_start(inputs)
     set_operating_point!(x0_init, inputs, system)

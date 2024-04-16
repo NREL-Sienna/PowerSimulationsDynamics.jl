@@ -10,7 +10,7 @@ mutable struct Simulation{T <: SimulationModel}
     tstops::Vector{Float64}
     callbacks::Vector
     simulation_folder::String
-    build_inputs_level::BUILD_INPUTS_LEVEL
+    build_inputs::Bool
     inputs::Union{Nothing, SimulationInputs}
     inputs_init::Union{Nothing, SimulationInputs}
     results::Union{Nothing, SimulationResults}
@@ -61,7 +61,7 @@ function Simulation(
         Vector{Float64}(),
         Vector{SciMLBase.AbstractDiscreteCallback}(),
         simulation_folder,
-        BUILD_ONE,
+        true,
         nothing,
         nothing,
         nothing,
@@ -231,17 +231,21 @@ function configure_logging(sim::Simulation, file_mode; kwargs...)
     )
 end
 
-function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
+function _build_inputs!(sim::Simulation{T}, ::Val{true}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
     sim.inputs = SimulationInputs(
         T,
         simulation_system,
         sim.frequency_reference,
-        sim.inputs_init,
-        Val(sim.build_inputs_level),
     )
     sim.inputs_init = deepcopy(sim.inputs)
     @debug "Simulation Inputs Created"
+    return
+end
+
+function _build_inputs!(sim::Simulation{T}, ::Val{false}) where {T <: SimulationModel}
+    sim.inputs = deepcopy(sim.inputs_init)
+    @debug "Simulation Inputs Copied"
     return
 end
 
@@ -428,7 +432,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                 end
             end
             TimerOutputs.@timeit BUILD_TIMER "Build Simulation Inputs" begin
-                _build_inputs!(sim)
+                _build_inputs!(sim, Val(sim.build_inputs))
                 sim.multimachine =
                     get_global_vars_update_pointers(sim.inputs)[GLOBAL_VAR_SYS_FREQ_INDEX] !=
                     0

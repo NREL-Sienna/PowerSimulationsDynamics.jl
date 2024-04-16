@@ -1,7 +1,4 @@
-"""
-LevelOneInputs are constant unless a device or model is changed within the simulation.
-"""
-mutable struct LevelOneInputs
+mutable struct SimulationInputs
     dynamic_injectors::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
     static_injectors::Vector
     static_loads::Vector
@@ -18,41 +15,17 @@ mutable struct LevelOneInputs
     global_vars_update_pointers::Dict{Int, Int}
     global_state_map::MAPPING_DICT
     global_inner_var_map::Dict{String, Dict}
-end
-
-"""
-LevelTwoInputs are constant unless a network parameter is changed.
-"""
-mutable struct LevelTwoInputs
     ybus_rectangular::SparseArrays.SparseMatrixCSC{Float64, Int}
     total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int}
-end
-
-"""
-LevelTwoInputs are constant unless any parameter is changed.
-"""
-mutable struct LevelThreeInputs
     DAE_vector::Vector{Bool}
     mass_matrix::LinearAlgebra.Diagonal{Float64}
     parameters::Vector{Float64}
     delays::Vector
 end
 
-mutable struct SimulationInputs
-    level_one_inputs::LevelOneInputs
-    level_two_inputs::LevelTwoInputs
-    level_three_inputs::LevelThreeInputs
-end
-
-function LevelOneInputs(sys, ::Any, inputs_init, ::Any)
-    return inputs_init.level_one_inputs
-end
-
-function LevelOneInputs(
-    sys,
-    ::Type{T},
-    inputs_init,
-    ::Val{BUILD_ONE},
+function SimulationInputs(
+    sys::PSY.System,
+    ::T,
 ) where {T <: Union{ConstantFrequency, ReferenceBus}}
     n_buses = get_n_buses(sys)
     _, lookup = _get_ybus(sys)
@@ -88,8 +61,32 @@ function LevelOneInputs(
             break
         end
     end
+    Ybus, _ = _get_ybus(sys)
+    total_shunts = _make_total_shunts(wrapped_branches, n_buses)
+    TimerOutputs.@timeit BUILD_TIMER "Build initial parameters" begin
+        parameter_count = n_parameters
+        initial_parameters = zeros(parameter_count)
+        _update_initial_parameters!(initial_parameters, wrapped_branches)
+        _update_initial_parameters!(initial_parameters, wrapped_injectors)
+        _update_initial_parameters!(initial_parameters, wrapped_loads)
+        _update_initial_parameters!(initial_parameters, wrapped_static_injectors)
+    end
+    mass_matrix = _make_mass_matrix(wrapped_injectors, n_vars, n_buses)
+    DAE_vector = _make_DAE_vector(mass_matrix, n_vars, n_buses)
+    _adjust_states!(
+        DAE_vector,
+        mass_matrix,
+        total_shunts,
+        n_buses,
+        PSY.get_frequency(sys),
+    )
 
-    return LevelOneInputs(
+    delays = get_system_delays(sys)
+    if !isempty(delays)
+        @info "System has delays. Use the correct solver for delay differential equations."
+    end
+
+    return SimulationInputs(
         wrapped_injectors,
         wrapped_static_injectors,
         wrapped_loads,
@@ -106,179 +103,42 @@ function LevelOneInputs(
         global_vars,
         MAPPING_DICT(),
         Dict{String, Dict}(),
-    )
-end
-
-function LevelTwoInputs(sys, level_one_inputs, inputs_init, ::Any)
-    return inputs_init.level_two_inputs
-end
-
-function LevelTwoInputs(sys, level_one_inputs, inputs_init, ::Val{BUILD_TWO})
-    LevelTwoInputs(sys, level_one_inputs, inputs_init, Val(BUILD_ONE))
-end
-
-function LevelTwoInputs(sys, level_one_inputs, inputs_init, ::Val{BUILD_ONE})
-    Ybus, _ = _get_ybus(sys)
-    wrapped_branches = get_dynamic_branches(level_one_inputs)
-    n_buses = get_bus_count(level_one_inputs)
-    total_shunts = _make_total_shunts(wrapped_branches, n_buses)
-    return LevelTwoInputs(
         Ybus,
         total_shunts,
-    )
-end
-function LevelThreeInputs(
-    sys,
-    level_one_inputs::LevelOneInputs,
-    level_two_inputs::LevelTwoInputs,
-    inputs_init,
-    ::Val{BUILD_NONE},
-)
-    return inputs_init.level_three_inputs
-end
-
-function LevelThreeInputs(
-    sys,
-    level_one_inputs::LevelOneInputs,
-    level_two_inputs::LevelTwoInputs,
-    inputs_init,
-    ::Val{BUILD_THREE},
-)
-    LevelThreeInputs(sys, level_one_inputs, level_two_inputs, inputs_init, Val(BUILD_ONE))
-end
-
-function LevelThreeInputs(
-    sys,
-    level_one_inputs::LevelOneInputs,
-    level_two_inputs::LevelTwoInputs,
-    inputs_init,
-    ::Val{BUILD_TWO},
-)
-    LevelThreeInputs(sys, level_one_inputs, level_two_inputs, inputs_init, Val(BUILD_ONE))
-end
-
-function LevelThreeInputs(
-    sys,
-    level_one_inputs::LevelOneInputs,
-    level_two_inputs::LevelTwoInputs,
-    inputs_init,
-    ::Val{BUILD_ONE},
-)
-    TimerOutputs.@timeit BUILD_TIMER "Build initial parameters" begin
-        parameter_count = get_parameter_count(level_one_inputs)
-        wrapped_branches = get_dynamic_branches(level_one_inputs)
-        wrapped_injectors = get_dynamic_injectors(level_one_inputs)
-        wrapped_loads = get_static_loads(level_one_inputs)
-        wrapped_static_injectors = get_static_injectors(level_one_inputs)
-
-        initial_parameters = zeros(parameter_count)
-        _update_initial_parameters!(initial_parameters, wrapped_branches)
-        _update_initial_parameters!(initial_parameters, wrapped_injectors)
-        _update_initial_parameters!(initial_parameters, wrapped_loads)
-        _update_initial_parameters!(initial_parameters, wrapped_static_injectors)
-    end
-    n_vars = get_variable_count(level_one_inputs)
-    n_buses = get_bus_count(level_one_inputs)
-    wrapped_injectors = get_dynamic_injectors(level_one_inputs)
-    mass_matrix = _make_mass_matrix(wrapped_injectors, n_vars, n_buses)
-    DAE_vector = _make_DAE_vector(mass_matrix, n_vars, n_buses)
-    total_shunts = get_total_shunts(level_two_inputs)
-    _adjust_states!(
-        DAE_vector,
-        mass_matrix,
-        total_shunts,
-        n_buses,
-        PSY.get_frequency(sys),
-    )
-
-    delays = get_system_delays(sys)
-    if !isempty(delays)
-        @info "System has delays. Use the correct solver for delay differential equations."
-    end
-
-    return LevelThreeInputs(
         DAE_vector,
         mass_matrix,
         initial_parameters,
         delays,
     )
 end
-
-function SimulationInputs(
-    sys::PSY.System,
-    ::T,
-    simulation_inputs_init::Union{Nothing, SimulationInputs},
-    build_level,
-) where {T <: Union{ConstantFrequency, ReferenceBus}}
-    level_one_inputs = LevelOneInputs(sys, T, simulation_inputs_init, build_level)
-    level_two_inputs =
-        LevelTwoInputs(sys, level_one_inputs, simulation_inputs_init, build_level)
-    level_three_inputs = LevelThreeInputs(
-        sys,
-        level_one_inputs,
-        level_two_inputs,
-        simulation_inputs_init,
-        build_level,
-    )
-
-    return SimulationInputs(
-        level_one_inputs,
-        level_two_inputs,
-        level_three_inputs,
-    )
-end
 #LEVEL ONE INPUTS
-get_dynamic_injectors(inputs::SimulationInputs) = inputs.level_one_inputs.dynamic_injectors
-get_dynamic_injectors(inputs::LevelOneInputs) = inputs.dynamic_injectors
-get_dynamic_branches(inputs::SimulationInputs) = inputs.level_one_inputs.dynamic_branches
-get_dynamic_branches(inputs::LevelOneInputs) = inputs.dynamic_branches
-get_static_injectors(inputs::SimulationInputs) = inputs.level_one_inputs.static_injectors
-get_static_injectors(inputs::LevelOneInputs) = inputs.static_injectors
-get_static_loads(inputs::SimulationInputs) = inputs.level_one_inputs.static_loads
-get_static_loads(inputs::LevelOneInputs) = inputs.static_loads
-get_lookup(inputs::SimulationInputs) = inputs.level_one_inputs.lookup
-get_lookup(inputs::LevelOneInputs) = inputs.lookup
-has_dyn_lines(inputs::SimulationInputs) = inputs.level_one_inputs.dyn_lines
-has_dyn_lines(inputs::LevelOneInputs) = inputs.dyn_lines
+get_dynamic_injectors(inputs::SimulationInputs) = inputs.dynamic_injectors
+get_dynamic_branches(inputs::SimulationInputs) = inputs.dynamic_branches
+get_static_injectors(inputs::SimulationInputs) = inputs.static_injectors
+get_static_loads(inputs::SimulationInputs) = inputs.static_loads
+get_lookup(inputs::SimulationInputs) = inputs.lookup
+has_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
 get_global_vars_update_pointers(inputs::SimulationInputs) =
-    inputs.level_one_inputs.global_vars_update_pointers
-get_global_vars_update_pointers(inputs::LevelOneInputs) =
     inputs.global_vars_update_pointers
-get_global_state_map(inputs::SimulationInputs) = inputs.level_one_inputs.global_state_map
-get_global_state_map(inputs::LevelOneInputs) = inputs.global_state_map
-get_injection_n_states(inputs::SimulationInputs) =
-    inputs.level_one_inputs.injection_n_states
-get_injection_n_states(inputs::LevelOneInputs) = inputs.injection_n_states
-get_branches_n_states(inputs::SimulationInputs) = inputs.level_one_inputs.branches_n_states
-get_branches_n_states(inputs::LevelOneInputs) = inputs.branches_n_states
-get_variable_count(inputs::SimulationInputs) = inputs.level_one_inputs.variable_count
-get_variable_count(inputs::LevelOneInputs) = inputs.variable_count
-get_inner_vars_count(inputs::SimulationInputs) = inputs.level_one_inputs.inner_vars_count
-get_inner_vars_count(inputs::LevelOneInputs) = inputs.inner_vars_count
-get_ode_ouput_range(inputs::SimulationInputs) = inputs.level_one_inputs.ode_range
-get_ode_ouput_range(inputs::LevelOneInputs) = inputs.ode_range
-get_bus_count(inputs::SimulationInputs) = inputs.level_one_inputs.bus_count
-get_bus_count(inputs::LevelOneInputs) = inputs.bus_count
-get_parameter_count(inputs::SimulationInputs) = inputs.level_one_inputs.parameter_count
-get_parameter_count(inputs::LevelOneInputs) = inputs.parameter_count
-get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.level_one_inputs.bus_count)
-get_bus_range(inputs::LevelOneInputs) = 1:(2 * inputs.bus_count)
+get_global_state_map(inputs::SimulationInputs) = inputs.global_state_map
+get_injection_n_states(inputs::SimulationInputs) = inputs.injection_n_states
+get_branches_n_states(inputs::SimulationInputs) = inputs.branches_n_states
+get_variable_count(inputs::SimulationInputs) = inputs.variable_count
+get_inner_vars_count(inputs::SimulationInputs) = inputs.inner_vars_count
+get_ode_ouput_range(inputs::SimulationInputs) = inputs.ode_range
+get_bus_count(inputs::SimulationInputs) = inputs.bus_count
+get_parameter_count(inputs::SimulationInputs) = inputs.parameter_count
+get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
 
 #LEVEL TWO INPUTS
-get_ybus(inputs::SimulationInputs) = inputs.level_two_inputs.ybus_rectangular
-get_ybus(inputs::LevelTwoInputs) = inputs.ybus_rectangular
-get_total_shunts(inputs::SimulationInputs) = inputs.level_two_inputs.total_shunts
-get_total_shunts(inputs::LevelTwoInputs) = inputs.total_shunts
+get_ybus(inputs::SimulationInputs) = inputs.ybus_rectangular
+get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
 
 #LEVEL THREE INPUTS
-get_DAE_vector(inputs::SimulationInputs) = inputs.level_three_inputs.DAE_vector
-get_DAE_vector(inputs::LevelThreeInputs) = inputs.DAE_vector
-get_mass_matrix(inputs::SimulationInputs) = inputs.level_three_inputs.mass_matrix
-get_mass_matrix(inputs::LevelThreeInputs) = inputs.mass_matrix
-get_parameters(inputs::SimulationInputs) = inputs.level_three_inputs.parameters
-get_parameters(inputs::LevelThreeInputs) = inputs.parameters
-get_delays(inputs::SimulationInputs) = inputs.level_three_inputs.delays
-get_delays(inputs::LevelThreeInputs) = inputs.delays
+get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
+get_mass_matrix(inputs::SimulationInputs) = inputs.mass_matrix
+get_parameters(inputs::SimulationInputs) = inputs.parameters
+get_delays(inputs::SimulationInputs) = inputs.delays
 
 # Utility function not to be used for performance sensitive operations
 function get_voltage_buses_ix(inputs::SimulationInputs)
@@ -299,10 +159,8 @@ function SimulationInputs(
     ::Type{MassMatrixModel},
     sys::PSY.System,
     frequency_reference::Union{ConstantFrequency, ReferenceBus},
-    simulation_inputs_init,
-    build_level,
 )
-    return SimulationInputs(sys, frequency_reference, simulation_inputs_init, build_level)
+    return SimulationInputs(sys, frequency_reference)
 end
 
 """
@@ -312,10 +170,8 @@ function SimulationInputs(
     ::Type{ResidualModel},
     sys::PSY.System,
     frequency_reference::Union{ConstantFrequency, ReferenceBus},
-    simulation_inputs_init,
-    build_level,
 )
-    return SimulationInputs(sys, frequency_reference, simulation_inputs_init, build_level)
+    return SimulationInputs(sys, frequency_reference)
 end
 
 function _update_initial_parameters!(initial_parameters, wrapped_devices)

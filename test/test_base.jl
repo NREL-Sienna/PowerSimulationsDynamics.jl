@@ -360,8 +360,6 @@ end
         ResidualModel,
         omib_sys,
         ConstantFrequency(),
-        nothing,
-        Val(PSID.BUILD_ONE),
     )
     I_balance_sim = zeros(4)
     PSID.network_model(inputs, I_balance_sim, voltages)
@@ -394,8 +392,6 @@ end
         ResidualModel,
         threebus_sys,
         ConstantFrequency(),
-        nothing,
-        Val(PSID.BUILD_ONE),
     )
 
     for i in 1:3, j in 1:3
@@ -470,8 +466,6 @@ end
         ResidualModel,
         threebus_sys,
         ConstantFrequency(),
-        nothing,
-        Val(PSID.BUILD_ONE),
     )
     integrator_for_test = MockIntegrator(inputs)
     cref_affect_f = PSID.get_affect(inputs, threebus_sys, cref)
@@ -487,8 +481,6 @@ end
         ResidualModel,
         threebus_sys,
         ConstantFrequency(),
-        nothing,
-        Val(PSID.BUILD_ONE),
     )
     integrator_for_test = MockIntegrator(inputs)
 
@@ -532,8 +524,6 @@ end
         ResidualModel,
         threebus_sys,
         ConstantFrequency(),
-        nothing,
-        Val(PSID.BUILD_ONE),
     )
     integrator_for_test = MockIntegrator(inputs)
 
@@ -644,7 +634,7 @@ end
     #     (0.0, 20.0),
     #     # Not initialized to speed up the test
     #     initialize_simulation = false,
-    #     frequency_reference = ConstantFrequency(), Val(PSID.BUILD_ONE)), #time span
+    #     frequency_reference = ConstantFrequency()), #time span
     # )
 end
 
@@ -850,16 +840,16 @@ end
         results_original = read_results(sim)
         series_original =
             get_state_series(results_original, ("generator-102-1", :δ); dt = 0.01)
-        for build_level in
-            [PSID.BUILD_ONE, PSID.BUILD_TWO, PSID.BUILD_THREE, PSID.BUILD_NONE]
-            sim.build_inputs_level = build_level
+        for build_inputs in
+            [true, false]
+            sim.build_inputs = build_inputs
             @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
                   PSID.SIMULATION_FINALIZED
             results = read_results(sim)
             series = get_state_series(results, ("generator-102-1", :δ); dt = 0.01)
             @test series == series_original
         end
-        sim.build_inputs_level = PSID.BUILD_ONE
+        sim.build_inputs = true
         for initialize_level in
             [PSID.POWERFLOW_AND_DEVICES, PSID.INITIALIZED, PSID.DEVICES_ONLY]
             sim.initialize_level = initialize_level
