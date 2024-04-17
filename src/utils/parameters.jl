@@ -3,6 +3,10 @@ get_params(
     d::DynamicWrapper{T},
 ) where {T <: Union{PSY.DynamicGenerator, PSY.DynamicInverter}} =
     vcat(get_params(get_static_device(d)), get_params(get_dynamic_device(d)))
+get_params_symbol(
+    d::DynamicWrapper{T},
+) where {T <: Union{PSY.DynamicGenerator, PSY.DynamicInverter}} =
+    vcat(:Q_ref, get_params_symbol(get_dynamic_device(d)))
 get_params(d::DynamicWrapper) = get_params(get_dynamic_device(d))
 get_params(d::StaticWrapper) = get_params(get_device(d))
 get_n_params(x::BranchWrapper) = get_n_params(get_branch(x))
@@ -90,11 +94,12 @@ get_params_symbol(g::PSY.DynamicInverter) = vcat(
 get_n_params(x::PSY.LCLFilter) = 5
 get_params(x::PSY.LCLFilter) =
     [PSY.get_lf(x), PSY.get_rf(x), PSY.get_cf(x), PSY.get_lg(x), PSY.get_rg(x)]
-get_params_symbol(::PSY.LCLFilter) = [:lf, :rf, :cf, :lg, :rg]
+get_params_symbol(::PSY.LCLFilter) =
+    [:lf_Filter, :rf_Filter, :cf_Filter, :lg_Filter, :rg_Filter]
 
 get_n_params(x::PSY.RLFilter) = 2
 get_params(x::PSY.RLFilter) = [PSY.get_rf(x), PSY.get_lf(x)]
-get_params_symbol(::PSY.RLFilter) = [:rf, :lf]
+get_params_symbol(::PSY.RLFilter) = [:rf_Filter, :lf_Filter]
 #OUTER CONTROL
 get_n_params(x::PSY.OuterControl) =
     get_n_params(PSY.get_active_power_control(x)) +
@@ -110,7 +115,8 @@ get_params_symbol(x::PSY.OuterControl) = vcat(
 #ACTIVE POWER CONTROL
 get_n_params(::PSY.VirtualInertia) = 3
 get_params(x::PSY.VirtualInertia) = [PSY.get_Ta(x), PSY.get_kd(x), PSY.get_kω(x)]
-get_params_symbol(::PSY.VirtualInertia) = [:Ta, :kd, :kω]
+get_params_symbol(::PSY.VirtualInertia) =
+    [:Ta_OuterControl, :kd_OuterControl, :kω_OuterControl]
 
 get_n_params(::PSY.ActiveRenewableControllerAB) = 17
 get_params(x::PSY.ActiveRenewableControllerAB) =
@@ -131,23 +137,23 @@ get_params(x::PSY.ActiveRenewableControllerAB) =
         PSY.get_P_lim_inner(x)[1],
         PSY.get_P_lim_inner(x)[2],
         PSY.get_T_pord(x)]
-get_params_symbol(::PSY.ActiveRenewableControllerAB) = [:K_pg,
-    :K_ig,
-    :T_p_ap, #modified to make unique
-    :fdbd1,
-    :fdbd2,
-    :fe_min,
-    :fe_max,
-    :P_min,
-    :P_max,
-    :T_g_ap, #modified to make unique
-    :D_dn,
-    :D_up,
-    :dP_min,
-    :dP_max,
-    :P_min_inner,
-    :P_max_inner,
-    :T_pord]
+get_params_symbol(::PSY.ActiveRenewableControllerAB) = [:K_pg_OuterControl,
+    :K_ig_OuterControl,
+    :T_p_ap_OuterControl, #modified to make unique
+    :fdbd1_OuterControl,
+    :fdbd2_OuterControl,
+    :fe_min_OuterControl,
+    :fe_max_OuterControl,
+    :P_min_OuterControl,
+    :P_max_OuterControl,
+    :T_g_ap_OuterControl, #modified to make unique
+    :D_dn_OuterControl,
+    :D_up_OuterControl,
+    :dP_min_OuterControl,
+    :dP_max_OuterControl,
+    :P_min_inner_OuterControl,
+    :P_max_inner_OuterControl,
+    :T_pord_OuterControl]
 
 get_n_params(::PSY.ReactiveRenewableControllerAB) = 22
 get_params(x::PSY.ReactiveRenewableControllerAB) = [PSY.get_T_fltr(x),
@@ -172,40 +178,51 @@ get_params(x::PSY.ReactiveRenewableControllerAB) = [PSY.get_T_fltr(x),
     PSY.get_V_lim(x)[2],
     PSY.get_K_qp(x),
     PSY.get_K_qi(x)]
-get_params_symbol(::PSY.ReactiveRenewableControllerAB) = [:T_fltr,
-    :K_p,
-    :K_i,
-    :T_ft,
-    :T_fv,
-    :V_frz,
-    :R_c,
-    :X_c,
-    :K_c,
-    :e_min,
-    :e_max,
-    :dbd_pnts1,
-    :dbd_pnts2,
-    :Q_min,
-    :Q_max,
-    :T_p,
-    :Q_min_inner,
-    :Q_max_inner,
-    :V_min,
-    :V_max,
-    :K_qp,
-    :K_qi]
+get_params_symbol(::PSY.ReactiveRenewableControllerAB) = [:T_fltr_OuterControl,
+    :K_p_OuterControl,
+    :K_i_OuterControl,
+    :T_ft_OuterControl,
+    :T_fv_OuterControl,
+    :V_frz_OuterControl,
+    :R_c_OuterControl,
+    :X_c_OuterControl,
+    :K_c_OuterControl,
+    :e_min_OuterControl,
+    :e_max_OuterControl,
+    :dbd_pnts1_OuterControl,
+    :dbd_pnts2_OuterControl,
+    :Q_min_OuterControl,
+    :Q_max_OuterControl,
+    :T_p_OuterControl,
+    :Q_min_inner_OuterControl,
+    :Q_max_inner_OuterControl,
+    :V_min_OuterControl,
+    :V_max_OuterControl,
+    :K_qp_OuterControl,
+    :K_qi_OuterControl]
 
 #REACTIVE POWER CONTROL
 get_n_params(::PSY.ReactivePowerDroop) = 2
 get_params(x::PSY.ReactivePowerDroop) = [PSY.get_kq(x), PSY.get_ωf(x)]
-get_params_symbol(x::PSY.ReactivePowerDroop) = [:kq, :ωf]
+get_params_symbol(x::PSY.ReactivePowerDroop) = [:kq_OuterControl, :ωf_OuterControl]
 #INNER CONTROL
 get_n_params(::PSY.VoltageModeControl) = 10
 get_params(x::PSY.VoltageModeControl) =
     [PSY.get_kpv(x), PSY.get_kiv(x), PSY.get_kffv(x), PSY.get_rv(x), PSY.get_lv(x),
         PSY.get_kpc(x), PSY.get_kic(x), PSY.get_kffi(x), PSY.get_ωad(x), PSY.get_kad(x)]
 get_params_symbol(x::PSY.VoltageModeControl) =
-    [:kpv, :kiv, :kffv, :rv, :lv, :kpc, :kic, :kffi, :ωad, :kad]
+    [
+        :kpv_OuterControl,
+        :kiv_OuterControl,
+        :kffv_OuterControl,
+        :rv_OuterControl,
+        :lv_OuterControl,
+        :kpc_OuterControl,
+        :kic_OuterControl,
+        :kffi_OuterControl,
+        :ωad_OuterControl,
+        :kad_OuterControl,
+    ]
 
 get_n_params(::PSY.RECurrentControlB) = 13
 get_params(x::PSY.RECurrentControlB) =
@@ -224,31 +241,32 @@ get_params(x::PSY.RECurrentControlB) =
         PSY.get_T_iq(x),
         PSY.get_I_max(x)]
 get_params_symbol(x::PSY.RECurrentControlB) =
-    [:Vdip_min,
-        :Vdip_max,
-        :T_rv,
-        :dbd_pnts_1,
-        :dbd_pnts_2,
-        :K_qv,
-        :Iqinj_min,
-        :Iqinj_max,
-        :V_ref0,
-        :K_vp,
-        :K_vi,
-        :T_iq,
-        :I_max]
+    [:Vdip_min_OuterControl,
+        :Vdip_max_OuterControl,
+        :T_rv_OuterControl,
+        :dbd_pnts_1_OuterControl,
+        :dbd_pnts_2_OuterControl,
+        :K_qv_OuterControl,
+        :Iqinj_min_OuterControl,
+        :Iqinj_max_OuterControl,
+        :V_ref0_OuterControl,
+        :K_vp_OuterControl,
+        :K_vi_OuterControl,
+        :T_iq_OuterControl,
+        :I_max_OuterControl]
 
 #DC SOURCE 
 get_n_params(::PSY.FixedDCSource) = 1
 get_params(x::PSY.FixedDCSource) = [PSY.get_voltage(x)]
-get_params_symbol(x::PSY.FixedDCSource) = [:voltage]
+get_params_symbol(x::PSY.FixedDCSource) = [:voltage_DCSource]
 #FREQ ESTIMATOR
 get_n_params(::PSY.KauraPLL) = 3
 get_params(x::PSY.KauraPLL) = [PSY.get_ω_lp(x), PSY.get_kp_pll(x), PSY.get_ki_pll(x)]
-get_params_symbol(::PSY.KauraPLL) = [:ω_lp, :kp_pll, :ki_pll]
+get_params_symbol(::PSY.KauraPLL) =
+    [:ω_lp_FrequencyEstimator, :kp_pll_FrequencyEstimator, :ki_pll_FrequencyEstimator]
 get_n_params(::PSY.FixedFrequency) = 1
 get_params(x::PSY.FixedFrequency) = [PSY.get_frequency(x)]
-get_params_symbol(::PSY.FixedFrequency) = [:frequency]
+get_params_symbol(::PSY.FixedFrequency) = [:frequency_FrequencyEstimator]
 #CONVERTER 
 get_n_params(::PSY.AverageConverter) = 0
 get_params(x::PSY.AverageConverter) = Float64[]
@@ -271,23 +289,23 @@ get_params(x::PSY.RenewableEnergyConverterTypeA) = [PSY.get_T_g(x),
     PSY.get_Q_ref(x),
     PSY.get_R_source(x),
     PSY.get_X_source(x)]
-get_params_symbol(::PSY.RenewableEnergyConverterTypeA) = [:T_g,
-    :Rrpwr,
-    :Brkpt,
-    :Zerox,
-    :Lvpl1,
-    :Vo_lim,
-    :Lv_pnt0,
-    :Lv_pnt1,
-    :Io_lim,
-    :T_fltr_cnv,  #modified to make unique
-    :K_hv,
-    :Iqr_min,
-    :Iqr_max,
-    :Accel,
-    :Q_ref_cnv,     #modified to make unique
-    :R_source,
-    :X_source]
+get_params_symbol(::PSY.RenewableEnergyConverterTypeA) = [:T_g_Converter,
+    :Rrpwr_Converter,
+    :Brkpt_Converter,
+    :Zerox_Converter,
+    :Lvpl1_Converter,
+    :Vo_lim_Converter,
+    :Lv_pnt0_Converter,
+    :Lv_pnt1_Converter,
+    :Io_lim_Converter,
+    :T_fltr_cnv_Converter,  #modified to make unique
+    :K_hv_Converter,
+    :Iqr_min_Converter,
+    :Iqr_max_Converter,
+    :Accel_Converter,
+    :Q_ref_cnv_Converter,     #modified to make unique
+    :R_source_Converter,
+    :X_source_Converter]
 
 #GENERATORS
 get_n_params(g::PSY.DynamicGenerator) =
@@ -322,7 +340,7 @@ get_params_symbol(g::PSY.DynamicGenerator) = vcat(
 #MACHINES 
 get_n_params(::PSY.BaseMachine) = 3
 get_params(x::PSY.BaseMachine) = [PSY.get_R(x), PSY.get_Xd_p(x), PSY.get_eq_p(x)]
-get_params_symbol(::PSY.BaseMachine) = [:R, :Xd_p, :eq_p]
+get_params_symbol(::PSY.BaseMachine) = [:R_Machine, :Xd_p_Machine, :eq_p_Machine]
 get_n_params(::PSY.OneDOneQMachine) = 7
 get_params(x::PSY.OneDOneQMachine) = [
     PSY.get_R(x),
@@ -333,7 +351,15 @@ get_params(x::PSY.OneDOneQMachine) = [
     PSY.get_Td0_p(x),
     PSY.get_Tq0_p(x),
 ]
-get_params_symbol(x::PSY.OneDOneQMachine) = [:R, :Xd, :Xq, :Xd_p, :Xq_p, :Td0_p, :Tq0_p]
+get_params_symbol(x::PSY.OneDOneQMachine) = [
+    :R_Machine,
+    :Xd_Machine,
+    :Xq_Machine,
+    :Xd_p_Machine,
+    :Xq_p_Machine,
+    :Td0_p_Machine,
+    :Tq0_p_Machine,
+]
 get_n_params(::PSY.MarconatoMachine) = 14
 get_params(x::PSY.MarconatoMachine) =
     [PSY.get_R(x), PSY.get_Xd(x), PSY.get_Xq(x), PSY.get_Xd_p(x), PSY.get_Xq_p(x),
@@ -341,20 +367,20 @@ get_params(x::PSY.MarconatoMachine) =
         PSY.get_Td0_p(x), PSY.get_Tq0_p(x), PSY.get_Td0_pp(x), PSY.get_Tq0_pp(x),
         PSY.get_T_AA(x), PSY.get_γd(x), PSY.get_γq(x)]
 get_params_symbol(x::PSY.MarconatoMachine) = [
-    :R,
-    :Xd,
-    :Xq,
-    :Xd_p,
-    :Xq_p,
-    :Xd_pp,
-    :Xq_pp,
-    :Td0_p,
-    :Tq0_p,
-    :Td0_pp,
-    :Tq0_pp,
-    :T_AA,
-    :γd,
-    :γq,
+    :R_Machine,
+    :Xd_Machine,
+    :Xq_Machine,
+    :Xd_p_Machine,
+    :Xq_p_Machine,
+    :Xd_pp_Machine,
+    :Xq_pp_Machine,
+    :Td0_p_Machine,
+    :Tq0_p_Machine,
+    :Td0_pp_Machine,
+    :Tq0_pp_Machine,
+    :T_AA_Machine,
+    :γd_Machine,
+    :γq_Machine,
 ]
 get_n_params(::PSY.AndersonFouadMachine) = 11
 get_params(x::PSY.AndersonFouadMachine) = [
@@ -370,17 +396,17 @@ get_params(x::PSY.AndersonFouadMachine) = [
     PSY.get_Td0_pp(x),
     PSY.get_Tq0_pp(x)]
 
-get_params_symbol(x::PSY.AndersonFouadMachine) = [:R,
-    :Xd,
-    :Xq,
-    :Xd_p,
-    :Xq_p,
-    :Xd_pp,
-    :Xq_pp,
-    :Td0_p,
-    :Tq0_p,
-    :Td0_pp,
-    :Tq0_pp]
+get_params_symbol(x::PSY.AndersonFouadMachine) = [:R_Machine,
+    :Xd_Machine,
+    :Xq_Machine,
+    :Xd_p_Machine,
+    :Xq_p_Machine,
+    :Xd_pp_Machine,
+    :Xq_pp_Machine,
+    :Td0_p_Machine,
+    :Tq0_p_Machine,
+    :Td0_pp_Machine,
+    :Tq0_pp_Machine]
 
 #NOTE: Saturation not considered as paramters
 get_n_params(
@@ -409,22 +435,22 @@ get_params(
 get_params_symbol(
     ::Union{PSY.RoundRotorMachine, PSY.RoundRotorExponential, PSY.RoundRotorQuadratic},
 ) = [
-    :R,
-    :Td0_p,
-    :Td0_pp,
-    :Tq0_p,
-    :Tq0_pp,
-    :Xd,
-    :Xq,
-    :Xd_p,
-    :Xq_p,
-    :Xd_pp,
-    :Xl,
-    :γ_d1,
-    :γ_q1,
-    :γ_d2,
-    :γ_q2,
-    :γ_qd,
+    :R_Machine,
+    :Td0_p_Machine,
+    :Td0_pp_Machine,
+    :Tq0_p_Machine,
+    :Tq0_pp_Machine,
+    :Xd_Machine,
+    :Xq_Machine,
+    :Xd_p_Machine,
+    :Xq_p_Machine,
+    :Xd_pp_Machine,
+    :Xl_Machine,
+    :γ_d1_Machine,
+    :γ_q1_Machine,
+    :γ_d2_Machine,
+    :γ_q2_Machine,
+    :γ_qd_Machine,
 ]
 get_n_params(
     ::Union{PSY.SalientPoleMachine, PSY.SalientPoleExponential, PSY.SalientPoleQuadratic},
@@ -448,24 +474,24 @@ get_params(
 get_params_symbol(
     ::Union{PSY.SalientPoleMachine, PSY.SalientPoleExponential, PSY.SalientPoleQuadratic},
 ) = [
-    :R,
-    :Td0_p,
-    :Td0_pp,
-    :Tq0_pp,
-    :Xd,
-    :Xq,
-    :Xd_p,
-    :Xd_pp,
-    :Xl,
-    :γ_d1,
-    :γ_q1,
-    :γ_d2,
+    :R_Machine,
+    :Td0_p_Machine,
+    :Td0_pp_Machine,
+    :Tq0_pp_Machine,
+    :Xd_Machine,
+    :Xq_Machine,
+    :Xd_p_Machine,
+    :Xd_pp_Machine,
+    :Xl_Machine,
+    :γ_d1_Machine,
+    :γ_q1_Machine,
+    :γ_d2_Machine,
 ]
 
 #SHAFTS
 get_n_params(::PSY.SingleMass) = 2
 get_params(x::PSY.SingleMass) = [PSY.get_H(x), PSY.get_D(x)]
-get_params_symbol(::PSY.SingleMass) = [:H, :D]
+get_params_symbol(::PSY.SingleMass) = [:H_Shaft, :D_Shaft]
 get_n_params(::PSY.FiveMassShaft) = 18
 get_params(x::PSY.FiveMassShaft) = [
     PSY.get_H(x),
@@ -489,24 +515,24 @@ get_params(x::PSY.FiveMassShaft) = [
 ]
 
 get_params_symbol(::PSY.FiveMassShaft) = [
-    :H,
-    :H_hp,
-    :H_ip,
-    :H_lp,
-    :H_ex,
-    :D,
-    :D_hp,
-    :D_ip,
-    :D_lp,
-    :D_ex,
-    :D_12,
-    :D_23,
-    :D_34,
-    :D_45,
-    :K_hp,
-    :K_ip,
-    :K_lp,
-    :K_ex]
+    :H_Shaft,
+    :H_hp_Shaft,
+    :H_ip_Shaft,
+    :H_lp_Shaft,
+    :H_ex_Shaft,
+    :D_Shaft,
+    :D_hp_Shaft,
+    :D_ip_Shaft,
+    :D_lp_Shaft,
+    :D_ex_Shaft,
+    :D_12_Shaft,
+    :D_23_Shaft,
+    :D_34_Shaft,
+    :D_45_Shaft,
+    :K_hp_Shaft,
+    :K_ip_Shaft,
+    :K_lp_Shaft,
+    :K_ex_Shaft]
 
 #AVRS 
 get_n_params(::PSY.AVRFixed) = 0
@@ -514,7 +540,7 @@ get_params(x::PSY.AVRFixed) = Float64[]
 get_params_symbol(::PSY.AVRFixed) = Symbol[]
 get_n_params(::PSY.AVRSimple) = 1
 get_params(x::PSY.AVRSimple) = [PSY.get_Kv(x)]
-get_params_symbol(::PSY.AVRSimple) = [:Kv]
+get_params_symbol(::PSY.AVRSimple) = [:Kv_AVR]
 get_n_params(::PSY.AVRTypeI) = 9
 get_params(x::PSY.AVRTypeI) = [
     PSY.get_Ka(x),
@@ -527,7 +553,8 @@ get_params(x::PSY.AVRTypeI) = [
     PSY.get_Ae(x),
     PSY.get_Be(x),
 ]
-get_params_symbol(::PSY.AVRTypeI) = [:Ka, :Ke, :Kf, :Ta, :Te, :Tf, :Tr, :Ae, :Be]
+get_params_symbol(::PSY.AVRTypeI) =
+    [:Ka_AVR, :Ke_AVR, :Kf_AVR, :Ta_AVR, :Te_AVR, :Tf_AVR, :Tr_AVR, :Ae_AVR, :Be_AVR]
 get_n_params(::PSY.SEXS) = 6
 get_params(x::PSY.SEXS) = [
     PSY.get_Ta_Tb(x),
@@ -537,7 +564,8 @@ get_params(x::PSY.SEXS) = [
     PSY.get_V_lim(x)[1],
     PSY.get_V_lim(x)[2],
 ]
-get_params_symbol(::PSY.SEXS) = Symbol[:Ta_Tb, :Tb, :K, :Te, :V_min_avr, :V_max_avr]
+get_params_symbol(::PSY.SEXS) =
+    Symbol[:Ta_Tb_AVR, :Tb_AVR, :K_AVR, :Te_AVR, :V_min_AVR, :V_max_AVR]
 get_n_params(::PSY.AVRTypeII) = 11
 get_params(x::PSY.AVRTypeII) =
     [PSY.get_K0(x),
@@ -552,17 +580,17 @@ get_params(x::PSY.AVRTypeII) =
         PSY.get_Ae(x),
         PSY.get_Be(x)]
 get_params_symbol(::PSY.AVRTypeII) =
-    [:K0,
-        :T1,
-        :T2,
-        :T3,
-        :T4,
-        :Te,
-        :Tr,
-        :Va_min,
-        :Va_max,
-        :Ae,
-        :Be]
+    [:K0_AVR,
+        :T1_AVR,
+        :T2_AVR,
+        :T3_AVR,
+        :T4_AVR,
+        :Te_AVR,
+        :Tr_AVR,
+        :Va_min_AVR,
+        :Va_max_AVR,
+        :Ae_AVR,
+        :Be_AVR]
 get_n_params(::PSY.ESAC1A) = 15
 get_params(x::PSY.ESAC1A) = [
     PSY.get_Tr(x),
@@ -581,20 +609,20 @@ get_params(x::PSY.ESAC1A) = [
     PSY.get_Vr_lim(x)[1],
     PSY.get_Vr_lim(x)[2]]
 get_params_symbol(::PSY.ESAC1A) = [:Tr,
-    :Tb,
-    :Tc,
-    :Ka,
-    :Ta,
-    :Va_min,
-    :Va_max,
-    :Te,
-    :Kf,
-    :Tf,
-    :Kc,
-    :Kd,
-    :Ke,
-    :Vr_min,
-    :Vr_max]
+    :Tb_AVR,
+    :Tc_AVR,
+    :Ka_AVR,
+    :Ta_AVR,
+    :Va_min_AVR,
+    :Va_max_AVR,
+    :Te_AVR,
+    :Kf_AVR,
+    :Tf_AVR,
+    :Kc_AVR,
+    :Kd_AVR,
+    :Ke_AVR,
+    :Vr_min_AVR,
+    :Vr_max_AVR]
 get_n_params(::PSY.EXST1) = 12
 get_params(x::PSY.EXST1) = [PSY.get_Tr(x),
     PSY.get_Vi_lim(x)[1],
@@ -609,18 +637,18 @@ get_params(x::PSY.EXST1) = [PSY.get_Tr(x),
     PSY.get_Kf(x),
     PSY.get_Tf(x)]
 get_params_symbol(::PSY.EXST1) = [
-    :Tr_avr, #modified to make unique
-    :Vi_min,
-    :Vi_max,
-    :Tc,
-    :Tb,
-    :Ka,
-    :Ta,
-    :Vr_min,
-    :Vr_max,
-    :Kc,
-    :Kf,
-    :Tf_avr, #modified to make unique
+    :Tr_AVR,
+    :Vi_min_AVR,
+    :Vi_max_AVR,
+    :Tc_AVR,
+    :Tb_AVR,
+    :Ka_AVR,
+    :Ta_AVR,
+    :Vr_min_AVR,
+    :Vr_max_AVR,
+    :Kc_AVR,
+    :Kf_AVR,
+    :Tf_AVR,
 ]
 
 get_n_params(::PSY.EXAC1) = 13
@@ -640,27 +668,27 @@ get_params(x::PSY.EXAC1) = [
     PSY.get_Ke(x)]
 
 get_params_symbol(::PSY.EXAC1) = [
-    :Tr_avr,  #modified to make unique
-    :Tb,
-    :Tc,
-    :Ka,
-    :Ta,
-    :Vr_min,
-    :Vr_max,
-    :Te,
-    :Kf,
-    :Tf_avr,  #modified to make unique
-    :Kc,
-    :Kd,
-    :Ke]
+    :Tr_AVR,
+    :Tb_AVR,
+    :Tc_AVR,
+    :Ka_AVR,
+    :Ta_AVR,
+    :Vr_min_AVR,
+    :Vr_max_AVR,
+    :Te_AVR,
+    :Kf_AVR,
+    :Tf_AVR,
+    :Kc_AVR,
+    :Kd_AVR,
+    :Ke_AVR]
 
-#PRIME MOVERS
+#TurbineGov
 get_n_params(::PSY.TGFixed) = 1
 get_params(x::PSY.TGFixed) = [PSY.get_efficiency(x)]
-get_params_symbol(::PSY.TGFixed) = [:efficiency]
+get_params_symbol(::PSY.TGFixed) = [:efficiency_TurbineGov]
 get_n_params(::PSY.TGTypeII) = 3
 get_params(x::PSY.TGTypeII) = [PSY.get_R(x), PSY.get_T1(x), PSY.get_T2(x)]
-get_params_symbol(::PSY.TGTypeII) = [:R_tg, :T1, :T2]
+get_params_symbol(::PSY.TGTypeII) = [:R_tg_TurbineGovR, :T1_TurbineGov, :T2_TurbineGov]
 get_n_params(::PSY.GasTG) = 9
 get_params(x::PSY.GasTG) = [
     PSY.get_R(x),
@@ -673,7 +701,17 @@ get_params(x::PSY.GasTG) = [
     PSY.get_V_lim(x)[2],
     PSY.get_D_turb(x),
 ]
-get_params_symbol(::PSY.GasTG) = [:R_tg, :T1, :T2, :T3, :AT, :Kt, :V_min, :V_max, :D_turb]
+get_params_symbol(::PSY.GasTG) = [
+    :R_tg_TurbineGov,
+    :T1_TurbineGov,
+    :T2_TurbineGov,
+    :T3_TurbineGov,
+    :AT_TurbineGov,
+    :Kt_TurbineGov,
+    :V_min_TurbineGov,
+    :V_max_TurbineGov,
+    :D_turb_TurbineGov,
+]
 get_n_params(::PSY.TGTypeI) = 8
 get_params(x::PSY.TGTypeI) = [PSY.get_R(x),
     PSY.get_Ts(x),
@@ -685,14 +723,14 @@ get_params(x::PSY.TGTypeI) = [PSY.get_R(x),
     PSY.get_valve_position_limits(x)[2],
 ]
 
-get_params_symbol(::PSY.TGTypeI) = [:R_tg,
-    :Ts,
-    :Tc,
-    :T3_tg, #modified to make unique
-    :T4_tg, #modified to make unique
-    :T5_tg, #modified to make unique
-    :valve_position_min,
-    :valve_position_max,
+get_params_symbol(::PSY.TGTypeI) = [:R_tg_TurbineGov,
+    :Ts_TurbineGov,
+    :Tc_TurbineGov,
+    :T3_TurbineGov,
+    :T4_TurbineGov,
+    :T5_TurbineGov,
+    :valve_position_min_TurbineGov,
+    :valve_position_max_TurbineGov,
 ]
 get_n_params(::PSY.SteamTurbineGov1) = 7
 get_params(x::PSY.SteamTurbineGov1) = [PSY.get_R(x),
@@ -703,12 +741,12 @@ get_params(x::PSY.SteamTurbineGov1) = [PSY.get_R(x),
     PSY.get_T3(x),
     PSY.get_D_T(x)]
 get_params_symbol(::PSY.SteamTurbineGov1) = [:R_tg,
-    :T1_tg, #modified to make unique
-    :valve_position_min,
-    :valve_position_max,
-    :T2_tg,  #modified to make unique
-    :T3_tg,  #modified to make unique
-    :D_T]
+    :T1_TurbineGov,
+    :valve_position_min_TurbineGov,
+    :valve_position_max_TurbineGov,
+    :T2_TurbineGov,
+    :T3_TurbineGov,
+    :D_T_TurbineGov]
 get_n_params(::PSY.HydroTurbineGov) = 12
 get_params(x::PSY.HydroTurbineGov) = [PSY.get_R(x),
     PSY.get_r(x),
@@ -723,23 +761,23 @@ get_params(x::PSY.HydroTurbineGov) = [PSY.get_R(x),
     PSY.get_D_T(x),
     PSY.get_q_nl(x)]
 get_params_symbol(::PSY.HydroTurbineGov) = [
-    :R_tg,  #modified to make unique
-    :r,
-    :Tr,
-    :Tf,
-    :Tg,
-    :VELM,
-    :G_min,
-    :G_max,
-    :Tw,
-    :At,
-    :D_T,
-    :q_nl]
+    :R_TurbineGov,
+    :r_TurbineGov,
+    :Tr_TurbineGov,
+    :Tf_TurbineGov,
+    :Tg_TurbineGov,
+    :VELM_TurbineGov,
+    :G_min_TurbineGov,
+    :G_max_TurbineGov,
+    :Tw_TurbineGov,
+    :At_TurbineGov,
+    :D_T_TurbineGov,
+    :q_nl_TurbineGov]
 
 #PSS
 get_n_params(::PSY.PSSFixed) = 1
 get_params(x::PSY.PSSFixed) = [PSY.get_V_pss(x)]
-get_params_symbol(::PSY.PSSFixed) = [:V_pss]
+get_params_symbol(::PSY.PSSFixed) = [:V_pss_PSS]
 
 get_n_params(::PSY.STAB1) = 7
 get_params(x::PSY.STAB1) = [PSY.get_KT(x),
@@ -750,13 +788,13 @@ get_params(x::PSY.STAB1) = [PSY.get_KT(x),
     PSY.get_T4(x),
     PSY.get_H_lim(x)]
 get_params_symbol(::PSY.STAB1) =
-    [:KT,
-        :T,
-        :T1T3,
-        :T3,
-        :T2T4,
-        :T4,
-        :H_lim]
+    [:KT_PSS,
+        :T_PSS,
+        :T1T3_PSS,
+        :T3_PSS,
+        :T2T4_PSS,
+        :T4_PSS,
+        :H_lim_PSS]
 
 #STATIC INJECTION
 get_n_params(::PSY.StaticInjection) = 1
