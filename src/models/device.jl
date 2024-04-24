@@ -16,7 +16,7 @@ function device_mass_matrix_entries!(
 end
 
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
@@ -182,7 +182,7 @@ function device_mass_matrix_entries!(
 end
 
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
@@ -310,11 +310,11 @@ function mass_matrix_pvs_entries!(
     pvs::DynamicWrapper{PSY.PeriodicVariableSource},
     global_index::ImmutableDict{Symbol, Int64},
 )
-    @debug "Using default mass matrix entries $pvs"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $pvs"
 end
 
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
@@ -783,7 +783,7 @@ function mass_matrix_induction_entries!(
 ) where {
     T <: Union{PSY.SingleCageInductionMachine, PSY.SimplifiedSingleCageInductionMachine},
 }
-    @debug "Using default mass matrix entries $ind"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $ind"
 end
 
 """
@@ -792,7 +792,7 @@ Refer to "Analysis of Electric Machinery and Drive Systems" by Paul Krause,
 Oleg Wasynczuk and Scott Sudhoff for the equations
 """
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
@@ -881,7 +881,7 @@ equations in "Analysis of Electric Machinery and Drive Systems" by Paul Krause,
 Oleg Wasynczuk and Scott Sudhoff.
 """
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
@@ -978,14 +978,14 @@ function mass_matrix_csvgn1_entries!(
     csvgn1::DynamicWrapper{PSY.CSVGN1},
     global_index::ImmutableDict{Symbol, Int64},
 )
-    @debug "Using default mass matrix entries $csvgn1"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $csvgn1"
 end
 
 """
 Model of Static Shunt Compensator: CSVGN1.
 """
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
@@ -1100,7 +1100,7 @@ Based on the paper `Malicious Control of an Active Load in an Islanded Mixed-Sou
 by C. Roberts, U. Markovic, D. Arnold and D. Callaway.
 """
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
@@ -1249,7 +1249,7 @@ function mass_matrix_dera_entries!(
 end
 
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
@@ -1286,7 +1286,7 @@ end
 
 #Freq_Flag = 0
 function _mdl_ode_AggregateDistributedGenerationA!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::Val{0},
@@ -1370,7 +1370,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     elseif Pf_Flag == 0
         _, dQ_V_dt = low_pass_mass_matrix(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
     else
-        @error @error "Unsupported value of PQ_Flag"
+        CRC.@ignore_derivatives @error "Unsupported value of PQ_Flag"
     end
 
     #STATE Iq
@@ -1431,7 +1431,7 @@ end
 
 #Freq_Flag = 1
 function _mdl_ode_AggregateDistributedGenerationA!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::Val{1},
@@ -1519,7 +1519,7 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     elseif Pf_Flag == 0
         _, dQ_V_dt = low_pass_mass_matrix(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
     else
-        @error "Unsupported value of PQ_Flag"
+        CRC.@ignore_derivatives @error "Unsupported value of PQ_Flag"
     end
 
     #STATE Iq

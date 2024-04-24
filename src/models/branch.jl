@@ -1,5 +1,5 @@
 function branch!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r_from::T,
@@ -32,7 +32,7 @@ function branch!(
 end
 
 function branch!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
     device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r_from::T,

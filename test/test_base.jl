@@ -812,7 +812,7 @@ end
     )
 end
 
-@testset "Test Build and Initialize Levels" begin
+@testset "Test Initialize Levels" begin
     path = mktempdir()
     try
         #Compute Y_bus after fault
@@ -840,16 +840,6 @@ end
         results_original = read_results(sim)
         series_original =
             get_state_series(results_original, ("generator-102-1", :δ); dt = 0.01)
-        for build_inputs in
-            [true, false]
-            sim.build_inputs = build_inputs
-            @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
-                  PSID.SIMULATION_FINALIZED
-            results = read_results(sim)
-            series = get_state_series(results, ("generator-102-1", :δ); dt = 0.01)
-            @test series == series_original
-        end
-        sim.build_inputs = true
         for initialize_level in
             [PSID.POWERFLOW_AND_DEVICES, PSID.INITIALIZED, PSID.DEVICES_ONLY]
             sim.initialize_level = initialize_level

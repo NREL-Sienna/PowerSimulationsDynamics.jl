@@ -58,7 +58,9 @@ function initialize_filter!(
     x0 = [V_R, V_I, Ir_filter, Ii_filter, V_R, V_I]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Filter failed $(PSY.get_name(static))")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Filter failed $(PSY.get_name(static))"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages

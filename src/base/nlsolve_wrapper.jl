@@ -82,11 +82,11 @@ end
 
 function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbol)
     if converged(sys_solve)
-        @info(
+        CRC.@ignore_derivatives @info(
             "Initialization non-linear solve succeeded with a tolerance of $(tol) using solver $(solv). Saving solution."
         )
     else
-        @warn(
+        CRC.@ignore_derivatives @warn(
             "Initialization non-linear solve convergence failed, initial conditions do not meet conditions for an stable equilibrium.\nAttempting again with reduced numeric tolerance and using another solver"
         )
     end
@@ -95,14 +95,14 @@ end
 
 function _sorted_residuals(residual::Vector{Float64})
     if isapprox(sum(abs.(residual)), 0.0; atol = STRICT_NLSOLVE_F_TOLERANCE)
-        @debug "Residual is zero with tolerance $(STRICT_NLSOLVE_F_TOLERANCE)"
+        CRC.@ignore_derivatives @debug "Residual is zero with tolerance $(STRICT_NLSOLVE_F_TOLERANCE)"
         return
     end
     ix_sorted = sortperm(abs.(residual); rev = true)
     show_residual = min(10, length(residual))
     for i in 1:show_residual
         ix = ix_sorted[i]
-        @debug ix abs(residual[ix])
+        CRC.@ignore_derivatives @debug ix abs(residual[ix])
     end
     return
 end
@@ -112,10 +112,10 @@ function _check_residual(
     inputs::SimulationInputs,
     tolerance::Float64,
 )
-    @debug _sorted_residuals(residual)
+    CRC.@ignore_derivatives @debug _sorted_residuals(residual)
     val, ix = findmax(residual)
     sum_residual = sum(abs.(residual))
-    @info "Residual from initial guess: max = $(val) at $ix, total = $sum_residual"
+    CRC.@ignore_derivatives @info "Residual from initial guess: max = $(val) at $ix, total = $sum_residual"
     if sum_residual > tolerance
         state_map = make_global_state_map(inputs)
         for (k, val) in state_map
@@ -169,13 +169,13 @@ function refine_initial_condition!(
             break
         end
         for solv in [:trust_region, :newton]
-            @debug "Start NLSolve System Run with $(solv) and F_tol = $tol"
+            CRC.@ignore_derivatives @debug "Start NLSolve System Run with $(solv) and F_tol = $tol"
             show_trace = sim.console_level <= Logging.Info
             sys_solve = _nlsolve_call(initial_guess, f!, jacobian, tol, solv, show_trace)
             #sys_solve = _nlsolve_call(initial_guess, f!, tol, solv, show_trace)
             failed(sys_solve) && return BUILD_FAILED
             converged = _convergence_check(sys_solve, tol, solv)
-            @debug "Write initial guess vector using $solv with tol = $tol convergence = $converged"
+            CRC.@ignore_derivatives @debug "Write initial guess vector using $solv with tol = $tol convergence = $converged"
             initial_guess .= sys_solve.zero
             if converged
                 break
@@ -193,14 +193,16 @@ function refine_initial_condition!(
     f!(residual, initial_guess)
     if !converged || (sum(residual) > MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE)
         _check_residual(residual, inputs, MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE)
-        @warn("Initialization didn't found a solution to desired tolerances.\\
-              Initial conditions do not meet conditions for an stable equilibrium. \\
-              Simulation might fail")
+        CRC.@ignore_derivatives @warn(
+            "Initialization didn't found a solution to desired tolerances.\\
+Initial conditions do not meet conditions for an stable equilibrium. \\
+Simulation might fail"
+        )
     end
 
     pf_diff = abs.(powerflow_solution .- initial_guess[bus_range])
     if maximum(pf_diff) > MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE
-        @warn "The resulting voltages in the initial conditions differ from the power flow results"
+        CRC.@ignore_derivatives @warn "The resulting voltages in the initial conditions differ from the power flow results"
     end
     return
 end

@@ -522,9 +522,9 @@ set_Q_impedance!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_impedance
 
 function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, val::Int)
     if val == 0
-        @debug "Generator $(PSY.get_name(wrapper)) status set to off"
+        CRC.@ignore_derivatives @debug "Generator $(PSY.get_name(wrapper)) status set to off"
     elseif val == 1
-        @debug "Generator $(PSY.get_name(wrapper)) status set to on"
+        CRC.@ignore_derivatives @debug "Generator $(PSY.get_name(wrapper)) status set to on"
     else
         error("Invalid status $val. It can only take values 1 or 0")
     end

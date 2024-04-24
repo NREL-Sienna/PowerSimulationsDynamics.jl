@@ -3,7 +3,7 @@ function mass_matrix_outer_entries!(
     outer_control::O,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {O <: PSY.OuterControl}
-    @debug "Using default mass matrix entries $O"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $O"
 end
 
 #####################################################

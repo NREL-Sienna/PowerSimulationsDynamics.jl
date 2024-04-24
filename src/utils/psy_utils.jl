@@ -33,13 +33,6 @@ function get_dynamic_branches(sys::PSY.System)
     return PSY.get_components(x -> PSY.get_available(x), PSY.DynamicBranch, sys)
 end
 
-function _transform_all_lines!(sys::PSY.System)
-    for br in PSY.get_components(PSY.DynamicBranch, sys)
-        dyn_br = DynamicBranch(br)
-        @debug "Converted $(PSY.get_name(dyn_br)) to DynamicBranch"
-        add_component!(sys, dyn_br)
-    end
-end
 
 function transform_ybus_to_rectangular(
     ybus::SparseArrays.SparseMatrixCSC{Complex{Float64}, Int},

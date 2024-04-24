@@ -3,7 +3,7 @@ function mass_matrix_pss_entries!(
     ::P,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {P <: PSY.PSS}
-    @debug "Using default mass matrix entries $P"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $P"
 end
 
 function mass_matrix_pss_entries!(

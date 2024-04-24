@@ -92,7 +92,7 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::BranchImped
     end
 
     return (integrator) -> begin
-        @debug "Changing impedance line $(PSY.get_name(branch)) by a factor of $(pert.multiplier)"
+        CRC.@ignore_derivatives @debug "Changing impedance line $(PSY.get_name(branch)) by a factor of $(pert.multiplier)"
         ybus_update!(inputs, branch, mult)
     end
 
@@ -102,7 +102,7 @@ end
 function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::BranchTrip)
     branch = _get_branch_for_perturbation(sys, pert)
     return (integrator) -> begin
-        @debug "Tripping line $(PSY.get_name(branch))"
+        CRC.@ignore_derivatives @debug "Tripping line $(PSY.get_name(branch))"
         ybus_update!(inputs, branch, -1.0)
     end
     return
@@ -371,7 +371,7 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::NetworkSwitch)
     return (integrator) -> begin
         # TODO: This code can be more performant using SparseMatrix methods
         for (i, v) in enumerate(pert.ybus_rectangular)
-            @debug "Changing Ybus network"
+            CRC.@ignore_derivatives @debug "Changing Ybus network"
             get_ybus(inputs)[i] = v
         end
         return
@@ -556,9 +556,9 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::GeneratorTrip)
     return (integrator) -> begin
         wrapped_device = get_dynamic_injectors(inputs)[wrapped_device_ix]
         ix_range = get_ix_range(wrapped_device)
-        @debug "Changing connection status $(PSY.get_name(wrapped_device)), setting states $ix_range to 0.0"
+        CRC.@ignore_derivatives @debug "Changing connection status $(PSY.get_name(wrapped_device)), setting states $ix_range to 0.0"
         if integrator.du !== nothing
-            @debug "setting du $ix_range to 0.0"
+            CRC.@ignore_derivatives @debug "setting du $ix_range to 0.0"
             integrator.du[ix_range] .= 0.0
         end
         integrator.u[ix_range] .= 0.0
@@ -599,7 +599,7 @@ mutable struct LoadChange <: Perturbation
     )
         # Currently I'm assumming P_ref and Q_ref are constant impedance to
         if signal ∈ [:P_ref, :Q_ref]
-            @warn(
+            CRC.@ignore_derivatives @warn(
                 "P_ref and Q_ref signals will be deprecated. It will be assumed as a change in constant impedance for StandardLoads and a change in constant power for PowerLoads. Allowed signals are $(ACCEPTED_LOADCHANGE_REFS)"
             )
         end
@@ -626,7 +626,9 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadChange)
     wrapped_device_ix = _find_zip_load_ix(inputs, pert.device)
     ld = pert.device
     if !PSY.get_available(ld)
-        @error("Load $(PSY.get_name(ld)) is unavailable. Perturbation ignored")
+        CRC.@ignore_derivatives @error(
+            "Load $(PSY.get_name(ld)) is unavailable. Perturbation ignored"
+        )
         return
     end
     ref_value = pert.ref_value
@@ -652,7 +654,7 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadChange)
             device_parameters = @view integrator.p[p_range]
             device_parameters[3] += P_change
             device_parameters[6] += Q_change
-            @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
+            CRC.@ignore_derivatives @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
             return
         end
     elseif isa(ld, PSY.StandardLoad)
@@ -702,7 +704,7 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadChange)
             Q_exp_old = exp_params.Q_exp
             exp_params.P_exp = P_exp_old + P_change
             exp_params.Q_exp = Q_exp_old + Q_change
-            @debug "Removing exponential load entry $(ld_name) at wrapper $(PSY.get_name(wrapped_zip))"
+            CRC.@ignore_derivatives @debug "Removing exponential load entry $(ld_name) at wrapper $(PSY.get_name(wrapped_zip))"
             return
         end
     else
@@ -736,7 +738,9 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadTrip)
     wrapped_device_ix = _find_zip_load_ix(inputs, pert.device)
     ld = pert.device
     if !PSY.get_available(ld)
-        @error("Load $(PSY.get_name(ld)) is unavailable. Perturbation ignored")
+        CRC.@ignore_derivatives @error(
+            "Load $(PSY.get_name(ld)) is unavailable. Perturbation ignored"
+        )
         return
     end
     if isa(ld, PSY.PowerLoad)
@@ -750,7 +754,7 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadTrip)
             device_parameters = @view integrator.p[p_range]
             device_parameters[3] -= P_trip
             device_parameters[6] -= Q_trip
-            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+            CRC.@ignore_derivatives @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
             return
         end
     elseif isa(ld, PSY.StandardLoad)
@@ -775,7 +779,7 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadTrip)
             # Update Constant Impedance
             device_parameters[5] -= P_impedance_trip
             device_parameters[8] -= Q_impedance_trip
-            @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
+            CRC.@ignore_derivatives @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
             return
         end
     elseif isa(ld, PSY.ExponentialLoad)
@@ -788,7 +792,7 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadTrip)
             tuple_ix = exp_names[ld_name]
             deleteat!(exp_params, tuple_ix)
             delete!(exp_names, ld_name)
-            @debug "Removing exponential load entry $(ld_name) at wrapper $(PSY.get_name(wrapped_zip))"
+            CRC.@ignore_derivatives @debug "Removing exponential load entry $(ld_name) at wrapper $(PSY.get_name(wrapped_zip))"
             return
         end
     end
@@ -833,7 +837,7 @@ end
 
 function get_affect(::SimulationInputs, ::PSY.System, pert::PerturbState)
     return (integrator) -> begin
-        @debug "Modifying state"
+        CRC.@ignore_derivatives @debug "Modifying state"
         integrator.u[pert.index] += pert.value
         return
     end

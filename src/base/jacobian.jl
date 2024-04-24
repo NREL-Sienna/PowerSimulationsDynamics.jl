@@ -97,7 +97,7 @@ function JacobianFunctionWrapper(
     m_ = (residual, x) -> m!(residual, x, p, 0.0)
     jconfig = ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
     Jf = (Jv, x) -> begin
-        @debug "Evaluating Jacobian Function"
+        CRC.@ignore_derivatives @debug "Evaluating Jacobian Function"
         ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
         return
     end
@@ -137,7 +137,7 @@ function JacobianFunctionWrapper(
     m_ = (residual, x) -> m!(residual, zeros(n), x, p, 0.0)
     jconfig = ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))
     Jf = (Jv, x) -> begin
-        @debug "Evaluating Jacobian Function"
+        CRC.@ignore_derivatives @debug "Evaluating Jacobian Function"
         ForwardDiff.jacobian!(Jv, m_, zeros(n), x, jconfig)
         return
     end
@@ -178,7 +178,7 @@ function JacobianFunctionWrapper(
     n = length(x0)
     Jf =
         (Jv, x, h, t) -> begin
-            @debug "Evaluating Jacobian Function"
+            CRC.@ignore_derivatives @debug "Evaluating Jacobian Function"
             m_ = (residual, x) -> m!(residual, x, h, p, t)
             jconfig =
                 ForwardDiff.JacobianConfig(m_, similar(x0), x0, ForwardDiff.Chunk(x0))

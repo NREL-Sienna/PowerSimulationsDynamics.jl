@@ -87,7 +87,7 @@ function initialize_static_device!(
     x0 = [V_R, V_I]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Source failed")
+        CRC.@ignore_derivatives @warn("Initialization in Source failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -135,7 +135,7 @@ function initialize_dynamic_device!(
     x0 = [V_R, V_I]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Periodic Variable Source failed")
+        CRC.@ignore_derivatives @warn("Initialization in Periodic Variable Source failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -281,7 +281,9 @@ function initialize_dynamic_device!(
     end
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Ind. Motor $(PSY.get_name(device)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Ind. Motor $(PSY.get_name(device)) failed"
+        )
     else
         sol_x0 = sol.zero
         device_states[1] = sol_x0[4] # ψ_qs
@@ -395,7 +397,9 @@ function initialize_dynamic_device!(
     end
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Ind. Motor $(PSY.get_name(device)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Ind. Motor $(PSY.get_name(device)) failed"
+        )
     else
         sol_x0 = sol.zero
         device_states[1] = sol_x0[8] # ψ_qr
@@ -458,11 +462,11 @@ function initialize_dynamic_device!(
     vr2 = thy
 
     if (thy > Vmax) || (thy < Vmin)
-        @error("Thyristor state thy = $(thy) outside the limits")
+        CRC.@ignore_derivatives @error("Thyristor state thy = $(thy) outside the limits")
     end
 
     if (vr2 > 1) || (vr2 < Rmin / Rbase)
-        @error("Regulator state vr2 = $(vr2) outside the limits")
+        CRC.@ignore_derivatives @error("Regulator state vr2 = $(vr2) outside the limits")
     end
 
     device_states[1] = K * (V_abs - V_ref0) # thy
@@ -563,7 +567,9 @@ function initialize_dynamic_device!(
     end
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Active Load $(PSY.get_name(device)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Active Load $(PSY.get_name(device)) failed"
+        )
     else
         sol_x0 = sol.zero
         device_states[1] = sol_x0[1] # θ_pll
@@ -619,13 +625,13 @@ function initialize_dynamic_device!(
     Iq_cmd = Iq / Mult
     Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(dynamic_device, Ip_cmd, Iq_cmd)
     if Ip_cmd >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_cmd
-        @error(
+        CRC.@ignore_derivatives @error(
             "Inverter $(PSY.get_name(static)) active current $(Ip_cmd) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
         )
     end
 
     if Iq_cmd >= Iq_max + BOUNDS_TOLERANCE || Iq_min - BOUNDS_TOLERANCE >= Iq_cmd
-        @error(
+        CRC.@ignore_derivatives @error(
             "Inverter $(PSY.get_name(static)) reactive current $(Iq_cmd) out of limits $(Iq_min) $(Iq_max). Check Power Flow or Parameters"
         )
     end
@@ -660,7 +666,7 @@ function initialize_dynamic_device!(
         device_states[9] = Pord
         device_states[10] = Ip
     else
-        @error "Unsupported value of Freq_Flag"
+        CRC.@ignore_derivatives @error "Unsupported value of Freq_Flag"
     end
 
     #See Note 2 on PSSE Documentation

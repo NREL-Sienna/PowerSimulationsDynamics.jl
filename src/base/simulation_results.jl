@@ -37,7 +37,7 @@ global index for a state.
 
 """
 function _post_proc_state_series(solution, ix::Int, dt::Nothing)
-    ix_t = unique(i -> solution.t[i], eachindex(solution.t))
+    ix_t = CRC.@ignore_derivatives unique(i -> solution.t[i], eachindex(solution.t))
     ts = solution.t[ix_t]
     state = solution[ix, ix_t]
     return ts, state
@@ -65,7 +65,7 @@ function post_proc_state_series(
 )
     global_state_index = get_global_index(res)
     if !haskey(global_state_index, ref[1])
-        @error "$(keys(global_state_index))"
+        CRC.@ignore_derivatives @error "$(keys(global_state_index))"
         error("State $(ref[2]) device $(ref[1]) not found in the system. ")
     end
     ix = get(global_state_index[ref[1]], ref[2], 0)

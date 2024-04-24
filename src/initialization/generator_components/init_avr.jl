@@ -72,7 +72,9 @@ function initialize_avr!(
     x0 = [1.0, Vf0, Vf0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -138,7 +140,9 @@ function initialize_avr!(
     x0 = [1.0, Vf0, Vf0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -154,7 +158,9 @@ function initialize_avr!(
         y_ll1, _ = lead_lag(sol_x0[1] - Vm, sol_x0[2], K0, T2, T1)
         y_ll2, _ = lead_lag(y_ll1, K0 * sol_x0[3], 1.0, K0 * T4, K0 * T3)
         if (y_ll2 > Va_max) || (y_ll2 < Va_min)
-            @error("Regulator Voltage V_r = $(y_ll2) outside the limits")
+            CRC.@ignore_derivatives @error(
+                "Regulator Voltage V_r = $(y_ll2) outside the limits"
+            )
         end
     end
     return
@@ -208,7 +214,9 @@ function initialize_avr!(
     x0 = [1.0]
     sol = NLsolve.nlsolve(f_Ve!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         V_e0 = sol_x0[1]
@@ -218,7 +226,9 @@ function initialize_avr!(
     V_FE0 = Kd * Xad_Ifd0 + Ke * V_e0 + Se0 * V_e0
     V_r20 = V_FE0
     if (V_r20 > Vr_max) || (V_r20 < Vr_min)
-        @error("Regulator Voltage V_R = $(V_r20) outside the limits")
+        CRC.@ignore_derivatives @error(
+            "Regulator Voltage V_R = $(V_r20) outside the limits"
+        )
     end
     Tc_Tb_ratio = Tb <= eps() ? 0.0 : Tc / Tb
     V_r30 = -(Kf / Tf) * V_FE0
@@ -253,7 +263,9 @@ function initialize_avr!(
     x0 = [V_ref0, V_r10, V_r20, V_e0, V_r30]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -303,12 +315,14 @@ function initialize_avr!(
     x0 = [1.0, Vf0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         if (sol_x0[2] >= V_max + BOUNDS_TOLERANCE) ||
            (sol_x0[2] <= V_min - BOUNDS_TOLERANCE)
-            @error(
+            CRC.@ignore_derivatives @error(
                 "Vr limits for AVR in $(PSY.get_name(dynamic_device)) (Vr = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min.  Consider updating the operating point."
             )
         end
@@ -386,13 +400,15 @@ function initialize_avr!(
     x0 = [1.0, Vf0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else # if converge
         sol_x0 = sol.zero
         Vr2_0 = (sol_x0[2] + Ta_Tb * (sol_x0[1] - Vm)) * K # K * V_LL
         #check the limits
         if (Vr2_0 >= V_max + BOUNDS_TOLERANCE) || (Vr2_0 <= V_min - BOUNDS_TOLERANCE)
-            @error(
+            CRC.@ignore_derivatives @error(
                 "Vr limits for AVR in $(PSY.get_name(dynamic_device)) (Vr = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min.  Consider updating the operating point."
             )
         end
@@ -440,7 +456,7 @@ function initialize_avr!(
 
     # Check limits to field voltage 
     if (Vt * Vr_min - Kc * Ifd > Vf0) || (Vf0 > Vt * Vr_max - Kc * Ifd)
-        @error(
+        CRC.@ignore_derivatives @error(
             "Field Voltage for AVR in $(PSY.get_name(dynamic_device)) is $(Vf0) pu, which is outside its limits.  Consider updating the operating point."
         )
     end
@@ -506,7 +522,9 @@ function initialize_avr!(
     x0 = [10.0] # initial guess for Ve
     sol = NLsolve.nlsolve(f_Ve!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         Ve = sol_x0[1]
@@ -516,7 +534,7 @@ function initialize_avr!(
     VFE = Kd * Ifd0 + Ke * Ve + Se * Ve
     Vr2 = VFE
     if (Vr2 > Vr_max) || (Vr2 < Vr_min)
-        @error("Regulator Voltage V_R = $(Vr2) outside the limits")
+        CRC.@ignore_derivatives @error("Regulator Voltage V_R = $(Vr2) outside the limits")
     end
     Vr3 = -(Kf / Tf) * VFE
     Tc_Tb_ratio = Tb <= eps() ? 0.0 : Tc / Tb
@@ -571,7 +589,7 @@ function initialize_avr!(
 
     # Check limits to field voltage 
     if (Vt * Vr_min > Vf0) || (Vf0 > Vt * Vr_max - Kc * Ifd)
-        @error(
+        CRC.@ignore_derivatives @error(
             "Field Voltage for AVR in $(PSY.get_name(dynamic_device)) is $(Vf0) pu, which is outside its limits.  Consider updating the operating point."
         )
     end

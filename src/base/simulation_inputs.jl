@@ -1,4 +1,4 @@
-mutable struct SimulationInputs
+struct SimulationInputs
     dynamic_injectors::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
     static_injectors::Vector
     static_loads::Vector
@@ -20,7 +20,7 @@ mutable struct SimulationInputs
     DAE_vector::Vector{Bool}
     mass_matrix::LinearAlgebra.Diagonal{Float64}
     parameters::Vector{Float64}
-    delays::Vector
+    constant_lags::Vector
 end
 
 function SimulationInputs(
@@ -81,7 +81,7 @@ function SimulationInputs(
         PSY.get_frequency(sys),
     )
 
-    delays = get_system_delays(sys)
+    delays = get_constant_lags(sys)
     if !isempty(delays)
         @info "System has delays. Use the correct solver for delay differential equations."
     end
@@ -138,7 +138,7 @@ get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
 get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
 get_mass_matrix(inputs::SimulationInputs) = inputs.mass_matrix
 get_parameters(inputs::SimulationInputs) = inputs.parameters
-get_delays(inputs::SimulationInputs) = inputs.delays
+get_constant_lags(inputs::SimulationInputs) = inputs.constant_lags
 
 # Utility function not to be used for performance sensitive operations
 function get_voltage_buses_ix(inputs::SimulationInputs)
@@ -245,7 +245,7 @@ function _wrap_dynamic_injector_data(
     return wrapped_injector, state_count, parameter_count
 end
 
-function get_system_delays(sys::PSY.System)
+function get_constant_lags(sys::PSY.System)
     delays = []
     for injector in get_injectors_with_dynamics(sys)
         device_delays = get_delays(PSY.get_dynamic_injector(injector))
@@ -253,7 +253,8 @@ function get_system_delays(sys::PSY.System)
             delays = vcat(delays, device_delays)
         end
     end
-    return delays
+    return filter!(x -> x != 0, unique(delays))
+    
 end
 
 function _wrap_dynamic_branches(

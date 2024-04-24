@@ -47,7 +47,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -124,7 +126,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -226,7 +230,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[1], V_dq0[2], V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -322,7 +328,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[1], V_dq0[2], V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -428,7 +436,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -532,7 +542,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[1], V_dq0[2], V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -632,7 +644,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -784,7 +798,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, Vf0, eq_p0, ed_p0, ψ_kd0, ψ_kq0, Xad_Ifd0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -910,7 +926,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0, Xad_Ifd0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -1047,7 +1065,9 @@ function initialize_mach_shaft!(
     x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0, Xad_Ifd0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Machine $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -1144,7 +1164,7 @@ static::PSY.StaticInjection,
     x0 = [δ0, τm0, 1.0, V_dq0[2], -V_dq0[1], 1.0, 0.0, 0.0]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Machine $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn("Initialization in Machine $(PSY.get_name(static)) failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages

@@ -81,12 +81,16 @@ import PowerFlows
 import PowerNetworkMatrices
 import TimerOutputs
 import FastClosures: @closure
+import Zygote
+import ChainRulesCore
+import Accessors
 
 const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
 const PF = PowerFlows
 const PNM = PowerNetworkMatrices
+const CRC = ChainRulesCore
 
 using DocStringExtensions
 
@@ -118,6 +122,7 @@ include("base/nlsolve_wrapper.jl")
 include("base/simulation_initialization.jl")
 include("base/small_signal.jl")
 include("base/model_validation.jl")
+include("base/sensitivity_analysis.jl")
 
 #Common Models
 include("models/branch.jl")

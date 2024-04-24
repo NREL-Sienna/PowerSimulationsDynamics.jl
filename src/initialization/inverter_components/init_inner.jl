@@ -99,7 +99,7 @@ function initialize_inner!(
     x0 = [θ0_oc, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Inner Control failed")
+        CRC.@ignore_derivatives @warn("Initialization in Inner Control failed")
     else
         sol_x0 = sol.zero
         #Update angle:
@@ -207,7 +207,7 @@ function initialize_inner!(
     x0 = [0.0, 0.0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Inner Control failed")
+        CRC.@ignore_derivatives @warn("Initialization in Inner Control failed")
     else
         sol_x0 = sol.zero
         #Update Converter modulation
@@ -270,13 +270,13 @@ function initialize_inner!(
         current_limit_logic(inner_control, Val(PQ_Flag), V_t, Ip_oc, Iq_cmd)
 
     if Ip_oc >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_oc
-        @error(
+        CRC.@ignore_derivatives @error(
             "Inverter $(PSY.get_name(static)) active current $(Ip_oc) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
         )
     end
 
     if Iq_oc >= Iq_max + BOUNDS_TOLERANCE || Iq_min - BOUNDS_TOLERANCE >= Iq_oc
-        @error(
+        CRC.@ignore_derivatives @error(
             "Inverter $(PSY.get_name(static)) reactive current $(Iq_oc) out of limits $(Iq_min) $(Iq_max). Check Power Flow or Parameters"
         )
     end

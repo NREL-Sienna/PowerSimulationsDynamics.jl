@@ -11,7 +11,7 @@ function ResidualModel(
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    if isempty(get_delays(inputs))
+    if isempty(get_constant_lags(inputs))
         return SystemModel{ResidualModel, NoDelays}(
             inputs,
             Ctype{U}(system_residual!, inputs),
@@ -27,7 +27,7 @@ end
 Instantiate an ResidualModel for ODE inputs.
 """
 function ResidualModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
-    if isempty(get_delays(inputs))
+    if isempty(get_constant_lags(inputs))
         return SystemModel{ResidualModel, NoDelays}(inputs, Ctype(system_residual!, inputs))
     else
         error(
@@ -186,7 +186,7 @@ end
 Instantiate a MassMatrixModel for ODE inputs.
 """
 function MassMatrixModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
-    if isempty(get_delays(inputs))
+    if isempty(get_constant_lags(inputs))
         return SystemModel{MassMatrixModel, NoDelays}(
             inputs,
             Ctype(system_mass_matrix!, inputs),
@@ -212,7 +212,7 @@ function MassMatrixModel(
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    if isempty(get_delays(inputs))
+    if isempty(get_constant_lags(inputs))
         return SystemModel{MassMatrixModel, NoDelays}(
             inputs,
             Ctype{U}(system_mass_matrix!, inputs),
