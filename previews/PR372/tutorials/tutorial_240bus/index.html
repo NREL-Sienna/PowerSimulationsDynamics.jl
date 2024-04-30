@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>240 WECC solver comparison · PowerSimulationsDynamics.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="PowerSimulationsDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerSimulationsDynamics.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Welcome Page</a></li><li><a class="tocitem" href="../../quick_start_guide/">Quick Start Guide</a></li><li><a class="tocitem" href="../../execute/">Simulation Execution</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../tutorial_dynamic_data/">Create Dynamic Data</a></li><li><a class="tocitem" href="../tutorial_omib/">OMIB</a></li><li><a class="tocitem" href="../tutorial_dynamic_lines/">Dynamic Lines Simulation</a></li><li><a class="tocitem" href="../tutorial_inverter_modeling/">Inverter Modeling</a></li><li class="is-active"><a class="tocitem" href>240 WECC solver comparison</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Load-the-system-and-transform-load-data"><span>Load the system and transform load data</span></a></li><li><a class="tocitem" href="#Build-the-simulation-and-initialize-the-problem"><span>Build the simulation and initialize the problem</span></a></li><li><a class="tocitem" href="#Run-the-simulation-using-Sundials"><span>Run the simulation using Sundials</span></a></li><li><a class="tocitem" href="#Read-the-results-and-plot-a-system-variable"><span>Read the results and plot a system variable</span></a></li><li><a class="tocitem" href="#Run-the-simulation-using-Rodas4()"><span>Run the simulation using Rodas4()</span></a></li><li><a class="tocitem" href="#Read-the-results"><span>Read the results</span></a></li><li><a class="tocitem" href="#Compare-the-results"><span>Compare the results</span></a></li></ul></li><li><a class="tocitem" href="../tutorial_continuation_pf/">Small-Signal Analysis</a></li><li><a class="tocitem" href="../tutorial_activeload/">Active Load Model</a></li></ul></li><li><a class="tocitem" href="../../models/">Models</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../small/">Small Signal</a></li><li><a class="tocitem" href="../../reference_frames/">Reference Frames</a></li><li><a class="tocitem" href="../../perturbations/">Perturbations</a></li><li><a class="tocitem" href="../../time_delays/">Time Delays</a></li><li><a class="tocitem" href="../../generic/">Industrial Renewable Models</a></li><li><span class="tocitem">Generator Component Library</span><ul><li><a class="tocitem" href="../../component_models/machines/">Machine</a></li><li><a class="tocitem" href="../../component_models/shafts/">Shaft</a></li><li><a class="tocitem" href="../../component_models/avr/">AVR</a></li><li><a class="tocitem" href="../../component_models/pss/">PSS</a></li><li><a class="tocitem" href="../../component_models/turbine_gov/">Turbine and Governor</a></li></ul></li><li><span class="tocitem">CIG Component Library</span><ul><li><a class="tocitem" href="../../component_models/converter/">Converter</a></li><li><a class="tocitem" href="../../component_models/dc_source/">DC Sources</a></li><li><a class="tocitem" href="../../component_models/filters/">Filter</a></li><li><a class="tocitem" href="../../component_models/freq_esti/">Frequency Estimators</a></li><li><a class="tocitem" href="../../component_models/inner_control/">Inner Control</a></li><li><a class="tocitem" href="../../component_models/outer_control/">Outer Control</a></li></ul></li><li><span class="tocitem">Branch Models</span><ul><li><a class="tocitem" href="../../component_models/network/">Network</a></li></ul></li><li><span class="tocitem">Load Models</span><ul><li><a class="tocitem" href="../../component_models/loads/">Load Models</a></li></ul></li><li><span class="tocitem">Code Base Developer Guide</span><ul><li><a class="tocitem" href="../../code_base_developer_guide/developer/">Developer Guide</a></li></ul></li><li><a class="tocitem" href="../../api/public/">Public API Reference</a></li><li><a class="tocitem" href="../../api/internal/">Internal API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>240 WECC solver comparison</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>240 WECC solver comparison</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl/blob/main/docs/src/tutorials/tutorial_240bus.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="[PSSE-240-Bus-Case-system-with-Renewables](https://www.nrel.gov/grid/test-case-repository.html)"><a class="docs-heading-anchor" href="#[PSSE-240-Bus-Case-system-with-Renewables](https://www.nrel.gov/grid/test-case-repository.html)"><a href="https://www.nrel.gov/grid/test-case-repository.html">PSSE 240 Bus Case system with Renewables</a></a><a id="[PSSE-240-Bus-Case-system-with-Renewables](https://www.nrel.gov/grid/test-case-repository.html)-1"></a><a class="docs-heading-anchor-permalink" href="#[PSSE-240-Bus-Case-system-with-Renewables](https://www.nrel.gov/grid/test-case-repository.html)" title="Permalink"></a></h1><p><strong>Originally Contributed by</strong>: José Daniel Lara</p><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>This tutorial will introduce the industry models of Renewable Energy the comparisons between DiffEq Integration techniques for comparison. We show the uses of Sundials and OrdinaryDiffEq to obtain the transient response of a system to a perturbation.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using PowerSimulationsDynamics</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using PowerSystemCaseBuilder</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using PowerSystems</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; const PSY = PowerSystems</code><code class="nohighlight hljs ansi" style="display:block;">PowerSystems</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Sundials</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Plots</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using OrdinaryDiffEq</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p><code>PowerSystemCaseBuilder.jl</code> is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function <code>build_system</code>. For more details visit <a href="https://nrel-sienna.github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/">PowerSystemCaseBuilder Documentation</a></p></div></div><h2 id="Load-the-system-and-transform-load-data"><a class="docs-heading-anchor" href="#Load-the-system-and-transform-load-data">Load the system and transform load data</a><a id="Load-the-system-and-transform-load-data-1"></a><a class="docs-heading-anchor-permalink" href="#Load-the-system-and-transform-load-data" title="Permalink"></a></h2><p>To load the system we use <code>PowerSystemCaseBuilder.jl</code>:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # We remove the checks in this example to avoid large prints
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>240 WECC solver comparison · PowerSimulationsDynamics.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="PowerSimulationsDynamics.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PowerSimulationsDynamics.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Welcome Page</a></li><li><a class="tocitem" href="../../quick_start_guide/">Quick Start Guide</a></li><li><a class="tocitem" href="../../execute/">Simulation Execution</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../tutorial_dynamic_data/">Create Dynamic Data</a></li><li><a class="tocitem" href="../tutorial_omib/">OMIB</a></li><li><a class="tocitem" href="../tutorial_dynamic_lines/">Dynamic Lines Simulation</a></li><li><a class="tocitem" href="../tutorial_inverter_modeling/">Inverter Modeling</a></li><li class="is-active"><a class="tocitem" href>240 WECC solver comparison</a><ul class="internal"><li><a class="tocitem" href="#Introduction"><span>Introduction</span></a></li><li><a class="tocitem" href="#Load-the-system-and-transform-load-data"><span>Load the system and transform load data</span></a></li><li><a class="tocitem" href="#Build-the-simulation-and-initialize-the-problem"><span>Build the simulation and initialize the problem</span></a></li><li><a class="tocitem" href="#Run-the-simulation-using-Sundials"><span>Run the simulation using Sundials</span></a></li><li><a class="tocitem" href="#Read-the-results-and-plot-a-system-variable"><span>Read the results and plot a system variable</span></a></li><li><a class="tocitem" href="#Run-the-simulation-using-Rodas4()"><span>Run the simulation using Rodas4()</span></a></li><li><a class="tocitem" href="#Read-the-results"><span>Read the results</span></a></li><li><a class="tocitem" href="#Compare-the-results"><span>Compare the results</span></a></li></ul></li><li><a class="tocitem" href="../tutorial_continuation_pf/">Small-Signal Analysis</a></li><li><a class="tocitem" href="../tutorial_activeload/">Active Load Model</a></li></ul></li><li><a class="tocitem" href="../../models/">Models</a></li><li><a class="tocitem" href="../../initialization/">Initialization</a></li><li><a class="tocitem" href="../../small/">Small Signal</a></li><li><a class="tocitem" href="../../reference_frames/">Reference Frames</a></li><li><a class="tocitem" href="../../perturbations/">Perturbations</a></li><li><a class="tocitem" href="../../time_delays/">Time Delays</a></li><li><a class="tocitem" href="../../sensitivity_analysis/">Sensitivity Analysis</a></li><li><a class="tocitem" href="../../generic/">Industrial Renewable Models</a></li><li><span class="tocitem">Generator Component Library</span><ul><li><a class="tocitem" href="../../component_models/machines/">Machine</a></li><li><a class="tocitem" href="../../component_models/shafts/">Shaft</a></li><li><a class="tocitem" href="../../component_models/avr/">AVR</a></li><li><a class="tocitem" href="../../component_models/pss/">PSS</a></li><li><a class="tocitem" href="../../component_models/turbine_gov/">Turbine and Governor</a></li></ul></li><li><span class="tocitem">CIG Component Library</span><ul><li><a class="tocitem" href="../../component_models/converter/">Converter</a></li><li><a class="tocitem" href="../../component_models/dc_source/">DC Sources</a></li><li><a class="tocitem" href="../../component_models/filters/">Filter</a></li><li><a class="tocitem" href="../../component_models/freq_esti/">Frequency Estimators</a></li><li><a class="tocitem" href="../../component_models/inner_control/">Inner Control</a></li><li><a class="tocitem" href="../../component_models/outer_control/">Outer Control</a></li></ul></li><li><span class="tocitem">Branch Models</span><ul><li><a class="tocitem" href="../../component_models/network/">Network</a></li></ul></li><li><span class="tocitem">Load Models</span><ul><li><a class="tocitem" href="../../component_models/loads/">Load Models</a></li></ul></li><li><span class="tocitem">Code Base Developer Guide</span><ul><li><a class="tocitem" href="../../code_base_developer_guide/developer/">Developer Guide</a></li></ul></li><li><a class="tocitem" href="../../api/public/">Public API Reference</a></li><li><a class="tocitem" href="../../api/internal/">Internal API Reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>240 WECC solver comparison</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>240 WECC solver comparison</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/NREL-Sienna/PowerSimulationsDynamics.jl/blob/main/docs/src/tutorials/tutorial_240bus.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="[PSSE-240-Bus-Case-system-with-Renewables](https://www.nrel.gov/grid/test-case-repository.html)"><a class="docs-heading-anchor" href="#[PSSE-240-Bus-Case-system-with-Renewables](https://www.nrel.gov/grid/test-case-repository.html)"><a href="https://www.nrel.gov/grid/test-case-repository.html">PSSE 240 Bus Case system with Renewables</a></a><a id="[PSSE-240-Bus-Case-system-with-Renewables](https://www.nrel.gov/grid/test-case-repository.html)-1"></a><a class="docs-heading-anchor-permalink" href="#[PSSE-240-Bus-Case-system-with-Renewables](https://www.nrel.gov/grid/test-case-repository.html)" title="Permalink"></a></h1><p><strong>Originally Contributed by</strong>: José Daniel Lara</p><h2 id="Introduction"><a class="docs-heading-anchor" href="#Introduction">Introduction</a><a id="Introduction-1"></a><a class="docs-heading-anchor-permalink" href="#Introduction" title="Permalink"></a></h2><p>This tutorial will introduce the industry models of Renewable Energy the comparisons between DiffEq Integration techniques for comparison. We show the uses of Sundials and OrdinaryDiffEq to obtain the transient response of a system to a perturbation.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; using PowerSimulationsDynamics</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using PowerSystemCaseBuilder</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using PowerSystems</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; const PSY = PowerSystems</code><code class="nohighlight hljs ansi" style="display:block;">PowerSystems</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Sundials</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using Plots</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; using OrdinaryDiffEq</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p><code>PowerSystemCaseBuilder.jl</code> is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data instead of calling the function <code>build_system</code>. For more details visit <a href="https://nrel-sienna.github.io/PowerSystems.jl/stable/tutorials/powersystembuilder/">PowerSystemCaseBuilder Documentation</a></p></div></div><h2 id="Load-the-system-and-transform-load-data"><a class="docs-heading-anchor" href="#Load-the-system-and-transform-load-data">Load the system and transform load data</a><a id="Load-the-system-and-transform-load-data-1"></a><a class="docs-heading-anchor-permalink" href="#Load-the-system-and-transform-load-data" title="Permalink"></a></h2><p>To load the system we use <code>PowerSystemCaseBuilder.jl</code>:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # We remove the checks in this example to avoid large prints
        sys = build_system(PSIDSystems, &quot;WECC 240 Bus&quot;; runchecks = false)
        
        # Transform the system&#39;s load</code><code class="nohighlight hljs ansi" style="display:block;">┌ Info: Building new system WECC 240 Bus from raw data
@@ -44,12 +44,12 @@ Dynamic Components
 ┌──────────────────┬───────┐
 │ Type             │ Count │
 ├──────────────────┼───────┤
-│ DynamicGenerator │ 1     │
-│ DynamicGenerator │ 41    │
-│ DynamicGenerator │ 36    │
-│ DynamicGenerator │ 6     │
-│ DynamicGenerator │ 22    │
 │ DynamicGenerator │ 3     │
+│ DynamicGenerator │ 22    │
+│ DynamicGenerator │ 36    │
+│ DynamicGenerator │ 41    │
+│ DynamicGenerator │ 6     │
+│ DynamicGenerator │ 1     │
 │ DynamicInverter  │ 37    │
 └──────────────────┴───────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for l in get_components(PSY.StandardLoad, sys)
            transform_load_to_constant_impedance(l)
@@ -338,6 +338,66 @@ Dynamic Components
            BranchTrip(1.0, Line, &quot;CORONADO    -1101-PALOVRDE    -1401-i_10&quot;);
            console_level = Logging.Info,
        )</code><code class="nohighlight hljs ansi" style="display:block;">[ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
 [ Info: Pre-Initializing Simulation States
 [ Info: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 ┌ Warning: Unit generator-3631-NB set at the limit -0.14000000000000004. Q_max = 0.20000000000000004 Q_min = -0.14000000000000004
@@ -358,25 +418,25 @@ Iter     f(x) inf-norm    Step 2-norm
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     34.6s            6.37GiB    
+│                 Total measured:                     35.3s            6.32GiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    34.6s  100.0%   6.37GiB  100.0%
-│    Build Simulation Inputs                  1    3.29s    9.5%    195MiB    3.0%
-│      Wrap Branches                          1   12.3μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1    2.06s    5.9%    112MiB    1.7%
-│      Wrap Static Injectors                  1    248ms    0.7%   10.9MiB    0.2%
-│      Build initial parameters               1    179ms    0.5%   17.1MiB    0.3%
-│    Pre-initialization                       1    7.91s   22.8%    578MiB    8.9%
-│      Power Flow solution                    1    1.06s    3.1%   44.1MiB    0.7%
+│  Build Simulation                           1    35.3s  100.0%   6.32GiB  100.0%
+│    Build Simulation Inputs                  1    3.69s   10.4%    198MiB    3.1%
+│      Wrap Branches                          1   11.3μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1    2.57s    7.3%    136MiB    2.1%
+│      Wrap Static Injectors                  1    252ms    0.7%   10.9MiB    0.2%
+│      Build initial parameters               1   42.8ms    0.1%   2.32MiB    0.0%
+│    Pre-initialization                       1    7.71s   21.8%    444MiB    6.9%
+│      Power Flow solution                    1    1.14s    3.2%   44.1MiB    0.7%
 │      Initialize Static Injectors            1   1.06μs    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1    5.44s   15.7%    466MiB    7.1%
-│    Calculate Jacobian                       1    16.7s   48.1%   5.07GiB   79.6%
-│    Make Model Function                      1   24.9μs    0.0%   32.0KiB    0.0%
-│    Initial Condition NLsolve refine...      1    6.45s   18.6%    545MiB    8.4%
-│    Build Perturbations                      1    157μs    0.0%   75.9KiB    0.0%
-│    Make DiffEq Problem                      1    345ms    1.0%   9.89MiB    0.2%
+│      Initialize Dynamic Injectors           1    5.17s   14.6%    332MiB    5.1%
+│    Calculate Jacobian                       1    17.0s   48.1%   5.16GiB   81.6%
+│    Make Model Function                      1   26.5μs    0.0%   32.0KiB    0.0%
+│    Initial Condition NLsolve refine...      1    6.56s   18.6%    537MiB    8.3%
+│    Build Perturbations                      1    173μs    0.0%   75.9KiB    0.0%
+│    Make DiffEq Problem                      1    350ms    1.0%   9.93MiB    0.2%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -399,7 +459,7 @@ Simulation Summary
 │ Time Span                  │ (0.0, 20.0)  │
 │ Total Time Steps           │ 2015         │
 │ Number of States           │ 2164         │
-│ Total solve time           │ 19.254580893 │
+│ Total solve time           │ 19.517700277 │
 └────────────────────────────┴──────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101_ida = get_voltage_magnitude_series(res_ida, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101_ida);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_ida.svg" alt="plot"/></p><h2 id="Run-the-simulation-using-Rodas4()"><a class="docs-heading-anchor" href="#Run-the-simulation-using-Rodas4()">Run the simulation using Rodas4()</a><a id="Run-the-simulation-using-Rodas4()-1"></a><a class="docs-heading-anchor-permalink" href="#Run-the-simulation-using-Rodas4()" title="Permalink"></a></h2><p>In this case, we will use a MassMatrixModel formulation, for more details about the formulation checkout the <a href="https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable/models/">Models Section</a> in <code>PowerSimulationsDynamics.jl</code> documentation</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim_rodas = Simulation(
            MassMatrixModel,
            sys, #system
@@ -408,6 +468,66 @@ Simulation Summary
            BranchTrip(1.0, Line, &quot;CORONADO    -1101-PALOVRDE    -1401-i_10&quot;);
            console_level = Logging.Info,
        )</code><code class="nohighlight hljs ansi" style="display:block;">[ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
+┌ Warning: Parameters not yet defined for dynamic component: IEEEST
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
 [ Info: Pre-Initializing Simulation States
 [ Info: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 ┌ Warning: Unit generator-3631-NB set at the limit -0.14000000000000004. Q_max = 0.20000000000000004 Q_min = -0.14000000000000004
@@ -428,25 +548,25 @@ Iter     f(x) inf-norm    Step 2-norm
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     10.5s            0.98GiB    
+│                 Total measured:                     10.8s            0.98GiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    10.5s  100.0%   0.98GiB  100.0%
-│    Build Simulation Inputs                  1   42.3ms    0.4%   12.5MiB    1.2%
-│      Wrap Branches                          1   5.41μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1   4.62ms    0.0%   3.32MiB    0.3%
-│      Wrap Static Injectors                  1    233μs    0.0%    168KiB    0.0%
-│      Build initial parameters               1    506μs    0.0%    514KiB    0.1%
-│    Pre-initialization                       1   74.0ms    0.7%   10.4MiB    1.0%
-│      Power Flow solution                    1   10.8ms    0.1%   5.76MiB    0.6%
-│      Initialize Static Injectors            1    752ns    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1   4.46ms    0.0%   2.95MiB    0.3%
-│    Calculate Jacobian                       1    8.70s   82.8%    728MiB   72.6%
-│    Make Model Function                      1   6.25ms    0.1%    154KiB    0.0%
-│    Initial Condition NLsolve refine...      1    1.30s   12.4%    233MiB   23.3%
-│    Build Perturbations                      1   12.3ms    0.1%    231KiB    0.0%
-│    Make DiffEq Problem                      1    375ms    3.6%   17.8MiB    1.8%
+│  Build Simulation                           1    10.8s  100.0%   0.98GiB  100.0%
+│    Build Simulation Inputs                  1   41.6ms    0.4%   16.0MiB    1.6%
+│      Wrap Branches                          1   6.06μs    0.0%      240B    0.0%
+│      Wrap Dynamic Injectors                 1   7.14ms    0.1%   6.16MiB    0.6%
+│      Wrap Static Injectors                  1    226μs    0.0%    168KiB    0.0%
+│      Build initial parameters               1   1.19ms    0.0%   1.56MiB    0.2%
+│    Pre-initialization                       1   77.5ms    0.7%   10.3MiB    1.0%
+│      Power Flow solution                    1   13.1ms    0.1%   5.76MiB    0.6%
+│      Initialize Static Injectors            1   1.29μs    0.0%     0.00B    0.0%
+│      Initialize Dynamic Injectors           1   4.64ms    0.0%   2.83MiB    0.3%
+│    Calculate Jacobian                       1    9.31s   86.3%    722MiB   71.9%
+│    Make Model Function                      1   7.47ms    0.1%    154KiB    0.0%
+│    Initial Condition NLsolve refine...      1    955ms    8.8%    238MiB   23.7%
+│    Build Perturbations                      1   13.1ms    0.1%    231KiB    0.0%
+│    Make DiffEq Problem                      1    385ms    3.6%   17.8MiB    1.8%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -476,5 +596,5 @@ Simulation Summary
 │ Time Span                  │ (0.0, 20.0)  │
 │ Total Time Steps           │ 2002         │
 │ Number of States           │ 2164         │
-│ Total solve time           │ 34.737037973 │
-└────────────────────────────┴──────────────┘</code></pre><h2 id="Compare-the-results"><a class="docs-heading-anchor" href="#Compare-the-results">Compare the results</a><a id="Compare-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Compare-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected. For both of the solution techniques.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101 = get_voltage_magnitude_series(res_rodas, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101, label = &quot;RODAS4&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(v1101_ida, label = &quot;IDA&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 24 April 2024 20:13">Wednesday 24 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+│ Total solve time           │ 35.819612035 │
+└────────────────────────────┴──────────────┘</code></pre><h2 id="Compare-the-results"><a class="docs-heading-anchor" href="#Compare-the-results">Compare the results</a><a id="Compare-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Compare-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected. For both of the solution techniques.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101 = get_voltage_magnitude_series(res_rodas, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101, label = &quot;RODAS4&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(v1101_ida, label = &quot;IDA&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 30 April 2024 16:50">Tuesday 30 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
