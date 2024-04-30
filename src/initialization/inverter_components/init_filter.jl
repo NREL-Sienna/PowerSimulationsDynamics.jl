@@ -31,7 +31,7 @@ function initialize_filter!(
     lf, rf, cf, lg, rg = internal_params
 
     #Set parameters
-    ω_sys = device_parameters[ω_ref_ix]
+    ω_sys = get_ω_ref(dynamic_device)
 
     #To solve Vr_cnv, Vi_cnv, Ir_cnv, Ii_cnv, Vr_filter, Vi_filter
     function f!(out, x)

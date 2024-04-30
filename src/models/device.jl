@@ -208,7 +208,7 @@ function device!(
     inner_vars[Vi_inv_var] = voltage_i
 
     #Update V_ref
-    V_ref = device_parameters[V_ref_ix]
+    V_ref = get_V_ref(dynamic_device)
     inner_vars[V_oc_var] = V_ref
 
     #Update current inner_vars
@@ -327,19 +327,19 @@ function device!(
     h,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    ω_θ = PSY.get_internal_angle_frequencies(get_dynamic_device(dynamic_device))
-    ω_V = PSY.get_internal_angle_frequencies(get_dynamic_device(dynamic_device))
+    ω_θ = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
+    ω_V = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
 
     dV = 0
     for (ix, A) in
-        enumerate(PSY.get_internal_voltage_coefficients(get_dynamic_device(dynamic_device)))
+        enumerate(PSY.get_internal_voltage_coefficients(get_device(dynamic_device)))
         t <= 0 && continue
         dV += ω_V[ix] * (A[1] * cos(ω_V[ix] * t) - A[2] * sin(ω_V[ix] * t))
     end
 
     dθ = 0
     for (ix, A) in
-        enumerate(PSY.get_internal_angle_coefficients(get_dynamic_device(dynamic_device)))
+        enumerate(PSY.get_internal_angle_coefficients(get_device(dynamic_device)))
         t <= 0 && continue
         dθ += ω_θ[ix] * (A[1] * cos(ω_θ[ix] * t) - A[2] * sin(ω_θ[ix] * t))
     end
@@ -351,8 +351,8 @@ function device!(
     output_ode[2] = dθ
 
     #update current
-    R_th = PSY.get_R_th(get_dynamic_device(dynamic_device))
-    X_th = PSY.get_X_th(get_dynamic_device(dynamic_device))
+    R_th = PSY.get_R_th(get_device(dynamic_device))
+    X_th = PSY.get_X_th(get_device(dynamic_device))
     Zmag = R_th^2 + X_th^2
     current_r[1] += R_th * (V_R - voltage_r[1]) / Zmag + X_th * (V_I - voltage_i[1]) / Zmag #in system pu flowing out
     current_i[1] += R_th * (V_I - voltage_i[1]) / Zmag - X_th * (V_R - voltage_r[1]) / Zmag #in system pu flowing out
@@ -823,10 +823,6 @@ function device!(
     ωr = device_states[5]
 
     #Get parameters
-    _,
-    _,
-    _,
-    _,
     R_s,
     R_r,
     X_ls,
@@ -910,10 +906,6 @@ function device!(
     ωr = device_states[3]
 
     #Get parameters
-    _,
-    _,
-    _,
-    _,
     R_s,
     R_r,
     X_ls,
@@ -999,10 +991,12 @@ function device!(
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
+    V_ref = get_V_ref(dynamic_wrapper)
     # TODO: V_abs is the voltage magnitude on the high side of generator step-up transformer, if present.
     V_abs = sqrt(voltage_r^2 + voltage_i^2)
 
     if get_connection_status(dynamic_wrapper) < 1.0
+        @error "NOT CONNECTED? "
         output_ode .= zero(T)
         return
     end
@@ -1013,10 +1007,6 @@ function device!(
     vr2 = device_states[3]
 
     #Get parameters
-    Q_ref,
-    V_ref,
-    ω_ref,
-    P_ref,
     K,
     T1,
     T2,
@@ -1075,7 +1065,7 @@ function device_mass_matrix_entries!(
     dynamic_device::DynamicWrapper{PSY.ActiveConstantPowerLoad},
 )
     global_index = get_global_index(dynamic_device)
-    device = get_dynamic_device(dynamic_device)
+    device = get_device(dynamic_device)
     bool_mm_value = PSY.get_is_filter_differential(device)
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0
@@ -1115,6 +1105,7 @@ function device!(
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
     f0 = get_system_base_frequency(dynamic_wrapper)
+    V_ref = get_V_ref(dynamic_wrapper)
     if get_connection_status(dynamic_wrapper) < 1.0
         output_ode .= zero(T)
         return
@@ -1145,10 +1136,6 @@ function device!(
     I_dq_cnv = ri_dq(θ_pll + pi / 2) * [Ir_cnv; Ii_cnv]
 
     #Get parameters
-    Q_ref,
-    V_ref,
-    ω_ref,
-    P_ref,
     r_load,
     c_dc,
     rf,
@@ -1171,7 +1158,7 @@ function device!(
 
     # Compute DC side output
     Id_ref, dη_dt = pi_block(V_ref - v_dc, η, kpv, kiv)
-    Iq_ref = Q_ref
+    Iq_ref = get_Q_ref(dynamic_wrapper)
     # Compute AC controller expressions
     Vd_ref_uncomp, dγd_dt = pi_block(-Id_ref + I_dq_cnv[d], γd, kpc, kic)
     Vq_ref_uncomp, dγq_dt = pi_block(-Iq_ref + I_dq_cnv[q], γq, kpc, kic)
@@ -1230,8 +1217,8 @@ function mass_matrix_dera_entries!(
     dera::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     global_index::ImmutableDict{Symbol, Int64},
 )
-    ddera = get_dynamic_device(dera)
-    Freq_Flag = PSY.get_Freq_Flag(get_dynamic_device(dera))
+    ddera = get_device(dera)
+    Freq_Flag = PSY.get_Freq_Flag(get_device(dera))
     if Freq_Flag == 1
         mass_matrix[global_index[:Vmeas], global_index[:Vmeas]] = PSY.get_T_rv(ddera)
         mass_matrix[global_index[:Pmeas], global_index[:Pmeas]] = PSY.get_Tp(ddera)
@@ -1262,7 +1249,7 @@ function device!(
     h,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    Freq_Flag = PSY.get_Freq_Flag(get_dynamic_device(dynamic_wrapper))
+    Freq_Flag = PSY.get_Freq_Flag(get_device(dynamic_wrapper))
     _mdl_ode_AggregateDistributedGenerationA!(
         device_states,
         output_ode,
@@ -1302,12 +1289,12 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
     Sbase = get_system_base_power(dynamic_wrapper)
     Vt = sqrt(voltage_r^2 + voltage_i^2)
-    dynamic_device = get_dynamic_device(dynamic_wrapper)
+    dynamic_device = get_device(dynamic_wrapper)
     #Obtain References (from wrapper and device)
     Pfa_ref = PSY.get_Pfa_ref(dynamic_device)
-    P_ref = device_parameters[P_ref_ix]
-    Q_ref = device_parameters[Q_ref_ix]
-    V_ref = device_parameters[V_ref_ix]
+    P_ref = get_P_ref(dynamic_wrapper)
+    Q_ref = get_Q_ref(dynamic_wrapper)
+    V_ref = get_V_ref(dynamic_wrapper)
 
     #Get flags
     Pf_Flag = PSY.get_Pf_Flag(dynamic_device)
@@ -1325,10 +1312,6 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_cmd = Iq
 
     #Get parameters
-    Q_ref,
-    V_ref,
-    ω_ref,
-    P_ref,
     T_rv,
     Trf,
     dbd1,
@@ -1447,13 +1430,13 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
     Sbase = get_system_base_power(dynamic_wrapper)
     Vt = sqrt(voltage_r^2 + voltage_i^2)
-    dynamic_device = get_dynamic_device(dynamic_wrapper)
+    dynamic_device = get_device(dynamic_wrapper)
     #Obtain References (from wrapper and device)
     Pfa_ref = PSY.get_Pfa_ref(dynamic_device)
-    P_ref = device_parameters[P_ref_ix]
-    Q_ref = device_parameters[Q_ref_ix]
-    V_ref = device_parameters[V_ref_ix]
-    ω_ref = device_parameters[ω_ref_ix]
+    P_ref = get_P_ref(dynamic_wrapper)
+    Q_ref = get_Q_ref(dynamic_wrapper)
+    V_ref = get_V_ref(dynamic_wrapper)
+    ω_ref = get_ω_ref(dynamic_wrapper)
 
     #Get flags
     Pf_Flag = PSY.get_Pf_Flag(dynamic_device)
@@ -1474,10 +1457,6 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_cmd = Iq
 
     #Get parameters
-    Q_ref,
-    V_ref,
-    ω_ref,
-    P_ref,
     T_rv,
     Trf,
     dbd1,

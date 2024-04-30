@@ -61,6 +61,8 @@ export is_valid
 export transform_load_to_constant_impedance
 export transform_load_to_constant_current
 export transform_load_to_constant_power
+export get_parameter_sensitivity_function!
+export get_parameter_sensitivity_values
 
 ####################################### Package Imports ####################################
 import Logging

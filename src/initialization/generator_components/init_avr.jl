@@ -9,7 +9,7 @@ function initialize_avr!(
     Vf = inner_vars[Vf_var]
     #Update Control Refs
     avr = PSY.get_avr(dynamic_device)
-    device_parameters[V_ref_ix] = Vf
+    set_V_ref(dynamic_device, Vf)
     PSY.set_Vf!(avr, Vf)
     PSY.set_V_ref!(avr, Vf)
     return
@@ -34,7 +34,7 @@ function initialize_avr!(
     #Set V_ref
     PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vm)
     #Update Control Refs
-    device_parameters[V_ref_ix] = Vm
+    set_V_ref(dynamic_device, Vm)
     return
 end
 
@@ -79,7 +79,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        device_parameters[V_ref_ix] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeI)
         avr_states = @view device_states[avr_ix]
@@ -147,7 +147,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        device_parameters[V_ref_ix] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeII)
         avr_states = @view device_states[avr_ix]
@@ -270,7 +270,7 @@ function initialize_avr!(
         sol_x0 = sol.zero
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        device_parameters[V_ref_ix] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, typeof(avr))
         avr_states = @view device_states[avr_ix]
@@ -328,7 +328,7 @@ function initialize_avr!(
         end
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        device_parameters[V_ref_ix] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
 
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
@@ -414,7 +414,7 @@ function initialize_avr!(
         end
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        device_parameters[V_ref_ix] = sol_x0[1]
+        set_V_ref(dynamic_device, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.SCRX)
         avr_states = @view device_states[avr_ix]
@@ -465,7 +465,7 @@ function initialize_avr!(
     Vref0 = Vt + Vf0 / Ka
 
     PSY.set_V_ref!(avr, Vref0)
-    device_parameters[V_ref_ix] = Vref0
+    set_V_ref(dynamic_device, Vref0)
 
     #States of EXST1_PTI are Vm, Vll, Vr, Vfb
 
@@ -544,7 +544,7 @@ function initialize_avr!(
 
     #Update V_ref
     PSY.set_V_ref!(avr, Vref0)
-    device_parameters[V_ref_ix] = Vref0
+    set_V_ref(dynamic_device, Vref0)
 
     #States of EXAC1 are Vm, Vr1, Vr2, Ve, Vr3
 
@@ -604,7 +604,7 @@ function initialize_avr!(
     Vref0 = Vt + Va / Ka
 
     PSY.set_V_ref!(avr, Vref0)
-    device_parameters[V_ref_ix] = Vref0
+    set_V_ref(dynamic_device, Vref0)
 
     #States of ESST1A_PTI are Vm, Vr1, Vr2, Va, Vr3
 

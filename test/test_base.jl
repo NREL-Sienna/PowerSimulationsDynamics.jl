@@ -475,8 +475,8 @@ end
     p_ix1 = PSID.get_p_range(PSID.get_dynamic_injectors(inputs)[1])
     p_ix2 = PSID.get_p_range(PSID.get_dynamic_injectors(inputs)[2])
 
-    @test integrator_for_test.p[p_ix1][PSID.P_ref_ix] == 10.0
-    @test integrator_for_test.p[p_ix2][PSID.ω_ref_ix] == 0.9
+    @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
+    @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
     inputs = PSID.SimulationInputs(
         ResidualModel,
         threebus_sys,

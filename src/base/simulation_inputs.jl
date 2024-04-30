@@ -71,6 +71,7 @@ function SimulationInputs(
         _update_initial_parameters!(initial_parameters, wrapped_loads)
         _update_initial_parameters!(initial_parameters, wrapped_static_injectors)
     end
+
     mass_matrix = _make_mass_matrix(wrapped_injectors, n_vars, n_buses)
     DAE_vector = _make_DAE_vector(mass_matrix, n_vars, n_buses)
     _adjust_states!(
@@ -186,14 +187,14 @@ function _get_n_params(
     dynamic_device::PSY.DynamicInjection,
     static_device::PSY.StaticInjection,
 )
-    return get_n_params(dynamic_device)
+    return length(get_params(dynamic_device))
 end
 
 function _get_n_params(
     dynamic_device::T,
     static_device::PSY.StaticInjection,
 ) where {T <: Union{PSY.DynamicGenerator, PSY.DynamicInverter}}
-    return get_n_params(dynamic_device) + get_n_params(static_device)
+    return length(get_params(dynamic_device))
 end
 
 function _wrap_dynamic_injector_data(
@@ -253,8 +254,7 @@ function get_constant_lags(sys::PSY.System)
             delays = vcat(delays, device_delays)
         end
     end
-    return filter!(x -> x != 0, unique(delays))
-    
+    return unique(delays)
 end
 
 function _wrap_dynamic_branches(
@@ -279,7 +279,7 @@ function _wrap_dynamic_branches(
             bus_ix_to = lookup[to_bus_number]
             ix_range = range(state_count; length = n_states)
             ode_range = range(branches_count; length = n_states)
-            n_params = get_n_params(br)
+            n_params = length(get_params(br))
             p_range = range(parameter_count; length = n_params)
             @debug "ix_range=$ix_range ode_range=$ode_range p_range=$ode_range"
             wrapped_branches[ix] = BranchWrapper(
@@ -315,7 +315,7 @@ function _wrap_static_injectors(
         end
         bus_n = PSY.get_number(PSY.get_bus(ld))
         bus_ix = lookup[bus_n]
-        n_params = get_n_params(ld)
+        n_params = length(get_params(ld))
         p_range = range(parameter_count; length = n_params)
         container[ix] = StaticWrapper(ld, bus_ix, p_range)
         parameter_count += n_params
@@ -489,14 +489,12 @@ end
 
 function get_setpoints(inputs::SimulationInputs)
     dic = Dict{String, Dict{String, Float64}}()
-    parameters = get_parameters(inputs)
     for w in get_dynamic_injectors(inputs)
         dic_w = Dict{String, Float64}()
-        p_range = get_p_range(w)
-        dic_w["P_ref"] = parameters[p_range][P_ref_ix]
-        dic_w["Q_ref"] = parameters[p_range][Q_ref_ix]
-        dic_w["ω_ref"] = parameters[p_range][ω_ref_ix]
-        dic_w["V_ref"] = parameters[p_range][V_ref_ix]
+        dic_w["P_ref"] = get_P_ref(w)
+        dic_w["Q_ref"] = get_Q_ref(w)
+        dic_w["ω_ref"] = get_ω_ref(w)
+        dic_w["V_ref"] = get_V_ref(w)
         dic[PSY.get_name(w)] = dic_w
     end
     return dic

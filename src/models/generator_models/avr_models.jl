@@ -72,7 +72,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Update Vf voltage on inner vars. In AVRFixed, Vf = V_ref
-    inner_vars[Vf_var] = device_parameters[V_ref_ix]
+    inner_vars[Vf_var] = get_V_ref(dynamic_device)
 
     return
 end
@@ -88,7 +88,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = device_parameters[V_ref_ix]
+    V_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AVRSimple)
@@ -125,7 +125,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = device_parameters[V_ref_ix]
+    V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeI)
@@ -179,7 +179,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = device_parameters[V_ref_ix]
+    V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeII)
@@ -244,7 +244,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = device_parameters[V_ref_ix]
+    V_ref = get_V_ref(dynamic_device)
 
     #Obtain avr
     avr = PSY.get_avr(dynamic_device)
@@ -325,7 +325,7 @@ function mdl_avr_ode!(
     t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain references
-    V0_ref = device_parameters[V_ref_ix]
+    V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
@@ -371,7 +371,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = device_parameters[V_ref_ix]
+    V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.SCRX) #
@@ -434,7 +434,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = device_parameters[V_ref_ix]
+    V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.EXST1)
@@ -500,7 +500,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = device_parameters[V_ref_ix]
+    V_ref = get_V_ref(dynamic_device)
 
     #Obtain avr
     avr = PSY.get_avr(dynamic_device)
@@ -577,7 +577,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = device_parameters[V_ref_ix]
+    V0_ref = get_V_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.ESST1A)

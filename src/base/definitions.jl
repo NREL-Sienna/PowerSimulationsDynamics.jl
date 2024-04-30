@@ -101,14 +101,6 @@ end
 Base.to_index(ix::dq_ref) = Int(ix)
 Base.to_index(ix::RI_ref) = Int(ix)
 
-@enum ref_ix begin
-    Q_ref_ix = 1
-    V_ref_ix = 2
-    ω_ref_ix = 3
-    P_ref_ix = 4
-end
-Base.to_index(ix::ref_ix) = Int(ix)
-
 const MAPPING_DICT = Dict{String, OrderedDict{Symbol, Int}}
 const DEVICE_INTERNAL_MAPPING = Base.ImmutableDict{Int, Vector{Int}}
 

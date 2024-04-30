@@ -422,7 +422,7 @@ function _get_diffeq_problem(
         h,
         get_tspan(sim),
         p;
-        constant_lags = get_constant_lags(simulation_inputs),
+        constant_lags = filter(x -> x != 0, get_constant_lags(simulation_inputs)),
     )
     sim.status = BUILT
 
@@ -449,7 +449,7 @@ function _get_diffeq_problem(
         h,
         get_tspan(sim),
         p;
-        constant_lags = get_constant_lags(simulation_inputs),
+        constant_lags = filter(x -> x != 0, get_constant_lags(simulation_inputs)),
     )
     sim.status = BUILT
 
@@ -609,8 +609,11 @@ function _filter_kwargs(kwargs)
     return filter(x -> in(x[1], DIFFEQ_SOLVE_KWARGS), kwargs)
 end
 
-function _execute!(sim::Simulation, ::Val{true}, solver; kwargs...)
+function _execute!(sim::Simulation, solver; kwargs...)
     CRC.@ignore_derivatives @debug "status before execute" sim.status
+    if !(sim.enable_sensitivity)
+        CRC.@ignore_derivatives simulation_pre_step!(sim)
+    end
     sim.status = SIMULATION_STARTED
     time_log = Dict{Symbol, Any}()
     if get(kwargs, :auto_abstol, false)
@@ -650,46 +653,6 @@ function _execute!(sim::Simulation, ::Val{true}, solver; kwargs...)
     end
 end
 
-function _execute!(sim::Simulation, ::Val{false}, solver; kwargs...)
-    @debug "status before execute" sim.status
-    simulation_pre_step!(sim)
-    sim.status = SIMULATION_STARTED
-    time_log = Dict{Symbol, Any}()
-    if get(kwargs, :auto_abstol, false)
-        cb = AutoAbstol(true, get(kwargs, :abstol, 1e-9))
-        callbacks = SciMLBase.CallbackSet((), tuple(push!(sim.callbacks, cb)...))
-    else
-        callbacks = SciMLBase.CallbackSet((), tuple(sim.callbacks...))
-    end
-    progress_enable = _prog_meter_enabled()
-    solution,
-    time_log[:timed_solve_time],
-    time_log[:solve_bytes_alloc],
-    time_log[:sec_in_gc] = @timed SciMLBase.solve(
-        sim.problem,
-        solver;
-        callback = callbacks,
-        tstops = !isempty(sim.tstops) ? [sim.tstops[1] ÷ 2, sim.tstops...] : [],
-        progress = get(kwargs, :enable_progress_bar, progress_enable),
-        progress_steps = 1,
-        advance_to_tstop = !isempty(sim.tstops),
-        initializealg = SciMLBase.NoInit(),
-        _filter_kwargs(kwargs)...,
-    )
-    if SciMLBase.successful_retcode(solution)
-        sim.status = SIMULATION_FINALIZED
-        sim.results = SimulationResults(
-            get_simulation_inputs(sim),
-            get_system(sim),
-            time_log,
-            solution,
-        )
-    else
-        @error("The simulation failed with return code $(solution.retcode)")
-        sim.status = SIMULATION_FAILED
-    end
-end
-
 """
     execute!(
         sim::Simulation,
@@ -706,14 +669,14 @@ Solves the time-domain dynamic simulation model.
 - Additional solver keyword arguments can be included. See [Common Solver Options](https://diffeq.sciml.ai/stable/basics/common_solver_opts/) in the `DifferentialEquations.jl` documentation for more details.
 """
 function execute!(sim::Simulation, solver; kwargs...)
-    __execute!(sim, Val(sim.enable_sensitivity), solver; kwargs...)
+    execute!(sim, Val(sim.enable_sensitivity), solver; kwargs...)
 end
 
-function __execute!(sim::Simulation, ::Val{false}, solver; kwargs...)
+function execute!(sim::Simulation, ::Val{false}, solver; kwargs...)
     logger = configure_logging(sim, "a"; kwargs...)
     Logging.with_logger(logger) do
         try
-            _execute!(sim, Val(sim.enable_sensitivity), solver; kwargs...)
+            _execute!(sim, solver; kwargs...)
         catch e
             CRC.@ignore_derivatives @error "Execution failed" exception =
                 (e, catch_backtrace())
@@ -724,8 +687,8 @@ function __execute!(sim::Simulation, ::Val{false}, solver; kwargs...)
     return sim.status
 end
 
-function __execute!(sim::Simulation, ::Val{true}, solver; kwargs...)
-    _execute!(sim, Val(sim.enable_sensitivity), solver; kwargs...)
+function execute!(sim::Simulation, ::Val{true}, solver; kwargs...)
+    _execute!(sim, solver; kwargs...)
     return sim.status
 end
 

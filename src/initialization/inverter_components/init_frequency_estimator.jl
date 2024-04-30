@@ -19,7 +19,7 @@ function initialize_frequency_estimator!(
     local_ix_params = get_local_parameter_ix(dynamic_device, PSY.KauraPLL)
     internal_params = @view device_parameters[local_ix_params]
     _, kp_pll, ki_pll = internal_params
-    ω_ref = device_parameters[ω_ref_ix]
+    ω_ref = get_ω_ref(dynamic_device)
 
     #Get initial guess
     θ0_pll = atan(Vi_filter, Vr_filter)
@@ -123,7 +123,7 @@ function initialize_frequency_estimator!(
         pll_states[3] = sol_x0[3]
 
         #Update guess of frequency estimator
-        inner_vars[ω_freq_estimator_var] = device_parameters[ω_ref_ix]
+        inner_vars[ω_freq_estimator_var] = get_ω_ref(dynamic_device)
         inner_vars[θ_freq_estimator_var] = sol_x0[3]
     end
     return

@@ -1,11 +1,11 @@
 function initialize_dynamic_device!(
     dynamic_device::DynamicWrapper{DynG},
+    static::PSY.StaticInjection,
     initial_inner_vars::AbstractVector,
     parameters::AbstractVector,
     states::AbstractVector,
 ) where {DynG <: PSY.DynamicGenerator}
     #Obtain States
-    static = get_static_device(dynamic_device)
     #Initialize Machine and Shaft: δ and ω
     initialize_mach_shaft!(states, parameters, static, dynamic_device, initial_inner_vars)
     #Initialize extra Shaft states
@@ -21,11 +21,11 @@ end
 
 function initialize_dynamic_device!(
     dynamic_device::DynamicWrapper{DynI},
+    static::PSY.StaticInjection,
     initial_inner_vars::AbstractVector,
     parameters::AbstractVector,
     states::AbstractVector,
 ) where {DynI <: PSY.DynamicInverter}
-    static = get_static_device(dynamic_device)
 
     #Initialize Machine and Shaft: V and I
     initialize_filter!(states, parameters, static, dynamic_device, initial_inner_vars)
@@ -71,8 +71,8 @@ function initialize_static_device!(
     I = conj(S0 / V)
     I_R = real(I)
     I_I = imag(I)
-    R_th = PSY.get_R_th(device.device)
-    X_th = PSY.get_X_th(device.device)
+    R_th = local_parameters[1]
+    X_th = local_parameters[2]
     Zmag = R_th^2 + X_th^2
 
     function f!(out, x)
@@ -103,11 +103,11 @@ end
 
 function initialize_dynamic_device!(
     dynamic_device::DynamicWrapper{PSY.PeriodicVariableSource},
+    source::PSY.Source,
     initial_inner_vars::AbstractVector,
     parameters::AbstractVector,
     device_states::AbstractVector,
 )
-    source = get_static_device(dynamic_device)
     #PowerFlow Data
     P0 = PSY.get_active_power(source)
     Q0 = PSY.get_reactive_power(source)
@@ -143,15 +143,15 @@ function initialize_dynamic_device!(
         θ_internal = atan(sol_x0[2], sol_x0[1])
 
         V_internal_freqs = 0.0
-        V_freqs = PSY.get_internal_voltage_frequencies(get_dynamic_device(dynamic_device))
-        V_coeff = PSY.get_internal_voltage_coefficients(get_dynamic_device(dynamic_device))
+        V_freqs = PSY.get_internal_voltage_frequencies(get_device(dynamic_device))
+        V_coeff = PSY.get_internal_voltage_coefficients(get_device(dynamic_device))
         for (ix, ω) in enumerate(V_freqs)
             V_internal_freqs += V_coeff[ix][2]     #sin(0) = 0; cos(0)=1
         end
 
         θ_internal_freqs = 0.0
-        θ_freqs = PSY.get_internal_angle_frequencies(get_dynamic_device(dynamic_device))
-        θ_coeff = PSY.get_internal_angle_coefficients(get_dynamic_device(dynamic_device))
+        θ_freqs = PSY.get_internal_angle_frequencies(get_device(dynamic_device))
+        θ_coeff = PSY.get_internal_angle_coefficients(get_device(dynamic_device))
         for (ix, ω) in enumerate(θ_freqs)
             θ_internal_freqs += θ_coeff[ix][2]     #sin(0) = 0; cos(0)=1
         end
@@ -160,8 +160,8 @@ function initialize_dynamic_device!(
 
         device_states[1] = V_internal
         device_states[2] = θ_internal
-        PSY.set_internal_voltage_bias!(get_dynamic_device(dynamic_device), V_internal_bias)
-        PSY.set_internal_angle_bias!(get_dynamic_device(dynamic_device), θ_internal_bias)
+        PSY.set_internal_voltage_bias!(get_device(dynamic_device), V_internal_bias)
+        PSY.set_internal_angle_bias!(get_device(dynamic_device), θ_internal_bias)
     end
     return
 end
@@ -192,19 +192,15 @@ end
 
 function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.SingleCageInductionMachine},
+    device::PSY.StaticInjection,
     ::AbstractVector,
     device_parameters::AbstractVector,
     device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
-    device = get_static_device(dynamic_wrapper)
 
     # Get parameters
-    dynamic_device = get_dynamic_device(dynamic_wrapper)
-    _,
-    _,
-    _,
-    _,
+    dynamic_device = get_device(dynamic_wrapper)
     R_s,
     R_r,
     X_ls,
@@ -292,31 +288,26 @@ function initialize_dynamic_device!(
         device_states[4] = sol_x0[7] # ψ_dr
         device_states[5] = sol_x0[8] # ωr
         # update τ_ref and B_sh
-        device_parameters[16] = sol_x0[3]   # B_sh
+        device_parameters[12] = sol_x0[3]   # B_sh
         PSY.set_B_shunt!(dynamic_device, sol_x0[3]) # B_sh
-        device_parameters[15] = sol_x0[9]   # τ_m0
+        device_parameters[11] = sol_x0[9]   # τ_m0
         PSY.set_τ_ref!(dynamic_device, sol_x0[9]) # τ_m0
-        device_parameters[P_ref_ix] = sol_x0[9] # τ_m0
+        set_P_ref(dynamic_wrapper, sol_x0[9]) # τ_m0
     end
     return
 end
 
 function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.SimplifiedSingleCageInductionMachine},
+    device::PSY.StaticInjection,
     ::AbstractVector,
     device_parameters::AbstractVector,
     device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
 
-    # Get parameters
-    dynamic_device = get_dynamic_device(dynamic_wrapper)
-    device = get_static_device(dynamic_wrapper)
+    dynamic_device = get_device(dynamic_wrapper)
     #Get parameters
-    _,
-    _,
-    _,
-    _,
     R_s,
     R_r,
     X_ls,
@@ -407,28 +398,24 @@ function initialize_dynamic_device!(
         device_states[3] = sol_x0[10] # ωr
         # update τ_ref and B_sh
         PSY.set_B_shunt!(dynamic_device, sol_x0[5]) # B_sh
-        device_parameters[16] = sol_x0[5]   # B_sh
+        device_parameters[12] = sol_x0[5]   # B_sh
         PSY.set_τ_ref!(dynamic_device, sol_x0[11]) # τ_m0
-        device_parameters[15] = sol_x0[11]   # τ_m0
-        device_parameters[P_ref_ix] = sol_x0[11] # τ_m0
+        device_parameters[11] = sol_x0[11]   # τ_m0
+        set_P_ref(dynamic_wrapper, sol_x0[11]) # τ_m0
     end
     return device_states
 end
 
 function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.CSVGN1},
+    device::PSY.StaticInjection,
     ::AbstractVector,
     device_parameters::AbstractVector,
     device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
-    device = get_static_device(dynamic_wrapper)
     # Get parameters
-    dynamic_device = get_dynamic_device(dynamic_wrapper)
-    Q_ref,
-    V_ref,
-    ω_ref,
-    P_ref,
+    dynamic_device = get_device(dynamic_wrapper)
     K,
     T1,
     T2,
@@ -442,7 +429,6 @@ function initialize_dynamic_device!(
     Mbase,
     R_th,
     X_th = device_parameters
-
     # FIXME: base_power is changed to system's base_power when a CSVGN1 is attached to a Source using add_component!()
     # Temporarily, to avoid that, set_dynamic_injector!() could be used
     Rbase = Mbase
@@ -456,7 +442,7 @@ function initialize_dynamic_device!(
     V_ref0 = V_abs - (Cbase / Sbase - Y) * 1 / K * Sbase / Mbase
 
     # update V_ref
-    device_parameters[V_ref_ix] = V_ref0
+    set_V_ref(dynamic_wrapper, V_ref0)
 
     thy = K * (V_abs - V_ref0)
     vr2 = thy
@@ -468,7 +454,6 @@ function initialize_dynamic_device!(
     if (vr2 > 1) || (vr2 < Rmin / Rbase)
         CRC.@ignore_derivatives @error("Regulator state vr2 = $(vr2) outside the limits")
     end
-
     device_states[1] = K * (V_abs - V_ref0) # thy
     device_states[2] = 0.0 # vr1
     device_states[3] = K * (V_abs - V_ref0) # vr2
@@ -478,20 +463,16 @@ end
 
 function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.ActiveConstantPowerLoad},
+    device::PSY.StaticInjection,
     ::AbstractVector,
     device_parameters::AbstractVector,
     device_states::AbstractVector,
 )
-    device = get_static_device(dynamic_wrapper)
     Sbase = get_system_base_power(dynamic_wrapper)
 
-    dynamic_device = get_dynamic_device(dynamic_wrapper)
+    dynamic_device = get_device(dynamic_wrapper)
 
     #Get parameters
-    Q_ref,
-    V_ref,
-    ω_ref,
-    P_ref,
     r_load,
     _,
     rf,
@@ -587,20 +568,20 @@ function initialize_dynamic_device!(
 
         # update V_ref
         PSY.set_V_ref!(dynamic_device, V_ref0)
-        device_parameters[V_ref_ix] = V_ref0
-        device_parameters[Q_ref_ix] = sol_x0[5]
+        set_V_ref(dynamic_wrapper, V_ref0)
+        set_Q_ref(dynamic_wrapper, sol_x0[5])
     end
     return device_states
 end
 
 function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    static::PSY.StaticInjection,
     ::AbstractVector,
     device_parameters::AbstractVector,
     device_states::AbstractVector,
 )
-    dynamic_device = get_dynamic_device(dynamic_wrapper)
-    static = get_static_device(dynamic_wrapper)
+    dynamic_device = get_device(dynamic_wrapper)
     #Get PowerFlow Data
     P0 = PSY.get_active_power(static)
     Q0 = PSY.get_reactive_power(static)
@@ -671,7 +652,7 @@ function initialize_dynamic_device!(
 
     #See Note 2 on PSSE Documentation
     Vref0 = PSY.get_V_ref(dynamic_device)
-    K_qv = device_parameters[9]
+    K_qv = device_parameters[5]
     (dbd1, dbd2) = PSY.get_dbd_pnts(dynamic_device)
     if Vref0 == 0.0
         Vref = Vmeas
@@ -681,12 +662,12 @@ function initialize_dynamic_device!(
         Vref = Vmeas
     end
 
-    device_parameters[P_ref_ix] = Pref
+    set_P_ref(dynamic_wrapper, Pref)
     PSY.set_P_ref!(dynamic_device, Pref)
-    device_parameters[Q_ref_ix] = Qref
-    device_parameters[V_ref_ix] = Vref
-    device_parameters[ω_ref_ix] = Freq_ref
+    set_Q_ref(dynamic_wrapper, Qref)
+    set_V_ref(dynamic_wrapper, Vref)
+    set_ω_ref(dynamic_wrapper, Freq_ref)
     PSY.set_Pfa_ref!(dynamic_device, pfaref)
-    device_parameters[33] = pfaref
+    device_parameters[29] = pfaref
     return
 end

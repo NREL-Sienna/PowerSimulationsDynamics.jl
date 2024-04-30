@@ -37,7 +37,7 @@ function initialize_outer!(
     Vi_cnv = inner_vars[Vi_cnv_var]
     θ0_oc = atan(Vi_cnv, Vr_cnv)
 
-    ω_ref = device_parameters[ω_ref_ix]
+    ω_ref = get_ω_ref(dynamic_device)
     #Obtain additional expressions
     p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
@@ -57,13 +57,13 @@ function initialize_outer!(
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
     inner_vars[ω_oc_var] = ω_ref
-    device_parameters[P_ref_ix] = p_elec_out
+    set_P_ref(dynamic_device, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    device_parameters[Q_ref_ix] = q_elec_out
+    set_Q_ref(dynamic_device, q_elec_out)
     return
 end
 
@@ -124,14 +124,14 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = device_parameters[ω_ref_ix]
+    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    device_parameters[P_ref_ix] = p_elec_out
+    set_P_ref(dynamic_device, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    device_parameters[Q_ref_ix] = q_elec_out
+    set_Q_ref(dynamic_device, q_elec_out)
 end
 
 function initialize_outer!(
@@ -190,14 +190,14 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = device_parameters[ω_ref_ix]
+    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    device_parameters[P_ref_ix] = p_elec_out
+    set_P_ref(dynamic_device, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    device_parameters[Q_ref_ix] = q_elec_out
+    set_Q_ref(dynamic_device, q_elec_out)
 end
 
 function initialize_outer!(
@@ -265,16 +265,16 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = device_parameters[ω_ref_ix]
+    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
     inner_vars[Id_oc_var] = I_dq_cnv[d]
     inner_vars[Iq_oc_var] = I_dq_cnv[q]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
-    device_parameters[P_ref_ix] = p_elec_out
+    set_P_ref(dynamic_device, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    device_parameters[Q_ref_ix] = q_elec_out
+    set_Q_ref(dynamic_device, q_elec_out)
     PSY.set_Q_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
@@ -328,7 +328,7 @@ function initialize_outer!(
     ## Set references
     Vm = V_t
     PSY.set_Q_ref!(PSY.get_converter(dynamic_device), q_elec_out)
-    device_parameters[Q_ref_ix] = q_elec_out
+    set_Q_ref(dynamic_device, q_elec_out)
     PSY.set_Q_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
@@ -337,15 +337,15 @@ function initialize_outer!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    device_parameters[P_ref_ix] = p_elec_out
+    set_P_ref(dynamic_device, p_elec_out)
     PSY.set_V_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         Vm,
     )
-    device_parameters[V_ref_ix] = Vm
+    set_V_ref(dynamic_device, Vm)
 
     #Get Outer Controller parameters
-    q_ref = device_parameters[Q_ref_ix]
+    q_ref = get_Q_ref(dynamic_device)
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power_control(outer_control)
     reactive_power_control = PSY.get_reactive_power_control(outer_control)
@@ -376,10 +376,10 @@ function initialize_outer!(
         },
     )
     internal_params = @view device_parameters[local_ix_params]
-    active_n_params = get_n_params(active_power_control)
+    active_n_params = length(get_params(active_power_control))
     active_ix_range_params = 1:active_n_params
     active_params = @view internal_params[active_ix_range_params]
-    reactive_n_params = get_n_params(reactive_power_control)
+    reactive_n_params = length(get_params(reactive_power_control))
     reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
     reactive_params = @view internal_params[reactive_ix_range_params]
     K_pg,

@@ -24,7 +24,7 @@ function initialize_inner!(
     Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
-    ω_oc = device_parameters[ω_ref_ix]
+    ω_oc = get_ω_ref(dynamic_device)
     θ0_oc = inner_vars[θ_oc_var]
     Vdc = inner_vars[Vdc_var]
 
@@ -109,7 +109,7 @@ function initialize_inner!(
         #Assumes that angle is in second position
         outer_states[1] = sol_x0[1]
         inner_vars[θ_oc_var] = sol_x0[1]
-        device_parameters[V_ref_ix] = sol_x0[2]
+        set_V_ref(dynamic_device, sol_x0[2])
         PSY.set_V_ref!(
             PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
             sol_x0[2],
@@ -162,7 +162,7 @@ function initialize_inner!(
     Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
-    ω_oc = device_parameters[ω_ref_ix]
+    ω_oc = get_ω_ref(dynamic_device)
     θ0_oc = inner_vars[θ_freq_estimator_var]
     Vdc = inner_vars[Vdc_var]
     Id_cnv_ref = inner_vars[Id_oc_var]

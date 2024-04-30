@@ -42,7 +42,7 @@ function mdl_tg_ode!(
     local_ix_params = get_local_parameter_ix(device, PSY.TGFixed)
     internal_params = @view device_parameters[local_ix_params]
     efficiency = internal_params[1]
-    P_ref = device_parameters[P_ref_ix]
+    P_ref = get_P_ref(device)
     inner_vars[τm_var] = P_ref * efficiency
     return
 end
@@ -59,8 +59,8 @@ function mdl_tg_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = device_parameters[ω_ref_ix]
-    P_ref = device_parameters[P_ref_ix]
+    ω_ref = get_ω_ref(device)
+    P_ref = get_P_ref(device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.TGTypeI)
@@ -112,8 +112,8 @@ function mdl_tg_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    ω_ref = device_parameters[ω_ref_ix]
-    P_ref = device_parameters[P_ref_ix]
+    ω_ref = get_ω_ref(device)
+    P_ref = get_P_ref(device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.TGTypeII)
@@ -159,7 +159,7 @@ function mdl_tg_ode!(
     #Obtain TG
     tg = PSY.get_prime_mover(device)
     #Obtain references
-    P_ref = device_parameters[P_ref_ix]
+    P_ref = get_P_ref(device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, typeof(tg))
@@ -215,7 +215,7 @@ function mdl_tg_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    P_ref = device_parameters[P_ref_ix]
+    P_ref = get_P_ref(device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.GasTG)
@@ -270,8 +270,8 @@ function mdl_tg_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    P_ref = device_parameters[P_ref_ix]
-    ω_ref = device_parameters[ω_ref_ix]
+    P_ref = get_P_ref(device)
+    ω_ref = get_ω_ref(device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.HydroTurbineGov)
@@ -342,7 +342,7 @@ function mdl_tg_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    P_ref = device_parameters[P_ref_ix]
+    P_ref = get_P_ref(device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.DEGOV)

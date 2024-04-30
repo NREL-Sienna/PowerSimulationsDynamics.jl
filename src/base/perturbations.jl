@@ -474,18 +474,8 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::ControlReferen
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_dynamic_injectors(inputs)[wrapped_device_ix]
-        p_range = get_p_range(wrapped_device)
-        p_local = @view integrator.p[p_range]
-        if pert.signal == :P_ref
-            ix = P_ref_ix
-        elseif pert.signal == :Q_ref
-            ix = Q_ref_ix
-        elseif pert.signal == :V_ref
-            ix = V_ref_ix
-        elseif pert.signal == :ω_ref
-            ix = ω_ref_ix
-        end
-        p_local[ix] = pert.ref_value
+        @debug "Changing $(PSY.get_name(wrapped_device)) $(pert.signal) to $(pert.ref_value)"
+        getfield(wrapped_device, pert.signal)[] = pert.ref_value
         return
     end
 end

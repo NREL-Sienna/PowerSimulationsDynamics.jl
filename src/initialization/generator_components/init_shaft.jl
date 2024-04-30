@@ -25,7 +25,7 @@ function initialize_shaft!(
     ω_sys = ω
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SingleMass)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.FiveMassShaft)
     internal_params = @view device_parameters[local_ix_params]
     _,
     _,

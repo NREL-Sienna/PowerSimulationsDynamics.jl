@@ -14,7 +14,7 @@ function initialize_tg!(
     P_ref = τm0 / eff
     #Update Control Refs
     PSY.set_P_ref!(tg, P_ref)
-    device_parameters[P_ref_ix] = P_ref
+    set_P_ref(dynamic_device, P_ref)
     return
 end
 
@@ -37,7 +37,7 @@ function initialize_tg!(
     inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     #Get References
-    ω_ref = device_parameters[ω_ref_ix]
+    ω_ref = get_ω_ref(dynamic_device)
     ω0 = 1.0
     function f!(out, x)
         P_ref = x[1]
@@ -68,7 +68,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        device_parameters[P_ref_ix] = sol_x0[1]
+        set_P_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeI)
         tg_states = @view device_states[tg_ix]
@@ -100,7 +100,7 @@ function initialize_tg!(
     internal_params = @view device_parameters[local_ix_params]
     R, T1, T2 = internal_params
     inv_R = R < eps() ? 0.0 : (1.0 / R)
-    ω_ref = device_parameters[ω_ref_ix]
+    ω_ref = get_ω_ref(dynamic_device)
     ω0 = ω_ref
 
     function f!(out, x)
@@ -119,7 +119,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        device_parameters[P_ref_ix] = sol_x0[1]
+        set_P_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeII)
         tg_states = @view device_states[tg_ix]
@@ -142,7 +142,7 @@ function initialize_tg!(
 
     tg = PSY.get_prime_mover(dynamic_device)
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.TGTypeI)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.GasTG)
     internal_params = @view device_parameters[local_ix_params]
     R, _, _, _, AT, Kt, V_min, V_max, D_turb = internal_params
     inv_R = R < eps() ? 0.0 : (1.0 / R)
@@ -170,7 +170,7 @@ function initialize_tg!(
         sol_x0 = sol.zero
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        device_parameters[P_ref_ix] = sol_x0[1]
+        set_P_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
@@ -192,7 +192,7 @@ function initialize_tg!(
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
     PSY.set_P_ref!(tg, τm0)
-    device_parameters[P_ref_ix] = τm0
+    set_P_ref(dynamic_device, τm0)
     #Update states
     tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
     tg_states = @view device_states[tg_ix]
@@ -256,7 +256,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        device_parameters[P_ref_ix] = sol_x0[1]
+        set_P_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
@@ -329,7 +329,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        device_parameters[P_ref_ix] = sol_x0[1]
+        set_P_ref(dynamic_device, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]

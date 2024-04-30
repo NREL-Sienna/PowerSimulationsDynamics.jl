@@ -47,8 +47,8 @@ function _mdl_ode_RE_active_controller_AB!(
 }
 
     #Obtain external parameters
-    p_ref = device_parameters[P_ref_ix]
-    ω_ref = device_parameters[ω_ref_ix]
+    p_ref = get_P_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
     # To do: Obtain proper frequency for a plant. For now using the system frequency.
     ω_plant = ω_sys
 
@@ -61,7 +61,7 @@ function _mdl_ode_RE_active_controller_AB!(
         },
     )
     internal_params = @view device_parameters[local_ix_params]
-    active_n_params = get_n_params(active_power_control)
+    active_n_params = length(get_params(active_power_control))
     active_ix_range_params = 1:active_n_params
     active_params = @view internal_params[active_ix_range_params]
     K_pg,
@@ -156,7 +156,7 @@ function _mdl_ode_RE_active_controller_AB!(
 }
 
     #Obtain external parameters
-    p_ref = device_parameters[P_ref_ix]
+    p_ref = get_P_ref(dynamic_device)
     #Obtain additional Active Power Controller parameters
     local_ix_params = get_local_parameter_ix(
         dynamic_device,
@@ -166,7 +166,7 @@ function _mdl_ode_RE_active_controller_AB!(
         },
     )
     internal_params = @view device_parameters[local_ix_params]
-    active_n_params = get_n_params(active_power_control)
+    active_n_params = length(get_params(active_power_control))
     active_ix_range_params = 1:active_n_params
     active_params = @view internal_params[active_ix_range_params]
     K_pg,
@@ -244,7 +244,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
 }
 
     #Obtain external parameters
-    q_ref = device_parameters[Q_ref_ix]
+    q_ref = get_Q_ref(dynamic_device)
 
     # Get Reactive Controller parameters
     local_ix_params = get_local_parameter_ix(
@@ -257,8 +257,8 @@ function _mdl_ode_RE_reactive_controller_AB!(
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power_control(outer_control)
     internal_params = @view device_parameters[local_ix_params]
-    active_n_params = get_n_params(active_power_control)
-    reactive_n_params = get_n_params(reactive_power_control)
+    active_n_params = length(get_params(active_power_control))
+    reactive_n_params = length(get_params(reactive_power_control))
     reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
     reactive_params = @view internal_params[reactive_ix_range_params]
     T_fltr,
@@ -350,7 +350,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain external parameters
-    q_ref = device_parameters[Q_ref_ix]
+    q_ref = get_Q_ref(dynamic_device)
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power_control(outer_control)
     # Get Reactive Controller parameters
@@ -362,8 +362,8 @@ function _mdl_ode_RE_reactive_controller_AB!(
         },
     )
     internal_params = @view device_parameters[local_ix_params]
-    active_n_params = get_n_params(active_power_control)
-    reactive_n_params = get_n_params(reactive_power_control)
+    active_n_params = length(get_params(active_power_control))
+    reactive_n_params = length(get_params(reactive_power_control))
     reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
     reactive_params = @view internal_params[reactive_ix_range_params]
     T_fltr,
@@ -453,7 +453,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain external parameters
-    V_ref = device_parameters[V_ref_ix]
+    V_ref = get_V_ref(dynamic_device)
 
     #Obtain regulated voltage (assumed to be terminal voltage)
     V_reg = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
@@ -473,8 +473,8 @@ function _mdl_ode_RE_reactive_controller_AB!(
     internal_params = @view device_parameters[local_ix_params]
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power_control(outer_control)
-    active_n_params = get_n_params(active_power_control)
-    reactive_n_params = get_n_params(reactive_power_control)
+    active_n_params = length(get_params(active_power_control))
+    reactive_n_params = length(get_params(reactive_power_control))
     reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
     reactive_params = @view internal_params[reactive_ix_range_params]
     T_fltr,
@@ -582,7 +582,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain external parameters
-    V_ref = device_parameters[V_ref_ix]
+    V_ref = get_V_ref(dynamic_device)
 
     #Obtain regulated voltage (assumed to be terminal voltage)
     V_reg = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
@@ -601,8 +601,8 @@ function _mdl_ode_RE_reactive_controller_AB!(
     internal_params = @view device_parameters[local_ix_params]
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power_control(outer_control)
-    active_n_params = get_n_params(active_power_control)
-    reactive_n_params = get_n_params(reactive_power_control)
+    active_n_params = length(get_params(active_power_control))
+    reactive_n_params = length(get_params(reactive_power_control))
     reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
     reactive_params = @view internal_params[reactive_ix_range_params]
     T_fltr,
@@ -718,10 +718,10 @@ function mdl_outer_ode!(
     internal_params = @view device_parameters[local_ix_params]
     Ta, kd, kω, kq, ωf = internal_params
 
-    q_ref = device_parameters[Q_ref_ix]
-    V_ref = device_parameters[V_ref_ix]
-    ω_ref = device_parameters[ω_ref_ix]
-    p_ref = device_parameters[P_ref_ix]
+    q_ref = get_Q_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
+    p_ref = get_P_ref(dynamic_device)
 
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
@@ -810,10 +810,10 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    p_ref = device_parameters[P_ref_ix]
-    ω_ref = device_parameters[ω_ref_ix]
-    V_ref = device_parameters[V_ref_ix]
-    q_ref = device_parameters[Q_ref_ix]
+    p_ref = get_P_ref(dynamic_device)
+    ω_ref = get_ω_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -904,9 +904,9 @@ function mdl_outer_ode!(
     k2 = PSY.get_k2(reactive_power_control)
 
     #Obtain external parameters
-    p_ref = device_parameters[P_ref_ix]
-    V_ref = device_parameters[V_ref_ix]
-    q_ref = device_parameters[Q_ref_ix]
+    p_ref = get_P_ref(dynamic_device)
+    V_ref = get_V_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -1006,8 +1006,8 @@ function mdl_outer_ode!(
     ωf = PSY.get_ωf(reactive_power_control) #Reactive power filter cutoff frequency
 
     #Obtain external parameters
-    p_ref = device_parameters[P_ref_ix]
-    q_ref = device_parameters[Q_ref_ix]
+    p_ref = get_P_ref(dynamic_device)
+    q_ref = get_Q_ref(dynamic_device)
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(

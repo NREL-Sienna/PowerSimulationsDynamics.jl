@@ -73,11 +73,22 @@ function initialize_dynamic_injection!(
     parameters = get_parameters(inputs)
     try
         for dynamic_device in get_dynamic_injectors(inputs)
+            static = PSY.get_component(
+                dynamic_device.static_type,
+                system,
+                PSY.get_name(dynamic_device),
+            )
             CRC.@ignore_derivatives @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
             _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
             _parameters = @view parameters[get_p_range(dynamic_device)]
             _states = @view initial_guess[get_ix_range(dynamic_device)]
-            initialize_dynamic_device!(dynamic_device, _inner_vars, _parameters, _states)
+            initialize_dynamic_device!(
+                dynamic_device,
+                static,
+                _inner_vars,
+                _parameters,
+                _states,
+            )
         end
     catch e
         bt = catch_backtrace()
