@@ -432,6 +432,10 @@ end
 struct StaticWrapper{T <: PSY.StaticInjection, V}
     device::T
     connection_status::Base.RefValue{Float64}
+    V_ref::Base.RefValue{Float64}
+    θ_ref::Base.RefValue{Float64}
+    P_ref::Base.RefValue{Float64}
+    Q_ref::Base.RefValue{Float64}
     p_range::Vector{Int}
     bus_ix::Int
     ext::Dict{String, Any}
@@ -442,6 +446,10 @@ function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
     StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
         Base.Ref(1.0),
+        Base.Ref(PSY.get_magnitude(bus)),
+        Base.Ref(PSY.get_angle(bus)),
+        Base.Ref(PSY.get_active_power(device)),
+        Base.Ref(PSY.get_reactive_power(device)),
         Vector{Int}(),
         bus_ix,
         Dict{String, Any}(),
@@ -453,6 +461,10 @@ function StaticWrapper(device::T, bus_ix::Int, p_range) where {T <: PSY.Source}
     return StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
         Base.Ref(1.0),
+        Base.Ref(PSY.get_internal_voltage(device)),
+        Base.Ref(PSY.get_internal_angle(device)),
+        Base.Ref(PSY.get_active_power(device)),
+        Base.Ref(PSY.get_reactive_power(device)),
         p_range,
         bus_ix,
         Dict{String, Any}(),
@@ -474,6 +486,16 @@ PSY.get_reactive_power(wrapper::StaticWrapper) = PSY.get_reactive_power(wrapper.
 PSY.get_name(wrapper::StaticWrapper) = PSY.get_name(wrapper.device)
 PSY.get_ext(wrapper::StaticWrapper) = PSY.get_ext(wrapper.device)
 
+get_P_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
+get_Q_ref(wrapper::StaticWrapper) = wrapper.Q_ref[]
+get_V_ref(wrapper::StaticWrapper) = wrapper.V_ref[]
+get_θ_ref(wrapper::StaticWrapper) = wrapper.θ_ref[]
+
+set_P_ref(wrapper::StaticWrapper, val::Float64) = wrapper.P_ref[] = val
+set_Q_ref(wrapper::StaticWrapper, val::Float64) = wrapper.Q_ref[] = val
+set_V_ref(wrapper::StaticWrapper, val::Float64) = wrapper.V_ref[] = val
+set_θ_ref(wrapper::StaticWrapper, val::Float64) = wrapper.θ_ref[] = val
+
 mutable struct ExpLoadParams
     P_exp::Float64
     P_coeff::Float64
@@ -482,13 +504,19 @@ mutable struct ExpLoadParams
 end
 
 mutable struct StaticLoadWrapper
-    loads::Vector{PSY.ElectricLoad}
     bus::PSY.Bus
+    V_ref::Float64
+    θ_ref::Float64
+    P_power::Float64
+    P_current::Float64
+    P_impedance::Float64
+    Q_power::Float64
+    Q_current::Float64
+    Q_impedance::Float64
     exp_params::Vector{ExpLoadParams}
     exp_names::Dict{String, Int}
     p_range::Vector{Int}
     bus_ix::Int
-    system_base_power::Float64
 end
 
 function StaticLoadWrapper(
@@ -498,6 +526,28 @@ function StaticLoadWrapper(
     bus_ix::Int,
     sys_base_power::Float64,
 )
+    P_power = 0.0
+    P_current = 0.0
+    P_impedance = 0.0
+    Q_power = 0.0
+    Q_current = 0.0
+    Q_impedance = 0.0
+
+    # Add ZIP Loads
+    for ld in loads
+        base_power_conversion = PSY.get_base_power(ld) / sys_base_power
+        if isa(ld, PSY.PowerLoad)
+            P_power += PSY.get_active_power(ld) * base_power_conversion
+            Q_power += PSY.get_reactive_power(ld) * base_power_conversion
+        elseif isa(ld, PSY.StandardLoad)
+            P_impedance += PSY.get_impedance_active_power(ld) * base_power_conversion
+            Q_impedance += PSY.get_impedance_reactive_power(ld) * base_power_conversion
+            P_current += PSY.get_current_active_power(ld) * base_power_conversion
+            Q_current += PSY.get_current_reactive_power(ld) * base_power_conversion
+            P_power += PSY.get_constant_active_power(ld) * base_power_conversion
+            Q_power += PSY.get_constant_reactive_power(ld) * base_power_conversion
+        end
+    end
 
     # Add Exponential Loads
     exp_loads = filter(x -> isa(x, PSY.ExponentialLoad) && PSY.get_available(x), loads)
@@ -517,25 +567,38 @@ function StaticLoadWrapper(
     end
 
     return StaticLoadWrapper(
-        loads,
         bus,
+        PSY.get_magnitude(bus),
+        PSY.get_angle(bus),
+        P_power,
+        P_current,
+        P_impedance,
+        Q_power,
+        Q_current,
+        Q_impedance,
         exp_params,
         dict_names,
         p_range,
         bus_ix,
-        sys_base_power,
     )
 end
 
 PSY.get_bus(wrapper::StaticLoadWrapper) = wrapper.bus
 PSY.get_name(wrapper::StaticLoadWrapper) = PSY.get_name(wrapper.bus)
 
-get_loads(wrapper::StaticLoadWrapper) = wrapper.loads
+get_V_ref(wrapper::StaticLoadWrapper) = wrapper.V_ref
+get_θ_ref(wrapper::StaticLoadWrapper) = wrapper.θ_ref
+get_P_power(wrapper::StaticLoadWrapper) = wrapper.P_power
+get_P_current(wrapper::StaticLoadWrapper) = wrapper.P_current
+get_P_impedance(wrapper::StaticLoadWrapper) = wrapper.P_impedance
+get_Q_power(wrapper::StaticLoadWrapper) = wrapper.Q_power
+get_Q_current(wrapper::StaticLoadWrapper) = wrapper.Q_current
+get_Q_impedance(wrapper::StaticLoadWrapper) = wrapper.Q_impedance
+
 get_p_range(wrapper::StaticLoadWrapper) = wrapper.p_range
 get_exp_params(wrapper::StaticLoadWrapper) = wrapper.exp_params
 get_exp_names(wrapper::StaticLoadWrapper) = wrapper.exp_names
 get_bus_ix(wrapper::StaticLoadWrapper) = wrapper.bus_ix
-get_system_base_power(wrapper::StaticLoadWrapper) = wrapper.system_base_power
 
 set_V_ref!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.V_ref = val
 set_θ_ref!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.θ_ref = val

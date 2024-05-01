@@ -533,14 +533,12 @@ end
     lref_affect_f(integrator_for_test)
     zip_load1 =
         first(filter(x -> PSY.get_name(x) == "BUS 1", PSID.get_static_loads(inputs)))
-    p_ix1 = PSID.get_p_range(zip_load1)
-    @test integrator_for_test.p[p_ix1][5] == 10.0
+    @test PSID.get_P_impedance(zip_load1) == 10.0
     ltrip_affect_f(integrator_for_test)
     zip_load2 =
         first(filter(x -> PSY.get_name(x) == "BUS 2", PSID.get_static_loads(inputs)))
-    p_ix2 = PSID.get_p_range(zip_load2)
-    @test integrator_for_test.p[p_ix2][5] == 0.0
-    @test integrator_for_test.p[p_ix2][8] == 0.0
+    @test PSID.get_P_impedance(zip_load2) == 0.0
+    @test PSID.get_Q_impedance(zip_load2) == 0.0
 end
 
 @testset "Global Index" begin

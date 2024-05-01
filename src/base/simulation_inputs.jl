@@ -350,7 +350,7 @@ function _construct_load_wrapper(
     for (ix, (bus, loads)) in enumerate(map_bus_load)
         bus_n = PSY.get_number(bus)
         bus_ix = lookup[bus_n]
-        n_params = 8
+        n_params = 0
         p_range = range(parameter_count; length = n_params)
         container[ix] = StaticLoadWrapper(bus, loads, p_range, bus_ix, sys_base_power)
         parameter_count += n_params

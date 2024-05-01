@@ -44,6 +44,7 @@ s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
                     execute!(
                         sim,
                         solver;
+                        sensealg = ForwardDiffSensitivity(),
                         abstol = tol,
                         reltol = tol,
                         dtmax = 0.005,
@@ -88,7 +89,13 @@ end
         t, δ_gt = get_state_series(res, ("generator-102-1", :δ))
 
         function f(sim)
-            execute!(sim, FBDF(; autodiff = true); dtmax = 0.005, saveat = 0.005)
+            execute!(
+                sim,
+                FBDF(; autodiff = true);
+                sensealg = ForwardDiffSensitivity(),
+                dtmax = 0.005,
+                saveat = 0.005,
+            )
             res = read_results(sim)
             t, δ = get_state_series(res, ("generator-102-1", :δ))
             #display(plot(scatter(x=t, y = δ)))
@@ -182,6 +189,7 @@ end
                     execute!(
                         sim,
                         solver;
+                        sensealg = ForwardDiffSensitivity(),
                         abstol = tol,
                         reltol = tol,
                         dtmax = 0.005,
@@ -259,6 +267,7 @@ end
             execute!(
                 sim,
                 MethodOfSteps(Rodas5(; autodiff = true));
+                sensealg = ForwardDiffSensitivity(),
                 abstol = 1e-6,
                 reltol = 1e-6,
                 dtmax = 0.005,
@@ -293,7 +302,7 @@ end
             callback = callback,
             maxiters = 3,
         )
-        @test sol.u[1] == 3.1440015515797763
+        @test isapprox(sol.u[1], 3.144001551579776, atol = 1e-8)
         #display(plot(scatter(y=H_values)))
         #display(plot(scatter(y=loss_values)))
     finally

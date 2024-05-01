@@ -7,9 +7,9 @@ function mdl_source!(
     static_device::StaticWrapper{PSY.Source},
 ) where {T <: ACCEPTED_REAL_TYPES}
     #Load device parameters
-    R_th, X_th, internal_voltage, internal_angle = device_parameters
-    V_R = internal_voltage * cos(internal_angle)
-    V_I = internal_voltage * sin(internal_angle)
+    R_th, X_th = device_parameters
+    V_R = get_V_ref(static_device) * cos(get_θ_ref(static_device))
+    V_I = get_V_ref(static_device) * sin(get_θ_ref(static_device))
     Zmag = R_th^2 + X_th^2
 
     #update current

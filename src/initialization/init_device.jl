@@ -71,8 +71,7 @@ function initialize_static_device!(
     I = conj(S0 / V)
     I_R = real(I)
     I_I = imag(I)
-    R_th = local_parameters[1]
-    X_th = local_parameters[2]
+    R_th, X_th = local_parameters
     Zmag = R_th^2 + X_th^2
 
     function f!(out, x)
@@ -95,8 +94,8 @@ function initialize_static_device!(
         θ_internal = atan(sol_x0[2], sol_x0[1])
         PSY.set_internal_voltage!(device.device, V_internal)
         PSY.set_internal_angle!(device.device, θ_internal)
-        local_parameters[3] = V_internal
-        local_parameters[4] = θ_internal
+        set_V_ref(device, PSY.get_internal_voltage(device.device))
+        set_θ_ref(device, PSY.get_internal_angle(device.device))
     end
     return
 end

@@ -510,12 +510,10 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVolta
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_static_injectors(inputs)[wrapped_device_ix]
-        p_range = get_p_range(wrapped_device)
-        device_parameters = @view integrator.p[p_range]
         if pert.signal == :V_ref
-            device_parameters[3] = pert.ref_value
+            set_V_ref(wrapped_device, pert.ref_value)
         elseif pert.signal == :θ_ref
-            device_parameters[4] = pert.ref_value
+            set_θ_ref(wrapped_device, pert.ref_value)
         else
             error("Signal $signal not accepted as a control reference change in SourceBus")
         end
@@ -640,10 +638,10 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadChange)
                 )
             end
             wrapped_zip = get_static_loads(inputs)[wrapped_device_ix]
-            p_range = get_p_range(wrapped_zip)
-            device_parameters = @view integrator.p[p_range]
-            device_parameters[3] += P_change
-            device_parameters[6] += Q_change
+            P_power = get_P_power(wrapped_zip)
+            Q_power = get_Q_power(wrapped_zip)
+            set_P_power!(wrapped_zip, P_power + P_change)
+            set_Q_power!(wrapped_zip, Q_power + Q_change)
             CRC.@ignore_derivatives @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
             return
         end
@@ -651,33 +649,37 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadChange)
         return (integrator) -> begin
             base_power_conversion = PSY.get_base_power(ld) / sys_base_power
             wrapped_zip = get_static_loads(inputs)[wrapped_device_ix]
-            p_range = get_p_range(wrapped_zip)
-            device_parameters = @view integrator.p[p_range]
             # List all cases for StandardLoad changes
             if signal ∈ [:P_ref, :P_ref_impedance]
                 P_old = PSY.get_impedance_active_power(ld)
                 P_change = (ref_value - P_old) * base_power_conversion
-                device_parameters[5] += P_change
+                P_impedance = get_P_impedance(wrapped_zip)
+                set_P_impedance!(wrapped_zip, P_impedance + P_change)
             elseif signal ∈ [:Q_ref, :Q_ref_impedance]
                 Q_old = PSY.get_impedance_reactive_power(ld)
                 Q_change = (ref_value - Q_old) * base_power_conversion
-                device_parameters[8] += Q_change
+                Q_impedance = get_Q_impedance(wrapped_zip)
+                set_Q_impedance!(wrapped_zip, Q_impedance + Q_change)
             elseif signal == :P_ref_power
                 P_old = PSY.get_constant_active_power(ld)
                 P_change = (ref_value - P_old) * base_power_conversion
-                device_parameters[3] += P_change
+                P_power = get_P_power(wrapped_zip)
+                set_P_power!(wrapped_zip, P_power + P_change)
             elseif signal == :Q_ref_power
                 Q_old = PSY.get_constant_reactive_power(ld)
                 Q_change = (ref_value - Q_old) * base_power_conversion
-                device_parameters[8] += Q_change
+                Q_power = get_Q_power(wrapped_zip)
+                set_Q_power!(wrapped_zip, Q_power + Q_change)
             elseif signal == :P_ref_current
                 P_old = PSY.get_current_active_power(ld)
                 P_change = (ref_value - P_old) * base_power_conversion
-                device_parameters[4] += P_change
+                P_current = get_P_current(wrapped_zip)
+                set_P_current!(wrapped_zip, P_current + P_change)
             elseif signal == :Q_ref_current
                 Q_old = PSY.get_current_reactive_power(ld)
                 Q_change = (ref_value - Q_old) * base_power_conversion
-                device_parameters[7] += Q_change
+                Q_current = get_Q_current(wrapped_zip)
+                set_Q_current!(wrapped_zip, Q_current + Q_change)
             else
                 error("It should never be here. Should have failed in the constructor.")
             end
@@ -740,10 +742,10 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadTrip)
         return (integrator) -> begin
             PSY.set_available!(ld, false)
             wrapped_zip = get_static_loads(inputs)[wrapped_device_ix]
-            p_range = get_p_range(wrapped_zip)
-            device_parameters = @view integrator.p[p_range]
-            device_parameters[3] -= P_trip
-            device_parameters[6] -= Q_trip
+            P_power = get_P_power(wrapped_zip)
+            Q_power = get_Q_power(wrapped_zip)
+            set_P_power!(wrapped_zip, P_power - P_trip)
+            set_Q_power!(wrapped_zip, Q_power - Q_trip)
             CRC.@ignore_derivatives @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
             return
         end
@@ -758,17 +760,21 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadTrip)
         return (integrator) -> begin
             PSY.set_available!(ld, false)
             wrapped_zip = get_static_loads(inputs)[wrapped_device_ix]
-            p_range = get_p_range(wrapped_zip)
-            device_parameters = @view integrator.p[p_range]
             # Update Constant Power
-            device_parameters[3] -= P_power_trip
-            device_parameters[6] -= Q_power_trip
+            P_power = get_P_power(wrapped_zip)
+            Q_power = get_Q_power(wrapped_zip)
+            set_P_power!(wrapped_zip, P_power - P_power_trip)
+            set_Q_power!(wrapped_zip, Q_power - Q_power_trip)
             # Update Constant Current
-            device_parameters[4] -= P_current_trip
-            device_parameters[7] -= Q_current_trip
+            P_current = get_P_current(wrapped_zip)
+            Q_current = get_Q_current(wrapped_zip)
+            set_P_current!(wrapped_zip, P_current - P_current_trip)
+            set_Q_current!(wrapped_zip, Q_current - Q_current_trip)
             # Update Constant Impedance
-            device_parameters[5] -= P_impedance_trip
-            device_parameters[8] -= Q_impedance_trip
+            P_impedance = get_P_impedance(wrapped_zip)
+            Q_impedance = get_Q_impedance(wrapped_zip)
+            set_P_impedance!(wrapped_zip, P_impedance - P_impedance_trip)
+            set_Q_impedance!(wrapped_zip, Q_impedance - Q_impedance_trip)
             CRC.@ignore_derivatives @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
             return
         end

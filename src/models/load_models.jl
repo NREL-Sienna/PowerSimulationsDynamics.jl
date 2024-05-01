@@ -44,9 +44,6 @@ function mdl_zip_load!(
     current_i::AbstractArray{T},
     wrapper::StaticLoadWrapper,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    # Load device parameters
-    _, _, P_power, P_current, P_impedance, Q_power, Q_current, Q_impedance =
-        device_parameters
     #V0_mag_inv = 1.0 / get_V_ref(wrapper)
     V0_mag_inv = 1.0 / PSY.get_magnitude(PSY.get_bus(wrapper))
     V0_mag_sq_inv = V0_mag_inv^2
@@ -55,6 +52,13 @@ function mdl_zip_load!(
     V_mag_inv = 1.0 / V_mag
     V_mag_sq_inv = V_mag_inv^2
 
+    # Load device parameters
+    P_power = get_P_power(wrapper)
+    P_current = get_P_current(wrapper)
+    P_impedance = get_P_impedance(wrapper)
+    Q_power = get_Q_power(wrapper)
+    Q_current = get_Q_current(wrapper)
+    Q_impedance = get_Q_impedance(wrapper)
     exp_params = get_exp_params(wrapper)
     Ir_exp = zero(T)
     Ii_exp = zero(T)

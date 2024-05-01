@@ -47,46 +47,8 @@ get_params_metadata(::PSY.Line) = [
     ParamsMetadata(:r, false, true, true, true),
     ParamsMetadata(:x, false, true, true, true),
 ]
-
-function get_params(d::StaticLoadWrapper)
-    loads = get_loads(d)
-    bus = PSY.get_bus(d)
-    V_ref = PSY.get_magnitude(bus)
-    Θ_ref = PSY.get_angle(bus)
-    sys_base_power = get_system_base_power(d)
-    P_power = 0.0
-    P_current = 0.0
-    P_impedance = 0.0
-    Q_power = 0.0
-    Q_current = 0.0
-    Q_impedance = 0.0
-    for ld in loads
-        base_power_conversion = PSY.get_base_power(ld) / sys_base_power
-        if isa(ld, PSY.PowerLoad)
-            P_power += PSY.get_active_power(ld) * base_power_conversion
-            Q_power += PSY.get_reactive_power(ld) * base_power_conversion
-        elseif isa(ld, PSY.StandardLoad)
-            P_impedance += PSY.get_impedance_active_power(ld) * base_power_conversion
-            Q_impedance += PSY.get_impedance_reactive_power(ld) * base_power_conversion
-            P_current += PSY.get_current_active_power(ld) * base_power_conversion
-            Q_current += PSY.get_current_reactive_power(ld) * base_power_conversion
-            P_power += PSY.get_constant_active_power(ld) * base_power_conversion
-            Q_power += PSY.get_constant_reactive_power(ld) * base_power_conversion
-        end
-    end
-    return [V_ref, Θ_ref, P_power, P_current, P_impedance, Q_power, Q_current, Q_impedance]
-end
-get_params_metadata(::StaticLoadWrapper) = [
-    ParamsMetadata(:V_ref, false, false, true, true),
-    ParamsMetadata(:Θ_ref, false, false, true, true),
-    ParamsMetadata(:P_power, false, false, true, true),
-    ParamsMetadata(:P_current, false, false, true, true),
-    ParamsMetadata(:P_impedance, false, false, true, true),
-    ParamsMetadata(:Q_power, false, false, true, true),
-    ParamsMetadata(:Q_current, false, false, true, true),
-    ParamsMetadata(:Q_impedance, false, false, true, true),
-]
-
+get_params(::StaticLoadWrapper) = Float64[]
+get_params_metadata(::StaticLoadWrapper) = ParamsMetadata[]
 ########### INVERTERS #############
 function get_params(g::PSY.DynamicInverter)
     vcat(
@@ -857,14 +819,10 @@ get_params_metadata(::PSY.STAB1) = [
 get_params(x::PSY.Source) = [
     PSY.get_R_th(x),
     PSY.get_X_th(x),
-    PSY.get_internal_voltage(x),
-    PSY.get_internal_angle(x),
 ]
 get_params_metadata(::PSY.Source) = [
     ParamsMetadata(:R_th, false, false, true, false),
     ParamsMetadata(:X_th, false, false, true, false),
-    ParamsMetadata(:internal_voltage, false, false, true, false),  #set during initialization -- incompatible with sensitivity analysis? 
-    ParamsMetadata(:internal_angle, false, false, true, false),    #set during initialization -- incompatible with sensitivity analysis? 
 ]
 #Parameters not implemented for PeriodicVariableSource - requires change in PSY Struct to have information required to construct and deconstruct parameter vector
 
