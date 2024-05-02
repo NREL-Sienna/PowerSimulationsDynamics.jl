@@ -37,13 +37,13 @@ Ii_im  = V_i * P0 * (V^(α - 2) / V0^α) - V_r * Q0 * (V^(β - 2)/ V0^β)
 
 """
 function mdl_zip_load!(
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
     current_i::AbstractArray{T},
     wrapper::StaticLoadWrapper,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    # Read power flow voltages
     #V0_mag_inv = 1.0 / get_V_ref(wrapper)
     V0_mag_inv = 1.0 / PSY.get_magnitude(PSY.get_bus(wrapper))
     V0_mag_sq_inv = V0_mag_inv^2

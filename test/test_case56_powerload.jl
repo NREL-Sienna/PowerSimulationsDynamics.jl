@@ -57,7 +57,7 @@ end
         )
 
         # Test Initial Conditions
-        @test LinearAlgebra.norm(sim_power.x0_init - sim_standard.x0_init) < 1e-4
+        @test LinearAlgebra.norm(sim_power.x0 - sim_standard.x0) < 1e-4
 
         # Test Small Signal
         ss_power = small_signal_analysis(sim_power)
@@ -116,7 +116,7 @@ end
         )
 
         # Test Initial Conditions
-        @test LinearAlgebra.norm(sim_power.x0_init - sim_standard.x0_init) < 1e-4
+        @test LinearAlgebra.norm(sim_power.x0 - sim_standard.x0) < 1e-4
 
         # Test Small Signal
         ss_power = small_signal_analysis(sim_power)

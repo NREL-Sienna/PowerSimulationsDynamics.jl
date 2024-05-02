@@ -3,7 +3,7 @@ function mass_matrix_pss_entries!(
     ::P,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {P <: PSY.PSS}
-    @debug "Using default mass matrix entries $P"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $P"
 end
 
 function mass_matrix_pss_entries!(
@@ -115,6 +115,7 @@ end
 function mdl_pss_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed}},
@@ -123,7 +124,10 @@ function mdl_pss_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
 
     #Update V_pss on inner vars
-    inner_vars[V_pss_var] = PSY.get_V_pss(PSY.get_pss(dynamic_device))
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.PSSFixed)
+    internal_params = @view device_parameters[local_ix_params]
+    V_pss = internal_params[1]
+    inner_vars[V_pss_var] = V_pss
 
     return
 end
@@ -131,6 +135,7 @@ end
 function mdl_pss_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.IEEEST}},
@@ -230,15 +235,13 @@ end
 function mdl_pss_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.STAB1}},
     h,
     t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
-
-    #Get Signal Input Integer
-    pss = PSY.get_pss(dynamic_device)
 
     # Get Input Signal - only speed deviation for STAB1
     external_ix = get_input_port_ix(dynamic_device, PSY.STAB1)
@@ -255,13 +258,15 @@ function mdl_pss_ode!(
     x_p3 = internal_states[3] # state for Lead Lag 2
 
     # Get Parameters
-    KT = PSY.get_KT(pss)
-    T = PSY.get_T(pss)
-    T1T3 = PSY.get_T1T3(pss)
-    T3 = PSY.get_T3(pss)
-    T2T4 = PSY.get_T2T4(pss)
-    T4 = PSY.get_T4(pss)
-    H_lim = PSY.get_H_lim(pss)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.STAB1)
+    internal_params = @view device_parameters[local_ix_params]
+    KT,
+    T,
+    T1T3,
+    T3,
+    T2T4,
+    T4,
+    H_lim = internal_params
 
     K = T * KT
     T1 = T3 * T1T3
@@ -287,6 +292,7 @@ end
 function mdl_pss_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2A}},
@@ -457,6 +463,7 @@ end
 function mdl_pss_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2B}},
@@ -638,6 +645,7 @@ end
 function mdl_pss_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2C}},

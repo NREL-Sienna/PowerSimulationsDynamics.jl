@@ -14,6 +14,10 @@ using PowerFlows
 using PowerNetworkMatrices
 import LinearAlgebra
 using Logging
+using SciMLSensitivity
+using Zygote
+using Optimization
+using OptimizationOptimisers
 
 import Aqua
 Aqua.test_unbound_args(PowerSimulationsDynamics)

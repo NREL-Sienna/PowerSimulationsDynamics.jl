@@ -1,5 +1,6 @@
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
     inner_vars::AbstractVector,
@@ -16,6 +17,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
     inner_vars::AbstractVector,
@@ -38,6 +40,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
     inner_vars::AbstractVector,
@@ -49,12 +52,9 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Ka = PSY.get_Ka(avr)
-    Ke = PSY.get_Ke(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    Ae = PSY.get_Ae(avr)
-    Be = PSY.get_Be(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeI)
+    internal_params = @view device_parameters[local_ix_params]
+    Ka, Ke, Kf, _, _, Tf, _, Ae, Be = internal_params
     #Obtain saturated Vf
     Se_Vf = Ae * exp(Be * abs(Vf0))
 
@@ -72,7 +72,9 @@ function initialize_avr!(
     x0 = [1.0, Vf0, Vf0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -91,6 +93,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
     inner_vars::AbstractVector,
@@ -102,18 +105,21 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    K0 = PSY.get_K0(avr)
-    T1 = PSY.get_T1(avr)
-    T2 = PSY.get_T2(avr)
-    T3 = PSY.get_T3(avr)
-    T4 = PSY.get_T4(avr)
-    Te = PSY.get_Te(avr)
-    Tr = PSY.get_Tr(avr)
-    Ae = PSY.get_Ae(avr)
-    Be = PSY.get_Be(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeII)
+    internal_params = @view device_parameters[local_ix_params]
+    K0,
+    T1,
+    T2,
+    T3,
+    T4,
+    Te,
+    _,
+    Va_min,
+    Va_max,
+    Ae,
+    Be = internal_params
     #Obtain saturated Vf
     Se_Vf = Ae * (exp(Be * abs(Vf0)))
-    Va_min, Va_max = PSY.get_Va_lim(avr)
 
     #States of AVRTypeII are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr1, Vr2
@@ -134,7 +140,9 @@ function initialize_avr!(
     x0 = [1.0, Vf0, Vf0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -150,7 +158,9 @@ function initialize_avr!(
         y_ll1, _ = lead_lag(sol_x0[1] - Vm, sol_x0[2], K0, T2, T1)
         y_ll2, _ = lead_lag(y_ll1, K0 * sol_x0[3], 1.0, K0 * T4, K0 * T3)
         if (y_ll2 > Va_max) || (y_ll2 < Va_min)
-            @error("Regulator Voltage V_r = $(y_ll2) outside the limits")
+            CRC.@ignore_derivatives @error(
+                "Regulator Voltage V_r = $(y_ll2) outside the limits"
+            )
         end
     end
     return
@@ -158,6 +168,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
     inner_vars::AbstractVector,
@@ -171,21 +182,25 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Tr = PSY.get_Tr(avr)
-    Tb = PSY.get_Tb(avr)
-    Tc = PSY.get_Tc(avr)
-    Ka = PSY.get_Ka(avr)
-    Ta = PSY.get_Ta(avr)
-    Va_min, Va_max = PSY.get_Va_lim(avr)
-    Te = PSY.get_Te(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    Kc = PSY.get_Kc(avr)
-    Kd = PSY.get_Kd(avr)
-    Ke = PSY.get_Ke(avr)
-    E1, E2 = PSY.get_E_sat(avr)
-    SE1, SE2 = PSY.get_Se(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    #Get parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.ESAC1A)
+    internal_params = @view device_parameters[local_ix_params]
+    Tr,
+    Tb,
+    Tc,
+    Ka,
+    Ta,
+    Va_min,
+    Va_max,
+    Te,
+    Kf,
+    Tf,
+    Kc,
+    Kd,
+    Ke,
+    Vr_min,
+    Vr_max = internal_params
+    inv_Tr = Tr < eps() ? 1.0 : 1.0 / Tr
     #Obtain saturation
     #Se_Vf = saturation_function(Vm)
 
@@ -199,7 +214,9 @@ function initialize_avr!(
     x0 = [1.0]
     sol = NLsolve.nlsolve(f_Ve!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         V_e0 = sol_x0[1]
@@ -209,7 +226,9 @@ function initialize_avr!(
     V_FE0 = Kd * Xad_Ifd0 + Ke * V_e0 + Se0 * V_e0
     V_r20 = V_FE0
     if (V_r20 > Vr_max) || (V_r20 < Vr_min)
-        @error("Regulator Voltage V_R = $(V_r20) outside the limits")
+        CRC.@ignore_derivatives @error(
+            "Regulator Voltage V_R = $(V_r20) outside the limits"
+        )
     end
     Tc_Tb_ratio = Tb <= eps() ? 0.0 : Tc / Tb
     V_r30 = -(Kf / Tf) * V_FE0
@@ -244,7 +263,9 @@ function initialize_avr!(
     x0 = [V_ref0, V_r10, V_r20, V_e0, V_r30]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         #Update V_ref
@@ -263,6 +284,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
     inner_vars::AbstractVector,
@@ -274,9 +296,9 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Ta_Tb = PSY.get_Ta_Tb(avr)
-    K = PSY.get_K(avr)
-    V_min, V_max = PSY.get_V_lim(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SEXS)
+    internal_params = @view device_parameters[local_ix_params]
+    Ta_Tb, _, K, _, V_min, V_max = internal_params
 
     #States of AVRTypeI are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr
@@ -293,18 +315,21 @@ function initialize_avr!(
     x0 = [1.0, Vf0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         if (sol_x0[2] >= V_max + BOUNDS_TOLERANCE) ||
            (sol_x0[2] <= V_min - BOUNDS_TOLERANCE)
-            @error(
+            CRC.@ignore_derivatives @error(
                 "Vr limits for AVR in $(PSY.get_name(dynamic_device)) (Vr = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min.  Consider updating the operating point."
             )
         end
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
         set_V_ref(dynamic_device, sol_x0[1])
+
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
         avr_states = @view device_states[avr_ix]
@@ -315,6 +340,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SCRX, TG, P}},
     inner_vars::AbstractVector,
@@ -374,13 +400,15 @@ function initialize_avr!(
     x0 = [1.0, Vf0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else # if converge
         sol_x0 = sol.zero
         Vr2_0 = (sol_x0[2] + Ta_Tb * (sol_x0[1] - Vm)) * K # K * V_LL
         #check the limits
         if (Vr2_0 >= V_max + BOUNDS_TOLERANCE) || (Vr2_0 <= V_min - BOUNDS_TOLERANCE)
-            @error(
+            CRC.@ignore_derivatives @error(
                 "Vr limits for AVR in $(PSY.get_name(dynamic_device)) (Vr = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min.  Consider updating the operating point."
             )
         end
@@ -397,6 +425,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
     inner_vars::AbstractVector,
@@ -410,17 +439,24 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Ka = PSY.get_Ka(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    Tc = PSY.get_Tc(avr)
-    Tb = PSY.get_Tb(avr)
-    Kc = PSY.get_Kc(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXST1)
+    internal_params = @view device_parameters[local_ix_params]
+    Tr,
+    Vi_min,
+    Vi_max,
+    Tc,
+    Tb,
+    Ka,
+    Ta,
+    Vr_min,
+    Vr_max,
+    Kc,
+    Kf,
+    Tf = internal_params
 
     # Check limits to field voltage 
     if (Vt * Vr_min - Kc * Ifd > Vf0) || (Vf0 > Vt * Vr_max - Kc * Ifd)
-        @error(
+        CRC.@ignore_derivatives @error(
             "Field Voltage for AVR in $(PSY.get_name(dynamic_device)) is $(Vf0) pu, which is outside its limits.  Consider updating the operating point."
         )
     end
@@ -445,6 +481,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXAC1, TG, P}},
     inner_vars::AbstractVector,
@@ -458,15 +495,22 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Tb = PSY.get_Tb(avr)
-    Tc = PSY.get_Tc(avr)
-    Ka = PSY.get_Ka(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    Kc = PSY.get_Kc(avr)
-    Kd = PSY.get_Kd(avr)
-    Ke = PSY.get_Ke(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    #Get parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXAC1)
+    internal_params = @view device_parameters[local_ix_params]
+    Tr,
+    Tb,
+    Tc,
+    Ka,
+    Ta,
+    Vr_min,
+    Vr_max,
+    Te,
+    Kf,
+    Tf,
+    Kc,
+    Kd,
+    Ke = internal_params
 
     #Solve Ve from rectifier function
     function f_Ve!(out, x)
@@ -478,7 +522,9 @@ function initialize_avr!(
     x0 = [10.0] # initial guess for Ve
     sol = NLsolve.nlsolve(f_Ve!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
         sol_x0 = sol.zero
         Ve = sol_x0[1]
@@ -488,7 +534,7 @@ function initialize_avr!(
     VFE = Kd * Ifd0 + Ke * Ve + Se * Ve
     Vr2 = VFE
     if (Vr2 > Vr_max) || (Vr2 < Vr_min)
-        @error("Regulator Voltage V_R = $(Vr2) outside the limits")
+        CRC.@ignore_derivatives @error("Regulator Voltage V_R = $(Vr2) outside the limits")
     end
     Vr3 = -(Kf / Tf) * VFE
     Tc_Tb_ratio = Tb <= eps() ? 0.0 : Tc / Tb
@@ -515,6 +561,7 @@ end
 
 function initialize_avr!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESST1A, TG, P}},
     inner_vars::AbstractVector,
@@ -542,7 +589,7 @@ function initialize_avr!(
 
     # Check limits to field voltage 
     if (Vt * Vr_min > Vf0) || (Vf0 > Vt * Vr_max - Kc * Ifd)
-        @error(
+        CRC.@ignore_derivatives @error(
             "Field Voltage for AVR in $(PSY.get_name(dynamic_device)) is $(Vf0) pu, which is outside its limits.  Consider updating the operating point."
         )
     end

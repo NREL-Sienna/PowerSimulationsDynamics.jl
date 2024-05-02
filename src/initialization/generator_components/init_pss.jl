@@ -1,5 +1,6 @@
 function initialize_pss!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed}},
     inner_vars::AbstractVector,
@@ -7,6 +8,7 @@ function initialize_pss!(
 
 function initialize_pss!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.IEEEST}},
     inner_vars::AbstractVector,
@@ -116,15 +118,14 @@ end
 
 function initialize_pss!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.STAB1}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
-    #Get Signal Input Integer
-    pss = PSY.get_pss(dynamic_device)
 
     #Obtain PSS States
-    pss_ix = get_local_state_ix(dynamic_device, typeof(pss))
+    pss_ix = get_local_state_ix(dynamic_device, PSY.STAB1)
     pss_states = @view device_states[pss_ix]
 
     #Compute steady-state values
@@ -147,6 +148,7 @@ end
 
 function initialize_pss!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2A}},
     inner_vars::AbstractVector,
@@ -270,6 +272,7 @@ end
 
 function initialize_pss!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2B}},
     inner_vars::AbstractVector,
@@ -406,6 +409,7 @@ end
 
 function initialize_pss!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2C}},
     inner_vars::AbstractVector,

@@ -63,7 +63,7 @@ function show_simulation_table(
 ) where {T <: SimulationModel}
     header = ["Property", "Value"]
     val_multimachine = sim.multimachine ? "Yes" : "No"
-    val_initialized = sim.initialized ? "Yes" : "No"
+    val_initialized = (sim.initialize_level == INITIALIZED) ? "Yes" : "No"
     val_model = T == ResidualModel ? "Residual Model" : "Mass Matrix Model"
     table = [
         "Status" sim.status
@@ -71,7 +71,7 @@ function show_simulation_table(
         "Initialized?" val_initialized
         "Multimachine system?" val_multimachine
         "Time Span" string(sim.tspan)
-        "Number of States" string(length(sim.x0_init))
+        "Number of States" string(length(sim.x0))
         "Number of Perturbations" string(length(sim.perturbations))
     ]
     PrettyTables.pretty_table(

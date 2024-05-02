@@ -3,7 +3,7 @@ function mass_matrix_avr_entries!(
     avr::T,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {T <: PSY.AVR}
-    @debug "Using default mass matrix entries $T"
+    CRC.@ignore_derivatives @debug "Using default mass matrix entries $T"
     return
 end
 
@@ -64,6 +64,7 @@ end
 function mdl_avr_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
     h,
@@ -79,6 +80,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
     h,
@@ -99,7 +101,9 @@ function mdl_avr_ode!(
     V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get Parameters
-    Kv = PSY.get_Kv(PSY.get_avr(dynamic_device))
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRSimple)
+    internal_params = @view device_parameters[local_ix_params]
+    Kv = internal_params[1]
 
     #Compute ODEs
     output_ode[local_ix[1]] = Kv * (V_ref - V_th)
@@ -113,6 +117,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
     h,
@@ -137,16 +142,9 @@ function mdl_avr_ode!(
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
-    avr = PSY.get_avr(dynamic_device)
-    Ka = PSY.get_Ka(avr)
-    Ke = PSY.get_Ke(avr)
-    Kf = PSY.get_Kf(avr)
-    Ta = PSY.get_Ta(avr)
-    Te = PSY.get_Te(avr)
-    Tf = PSY.get_Tf(avr)
-    Tr = PSY.get_Tr(avr)
-    Ae = PSY.get_Ae(avr)
-    Be = PSY.get_Be(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeI)
+    internal_params = @view device_parameters[local_ix_params]
+    Ka, Ke, Kf, Ta, Te, Tf, Tr, Ae, Be = internal_params
 
     #Compute auxiliary parameters
     Se_Vf = Ae * exp(Be * abs(Vf)) #16.13
@@ -173,6 +171,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
     h,
@@ -197,17 +196,19 @@ function mdl_avr_ode!(
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
-    avr = PSY.get_avr(dynamic_device)
-    K0 = PSY.get_K0(avr)
-    T1 = PSY.get_T1(avr)
-    T2 = PSY.get_T2(avr)
-    T3 = PSY.get_T3(avr)
-    T4 = PSY.get_T4(avr)
-    Te = PSY.get_Te(avr)
-    Tr = PSY.get_Tr(avr)
-    Ae = PSY.get_Ae(avr)
-    Be = PSY.get_Be(avr)
-    Va_min, Va_max = PSY.get_Va_lim(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeII)
+    internal_params = @view device_parameters[local_ix_params]
+    K0,
+    T1,
+    T2,
+    T3,
+    T4,
+    Te,
+    Tr,
+    Va_min,
+    Va_max,
+    Ae,
+    Be = internal_params
 
     #Compute auxiliary parameters
     Se_Vf = Ae * exp(Be * abs(Vf)) #16.13
@@ -235,6 +236,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
     h,
@@ -264,20 +266,24 @@ function mdl_avr_ode!(
     Xad_Ifd = inner_vars[Xad_Ifd_var]
 
     #Get parameters
-    Tr = PSY.get_Tr(avr)
-    Ta = PSY.get_Ta(avr)
-    Tb = PSY.get_Tb(avr)
-    Tc = PSY.get_Tc(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.ESAC1A)
+    internal_params = @view device_parameters[local_ix_params]
+    Tr,
+    Tb,
+    Tc,
+    Ka,
+    Ta,
+    Va_min,
+    Va_max,
+    Te,
+    Kf,
+    Tf,
+    Kc,
+    Kd,
+    Ke,
+    Vr_min,
+    Vr_max = internal_params
     inv_Tr = Tr < eps() ? 1.0 : 1.0 / Tr
-    Ka = PSY.get_Ka(avr)
-    Va_min, Va_max = PSY.get_Va_lim(avr) #Not used without UEL or OEL
-    Te = PSY.get_Te(avr) # Te > 0
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr) # Te > 0
-    Kc = PSY.get_Kc(avr)
-    Kd = PSY.get_Kd(avr)
-    Ke = PSY.get_Ke(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
     #Obtain saturation
     Se = saturation_function(avr, Ve)
 
@@ -312,6 +318,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
     h,
@@ -333,13 +340,10 @@ function mdl_avr_ode!(
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
-    avr = PSY.get_avr(dynamic_device)
-    Ta_Tb = PSY.get_Ta_Tb(avr)
-    Tb = PSY.get_Tb(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SEXS)
+    internal_params = @view device_parameters[local_ix_params]
+    Ta_Tb, Tb, K, Te, V_min, V_max = internal_params
     Ta = Tb * Ta_Tb
-    Te = PSY.get_Te(avr)
-    K = PSY.get_K(avr)
-    V_min, V_max = PSY.get_V_lim(avr)
 
     #Compute auxiliary parameters
     V_in = V0_ref + Vs - V_th
@@ -359,6 +363,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SCRX, TG, P}},
     h,
@@ -421,6 +426,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray,
     output_ode::AbstractArray,
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
     h,
@@ -445,18 +451,21 @@ function mdl_avr_ode!(
     Vs = inner_vars[V_pss_var] # PSS output 
     Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base 
 
-    #Get parameters
-    avr = PSY.get_avr(dynamic_device)
-    Tr = PSY.get_Tr(avr)
-    Vi_min, Vi_max = PSY.get_Vi_lim(avr)
-    Tc = PSY.get_Tc(avr)
-    Tb = PSY.get_Tb(avr)
-    Ka = PSY.get_Ka(avr)
-    Ta = PSY.get_Ta(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
-    Kc = PSY.get_Kc(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
+    #Get Parameters
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXST1)
+    internal_params = @view device_parameters[local_ix_params]
+    Tr,
+    Vi_min,
+    Vi_max,
+    Tc,
+    Tb,
+    Ka,
+    Ta,
+    Vr_min,
+    Vr_max,
+    Kc,
+    Kf,
+    Tf = internal_params
 
     #Compute auxiliary parameters
     V_ref = V0_ref + Vs
@@ -483,6 +492,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray,
     output_ode::AbstractArray,
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXAC1, TG, P}},
     h,
@@ -512,18 +522,21 @@ function mdl_avr_ode!(
     Xad_Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base
 
     #Get parameters
-    Tr = PSY.get_Tr(avr)
-    Tb = PSY.get_Tb(avr)
-    Tc = PSY.get_Tc(avr)
-    Ka = PSY.get_Ka(avr)
-    Ta = PSY.get_Ta(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
-    Te = PSY.get_Te(avr) # Te > 0
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr) # Tf > 0
-    Kc = PSY.get_Kc(avr)
-    Kd = PSY.get_Kd(avr)
-    Ke = PSY.get_Ke(avr)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXAC1)
+    internal_params = @view device_parameters[local_ix_params]
+    Tr,
+    Tb,
+    Tc,
+    Ka,
+    Ta,
+    Vr_min,
+    Vr_max,
+    Te,
+    Kf,
+    Tf,
+    Kc,
+    Kd,
+    Ke = internal_params
 
     #Obtain saturation
     Se = saturation_function(avr, Ve)
@@ -556,6 +569,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray,
     output_ode::AbstractArray,
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESST1A, TG, P}},
     h,

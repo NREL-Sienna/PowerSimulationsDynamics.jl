@@ -11,6 +11,7 @@ struct BranchWrapper
     bus_ix_to::Int
     ix_range::Vector{Int}
     ode_range::Vector{Int}
+    p_range::Vector{Int}
     global_index::Base.ImmutableDict{Symbol, Int}
     function BranchWrapper(
         branch::PSY.DynamicBranch,
@@ -18,6 +19,7 @@ struct BranchWrapper
         bus_ix_to::Int,
         ix_range,
         ode_range,
+        p_range,
         sys_base_power,
         sys_base_freq,
     )
@@ -31,6 +33,7 @@ struct BranchWrapper
             bus_ix_to,
             ix_range,
             ode_range,
+            p_range,
             Base.ImmutableDict(Dict(branch_states .=> ix_range)...),
         )
     end
@@ -41,6 +44,7 @@ get_bus_ix_from(wrapper::BranchWrapper) = wrapper.bus_ix_from
 get_bus_ix_to(wrapper::BranchWrapper) = wrapper.bus_ix_to
 get_ix_range(wrapper::BranchWrapper) = wrapper.ix_range
 get_ode_ouput_range(wrapper::BranchWrapper) = wrapper.ode_range
+get_p_range(wrapper::BranchWrapper) = wrapper.p_range
 get_global_index(wrapper::BranchWrapper) = wrapper.global_index
 get_branch(wrapper::BranchWrapper) = wrapper.branch
 

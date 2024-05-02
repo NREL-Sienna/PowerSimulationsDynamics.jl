@@ -61,6 +61,8 @@ export is_valid
 export transform_load_to_constant_impedance
 export transform_load_to_constant_current
 export transform_load_to_constant_power
+export get_parameter_sensitivity_function!
+export get_parameter_sensitivity_values
 
 ####################################### Package Imports ####################################
 import Logging
@@ -81,12 +83,16 @@ import PowerFlows
 import PowerNetworkMatrices
 import TimerOutputs
 import FastClosures: @closure
+import Zygote
+import ChainRulesCore
+import Accessors
 
 const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
 const PF = PowerFlows
 const PNM = PowerNetworkMatrices
+const CRC = ChainRulesCore
 
 using DocStringExtensions
 
@@ -118,6 +124,7 @@ include("base/nlsolve_wrapper.jl")
 include("base/simulation_initialization.jl")
 include("base/small_signal.jl")
 include("base/model_validation.jl")
+include("base/sensitivity_analysis.jl")
 
 #Common Models
 include("models/branch.jl")
@@ -184,5 +191,6 @@ include("utils/immutable_dicts.jl")
 include("utils/print.jl")
 include("utils/kwargs_check.jl")
 include("utils/logging.jl")
+include("utils/parameters.jl")
 
 end # module

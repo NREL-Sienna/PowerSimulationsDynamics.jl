@@ -2,59 +2,63 @@ function initialize_dynamic_device!(
     dynamic_device::DynamicWrapper{DynG},
     static::PSY.StaticInjection,
     initial_inner_vars::AbstractVector,
+    parameters::AbstractVector,
+    states::AbstractVector,
 ) where {DynG <: PSY.DynamicGenerator}
     #Obtain States
-    device_states = zeros(PSY.get_n_states(dynamic_device))
-
     #Initialize Machine and Shaft: δ and ω
-    initialize_mach_shaft!(device_states, static, dynamic_device, initial_inner_vars)
+    initialize_mach_shaft!(states, parameters, static, dynamic_device, initial_inner_vars)
     #Initialize extra Shaft states
-    initialize_shaft!(device_states, static, dynamic_device, initial_inner_vars)
+    initialize_shaft!(states, parameters, static, dynamic_device, initial_inner_vars)
     #Initialize AVR
-    initialize_avr!(device_states, static, dynamic_device, initial_inner_vars)
+    initialize_avr!(states, parameters, static, dynamic_device, initial_inner_vars)
     #Initialize TG
-    initialize_tg!(device_states, static, dynamic_device, initial_inner_vars)
+    initialize_tg!(states, parameters, static, dynamic_device, initial_inner_vars)
     #Initialize PSS
-    initialize_pss!(device_states, static, dynamic_device, initial_inner_vars)
-
-    return device_states
+    initialize_pss!(states, parameters, static, dynamic_device, initial_inner_vars)
+    return
 end
 
 function initialize_dynamic_device!(
     dynamic_device::DynamicWrapper{DynI},
     static::PSY.StaticInjection,
     initial_inner_vars::AbstractVector,
+    parameters::AbstractVector,
+    states::AbstractVector,
 ) where {DynI <: PSY.DynamicInverter}
-    #Obtain States
-    device_states = zeros(PSY.get_n_states(dynamic_device))
 
     #Initialize Machine and Shaft: V and I
-    initialize_filter!(device_states, static, dynamic_device, initial_inner_vars)
+    initialize_filter!(states, parameters, static, dynamic_device, initial_inner_vars)
     #Initialize freq estimator
     initialize_frequency_estimator!(
-        device_states,
+        states,
+        parameters,
         static,
         dynamic_device,
         initial_inner_vars,
     )
     #Initialize OuterLoop
-    initialize_outer!(device_states, static, dynamic_device, initial_inner_vars)
+    initialize_outer!(states, parameters, static, dynamic_device, initial_inner_vars)
     #Initialize DCside
-    initialize_DCside!(device_states, static, dynamic_device, initial_inner_vars)
+    initialize_DCside!(states, parameters, static, dynamic_device, initial_inner_vars)
     #Initialize Converter
-    initialize_converter!(device_states, static, dynamic_device, initial_inner_vars)
+    initialize_converter!(states, parameters, static, dynamic_device, initial_inner_vars)
     #Initialize InnerLoop
-    initialize_inner!(device_states, static, dynamic_device, initial_inner_vars)
-    return device_states
+    initialize_inner!(states, parameters, static, dynamic_device, initial_inner_vars)
+    return
 end
 
-function initialize_static_device!(::StaticLoadWrapper)
+function initialize_static_device!(
+    ::StaticLoadWrapper,
+    local_parameters::AbstractArray{V},
+) where {V <: ACCEPTED_REAL_TYPES}
     return
 end
 
 function initialize_static_device!(
     device::StaticWrapper{PSY.Source, T},
-) where {T <: BusCategory}
+    local_parameters::AbstractArray{U},
+) where {T <: BusCategory, U <: ACCEPTED_REAL_TYPES}
     #PowerFlow Data
     P0 = PSY.get_active_power(device)
     Q0 = PSY.get_reactive_power(device)
@@ -67,8 +71,7 @@ function initialize_static_device!(
     I = conj(S0 / V)
     I_R = real(I)
     I_I = imag(I)
-    R_th = PSY.get_R_th(device.device)
-    X_th = PSY.get_X_th(device.device)
+    R_th, X_th = local_parameters
     Zmag = R_th^2 + X_th^2
 
     function f!(out, x)
@@ -83,7 +86,7 @@ function initialize_static_device!(
     x0 = [V_R, V_I]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Source failed")
+        CRC.@ignore_derivatives @warn("Initialization in Source failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -100,10 +103,10 @@ end
 function initialize_dynamic_device!(
     dynamic_device::DynamicWrapper{PSY.PeriodicVariableSource},
     source::PSY.Source,
-    ::AbstractVector,
+    initial_inner_vars::AbstractVector,
+    parameters::AbstractVector,
+    device_states::AbstractVector,
 )
-    device_states = zeros(PSY.get_n_states(dynamic_device))
-
     #PowerFlow Data
     P0 = PSY.get_active_power(source)
     Q0 = PSY.get_reactive_power(source)
@@ -131,7 +134,7 @@ function initialize_dynamic_device!(
     x0 = [V_R, V_I]
     sol = NLsolve.nlsolve(f!, x0)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Periodic Variable Source failed")
+        CRC.@ignore_derivatives @warn("Initialization in Periodic Variable Source failed")
     else
         sol_x0 = sol.zero
         #Update terminal voltages
@@ -159,11 +162,12 @@ function initialize_dynamic_device!(
         PSY.set_internal_voltage_bias!(get_device(dynamic_device), V_internal_bias)
         PSY.set_internal_angle_bias!(get_device(dynamic_device), θ_internal_bias)
     end
-    return device_states
+    return
 end
 
-function initialize_dynamic_device!(branch::BranchWrapper)
-    device_states = zeros(PSY.get_n_states(branch))
+function initialize_dynamic_device!(branch::BranchWrapper,
+    parameters::AbstractVector,
+    device_states::AbstractVector)
     #PowerFlow Data
     arc = PSY.get_arc(branch)
     Vm_from = PSY.get_magnitude(PSY.get_from(arc))
@@ -174,8 +178,7 @@ function initialize_dynamic_device!(branch::BranchWrapper)
     V_I_from = Vm_from * sin(θ_from)
     V_R_to = Vm_to * cos(θ_to)
     V_I_to = Vm_to * sin(θ_to)
-    R = PSY.get_r(branch)
-    X = PSY.get_x(branch)
+    R, X = parameters
     Zmag_sq = R^2 + X^2
     #Compute Current
     I_R = R * (V_R_from - V_R_to) / Zmag_sq + X * (V_I_from - V_I_to) / Zmag_sq
@@ -183,31 +186,34 @@ function initialize_dynamic_device!(branch::BranchWrapper)
     #Update Current
     device_states[1] = I_R
     device_states[2] = I_I
-    return device_states
+    return
 end
 
 function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.SingleCageInductionMachine},
     device::PSY.StaticInjection,
     ::AbstractVector,
+    device_parameters::AbstractVector,
+    device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
 
-    #Obtain States
-    device_states = zeros(PSY.get_n_states(dynamic_wrapper))
-
     # Get parameters
     dynamic_device = get_device(dynamic_wrapper)
-    R_s = PSY.get_R_s(dynamic_device)
-    X_ls = PSY.get_X_ls(dynamic_device)
-    R_r = PSY.get_R_r(dynamic_device)
-    X_lr = PSY.get_X_lr(dynamic_device)
-    A = PSY.get_A(dynamic_device)
-    B = PSY.get_B(dynamic_device)
-    C = PSY.get_C(dynamic_device)
-    base_power = PSY.get_base_power(dynamic_device)
-    X_ad = PSY.get_X_ad(dynamic_device)
-    X_aq = PSY.get_X_aq(dynamic_device)
+    R_s,
+    R_r,
+    X_ls,
+    X_lr,
+    X_m,
+    H,
+    A,
+    B,
+    base_power,
+    C,
+    τ_m0,
+    B_sh,
+    X_ad,
+    X_aq = device_parameters
 
     #PowerFlow Data
     if isa(device, PSY.StandardLoad)
@@ -270,7 +276,9 @@ function initialize_dynamic_device!(
     end
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Ind. Motor $(PSY.get_name(device)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Ind. Motor $(PSY.get_name(device)) failed"
+        )
     else
         sol_x0 = sol.zero
         device_states[1] = sol_x0[4] # ψ_qs
@@ -279,36 +287,41 @@ function initialize_dynamic_device!(
         device_states[4] = sol_x0[7] # ψ_dr
         device_states[5] = sol_x0[8] # ωr
         # update τ_ref and B_sh
+        device_parameters[12] = sol_x0[3]   # B_sh
         PSY.set_B_shunt!(dynamic_device, sol_x0[3]) # B_sh
-        #set_B_shunt(dynamic_device, sol_x0[3]) # B_sh
+        device_parameters[11] = sol_x0[9]   # τ_m0
         PSY.set_τ_ref!(dynamic_device, sol_x0[9]) # τ_m0
         set_P_ref(dynamic_wrapper, sol_x0[9]) # τ_m0
     end
-    return device_states
+    return
 end
 
 function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.SimplifiedSingleCageInductionMachine},
     device::PSY.StaticInjection,
     ::AbstractVector,
+    device_parameters::AbstractVector,
+    device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
 
-    #Obtain States
-    device_states = zeros(PSY.get_n_states(dynamic_wrapper))
-
-    # Get parameters
     dynamic_device = get_device(dynamic_wrapper)
-    R_s = PSY.get_R_s(dynamic_device)
-    X_m = PSY.get_X_m(dynamic_device)
-    R_r = PSY.get_R_r(dynamic_device)
-    A = PSY.get_A(dynamic_device)
-    B = PSY.get_B(dynamic_device)
-    C = PSY.get_C(dynamic_device)
-    base_power = PSY.get_base_power(dynamic_device)
-    X_ss = PSY.get_X_ss(dynamic_device)
-    X_rr = PSY.get_X_rr(dynamic_device)
-    X_p = PSY.get_X_p(dynamic_device)
+    #Get parameters
+    R_s,
+    R_r,
+    X_ls,
+    X_lr,
+    X_m,
+    H,
+    A,
+    B,
+    base_power,
+    C,
+    τ_m0,
+    B_sh,
+    X_ss,
+    X_rr,
+    X_p = device_parameters
 
     #PowerFlow Data
     if isa(device, PSY.StandardLoad)
@@ -374,7 +387,9 @@ function initialize_dynamic_device!(
     end
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Ind. Motor $(PSY.get_name(device)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Ind. Motor $(PSY.get_name(device)) failed"
+        )
     else
         sol_x0 = sol.zero
         device_states[1] = sol_x0[8] # ψ_qr
@@ -382,8 +397,9 @@ function initialize_dynamic_device!(
         device_states[3] = sol_x0[10] # ωr
         # update τ_ref and B_sh
         PSY.set_B_shunt!(dynamic_device, sol_x0[5]) # B_sh
-        #set_B_shunt(dynamic_device, sol_x0[5]) # B_sh
+        device_parameters[12] = sol_x0[5]   # B_sh
         PSY.set_τ_ref!(dynamic_device, sol_x0[11]) # τ_m0
+        device_parameters[11] = sol_x0[11]   # τ_m0
         set_P_ref(dynamic_wrapper, sol_x0[11]) # τ_m0
     end
     return device_states
@@ -393,27 +409,27 @@ function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.CSVGN1},
     device::PSY.StaticInjection,
     ::AbstractVector,
+    device_parameters::AbstractVector,
+    device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
-
-    # Obtain States
-    device_states = zeros(PSY.get_n_states(dynamic_wrapper))
-
     # Get parameters
     dynamic_device = get_device(dynamic_wrapper)
-    K = PSY.get_K(dynamic_device)
-    T1 = PSY.get_T1(dynamic_device)
-    T2 = PSY.get_T2(dynamic_device)
-    T3 = PSY.get_T3(dynamic_device)
-    T4 = PSY.get_T4(dynamic_device)
-    T5 = PSY.get_T5(dynamic_device)
-    Rmin = PSY.get_Rmin(dynamic_device)
-    Vmax = PSY.get_Vmax(dynamic_device)
-    Vmin = PSY.get_Vmin(dynamic_device)
-    Cbase = PSY.get_CBase(dynamic_device)
+    K,
+    T1,
+    T2,
+    T3,
+    T4,
+    T5,
+    Rmin,
+    Vmax,
+    Vmin,
+    Cbase,
+    Mbase,
+    R_th,
+    X_th = device_parameters
     # FIXME: base_power is changed to system's base_power when a CSVGN1 is attached to a Source using add_component!()
     # Temporarily, to avoid that, set_dynamic_injector!() could be used
-    Mbase = PSY.get_base_power(dynamic_device)
     Rbase = Mbase
 
     # PowerFlow Data
@@ -431,13 +447,12 @@ function initialize_dynamic_device!(
     vr2 = thy
 
     if (thy > Vmax) || (thy < Vmin)
-        @error("Thyristor state thy = $(thy) outside the limits")
+        CRC.@ignore_derivatives @error("Thyristor state thy = $(thy) outside the limits")
     end
 
     if (vr2 > 1) || (vr2 < Rmin / Rbase)
-        @error("Regulator state vr2 = $(vr2) outside the limits")
+        CRC.@ignore_derivatives @error("Regulator state vr2 = $(vr2) outside the limits")
     end
-
     device_states[1] = K * (V_abs - V_ref0) # thy
     device_states[2] = 0.0 # vr1
     device_states[3] = K * (V_abs - V_ref0) # vr2
@@ -449,23 +464,28 @@ function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.ActiveConstantPowerLoad},
     device::PSY.StaticInjection,
     ::AbstractVector,
+    device_parameters::AbstractVector,
+    device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
 
-    #Obtain States
-    device_states = zeros(PSY.get_n_states(dynamic_wrapper))
-
-    # Get parameters
     dynamic_device = get_device(dynamic_wrapper)
-    r_load = PSY.get_r_load(dynamic_device)
-    rf = PSY.get_rf(dynamic_device)
-    lf = PSY.get_lf(dynamic_device)
-    cf = PSY.get_cf(dynamic_device)
-    rg = PSY.get_rg(dynamic_device)
-    lg = PSY.get_lg(dynamic_device)
-    kiv = PSY.get_kiv(dynamic_device)
-    kic = PSY.get_kic(dynamic_device)
-    base_power = PSY.get_base_power(dynamic_device)
+
+    #Get parameters
+    r_load,
+    _,
+    rf,
+    lf,
+    cf,
+    rg,
+    lg,
+    _,
+    _,
+    _,
+    kiv,
+    _,
+    kic,
+    base_power = device_parameters
 
     #PowerFlow Data
     if isa(device, PSY.StandardLoad)
@@ -527,7 +547,9 @@ function initialize_dynamic_device!(
     end
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Active Load $(PSY.get_name(device)) failed")
+        CRC.@ignore_derivatives @warn(
+            "Initialization in Active Load $(PSY.get_name(device)) failed"
+        )
     else
         sol_x0 = sol.zero
         device_states[1] = sol_x0[1] # θ_pll
@@ -554,11 +576,11 @@ end
 function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     static::PSY.StaticInjection,
-    initial_inner_vars::AbstractVector,
+    ::AbstractVector,
+    device_parameters::AbstractVector,
+    device_states::AbstractVector,
 )
-    device_states = zeros(PSY.get_n_states(dynamic_wrapper))
     dynamic_device = get_device(dynamic_wrapper)
-
     #Get PowerFlow Data
     P0 = PSY.get_active_power(static)
     Q0 = PSY.get_reactive_power(static)
@@ -583,13 +605,13 @@ function initialize_dynamic_device!(
     Iq_cmd = Iq / Mult
     Ip_min, Ip_max, Iq_min, Iq_max = current_limit_logic(dynamic_device, Ip_cmd, Iq_cmd)
     if Ip_cmd >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_cmd
-        @error(
+        CRC.@ignore_derivatives @error(
             "Inverter $(PSY.get_name(static)) active current $(Ip_cmd) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
         )
     end
 
     if Iq_cmd >= Iq_max + BOUNDS_TOLERANCE || Iq_min - BOUNDS_TOLERANCE >= Iq_cmd
-        @error(
+        CRC.@ignore_derivatives @error(
             "Inverter $(PSY.get_name(static)) reactive current $(Iq_cmd) out of limits $(Iq_min) $(Iq_max). Check Power Flow or Parameters"
         )
     end
@@ -624,12 +646,12 @@ function initialize_dynamic_device!(
         device_states[9] = Pord
         device_states[10] = Ip
     else
-        @error "Unsupported value of Freq_Flag"
+        CRC.@ignore_derivatives @error "Unsupported value of Freq_Flag"
     end
 
     #See Note 2 on PSSE Documentation
     Vref0 = PSY.get_V_ref(dynamic_device)
-    K_qv = PSY.get_K_qv(dynamic_device)
+    K_qv = device_parameters[5]
     (dbd1, dbd2) = PSY.get_dbd_pnts(dynamic_device)
     if Vref0 == 0.0
         Vref = Vmeas
@@ -645,6 +667,6 @@ function initialize_dynamic_device!(
     set_V_ref(dynamic_wrapper, Vref)
     set_ω_ref(dynamic_wrapper, Freq_ref)
     PSY.set_Pfa_ref!(dynamic_device, pfaref)
-
-    return device_states
+    device_parameters[29] = pfaref
+    return
 end

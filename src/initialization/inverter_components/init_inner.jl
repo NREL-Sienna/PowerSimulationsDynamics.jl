@@ -1,8 +1,9 @@
 function initialize_inner!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, L},
+        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, PSY.LCLFilter, L},
     },
     inner_vars::AbstractVector,
 ) where {
@@ -10,7 +11,6 @@ function initialize_inner!(
     O <: PSY.OuterControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    F <: PSY.Filter,
     L <: Union{Nothing, PSY.InverterLimiter},
 }
 
@@ -33,22 +33,15 @@ function initialize_inner!(
     Vi_cnv0 = inner_vars[Vi_cnv_var]
 
     #Get Voltage Controller parameters
-    inner_control = PSY.get_inner_control(dynamic_device)
     filter = PSY.get_filter(dynamic_device)
-    kpv = PSY.get_kpv(inner_control)
-    kiv = PSY.get_kiv(inner_control)
-    kffi = PSY.get_kffi(inner_control)
-    cf = PSY.get_cf(filter)
-    rv = PSY.get_rv(inner_control)
-    lv = PSY.get_lv(inner_control)
+    filter_ix_params = get_local_parameter_ix(dynamic_device, typeof(filter))
+    filter_params = @view device_parameters[filter_ix_params]
+    cf = filter_params[3]
+    lf = filter_params[1]
 
-    #Get Current Controller parameters
-    kpc = PSY.get_kpc(inner_control)
-    kic = PSY.get_kic(inner_control)
-    kffv = PSY.get_kffv(inner_control)
-    lf = PSY.get_lf(filter)
-    ωad = PSY.get_ωad(inner_control)
-    kad = PSY.get_kad(inner_control)
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.VoltageModeControl)
+    internal_params = @view device_parameters[local_ix_params]
+    kpv, kiv, kffv, rv, lv, kpc, kic, kffi, ωad, kad = internal_params
 
     function f!(out, x)
         θ_oc = x[1]
@@ -106,7 +99,7 @@ function initialize_inner!(
     x0 = [θ0_oc, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Inner Control failed")
+        CRC.@ignore_derivatives @warn("Initialization in Inner Control failed")
     else
         sol_x0 = sol.zero
         #Update angle:
@@ -145,6 +138,7 @@ end
 
 function initialize_inner!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F, L},
@@ -213,7 +207,7 @@ function initialize_inner!(
     x0 = [0.0, 0.0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        @warn("Initialization in Inner Control failed")
+        CRC.@ignore_derivatives @warn("Initialization in Inner Control failed")
     else
         sol_x0 = sol.zero
         #Update Converter modulation
@@ -231,6 +225,7 @@ end
 
 function initialize_inner!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
@@ -256,18 +251,32 @@ function initialize_inner!(
     inner_control = PSY.get_inner_control(dynamic_device)
     Q_Flag = PSY.get_Q_Flag(inner_control)
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
-
+    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.RECurrentControlB)
+    internal_params = @view device_parameters[local_ix_params]
+    Vdip_min,
+    Vdip_max,
+    T_rv,
+    dbd1,
+    dbd2,
+    K_qv,
+    I_ql1,
+    I_qh1,
+    V_ref0,
+    K_vp,
+    K_vi,
+    T_iq,
+    I_max = internal_params
     Ip_min, Ip_max, Iq_min, Iq_max =
         current_limit_logic(inner_control, Val(PQ_Flag), V_t, Ip_oc, Iq_cmd)
 
     if Ip_oc >= Ip_max + BOUNDS_TOLERANCE || Ip_min - BOUNDS_TOLERANCE >= Ip_oc
-        @error(
+        CRC.@ignore_derivatives @error(
             "Inverter $(PSY.get_name(static)) active current $(Ip_oc) out of limits $(Ip_min) $(Ip_max). Check Power Flow or Parameters"
         )
     end
 
     if Iq_oc >= Iq_max + BOUNDS_TOLERANCE || Iq_min - BOUNDS_TOLERANCE >= Iq_oc
-        @error(
+        CRC.@ignore_derivatives @error(
             "Inverter $(PSY.get_name(static)) reactive current $(Iq_oc) out of limits $(Iq_min) $(Iq_max). Check Power Flow or Parameters"
         )
     end
@@ -290,8 +299,8 @@ function initialize_inner!(
     #Update additional variables
     # Based on PSS/E manual, if user does not provide V_ref0, then
     # V_ref0 is considered to be the output voltage of the PF solution
-    if PSY.get_V_ref0(inner_control) == 0.0
-        PSY.set_V_ref0!(inner_control, V_t)
+    if V_ref0 == 0.0
+        internal_params[9] = V_t
     end
     return
 end

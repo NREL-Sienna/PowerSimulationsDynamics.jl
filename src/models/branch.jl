@@ -1,6 +1,7 @@
 function branch!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r_from::T,
     voltage_i_from::T,
     voltage_r_to::T,
@@ -15,6 +16,7 @@ function branch!(
     mdl_branch_ode!(
         device_states,
         output_ode,
+        device_parameters,
         voltage_r_from,
         voltage_i_from,
         voltage_r_to,
@@ -30,8 +32,9 @@ function branch!(
 end
 
 function branch!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r_from::T,
     voltage_i_from::T,
     voltage_r_to::T,
@@ -46,6 +49,7 @@ function branch!(
     mdl_transformer_Lshape_ode!(
         device_states,
         output_ode,
+        device_parameters,
         voltage_r_from,
         voltage_i_from,
         voltage_r_to,

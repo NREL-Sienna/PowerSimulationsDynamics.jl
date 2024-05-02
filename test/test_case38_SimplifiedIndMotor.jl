@@ -34,8 +34,8 @@ dyr_file = joinpath(TEST_FILES_DIR, "data_tests/TVC_System_motor.dyr")
         sim = Simulation(ResidualModel, sys, path, time_span, perturbation_trip)
 
         # Test initial voltages between two systems are equivalent
-        voltages_P = sim_P.x0_init[1:8]
-        voltages_motor = sim.x0_init[1:8]
+        voltages_P = sim_P.x0[1:8]
+        voltages_motor = sim.x0[1:8]
         @test LinearAlgebra.norm(voltages_P - voltages_motor) < 1e-4
 
         # Test Initial Condition
@@ -87,8 +87,8 @@ end
         sim = Simulation(MassMatrixModel, sys, path, time_span, perturbation_trip)
 
         # Test initial voltages between two systems are equivalent
-        voltages_P = sim_P.x0_init[1:8]
-        voltages_motor = sim.x0_init[1:8]
+        voltages_P = sim_P.x0[1:8]
+        voltages_motor = sim.x0[1:8]
         @test LinearAlgebra.norm(voltages_P - voltages_motor) < 1e-4
 
         # Test Initial Condition
