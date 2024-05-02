@@ -9,7 +9,7 @@ Gets a function for taking gradients with respect to parameters.
 # Arguments    
 - `sim::Simulation` : Initialized simulation object
 - `device_parameter_pairs::Vector{Tuple{String, Type{T}, Symbol}}` : Tuple used to identify the parameter, via the device name, as a `String`, the type of the Device or DynamicComponent, and the parameter as a `Symbol`. 
-- `f::function` : User provided function with input a simulation and output a scalar value. This function can include executing the simulation and post-processing of results  
+- `f::function` : User provided function with two inputs: a simulation and an additional input which can be used for data (```f(sim::Simulation, data::Any)```) The output must be a scalar value. This function can include executing the simulation and post-processing of results.  
 
 # Example 
 ```julia
@@ -36,12 +36,12 @@ function get_parameter_sensitivity_function!(sim, device_param_pairs, f)
     @assert sim.status == BUILT
     sim.initialize_level = sim_level
     sim.enable_sensitivity = true
-    sensitivity_function = (p) ->
+    sensitivity_function = (p, data) ->
         begin
             sim.inputs = deepcopy(sim.inputs_init)
             set_parameters!(sim, indices, p)
             reset!(sim)
-            return f(sim)
+            return f(sim, data)
         end
     return sensitivity_function
 end

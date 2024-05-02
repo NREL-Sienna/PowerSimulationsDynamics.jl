@@ -17,7 +17,7 @@ ieee_9bus_sys = build_system(PSIDTestSystems, "psid_test_ieee_9bus")
 
 s_device = get_component(Source, omib_sys, "InfBus")
 s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
-#using PlotlyJS  #for debug only 
+#using PlotlyJS
 
 #NOTES ON SENSITIVITY ALGORITHMS FROM SCIMLSENSITIVITY               
 #ReverseDiffVJP and EnzymeVJP only options compatible with Hybrid DEs (DEs with callbacks)
@@ -40,7 +40,7 @@ s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
         t, δ_gt = get_state_series(res, ("generator-102-1", :δ))
         for solver in [FBDF(), Rodas5(), QNDF()]
             for tol in [1e-6, 1e-9]
-                function f(sim)
+                function f(sim, δ_gt)
                     execute!(
                         sim,
                         solver;
@@ -62,8 +62,16 @@ s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
                 )
                 #p = PSID.get_parameter_sensitivity_values(sim, [("generator-102-1", SingleMass, :H)])
                 #@error Zygote.gradient(g, [3.15])[1][1]
-                @test isapprox(Zygote.gradient(g, [3.14])[1][1], -8.0, atol = 1.0)
-                @test isapprox(Zygote.gradient(g, [3.15])[1][1], 8.0, atol = 1.0)
+                @test isapprox(
+                    Zygote.gradient((p) -> g(p, δ_gt), [3.14])[1][1],
+                    -8.0,
+                    atol = 1.0,
+                )
+                @test isapprox(
+                    Zygote.gradient((p) -> g(p, δ_gt), [3.15])[1][1],
+                    8.0,
+                    atol = 1.0,
+                )
             end
         end
     finally
@@ -88,7 +96,7 @@ end
         res = read_results(sim)
         t, δ_gt = get_state_series(res, ("generator-102-1", :δ))
 
-        function f(sim)
+        function f(sim, δ_gt)
             execute!(
                 sim,
                 FBDF(; autodiff = true);
@@ -117,7 +125,7 @@ end
             #push!(loss_values, l)
             return false
         end
-        optfun = OptimizationFunction((u, _) -> g(u), Optimization.AutoZygote())
+        optfun = OptimizationFunction((u, _) -> g(u, δ_gt), Optimization.AutoZygote())
         optprob = OptimizationProblem(optfun, [3.14])
         sol = Optimization.solve(
             optprob,
@@ -185,7 +193,7 @@ end
             MethodOfSteps(QNDF(; autodiff = true)),
         ]
             for tol in [1e-6]
-                function f(sim)
+                function f(sim, δ_gt)
                     execute!(
                         sim,
                         solver;
@@ -207,8 +215,16 @@ end
                 )
                 #p = PSID.get_parameter_sensitivity_values(sim, [("generator-102-1", SingleMass, :H)])
                 #display(Zygote.gradient(g, [3.14]))
-                @test isapprox(Zygote.gradient(g, [3.14])[1][1], -10.0, atol = 1.0)
-                @test isapprox(Zygote.gradient(g, [3.15])[1][1], 10.0, atol = 1.0)
+                @test isapprox(
+                    Zygote.gradient((p) -> g(p, δ_gt), [3.14])[1][1],
+                    -10.0,
+                    atol = 1.0,
+                )
+                @test isapprox(
+                    Zygote.gradient((p) -> g(p, δ_gt), [3.15])[1][1],
+                    10.0,
+                    atol = 1.0,
+                )
             end
         end
     finally
@@ -263,7 +279,7 @@ end
         res = read_results(sim)
         t, δ_gt = get_state_series(res, ("generator-102-1", :δ))
 
-        function f(sim)
+        function f(sim, δ_gt)
             execute!(
                 sim,
                 MethodOfSteps(Rodas5(; autodiff = true));
@@ -294,7 +310,7 @@ end
             #push!(loss_values, l)
             return false
         end
-        optfun = OptimizationFunction((u, _) -> g(u), Optimization.AutoZygote())
+        optfun = OptimizationFunction((u, _) -> g(u, δ_gt), Optimization.AutoZygote())
         optprob = OptimizationProblem(optfun, [3.14])
         sol = Optimization.solve(
             optprob,
