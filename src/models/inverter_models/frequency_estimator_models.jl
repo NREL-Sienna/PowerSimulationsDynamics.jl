@@ -18,7 +18,7 @@ function mdl_freq_estimator_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
 
     #Obtain external states inputs for component
@@ -84,7 +84,7 @@ function mdl_freq_estimator_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
 
     #Obtain external states inputs for component
@@ -145,7 +145,7 @@ function mdl_freq_estimator_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
 
     #Get parameters

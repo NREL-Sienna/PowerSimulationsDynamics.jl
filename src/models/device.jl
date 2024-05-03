@@ -449,7 +449,7 @@ function _update_inner_vars!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     return
 end
@@ -475,7 +475,7 @@ function _update_inner_vars!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     V_R = inner_vars[Vr_inv_var]
     V_I = inner_vars[Vi_inv_var]
@@ -596,7 +596,7 @@ function _update_inner_vars!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     filter_ix = get_local_state_ix(dynamic_device, PSY.LCLFilter)
     filter_states = @view device_states[filter_ix]

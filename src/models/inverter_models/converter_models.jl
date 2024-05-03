@@ -19,7 +19,7 @@ function mdl_converter_ode!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
 
     #Obtain inner variables for component
@@ -57,7 +57,7 @@ function mdl_converter_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     #Obtain inner variables for component
     V_R = inner_vars[Vr_filter_var]
@@ -190,7 +190,7 @@ function mdl_converter_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     #Obtain inner variables for component
     V_R = inner_vars[Vr_filter_var]
