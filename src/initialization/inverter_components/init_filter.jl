@@ -9,7 +9,7 @@ function initialize_filter!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     #PowerFlow Data
     P0 = PSY.get_active_power(static)
@@ -101,7 +101,7 @@ function initialize_filter!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     #PowerFlow Data
     P0 = PSY.get_active_power(static)

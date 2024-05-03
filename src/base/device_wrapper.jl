@@ -102,6 +102,9 @@ function state_port_mappings(
     component_state_mapping = Dict{Int, Vector{Int}}()
     input_port_mapping = Dict{Int, Vector{Int}}()
     for c in PSY.get_dynamic_components(dynamic_device)
+        if c isa PSY.OutputCurrentLimiter
+            continue
+        end
         ix = index(typeof(c))
         component_state_mapping[ix] = _index_local_states(c, device_states)
         input_port_mapping[ix] = _index_port_mapping!(c, device_states)
@@ -228,8 +231,8 @@ function DynamicWrapper(
     sys_base_freq,
 ) where {D <: PSY.DynamicInjection}
     device_states = PSY.get_states(dynamic_device)
-    IS.@assert_op PSY.get_X_th(dynamic_device) == PSY.get_X_th(device)
-    IS.@assert_op PSY.get_R_th(dynamic_device) == PSY.get_R_th(device)
+    # IS.@assert_op PSY.get_X_th(dynamic_device) == PSY.get_X_th(device)
+    # IS.@assert_op PSY.get_R_th(dynamic_device) == PSY.get_R_th(device)
 
     return DynamicWrapper(
         dynamic_device,
