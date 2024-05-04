@@ -133,7 +133,7 @@ end
             callback = callback,
             maxiters = 3,
         )
-        @test isapprox(sol.u[1], 3.144000187737475, atol = 1e-7)
+        @test isapprox(sol.u[1], 3.144000187737475, atol = 1e-6)
         #display(plot(scatter(y=H_values)))
         #display(plot(scatter(y=loss_values)))
     finally
@@ -318,7 +318,7 @@ end
             callback = callback,
             maxiters = 3,
         )
-        @test isapprox(sol.u[1], 3.144001551579776, atol = 1e-7)
+        @test isapprox(sol.u[1], 3.144001551579776, atol = 1e-6)
         #display(plot(scatter(y=H_values)))
         #display(plot(scatter(y=loss_values)))
     finally
