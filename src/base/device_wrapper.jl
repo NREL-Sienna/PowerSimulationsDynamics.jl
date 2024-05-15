@@ -334,6 +334,8 @@ PSY.get_freq_estimator(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInvert
     wrapper.device.freq_estimator
 PSY.get_filter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.filter
+PSY.get_limiter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
+    PSY.get_limiter(wrapper.device)
 
 # PSY overloads of specific Dynamic Injectors
 
