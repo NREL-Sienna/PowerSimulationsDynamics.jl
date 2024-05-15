@@ -340,7 +340,7 @@ function mdl_inner_ode!(
     Iq_cnv_ref = Iq_pi + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
 
     #Get limiter and apply output current limiting
-    limiter = PSY.get_output_current_limiter(dynamic_device)
+    limiter = PSY.get_limiter(dynamic_device)
     Id_cnv_ref2, Iq_cnv_ref2 = limit_output_current(limiter, Id_cnv_ref, Iq_cnv_ref)
 
     ## SRF Current Control ##
@@ -454,7 +454,7 @@ function mdl_inner_ode!(
     Iq_cnv_ref = Iq_pi + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
 
     #Get limiter and apply output current limiting
-    limiter = PSY.get_output_current_limiter(dynamic_device)
+    limiter = PSY.get_limiter(dynamic_device)
     Id_cnv_ref2, Iq_cnv_ref2 = limit_output_current(limiter, Id_cnv_ref, Iq_cnv_ref)
 
     ## SRF Current Control ##
