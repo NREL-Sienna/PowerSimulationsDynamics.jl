@@ -12,8 +12,8 @@ end
 
 function limit_output_current(limiter :: PSY.MagnitudeOutputCurrentLimiter, Id_cnv_ref :: Union{Float64, ForwardDiff.Dual}, Iq_cnv_ref :: Union{Float64, ForwardDiff.Dual})
     limit_value = PSY.get_I_max(limiter)
-    theta = atan(Iq_cnv_ref, Id_cnv_ref)
-    if (Id_cnv_ref^2 + Iq_cnv_ref^2)^(1/2) > limit_value 
+    @show theta = atan(Iq_cnv_ref, Id_cnv_ref)
+    if (Id_cnv_ref^2 + Iq_cnv_ref^2)^(1/2) > limit_value
         Id_cnv_ref2 = limit_value*cos(theta)
         Iq_cnv_ref2 = limit_value*sin(theta)
     else
@@ -23,3 +23,18 @@ function limit_output_current(limiter :: PSY.MagnitudeOutputCurrentLimiter, Id_c
     return Id_cnv_ref2, Iq_cnv_ref2
 end
 
+function limit_output_current(limiter :: PSY.SaturationOutputCurrentLimiter, Id_cnv_ref :: Union{Float64, ForwardDiff.Dual}, Iq_cnv_ref :: Union{Float64, ForwardDiff.Dual})
+    limit_value = PSY.get_I_max(limiter)
+    gain = PSY.get_kw(limiter)
+    theta = atan(Iq_cnv_ref, Id_cnv_ref)
+    if (Id_cnv_ref^2 + Iq_cnv_ref^2)^(1/2) > limit_value 
+        Id_cnv_ref2 = limit_value*cos(theta)
+        Iq_cnv_ref2 = limit_value*sin(theta)
+    else
+        Id_cnv_ref2 = Id_cnv_ref
+        Iq_cnv_ref2 = Iq_cnv_ref
+    end
+    Del_Vv_d = gain*(Id_cnv_ref - Id_cnv_ref2)
+    Del_Vv_q = gain*(Iq_cnv_ref - Iq_cnv_ref2)
+    return Id_cnv_ref2, Iq_cnv_ref2, Del_Vv_d, Del_Vv_q
+end
