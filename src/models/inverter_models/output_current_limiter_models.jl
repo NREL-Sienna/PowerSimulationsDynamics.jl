@@ -51,7 +51,7 @@ function limit_output_current(limiter :: PSY.HybridOutputCurrentLimiter, Id_cnv_
         Id_cnv_ref2 = Id_cnv_ref
         Iq_cnv_ref2 = Iq_cnv_ref
     end
-    Del_Vv_d = ω * imag_imped * (Iq_cnv_ref - Iq_cnv_ref2) + real_imped * (Id_cnv_ref - Id_cnv_ref2)
+    Del_Vv_d = ω * imag_imped * (Iq_cnv_ref2 - Iq_cnv_ref) + real_imped * (Id_cnv_ref - Id_cnv_ref2)
     Del_Vv_q = ω * imag_imped * (Id_cnv_ref - Id_cnv_ref2) + real_imped * (Iq_cnv_ref - Iq_cnv_ref2)
     return Id_cnv_ref2, Iq_cnv_ref2, Del_Vv_d, Del_Vv_q
 end
