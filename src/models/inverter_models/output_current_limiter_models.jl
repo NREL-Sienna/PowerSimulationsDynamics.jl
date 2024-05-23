@@ -12,7 +12,6 @@ end
 
 function limit_output_current(limiter :: PSY.MagnitudeOutputCurrentLimiter, Id_cnv_ref :: Union{Float64, ForwardDiff.Dual}, Iq_cnv_ref :: Union{Float64, ForwardDiff.Dual})
     limit_value = PSY.get_I_max(limiter)
-    @show theta = atan(Iq_cnv_ref, Id_cnv_ref)
     if (Id_cnv_ref^2 + Iq_cnv_ref^2)^(1/2) > limit_value
         Id_cnv_ref2 = limit_value*cos(theta)
         Iq_cnv_ref2 = limit_value*sin(theta)
