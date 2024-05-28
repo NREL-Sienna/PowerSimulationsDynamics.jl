@@ -569,7 +569,8 @@ function mdl_inner_ode!(
     #Get limiter and apply output current limiting
     limiter = PSY.get_limiter(dynamic_device)
     Id_cnv_ref2, Iq_cnv_ref2, Del_Vv_d, Del_Vv_q = limit_output_current(limiter, Id_cnv_ref, Iq_cnv_ref)
-
+    @show Del_Vv_d
+    @show Del_Vv_q
     # Limiter anti- windup 
     dξd_dt = ((Vd_filter_ref - V_dq_filter[d]) - Del_Vv_d)
     dξq_dt = ((Vq_filter_ref - V_dq_filter[q]) - Del_Vv_q)
