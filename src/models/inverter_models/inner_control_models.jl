@@ -563,16 +563,16 @@ function mdl_inner_ode!(
     Integral_q = ξ_q
 
     #Compensate output Control Signal - Links to SRF Current Controller
-    Id_cnv_ref = Prop_d + Integral_d - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
-    Iq_cnv_ref = Prop_q + Integral_q + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
+    Id_cnv_ref = Prop_d + (kiv * Integral_d) - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
+    Iq_cnv_ref = Prop_q + (kiv * Integral_q) + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
 
     #Get limiter and apply output current limiting
     limiter = PSY.get_limiter(dynamic_device)
     Id_cnv_ref2, Iq_cnv_ref2, Del_Vv_d, Del_Vv_q = limit_output_current(limiter, Id_cnv_ref, Iq_cnv_ref)
 
     # Limiter anti- windup 
-    dξd_dt = kiv * ((Vd_filter_ref - V_dq_filter[d]) - Del_Vv_d)
-    dξq_dt = kiv * ((Vq_filter_ref - V_dq_filter[q]) - Del_Vv_q)
+    dξd_dt = ((Vd_filter_ref - V_dq_filter[d]) - Del_Vv_d)
+    dξq_dt = ((Vq_filter_ref - V_dq_filter[q]) - Del_Vv_q)
 
     #PI Integrator (internal state) 
     output_ode[local_ix[1]] = dξd_dt
