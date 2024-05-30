@@ -342,10 +342,6 @@ end
 struct StaticWrapper{T <: PSY.StaticInjection, V}
     device::T
     connection_status::Base.RefValue{Float64}
-    V_ref::Base.RefValue{Float64}
-    θ_ref::Base.RefValue{Float64}
-    P_ref::Base.RefValue{Float64}
-    Q_ref::Base.RefValue{Float64}
     bus_ix::Int
     ext::Dict{String, Any}
 end
@@ -355,10 +351,6 @@ function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
     StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
         Base.Ref(1.0),
-        Base.Ref(PSY.get_magnitude(bus)),
-        Base.Ref(PSY.get_angle(bus)),
-        Base.Ref(PSY.get_active_power(device)),
-        Base.Ref(PSY.get_reactive_power(device)),
         Vector{Int}(),
         bus_ix,
         Dict{String, Any}(),
@@ -370,10 +362,6 @@ function StaticWrapper(device::T, bus_ix::Int, p_range) where {T <: PSY.Source}
     return StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
         Base.Ref(1.0),
-        Base.Ref(PSY.get_internal_voltage(device)),
-        Base.Ref(PSY.get_internal_angle(device)),
-        Base.Ref(PSY.get_active_power(device)),
-        Base.Ref(PSY.get_reactive_power(device)),
         bus_ix,
         Dict{String, Any}(),
     )
@@ -384,7 +372,6 @@ get_bus_category(::StaticWrapper{<:PSY.StaticInjection, U}) where {U} = U
 
 # TODO: something smart to forward fields
 get_device(wrapper::StaticWrapper) = wrapper.device
-#get_p_range(wrapper::StaticWrapper) = wrapper.p_range
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
 get_ext(wrapper::StaticWrapper) = wrapper.ext
 
@@ -393,16 +380,6 @@ PSY.get_active_power(wrapper::StaticWrapper) = PSY.get_active_power(wrapper.devi
 PSY.get_reactive_power(wrapper::StaticWrapper) = PSY.get_reactive_power(wrapper.device)
 PSY.get_name(wrapper::StaticWrapper) = PSY.get_name(wrapper.device)
 PSY.get_ext(wrapper::StaticWrapper) = PSY.get_ext(wrapper.device)
-
-get_P_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
-get_Q_ref(wrapper::StaticWrapper) = wrapper.Q_ref[]
-get_V_ref(wrapper::StaticWrapper) = wrapper.V_ref[]
-get_θ_ref(wrapper::StaticWrapper) = wrapper.θ_ref[]
-
-set_P_ref(wrapper::StaticWrapper, val::Float64) = wrapper.P_ref[] = val
-set_Q_ref(wrapper::StaticWrapper, val::Float64) = wrapper.Q_ref[] = val
-set_V_ref(wrapper::StaticWrapper, val::Float64) = wrapper.V_ref[] = val
-set_θ_ref(wrapper::StaticWrapper, val::Float64) = wrapper.θ_ref[] = val
 
 mutable struct ExpLoadParams
     P_exp::Float64

@@ -197,12 +197,23 @@ function _add_parameters(initial_parameters, wrapped_devices)
                 Q_ref = get_reactive_power(wrapped_device),
             )
         elseif isa(wrapped_device, StaticWrapper)
-            refs = (
-                V_ref = get_V_ref(wrapped_device),
-                θ_ref = get_θ_ref(wrapped_device),
-                P_ref = get_P_ref(wrapped_device),
-                Q_ref = get_Q_ref(wrapped_device),
-            )
+            device = get_device(wrapped_device)
+            if typeof(device) <: PSY.Source
+                refs = (
+                    V_ref = PSY.get_internal_voltage(device),
+                    θ_ref = PSY.get_internal_angle(device),
+                    P_ref = PSY.get_active_power(device),
+                    Q_ref = PSY.get_reactive_power(device),
+                )
+            else
+                bus = PSY.get_bus(device)
+                refs = (
+                    V_ref = PSY.get_magnitude(bus),
+                    θ_ref = PSY.get_angle(bus),
+                    P_ref = PSY.get_active_power(device),
+                    Q_ref = PSY.get_reactive_power(device),
+                )
+            end
         else
             refs = (;)
         end
