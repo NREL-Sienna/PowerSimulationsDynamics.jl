@@ -11,78 +11,58 @@ failed(sol::NLsolveWrapper) = sol.failed
 function _get_model_closure(
     model::SystemModel{MassMatrixModel, NoDelays},
     ::Vector{Float64},
-    p::Vector{Float64},
+    p::AbstractArray{Float64},
 )
-    return (residual, x) -> model(residual, x, p, 0.0)
+    return (residual, x, p) -> model(residual, x, p, 0.0)
 end
 
 function _get_model_closure(
     model::SystemModel{MassMatrixModel, HasDelays},
     x0::Vector{Float64},
-    p::Vector{Float64},
+    p::AbstractArray{Float64},
 )
     h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0
-    return (residual, x) -> model(residual, x, h, p, 0.0)
+    return (residual, x, p) -> model(residual, x, h, p, 0.0)
 end
 
 function _get_model_closure(
     model::SystemModel{ResidualModel, NoDelays},
     x0::Vector{Float64},
-    p::Vector{Float64},
+    p::AbstractArray{Float64},
 )
     dx0 = zeros(length(x0))
-    return (residual, x) -> model(residual, dx0, x, p, 0.0)
+    return (residual, x, p) -> model(residual, dx0, x, p, 0.0)
 end
 
 function _nlsolve_call(
     initial_guess::Vector{Float64},
+    p::AbstractArray,
     f_eval::Function,
     jacobian::JacobianFunctionWrapper,
     f_tolerance::Float64,
-    solver::Symbol,
+    solver::NonlinearSolve.AbstractNonlinearSolveAlgorithm,
     show_trace::Bool,
 )
-    df = NLsolve.OnceDifferentiable(
-        f_eval,
-        jacobian,
-        initial_guess,
-        similar(initial_guess),
-        jacobian.Jv,
+    f = SciMLBase.NonlinearFunction(f_eval; jac = jacobian)
+    prob = NonlinearSolve.NonlinearProblem(f, initial_guess, p)
+    sol = NonlinearSolve.solve(
+        prob,
+        solver;
+        abstol = f_tolerance,
+        reltol = f_tolerance,
+        maxiters = MAX_NLSOLVE_INTERATIONS,
+        show_trace = Val(show_trace),
     )
-    sys_solve = NLsolve.nlsolve(
-        df,
-        initial_guess;
-        xtol = NLSOLVE_X_TOLERANCE,
-        ftol = f_tolerance,
-        method = solver,
-        iterations = MAX_NLSOLVE_INTERATIONS,
-        show_trace = show_trace,
-    ) # Solve using initial guess x0
-    return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
+    return NLsolveWrapper(sol.u, SciMLBase.successful_retcode(sol), false)
 end
 
-function _nlsolve_call(
-    initial_guess::Vector{Float64},
-    f_eval::Function,
-    f_tolerance::Float64,
-    solver::Symbol,
-    show_trace::Bool,
+function _convergence_check(
+    sys_solve::NLsolveWrapper,
+    tol::Float64,
+    solv::NonlinearSolve.AbstractNonlinearSolveAlgorithm,
 )
-    sys_solve = NLsolve.nlsolve(
-        f_eval,
-        initial_guess;
-        xtol = NLSOLVE_X_TOLERANCE,
-        ftol = f_tolerance,
-        iterations = MAX_NLSOLVE_INTERATIONS,
-        method = solver,
-        show_trace = show_trace,
-    ) # Solve using initial guess x0
-    return NLsolveWrapper(sys_solve.zero, NLsolve.converged(sys_solve), false)
-end
-
-function _convergence_check(sys_solve::NLsolveWrapper, tol::Float64, solv::Symbol)
     if converged(sys_solve)
-        CRC.@ignore_derivatives @info(
+        CRC.@ignore_derivatives @warn(
             "Initialization non-linear solve succeeded with a tolerance of $(tol) using solver $(solv). Saving solution."
         )
     else
@@ -162,17 +142,24 @@ function refine_initial_condition!(
     powerflow_solution = deepcopy(initial_guess[bus_range])
     f! = _get_model_closure(model, initial_guess, parameters)
     residual = similar(initial_guess)
-    f!(residual, initial_guess)
+    f!(residual, initial_guess, parameters)
     _check_residual(residual, inputs, MAX_INIT_RESIDUAL)
     for tol in [STRICT_NLSOLVE_F_TOLERANCE, RELAXED_NLSOLVE_F_TOLERANCE]
         if converged
             break
         end
-        for solv in [:trust_region, :newton]
+        for solv in [NonlinearSolve.TrustRegion(), NonlinearSolve.NewtonRaphson()]
             CRC.@ignore_derivatives @debug "Start NLSolve System Run with $(solv) and F_tol = $tol"
             show_trace = sim.console_level <= Logging.Info
-            sys_solve = _nlsolve_call(initial_guess, f!, jacobian, tol, solv, show_trace)
-            #sys_solve = _nlsolve_call(initial_guess, f!, tol, solv, show_trace)
+            sys_solve = _nlsolve_call(
+                initial_guess,
+                parameters,
+                f!,
+                jacobian,
+                tol,
+                solv,
+                show_trace,
+            )
             failed(sys_solve) && return BUILD_FAILED
             converged = _convergence_check(sys_solve, tol, solv)
             CRC.@ignore_derivatives @debug "Write initial guess vector using $solv with tol = $tol convergence = $converged"
@@ -190,7 +177,7 @@ function refine_initial_condition!(
         )
     end
 
-    f!(residual, initial_guess)
+    f!(residual, initial_guess, parameters)
     if !converged || (sum(residual) > MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE)
         _check_residual(residual, inputs, MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE)
         CRC.@ignore_derivatives @warn(

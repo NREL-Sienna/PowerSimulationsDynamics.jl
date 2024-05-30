@@ -4,7 +4,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.BaseMachine, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -22,20 +22,22 @@ function initialize_mach_shaft!(
 
     #Machine Data
     machine = PSY.get_machine(dynamic_device)
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.BaseMachine)
-    internal_params = @view device_parameters[local_ix_params]
-    R, Xd_p, _ = internal_params
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xd_p = params[:Xd_p]
 
     δ0 = angle(V + (R + Xd_p * 1im) * I)
     ω0 = 1.0
     τm0 = real(V * conj(I))
     @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE) τm0, P0
     #To solve: δ, τm, Vf0
-    function f!(out, x)
+    function f!(out, x, params)
         δ = x[1]
         τm = x[2]
         Vf0 = x[3]
 
+        R = params[:R]
+        Xd_p = params[:Xd_p]
         V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / (R^2 + Xd_p^2)) * (Xd_p * (Vf0 - V_dq[2]) - R * V_dq[1])  #15.36
         i_q = (1.0 / (R^2 + Xd_p^2)) * (Xd_p * V_dq[1] + R * (Vf0 - V_dq[2])) #15.36
@@ -45,13 +47,19 @@ function initialize_mach_shaft!(
         out[3] = Q0 - (V_dq[2] * i_d - V_dq[1] * i_q) #Output Reactive Power
     end
     x0 = [δ0, τm0, 1.0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn(
             "Initialization in Machine $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I
@@ -65,7 +73,7 @@ function initialize_mach_shaft!(
         inner_vars[τm_var] = sol_x0[2]
         #Not necessary to update Vf for AVR in Base Machine. Update eq_p:
         PSY.set_eq_p!(machine, sol_x0[3])
-        internal_params[3] = sol_x0[3]
+        params[:eq_p] = sol_x0[3] #eq_p should not be a parameter. 
         inner_vars[Vf_var] = sol_x0[3]
     end
     return
@@ -675,7 +683,7 @@ end
 
 function initialize_mach_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -700,24 +708,19 @@ function initialize_mach_shaft!(
 
     #Get parameters
     machine = PSY.get_machine(dynamic_device)
-    local_ix_params = get_local_parameter_ix(dynamic_device, typeof(machine))
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    Td0_p,
-    Td0_pp,
-    Tq0_p,
-    Tq0_pp,
-    Xd,
-    Xq,
-    Xd_p,
-    Xq_p,
-    Xd_pp,
-    Xl,
-    γ_d1,
-    γ_q1,
-    γ_d2,
-    γ_q2,
-    γ_qd = internal_params
+    params = p[:params][:Machine]
+    #parameters needed for initial guess:
+    R = params[:R]
+    Xd = params[:Xd]
+    Xq = params[:Xq]
+    Xd_p = params[:Xd_p]
+    Xq_p = params[:Xq_p]
+    Xd_pp = params[:Xd_pp]
+    Xl = params[:Xl]
+    γ_q1 = params[:γ_q1]
+    γ_q2 = params[:γ_q2]
+    γ_qd = params[:γ_qd]
+
     Xq_pp = Xd_pp
     # Initialization doesn't consider saturation
     #Sat_A, Sat_B = PSY.get_saturation_coeffs(machine)
@@ -758,7 +761,7 @@ function initialize_mach_shaft!(
         (Xq - Xq_p) * (γ_q2 * ed_p0 - γ_q2 * ψ_kq0 - γ_q1 * I_q0) +
         Se0 * ψq_pp0 * γ_qd
 
-    function f!(out, x)
+    function f!(out, x, params)
         δ = x[1]
         τm = x[2]
         Vf = x[3]
@@ -767,6 +770,23 @@ function initialize_mach_shaft!(
         ψ_kd = x[6]
         ψ_kq = x[7]
         Xad_Ifd_aux = x[8]
+
+        R = params[:R]
+        Td0_p = params[:Td0_p]
+        Td0_pp = params[:Td0_pp]
+        Tq0_p = params[:Tq0_p]
+        Tq0_pp = params[:Tq0_pp]
+        Xd = params[:Xd]
+        Xq = params[:Xq]
+        Xd_p = params[:Xd_p]
+        Xq_p = params[:Xq_p]
+        Xd_pp = params[:Xd_pp]
+        Xl = params[:Xl]
+        γ_d1 = params[:γ_d1]
+        γ_q1 = params[:γ_q1]
+        γ_d2 = params[:γ_d2]
+        γ_q2 = params[:γ_q2]
+        γ_qd = params[:γ_qd]
 
         V_dq = ri_dq(δ) * [V_R; V_I]
         ψq_pp = γ_q1 * ed_p + ψ_kq * (1 - γ_q1)
@@ -796,13 +816,20 @@ function initialize_mach_shaft!(
         out[8] = Xad_Ifd_aux - Xad_Ifd
     end
     x0 = [δ0, τm0, Vf0, eq_p0, ed_p0, ψ_kd0, ψ_kq0, Xad_Ifd0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn(
             "Initialization in Machine $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I

@@ -1,26 +1,19 @@
 struct ParamsMetadata
-    symbol::Symbol
     in_mass_matrix::Bool
     in_network::Bool
     impacts_ic::Bool
-    impacts_pf::Bool
 end
-get_params_symbol(x) = [metadata.symbol for metadata in get_params_metadata(x)]
 
-# TODO - temporary for dynamic components that have not yet been modified to use parameters.
-function get_params(x::PSY.Device)
-    @warn "Parameters not yet defined for device: $(typeof(x))"
-    Float64[]
+function get_params(x)
+    @error "Parameters not yet defined for component: $(typeof(x))"
+    (;)
 end
-function get_params(x::T) where {T <: PSY.DynamicComponent}
-    @warn "Parameters not yet defined for dynamic component: $(typeof(x))"
-    Float64[]
-end
-get_params_metadata(::T) where {T <: PSY.DynamicComponent} = ParamsMetadata[]
-get_params(::PSY.ActivePowerControl) = Float64[]
-get_params_metadata(::PSY.ActivePowerControl) = ParamsMetadata[]
-get_params(::PSY.ReactivePowerControl) = Float64[]
-get_params_metadata(::PSY.ReactivePowerControl) = ParamsMetadata[]
+
+get_params_metadata(::T) where {T <: PSY.DynamicComponent} = (;)
+get_params(::PSY.ActivePowerControl) = (;)
+get_params_metadata(::PSY.ActivePowerControl) = (;)
+get_params(::PSY.ReactivePowerControl) = (;)
+get_params_metadata(::PSY.ReactivePowerControl) = (;)
 
 get_params(
     d::DynamicWrapper{T},
@@ -42,159 +35,175 @@ get_params_metadata(x::BranchWrapper) = get_params_metadata(get_branch(x))
 get_params(x::PSY.DynamicBranch) = get_params(PSY.get_branch(x))
 get_params_metadata(x::PSY.DynamicBranch) = get_params_metadata(PSY.get_branch(x))
 
-get_params(x::PSY.Line) = [PSY.get_r(x), PSY.get_x(x)]
-get_params_metadata(::PSY.Line) = [
-    ParamsMetadata(:r, false, true, true, true),
-    ParamsMetadata(:x, false, true, true, true),
-]
-get_params(::StaticLoadWrapper) = Float64[]
-get_params_metadata(::StaticLoadWrapper) = ParamsMetadata[]
+get_params(x::PSY.Line) = (r = PSY.get_r(x), x = PSY.get_x(x))
+get_params_metadata(::PSY.Line) = (
+    r = ParamsMetadata(false, true, true),
+    x = ParamsMetadata(false, true, true),
+)
+get_params(::StaticLoadWrapper) = (;)
+get_params_metadata(::StaticLoadWrapper) = (;)
 ########### INVERTERS #############
 function get_params(g::PSY.DynamicInverter)
-    vcat(
-        get_params(PSY.get_converter(g)),
-        get_params(PSY.get_outer_control(g)),
-        get_params(PSY.get_inner_control(g)),
-        get_params(PSY.get_dc_source(g)),
-        get_params(PSY.get_freq_estimator(g)),
-        get_params(PSY.get_filter(g)),
+    (
+        Converter = get_params(PSY.get_converter(g)),
+        DCSource = get_params(PSY.get_dc_source(g)),
+        Filter = get_params(PSY.get_filter(g)),
+        FrequencyEstimator = get_params(PSY.get_freq_estimator(g)),
+        InnerControl = get_params(PSY.get_inner_control(g)),
+        OuterControl = get_params(PSY.get_outer_control(g)),
     )
 end
 function get_params_metadata(g::PSY.DynamicInverter)
-    vcat(
-        get_params_metadata(PSY.get_converter(g)),
-        get_params_metadata(PSY.get_outer_control(g)),
-        get_params_metadata(PSY.get_inner_control(g)),
-        get_params_metadata(PSY.get_dc_source(g)),
-        get_params_metadata(PSY.get_freq_estimator(g)),
-        get_params_metadata(PSY.get_filter(g)),
+    (
+        Converter = get_params_metadata(PSY.get_converter(g)),
+        DCSource = get_params_metadata(PSY.get_dc_source(g)),
+        Filter = get_params_metadata(PSY.get_filter(g)),
+        FrequencyEstimator = get_params_metadata(PSY.get_freq_estimator(g)),
+        InnerControl = get_params_metadata(PSY.get_inner_control(g)),
+        OuterControl = get_params_metadata(PSY.get_outer_control(g)),
     )
 end
 
 #FILTERS 
 get_params(x::PSY.LCLFilter) =
-    [PSY.get_lf(x), PSY.get_rf(x), PSY.get_cf(x), PSY.get_lg(x), PSY.get_rg(x)]
-get_params_metadata(::PSY.LCLFilter) = [
-    ParamsMetadata(:lf_Filter, true, false, true, false),
-    ParamsMetadata(:rf_Filter, false, false, true, false),
-    ParamsMetadata(:cf_Filter, true, false, true, false),
-    ParamsMetadata(:lg_Filter, true, false, true, false),
-    ParamsMetadata(:rg_Filter, false, false, true, false),
-]
-get_params(x::PSY.RLFilter) = [PSY.get_rf(x), PSY.get_lf(x)]
-get_params_metadata(::PSY.RLFilter) = [
-    ParamsMetadata(:rf_Filter, false, false, true, false),
-    ParamsMetadata(:lf_Filter, false, false, true, false),
-]
-
-#OUTER CONTROL
-get_params(x::PSY.OuterControl) = vcat(
-    get_params(PSY.get_active_power_control(x)),
-    get_params(PSY.get_reactive_power_control(x)),
+    (
+        lf = PSY.get_lf(x),
+        rf = PSY.get_rf(x),
+        cf = PSY.get_cf(x),
+        lg = PSY.get_lg(x),
+        rg = PSY.get_rg(x),
+    )
+get_params_metadata(::PSY.LCLFilter) = (
+    lf = ParamsMetadata(true, false, true),
+    rf = ParamsMetadata(false, false, true),
+    cf = ParamsMetadata(true, false, true),
+    lg = ParamsMetadata(true, false, true),
+    rg = ParamsMetadata(false, false, true),
 )
-get_params_metadata(x::PSY.OuterControl) = vcat(
-    get_params_metadata(PSY.get_active_power_control(x)),
-    get_params_metadata(PSY.get_reactive_power_control(x)),
+get_params(x::PSY.RLFilter) = (rf = PSY.get_rf(x), lf = PSY.get_lf(x))
+get_params_metadata(::PSY.RLFilter) = (
+    rf = ParamsMetadata(false, false, true),
+    lf = ParamsMetadata(false, false, true),
+)
+
+#OUTER CONTROL,                                                                                                                                                                
+get_params(x::PSY.OuterControl) = (
+    ActivePowerControl = get_params(PSY.get_active_power_control(x)),
+    ReactivePowerControl = get_params(PSY.get_reactive_power_control(x)),
+)
+get_params_metadata(x::PSY.OuterControl) = (
+    ActivePowerControl = get_params_metadata(PSY.get_active_power_control(x)),
+    ReactivePowerControl = get_params_metadata(PSY.get_reactive_power_control(x)),
 )
 #ACTIVE POWER CONTROL
-get_params(x::PSY.VirtualInertia) = [PSY.get_Ta(x), PSY.get_kd(x), PSY.get_kω(x)]
-get_params_metadata(::PSY.VirtualInertia) = [
-    ParamsMetadata(:Ta_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:kd_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:kω_ActivePowerControl, false, false, false, false),
-]
-get_params(x::PSY.ActiveRenewableControllerAB) = [
-    PSY.get_K_pg(x),
-    PSY.get_K_ig(x),
-    PSY.get_T_p(x),
-    PSY.get_fdbd_pnts(x)[1],
-    PSY.get_fdbd_pnts(x)[2],
-    PSY.get_fe_lim(x)[1],
-    PSY.get_fe_lim(x)[2],
-    PSY.get_P_lim(x)[1],
-    PSY.get_P_lim(x)[2],
-    PSY.get_T_g(x),
-    PSY.get_D_dn(x),
-    PSY.get_D_up(x),
-    PSY.get_dP_lim(x)[1],
-    PSY.get_dP_lim(x)[2],
-    PSY.get_P_lim_inner(x)[1],
-    PSY.get_P_lim_inner(x)[2],
-    PSY.get_T_pord(x)]
-get_params_metadata(::PSY.ActiveRenewableControllerAB) = [
-    ParamsMetadata(:K_pg_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:K_ig_ActivePowerControl, false, false, true, false),
-    ParamsMetadata(:T_p_ActivePowerControl, false, false, true, false),
-    ParamsMetadata(:fdbd1_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:fdbd2_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:fe_min_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:fe_max_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:P_min_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:P_max_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:T_g_ap_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:D_dn_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:D_up_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:dP_min_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:dP_max_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:P_min_inner_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:P_max_inner_ActivePowerControl, false, false, false, false),
-    ParamsMetadata(:T_pord_ActivePowerControl, false, false, false, false),
-]
-
+get_params(x::PSY.VirtualInertia) =
+    (Ta = PSY.get_Ta(x), kd = PSY.get_kd(x), kω = PSY.get_kω(x))
+get_params_metadata(::PSY.VirtualInertia) = (
+    Ta = ParamsMetadata(false, false, false),
+    kd = ParamsMetadata(false, false, false),
+    kω = ParamsMetadata(false, false, false),
+)
+#Note: Removed fbdd_pnts from parameters because it is not a NamedTuple
+get_params(x::PSY.ActiveRenewableControllerAB) = (
+    K_pg = PSY.get_K_pg(x),
+    K_ig = PSY.get_K_ig(x),
+    T_p = PSY.get_T_p(x),
+    fe_lim = PSY.get_fe_lim(x),
+    P_lim = PSY.get_P_lim(x),
+    T_g = PSY.get_T_g(x),
+    D_dn = PSY.get_D_dn(x),
+    D_up = PSY.get_D_up(x),
+    dP_lim = PSY.get_dP_lim(x),
+    P_lim_inner = PSY.get_P_lim_inner(x),
+    T_pord = PSY.get_T_pord(x),
+)
+get_params_metadata(::PSY.ActiveRenewableControllerAB) = (
+    K_pg = ParamsMetadata(false, false, false),
+    K_ig = ParamsMetadata(false, false, true),
+    T_p = ParamsMetadata(false, false, true),
+    fe_lim = (
+        min = ParamsMetadata(false, false, false),
+        max = ParamsMetadata(false, false, false),
+    ),
+    P_lim = (
+        min = ParamsMetadata(false, false, false),
+        max = ParamsMetadata(false, false, false),
+    ),
+    T_g = ParamsMetadata(false, false, false),
+    D_dn = ParamsMetadata(false, false, false),
+    D_up = ParamsMetadata(false, false, false),
+    dP_lim = (
+        min = ParamsMetadata(false, false, false),
+        max = ParamsMetadata(false, false, false),
+    ),
+    P_lim_innem_inner = (
+        min = ParamsMetadata(false, false, false),
+        max = ParamsMetadata(false, false, false),
+    ),
+    T_pord = ParamsMetadata(false, false, false),
+)
 #REACTIVE POWER CONTROL
-get_params(x::PSY.ReactivePowerDroop) = [PSY.get_kq(x), PSY.get_ωf(x)]
-get_params_metadata(x::PSY.ReactivePowerDroop) = [
-    ParamsMetadata(:kq_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:ωf_ReactivePowerControl, false, false, false, false),
-]
-get_params(x::PSY.ReactiveRenewableControllerAB) = [
-    PSY.get_T_fltr(x),
-    PSY.get_K_p(x),
-    PSY.get_K_i(x),
-    PSY.get_T_ft(x),
-    PSY.get_T_fv(x),
-    PSY.get_V_frz(x),
-    PSY.get_R_c(x),
-    PSY.get_X_c(x),
-    PSY.get_K_c(x),
-    PSY.get_e_lim(x)[1],
-    PSY.get_e_lim(x)[2],
-    PSY.get_dbd_pnts(x)[1],
-    PSY.get_dbd_pnts(x)[2],
-    PSY.get_Q_lim(x)[1],
-    PSY.get_Q_lim(x)[2],
-    PSY.get_T_p(x),
-    PSY.get_Q_lim_inner(x)[1],
-    PSY.get_Q_lim_inner(x)[2],
-    PSY.get_V_lim(x)[1],
-    PSY.get_V_lim(x)[2],
-    PSY.get_K_qp(x),
-    PSY.get_K_qi(x),
-]
-get_params_metadata(::PSY.ReactiveRenewableControllerAB) = [
-    ParamsMetadata(:T_fltr_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:K_p_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:K_i_ReactivePowerControl, false, false, true, false),
-    ParamsMetadata(:T_ft_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:T_fv_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:V_frz_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:R_c_ReactivePowerControl, false, false, true, false),
-    ParamsMetadata(:X_c_ReactivePowerControl, false, false, true, false),
-    ParamsMetadata(:K_c_ReactivePowerControl, false, false, true, false),
-    ParamsMetadata(:e_min_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:e_max_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:dbd_pnts1_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:dbd_pnts2_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:Q_min_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:Q_max_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:T_p_ReactivePowerControl, false, false, true, false),
-    ParamsMetadata(:Q_min_inner_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:Q_max_inner_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:V_min_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:V_max_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:K_qp_ReactivePowerControl, false, false, false, false),
-    ParamsMetadata(:K_qi_ReactivePowerControl, false, false, true, false),
-]
+get_params(x::PSY.ReactivePowerDroop) = (kq = PSY.get_kq(x), ωf = PSY.get_ωf(x))
+get_params_metadata(::PSY.ReactivePowerDroop) = (
+    kq = ParamsMetadata(false, false, false),
+    ωf = ParamsMetadata(false, false, false),
+)
+get_params(x::PSY.ReactiveRenewableControllerAB) = (
+    T_fltr = PSY.get_T_fltr(x),
+    K_p = PSY.get_K_p(x),
+    K_i = PSY.get_K_i(x),
+    T_ft = PSY.get_T_ft(x),
+    T_fv = PSY.get_T_fv(x),
+    V_frz = PSY.get_V_frz(x),
+    R_c = PSY.get_R_c(x),
+    X_c = PSY.get_X_c(x),
+    K_c = PSY.get_K_c(x),
+    e_lim = (min = PSY.get_e_lim(x)[:min], max = PSY.get_e_lim(x)[:max]),
+    Q_lim = (min = PSY.get_Q_lim(x)[:min], max = PSY.get_Q_lim(x)[:max]),
+    T_p = PSY.get_T_p(x),
+    Q_lim_inner = (min = PSY.get_Q_lim_inner(x)[:min], max = PSY.get_Q_lim_inner(x)[:max]),
+    V_lim = (min = PSY.get_V_lim(x)[:min], max = PSY.get_V_lim(x)[:max]),
+    K_qp = PSY.get_K_qp(x),
+    K_qi = PSY.get_K_qi(x),
+)
+get_params_metadata(::PSY.ReactiveRenewableControllerAB) =
+    (T_fltr = ParamsMetadata(false, false, false),
+        K_p = ParamsMetadata(false, false, false),
+        K_i = ParamsMetadata(false, false, true),
+        T_ft = ParamsMetadata(false, false, false),
+        T_fv = ParamsMetadata(false, false, false),
+        V_frz = ParamsMetadata(false, false, false),
+        R_c = ParamsMetadata(false, false, true),
+        X_c = ParamsMetadata(false, false, true),
+        K_c = ParamsMetadata(false, false, true),
+        e_lim = (
+            min = ParamsMetadata(false, false, false),
+            max = ParamsMetadata(false, false, false),
+        ),
+        Q_lim = (
+            min = ParamsMetadata(false, false, false),
+            max = ParamsMetadata(false, false, false),
+        ),
+        T_p = ParamsMetadata(false, false, true),
+        Q_lim_inner = (
+            min = ParamsMetadata(false, false, false),
+            max = ParamsMetadata(false, false, false),
+        ),
+        V_lim = (
+            min = ParamsMetadata(false, false, false),
+            max = ParamsMetadata(false, false, false),
+        ),
+        K_qp = ParamsMetadata(false, false, false),
+        K_qi = ParamsMetadata(false, false, true),
+    )
+#= 
+= PSY.get_dbd_pnts(x)[1],
+= PSY.get_dbd_pnts(x)[2],
+
+ParamsMetadata(:dbd_pnts1_ReactivePowerControl, false, false, false, false),
+ParamsMetadata(:dbd_pnts2_ReactivePowerControl, false, false, false, false),
+ =#
+#= 
 
 #INNER CONTROL
 get_params(x::PSY.VoltageModeControl) = [
@@ -308,36 +317,37 @@ get_params_metadata(::PSY.RenewableEnergyConverterTypeA) = [
     ParamsMetadata(:Q_ref_Converter, false, false, false, false)
     ParamsMetadata(:R_source_Converter, false, false, false, false)
     ParamsMetadata(:X_source_Converter, false, false, false, false)
-]
+] =#
 
 ########### GENERATORS #############
 function get_params(g::PSY.DynamicGenerator)
-    vcat(
-        get_params(PSY.get_machine(g)),
-        get_params(PSY.get_shaft(g)),
-        get_params(PSY.get_avr(g)),
-        get_params(PSY.get_prime_mover(g)),
-        get_params(PSY.get_pss(g)),
+    return (
+        Machine = get_params(PSY.get_machine(g)),
+        Shaft = get_params(PSY.get_shaft(g)),
+        AVR = get_params(PSY.get_avr(g)),
+        TurbineGov = get_params(PSY.get_prime_mover(g)),
+        PSS = get_params(PSY.get_pss(g)),
     )
 end
 function get_params_metadata(g::PSY.DynamicGenerator)
-    vcat(
-        get_params_metadata(PSY.get_machine(g)),
-        get_params_metadata(PSY.get_shaft(g)),
-        get_params_metadata(PSY.get_avr(g)),
-        get_params_metadata(PSY.get_prime_mover(g)),
-        get_params_metadata(PSY.get_pss(g)),
+    return (
+        Machine = get_params_metadata(PSY.get_machine(g)),
+        Shaft = get_params_metadata(PSY.get_shaft(g)),
+        AVR = get_params_metadata(PSY.get_avr(g)),
+        TurbineGov = get_params_metadata(PSY.get_prime_mover(g)),
+        PSS = get_params_metadata(PSY.get_pss(g)),
     )
 end
 
 #MACHINES 
-get_params(x::PSY.BaseMachine) = [PSY.get_R(x), PSY.get_Xd_p(x), PSY.get_eq_p(x)]
-get_params_metadata(::PSY.BaseMachine) = [
-    ParamsMetadata(:R_Machine, false, false, true, false),
-    ParamsMetadata(:Xd_p_Machine, false, false, true, false),
-    ParamsMetadata(:eq_p_Machine, false, false, true, false),
-]
-get_params(x::PSY.OneDOneQMachine) = [
+get_params(x::PSY.BaseMachine) =
+    (R = PSY.get_R(x), Xd_p = PSY.get_Xd_p(x), eq_p = PSY.get_eq_p(x))
+get_params_metadata(::PSY.BaseMachine) = (
+    R = ParamsMetadata(false, false, true),
+    Xd_p = ParamsMetadata(false, false, true),
+    eq_p = ParamsMetadata(false, false, true),
+)
+#= get_params(x::PSY.OneDOneQMachine) = [
     PSY.get_R(x),
     PSY.get_Xd(x),
     PSY.get_Xq(x),
@@ -414,47 +424,48 @@ get_params_metadata(::PSY.AndersonFouadMachine) = [
     ParamsMetadata(:Tq0_pp_Machine, false, false, false, false),
 ]
 #NOTE: Saturation not considered as paramters
+=#
 get_params(
     x::Union{PSY.RoundRotorMachine, PSY.RoundRotorExponential, PSY.RoundRotorQuadratic},
-) = [
-    PSY.get_R(x),
-    PSY.get_Td0_p(x),
-    PSY.get_Td0_pp(x),
-    PSY.get_Tq0_p(x),
-    PSY.get_Tq0_pp(x),
-    PSY.get_Xd(x),
-    PSY.get_Xq(x),
-    PSY.get_Xd_p(x),
-    PSY.get_Xq_p(x),
-    PSY.get_Xd_pp(x),
-    PSY.get_Xl(x),
-    PSY.get_γ_d1(x),
-    PSY.get_γ_q1(x),
-    PSY.get_γ_d2(x),
-    PSY.get_γ_q2(x),
-    PSY.get_γ_qd(x),
-]
+) = (
+    R = PSY.get_R(x),
+    Td0_p = PSY.get_Td0_p(x),
+    Td0_pp = PSY.get_Td0_pp(x),
+    Tq0_p = PSY.get_Tq0_p(x),
+    Tq0_pp = PSY.get_Tq0_pp(x),
+    Xd = PSY.get_Xd(x),
+    Xq = PSY.get_Xq(x),
+    Xd_p = PSY.get_Xd_p(x),
+    Xq_p = PSY.get_Xq_p(x),
+    Xd_pp = PSY.get_Xd_pp(x),
+    Xl = PSY.get_Xl(x),
+    γ_d1 = PSY.get_γ_d1(x),
+    γ_q1 = PSY.get_γ_q1(x),
+    γ_d2 = PSY.get_γ_d2(x),
+    γ_q2 = PSY.get_γ_q2(x),
+    γ_qd = PSY.get_γ_qd(x),
+)
 get_params_metadata(
     ::Union{PSY.RoundRotorMachine, PSY.RoundRotorExponential, PSY.RoundRotorQuadratic},
-) = [
-    ParamsMetadata(:R_Machine, false, false, true, false),
-    ParamsMetadata(:Td0_p_Machine, false, false, true, false),
-    ParamsMetadata(:Td0_pp_Machine, false, false, true, false),
-    ParamsMetadata(:Tq0_p_Machine, false, false, true, false),
-    ParamsMetadata(:Tq0_pp_Machine, false, false, true, false),
-    ParamsMetadata(:Xd_Machine, false, false, true, false),
-    ParamsMetadata(:Xq_Machine, false, false, true, false),
-    ParamsMetadata(:Xd_p_Machine, false, false, true, false),
-    ParamsMetadata(:Xq_p_Machine, false, false, true, false),
-    ParamsMetadata(:Xd_pp_Machine, false, false, true, false),
-    ParamsMetadata(:Xl_Machine, false, false, true, false),
-    ParamsMetadata(:γ_d1_Machine, false, false, true, false),
-    ParamsMetadata(:γ_q1_Machine, false, false, true, false),
-    ParamsMetadata(:γ_d2_Machine, false, false, true, false),
-    ParamsMetadata(:γ_q2_Machine, false, false, true, false),
-    ParamsMetadata(:γ_qd_Machine, false, false, true, false),
-]
-get_params(
+) = (
+    R = ParamsMetadata(false, false, true),
+    Td0_p = ParamsMetadata(false, false, true),
+    Td0_pp = ParamsMetadata(false, false, true),
+    Tq0_p = ParamsMetadata(false, false, true),
+    Tq0_pp = ParamsMetadata(false, false, true),
+    Xd = ParamsMetadata(false, false, true),
+    Xq = ParamsMetadata(false, false, true),
+    Xd_p = ParamsMetadata(false, false, true),
+    Xq_p = ParamsMetadata(false, false, true),
+    Xd_pp = ParamsMetadata(false, false, true),
+    Xl = ParamsMetadata(false, false, true),
+    γ_d1 = ParamsMetadata(false, false, true),
+    γ_q1 = ParamsMetadata(false, false, true),
+    γ_d2 = ParamsMetadata(false, false, true),
+    γ_q2 = ParamsMetadata(false, false, true),
+    γ_qd = ParamsMetadata(false, false, true),
+)
+#= get_params(
     x::Union{PSY.SalientPoleMachine, PSY.SalientPoleExponential, PSY.SalientPoleQuadratic},
 ) = [
     PSY.get_R(x),
@@ -485,15 +496,16 @@ get_params_metadata(
     ParamsMetadata(:γ_d1_Machine, false, false, true, false),
     ParamsMetadata(:γ_q1_Machine, false, false, true, false),
     ParamsMetadata(:γ_d2_Machine, false, false, true, false),
-]
+]  =#
 
 #SHAFTS
-get_params(x::PSY.SingleMass) = [PSY.get_H(x), PSY.get_D(x)]
-get_params_metadata(::PSY.SingleMass) = [
-    ParamsMetadata(:H_Shaft, false, false, false, false),
-    ParamsMetadata(:D_Shaft, false, false, false, false),
-]
-get_params(x::PSY.FiveMassShaft) = [
+get_params(x::PSY.SingleMass) = (H = PSY.get_H(x), D = PSY.get_D(x))
+get_params_metadata(::PSY.SingleMass) = (
+    H = ParamsMetadata(false, false, false),
+    D = ParamsMetadata(false, false, false),
+)
+
+#= get_params(x::PSY.FiveMassShaft) = [
     PSY.get_H(x),
     PSY.get_H_hp(x),
     PSY.get_H_ip(x),
@@ -532,12 +544,13 @@ get_params_metadata(::PSY.FiveMassShaft) = [
     ParamsMetadata(:K_ip_Shaft, false, false, true, false)
     ParamsMetadata(:K_lp_Shaft, false, false, true, false)
     ParamsMetadata(:K_ex_Shaft, false, false, true, false)
-]
+] =#
 
 #AVRS 
-get_params(::PSY.AVRFixed) = Float64[]
-get_params_metadata(::PSY.AVRFixed) = ParamsMetadata[]
-get_params(x::PSY.AVRSimple) = [PSY.get_Kv(x)]
+get_params(::PSY.AVRFixed) = (;)
+get_params_metadata(::PSY.AVRFixed) = (;)
+
+#= get_params(x::PSY.AVRSimple) = [PSY.get_Kv(x)]
 get_params_metadata(::PSY.AVRSimple) = [ParamsMetadata(:Kv_AVR, false, false, false, false)]
 get_params(x::PSY.AVRTypeI) = [
     PSY.get_Ka(x),
@@ -561,23 +574,26 @@ get_params_metadata(::PSY.AVRTypeI) = [
     ParamsMetadata(:Ae_AVR, false, false, true, false),
     ParamsMetadata(:Be_AVR, false, false, true, false),
 ]
-get_params(x::PSY.SEXS) = [
-    PSY.get_Ta_Tb(x),
-    PSY.get_Tb(x),
-    PSY.get_K(x),
-    PSY.get_Te(x),
-    PSY.get_V_lim(x)[1],
-    PSY.get_V_lim(x)[2],
-]
-get_params_metadata(::PSY.SEXS) = [
-    ParamsMetadata(:Ta_Tb_AVR, false, false, true, false)
-    ParamsMetadata(:Tb_AVR, false, false, false, false)
-    ParamsMetadata(:K_AVR, false, false, true, false)
-    ParamsMetadata(:Te_AVR, false, false, false, false)
-    ParamsMetadata(:V_min_AVR, false, false, true, false)
-    ParamsMetadata(:V_max_AVR, false, false, true, false)
-]
-get_params(x::PSY.AVRTypeII) = [
+ =#
+
+get_params(x::PSY.SEXS) = (
+    Ta_Tb = PSY.get_Ta_Tb(x),
+    Tb = PSY.get_Tb(x),
+    K = PSY.get_K(x),
+    Te = PSY.get_Te(x),
+    V_lim = PSY.get_V_lim(x),
+)
+get_params_metadata(::PSY.SEXS) = (
+    Ta_Tb = ParamsMetadata(false, false, true),
+    Tb = ParamsMetadata(false, false, false),
+    K = ParamsMetadata(false, false, true),
+    Te = ParamsMetadata(false, false, false),
+    V_lim = (
+        min = ParamsMetadata(false, false, true),
+        max = ParamsMetadata(false, false, true),
+    ),
+)
+#= get_params(x::PSY.AVRTypeII) = [
     PSY.get_K0(x),
     PSY.get_T1(x),
     PSY.get_T2(x),
@@ -694,11 +710,11 @@ get_params_metadata(::PSY.EXAC1) = [
     ParamsMetadata(:Kd_AVR, false, false, true, false),
     ParamsMetadata(:Ke_AVR, false, false, true, false),
 ]
-
+ =#
 #TurbineGov
-get_params(x::PSY.TGFixed) = [PSY.get_efficiency(x)]
-get_params_metadata(::PSY.TGFixed) =
-    [ParamsMetadata(:efficiency_TurbineGov, false, false, true, false)]
+get_params(x::PSY.TGFixed) = (; efficiency = PSY.get_efficiency(x))
+get_params_metadata(::PSY.TGFixed) = (; efficiency = ParamsMetadata(false, false, true))
+#= 
 get_params(x::PSY.TGTypeII) = [PSY.get_R(x), PSY.get_T1(x), PSY.get_T2(x)]
 get_params_metadata(::PSY.TGTypeII) = [
     ParamsMetadata(:R_tg_TurbineGovR, false, false, true, false),
@@ -747,23 +763,28 @@ get_params_metadata(::PSY.TGTypeI) = [
     ParamsMetadata(:valve_position_min_TurbineGov, false, false, true, false),
     ParamsMetadata(:valve_position_max_TurbineGov, false, false, true, false),
 ]
-get_params(x::PSY.SteamTurbineGov1) = [PSY.get_R(x),
-    PSY.get_T1(x),
-    PSY.get_valve_position_limits(x)[1],
-    PSY.get_valve_position_limits(x)[2],
-    PSY.get_T2(x),
-    PSY.get_T3(x),
-    PSY.get_D_T(x)]
-get_params_metadata(::PSY.SteamTurbineGov1) = [
-    ParamsMetadata(:R_tg, false, false, true, false),
-    ParamsMetadata(:T1_TurbineGov, false, false, true, false),
-    ParamsMetadata(:valve_position_min_TurbineGov, false, false, true, false),
-    ParamsMetadata(:valve_position_max_TurbineGov, false, false, true, false),
-    ParamsMetadata(:T2_TurbineGov, false, false, true, false),
-    ParamsMetadata(:T3_TurbineGov, false, false, true, false),
-    ParamsMetadata(:D_T_TurbineGov, false, false, true, false),
-]
-get_params(x::PSY.HydroTurbineGov) = [
+ =#
+
+get_params(x::PSY.SteamTurbineGov1) = (
+    R = PSY.get_R(x),
+    T1 = PSY.get_T1(x),
+    valve_position_limits = PSY.get_valve_position_limits(x),
+    T2 = PSY.get_T2(x),
+    T3 = PSY.get_T3(x),
+    D_T = PSY.get_D_T(x),
+)
+get_params_metadata(::PSY.SteamTurbineGov1) = (
+    R = ParamsMetadata(false, false, true),
+    T1 = ParamsMetadata(false, false, true),
+    valve_position = (
+        min = ParamsMetadata(false, false, true),
+        max = ParamsMetadata(false, false, true),
+    ),
+    T2 = ParamsMetadata(false, false, true),
+    T3 = ParamsMetadata(false, false, true),
+    D_T = ParamsMetadata(false, false, true),
+)
+#= get_params(x::PSY.HydroTurbineGov) = [
     PSY.get_R(x),
     PSY.get_r(x),
     PSY.get_Tr(x),
@@ -790,12 +811,12 @@ get_params_metadata(::PSY.HydroTurbineGov) = [
     ParamsMetadata(:At_TurbineGov, false, false, true, false),
     ParamsMetadata(:D_T_TurbineGov, false, false, true, false),
     ParamsMetadata(:q_nl_TurbineGov, false, false, true, false),
-]
+] =#
 
 #PSS
-get_params(x::PSY.PSSFixed) = [PSY.get_V_pss(x)]
-get_params_metadata(::PSY.PSSFixed) =
-    [ParamsMetadata(:V_pss_PSS, false, false, false, false)]
+get_params(x::PSY.PSSFixed) = (; V_pss = PSY.get_V_pss(x))
+get_params_metadata(::PSY.PSSFixed) = (; V_pss = ParamsMetadata(false, false, false))
+#= 
 get_params(x::PSY.STAB1) = [
     PSY.get_KT(x),
     PSY.get_T(x),
@@ -813,19 +834,19 @@ get_params_metadata(::PSY.STAB1) = [
     ParamsMetadata(:T2T4_PSS, false, false, false, false),
     ParamsMetadata(:T4_PSS, false, false, false, false),
     ParamsMetadata(:H_lim_PSS, false, false, false, false),
-]
+] =#
 
 #SOURCE 
-get_params(x::PSY.Source) = [
-    PSY.get_R_th(x),
-    PSY.get_X_th(x),
-]
-get_params_metadata(::PSY.Source) = [
-    ParamsMetadata(:R_th, false, false, true, false),
-    ParamsMetadata(:X_th, false, false, true, false),
-]
+get_params(x::PSY.Source) = (
+    R_th = PSY.get_R_th(x),
+    X_th = PSY.get_X_th(x),
+)
+get_params_metadata(::PSY.Source) = (
+    R_th = ParamsMetadata(false, false, true),
+    X_th = ParamsMetadata(false, false, true),
+)
 #Parameters not implemented for PeriodicVariableSource - requires change in PSY Struct to have information required to construct and deconstruct parameter vector
-
+#= 
 #DYNAMIC LOADS 
 get_params(x::PSY.ActiveConstantPowerLoad) = [
     PSY.get_r_load(x),
@@ -1016,3 +1037,4 @@ get_params_metadata(::PSY.CSVGN1) = [
     ParamsMetadata(:R_th, false, false, false, false),
     ParamsMetadata(:X_th, false, false, false, false),
 ]
+ =#

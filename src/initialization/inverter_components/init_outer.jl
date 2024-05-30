@@ -367,60 +367,15 @@ function initialize_outer!(
     )
     internal_states = @view device_states[local_ix]
 
-    #Get all parameters once 
-    local_ix_params = get_local_parameter_ix(
-        dynamic_device,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
-        },
-    )
-    internal_params = @view device_parameters[local_ix_params]
-    active_n_params = length(get_params(active_power_control))
-    active_ix_range_params = 1:active_n_params
-    active_params = @view internal_params[active_ix_range_params]
-    reactive_n_params = length(get_params(reactive_power_control))
-    reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
-    reactive_params = @view internal_params[reactive_ix_range_params]
-    K_pg,
-    K_ig,
-    T_p,
-    fdbd1,
-    fdbd2,
-    fe_min,
-    fe_max,
-    P_min,
-    P_max,
-    T_g,
-    D_dn,
-    D_up,
-    dP_min,
-    dP_max,
-    P_min_inner,
-    P_max_inner,
-    T_pord = active_params
-    T_fltr,
-    K_p,
-    K_i,
-    T_ft,
-    T_fv,
-    V_frz,     # V_frz not implemented yet
-    R_c,
-    X_c,
-    K_c,
-    e_min,
-    e_max,
-    dbd1,
-    dbd2,
-    Q_min,
-    Q_max,
-    T_p,
-    Q_min_inner,
-    Q_max_inner,
-    V_min,
-    V_max,
-    K_qp,
-    K_qi = reactive_params
+    #Get parameters 
+    K_ig = device_parameters[:OuterControl][:ActivePowerControl][:K_ig]
+    T_p = device_parameters[:OuterControl][:ActivePowerControl][:T_p]
+    K_i = device_parameters[:OuterControl][:ReactivePowerControl][:K_i]
+    R_c = device_parameters[:OuterControl][:ReactivePowerControl][:R_c]
+    X_c = device_parameters[:OuterControl][:ReactivePowerControl][:X_c]
+    K_c = device_parameters[:OuterControl][:ReactivePowerControl][:K_c]
+    T_p = device_parameters[:OuterControl][:ReactivePowerControl][:T_p]
+    K_qi = device_parameters[:OuterControl][:ReactivePowerControl][:K_qi]
 
     if Freq_Flag == 1
         #Update States

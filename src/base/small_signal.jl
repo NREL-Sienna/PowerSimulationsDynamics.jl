@@ -151,7 +151,7 @@ function _small_signal_analysis(
     ::Type{T},
     inputs::SimulationInputs,
     x_eval::Vector{Float64},
-    p::Vector{Float64},
+    p::AbstractArray{Float64},
     multimachine = true,
 ) where {T <: SimulationModel}
     jacwrapper = get_jacobian(T, inputs, x_eval, p, 0)

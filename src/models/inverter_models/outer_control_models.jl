@@ -53,34 +53,24 @@ function _mdl_ode_RE_active_controller_AB!(
     ω_plant = ω_sys
 
     #Obtain additional Active Power Controller parameters
-    local_ix_params = get_local_parameter_ix(
-        dynamic_device,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
-        },
-    )
-    internal_params = @view device_parameters[local_ix_params]
-    active_n_params = length(get_params(active_power_control))
-    active_ix_range_params = 1:active_n_params
-    active_params = @view internal_params[active_ix_range_params]
-    K_pg,
-    K_ig,
-    T_p,
-    fdbd1,
-    fdbd2,
-    fe_min,
-    fe_max,
-    P_min,
-    P_max,
-    T_g,
-    D_dn,
-    D_up,
-    dP_min,
-    dP_max,
-    P_min_inner,
-    P_max_inner,
-    T_pord = active_params
+    K_pg = device_parameters[:OuterControl][:ActivePowerControl][:K_pg]
+    K_ig = device_parameters[:OuterControl][:ActivePowerControl][:K_ig]
+    T_p = device_parameters[:OuterControl][:ActivePowerControl][:T_p]
+    fe_min = device_parameters[:OuterControl][:ActivePowerControl][:fe_lim][:min]
+    fe_max = device_parameters[:OuterControl][:ActivePowerControl][:fe_lim][:max]
+    P_min = device_parameters[:OuterControl][:ActivePowerControl][:P_lim][:min]
+    P_max = device_parameters[:OuterControl][:ActivePowerControl][:P_lim][:max]
+    T_g = device_parameters[:OuterControl][:ActivePowerControl][:T_g]
+    D_dn = device_parameters[:OuterControl][:ActivePowerControl][:D_dn]
+    D_up = device_parameters[:OuterControl][:ActivePowerControl][:D_up]
+    dP_min = device_parameters[:OuterControl][:ActivePowerControl][:dP_lim][:min]
+    dP_max = device_parameters[:OuterControl][:ActivePowerControl][:dP_lim][:max]
+    P_min_inner = device_parameters[:OuterControl][:ActivePowerControl][:P_lim_inner][:min]
+    P_max_inner = device_parameters[:OuterControl][:ActivePowerControl][:P_lim_inner][:max]
+    T_pord = device_parameters[:OuterControl][:ActivePowerControl][:T_pord]
+
+    # Not considered parameters because not named tuple
+    fdbd1, fdbd2 = PSY.get_fdbd_pnts(active_power_control)
 
     #Define internal states for outer control
     p_flt = active_controller_states[1]
@@ -158,34 +148,7 @@ function _mdl_ode_RE_active_controller_AB!(
     #Obtain external parameters
     p_ref = get_P_ref(dynamic_device)
     #Obtain additional Active Power Controller parameters
-    local_ix_params = get_local_parameter_ix(
-        dynamic_device,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
-        },
-    )
-    internal_params = @view device_parameters[local_ix_params]
-    active_n_params = length(get_params(active_power_control))
-    active_ix_range_params = 1:active_n_params
-    active_params = @view internal_params[active_ix_range_params]
-    K_pg,
-    K_ig,
-    T_p,
-    fdbd1,
-    fdbd2,
-    fe_min,
-    fe_max,
-    P_min,
-    P_max,
-    T_g,
-    D_dn,
-    D_up,
-    dP_min,
-    dP_max,
-    P_min_inner,
-    P_max_inner,
-    T_pord = active_params
+    T_pord = device_parameters[:OuterControl][:ActivePowerControl][:T_pord]
 
     #Define internal states for outer control
     p_ord = active_controller_states[1]
@@ -711,12 +674,11 @@ function mdl_outer_ode!(
     #Obtain inner variables for component
     ω_pll = inner_vars[ω_freq_estimator_var]
 
-    local_ix_params = get_local_parameter_ix(
-        dynamic_device,
-        PSY.OuterControl{PSY.VirtualInertia, PSY.ReactivePowerDroop},
-    )
-    internal_params = @view device_parameters[local_ix_params]
-    Ta, kd, kω, kq, ωf = internal_params
+    Ta = device_parameters[:OuterControl][:ActivePowerControl][:Ta]
+    kd = device_parameters[:OuterControl][:ActivePowerControl][:kd]
+    kω = device_parameters[:OuterControl][:ActivePowerControl][:kω]
+    kq = device_parameters[:OuterControl][:ReactivePowerControl][:kq]
+    ωf = device_parameters[:OuterControl][:ReactivePowerControl][:ωf]
 
     q_ref = get_Q_ref(dynamic_device)
     V_ref = get_V_ref(dynamic_device)

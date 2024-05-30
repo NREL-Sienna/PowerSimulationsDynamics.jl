@@ -374,7 +374,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
@@ -405,24 +405,15 @@ function _update_inner_vars!(
     V_tI = inner_vars[VI_gen_var]
 
     #Get parameters
-    machine_ix_params = get_local_parameter_ix(dynamic_device, typeof(machine))
-    machine_params = @view device_parameters[machine_ix_params]
-    R,
-    Td0_p,
-    Td0_pp,
-    Tq0_p,
-    Tq0_pp,
-    Xd,
-    Xq,
-    Xd_p,
-    Xq_p,
-    Xd_pp,
-    Xl,
-    γ_d1,
-    γ_q1,
-    γ_d2,
-    γ_q2,
-    γ_qd = machine_params  #RoundRotorQuadratic and RoundRotorExponential have same params; otherwise would need separate methods
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xd = params[:Xd]
+    Xd_p = params[:Xd_p]
+    Xd_pp = params[:Xd_pp]
+    Xl = params[:Xl]
+    γ_d1 = params[:γ_d1]
+    γ_q1 = params[:γ_q1]
+    γ_d2 = params[:γ_d2]
     Xq_pp = Xd_pp
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]

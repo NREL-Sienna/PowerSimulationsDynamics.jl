@@ -22,9 +22,30 @@ end
 function (J::JacobianFunctionWrapper{NoDelays})(
     JM::U,
     x::AbstractVector{Float64},
+    p,
 ) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
     J.x .= x
     J.Jf(JM, x)
+    return
+end
+
+function (J::JacobianFunctionWrapper{NoDelays})(
+    JM::U,
+    x::AbstractVector{Float64},
+) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
+    J.x .= x
+    J.Jf(JM, x)
+    return
+end
+
+function (J::JacobianFunctionWrapper{HasDelays})(
+    JM::U,
+    x::AbstractVector{Float64},
+    p,
+) where {U <: Union{Matrix{Float64}, SparseArrays.SparseMatrixCSC{Float64, Int64}}}
+    h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x[idxs] : x
+    J.x .= x
+    J.Jf(JM, x, h, 0.0)
     return
 end
 
@@ -88,7 +109,7 @@ end
 function JacobianFunctionWrapper(
     m!::SystemModel{MassMatrixModel, NoDelays},
     x0_guess::Vector{Float64},
-    p::Vector{Float64};
+    p::AbstractArray{Float64};
     # Improve the heuristic to do sparsity detection
     sparse_retrieve_loop::Int = 0, #max(3, length(x0_guess) ÷ 100),
 )
@@ -129,7 +150,7 @@ end
 function JacobianFunctionWrapper(
     m!::SystemModel{ResidualModel},
     x0::Vector{Float64},
-    p::Vector{Float64};
+    p::AbstractArray{Float64};
     # Improve the heuristic to do sparsity detection
     sparse_retrieve_loop::Int = max(3, length(x0) ÷ 100),
 )
@@ -170,7 +191,7 @@ end
 function JacobianFunctionWrapper(
     m!::SystemModel{MassMatrixModel, HasDelays},
     x0_guess::Vector{Float64},
-    p::Vector{Float64};
+    p::AbstractArray{Float64};
     # Improve the heuristic to do sparsity detection
     sparse_retrieve_loop::Int = 0, #max(3, length(x0_guess) ÷ 100),
 )
@@ -213,7 +234,7 @@ function get_jacobian(
     ::Type{T},
     inputs::SimulationInputs,
     x0_init::Vector{Float64},
-    p::Vector{Float64},
+    p::AbstractArray{Float64},
     sparse_retrieve_loop::Int,
 ) where {T <: SimulationModel}
     return JacobianFunctionWrapper(

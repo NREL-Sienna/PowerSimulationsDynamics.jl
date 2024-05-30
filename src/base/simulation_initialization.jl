@@ -25,76 +25,39 @@ function initialize_static_injection!(inputs::SimulationInputs)
     static_injection_devices = get_static_injectors(inputs)
     parameters = get_parameters(inputs)
     if !isempty(static_injection_devices)
-        try
-            for s in static_injection_devices
-                p_range = get_p_range(s)
-                local_parameters = @view parameters[p_range]
-                initialize_static_device!(s, local_parameters)
-            end
-        catch e
-            bt = catch_backtrace()
-            CRC.@ignore_derivatives @error "Static Injection Failed to Initialize" exception =
-                e, bt
-            return BUILD_FAILED
+        for s in static_injection_devices
+            local_parameters = @view parameters[_get_wrapper_name(s)]
+            initialize_static_device!(s, local_parameters)
         end
     end
     return BUILD_INCOMPLETE
 end
 
-function _initialization_debug(dynamic_device, static, x0_device::Vector{Float64})
-    residual = similar(x0_device)
-    Vm = PSY.get_magnitude(PSY.get_bus(static))
-    θ = PSY.get_angle(PSY.get_bus(static))
-    device!(
-        x0_device,
-        residual,
-        Vm * cos(θ),
-        Vm * sin(θ),
-        zeros(10),
-        zeros(10),
-        [1.0],
-        zeros(100),
-        dynamic_device,
-        0,
-    )
-    for (ix, state) in enumerate(PSY.get_states(dynamic_device))
-        CRC.@ignore_derivatives @debug state residual[ix]
-    end
-    return
-end
-
 function initialize_dynamic_injection!(
-    initial_guess::Vector{Float64},
+    initial_guess::AbstractArray,
     inputs::SimulationInputs,
     system::PSY.System,
 )
     CRC.@ignore_derivatives @debug "Updating Dynamic Injection Component Initial Guess"
     initial_inner_vars = zeros(get_inner_vars_count(inputs))
     parameters = get_parameters(inputs)
-    try
-        for dynamic_device in get_dynamic_injectors(inputs)
-            static = PSY.get_component(
-                dynamic_device.static_type,
-                system,
-                PSY.get_name(dynamic_device),
-            )
-            CRC.@ignore_derivatives @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
-            _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
-            _parameters = @view parameters[get_p_range(dynamic_device)]
-            _states = @view initial_guess[get_ix_range(dynamic_device)]
-            initialize_dynamic_device!(
-                dynamic_device,
-                static,
-                _inner_vars,
-                _parameters,
-                _states,
-            )
-        end
-    catch e
-        bt = catch_backtrace()
-        CRC.@ignore_derivatives @error "Dynamic Injection Failed to Initialize" exception =
-            e, bt
-        return BUILD_FAILED
+    for dynamic_device in get_dynamic_injectors(inputs)
+        static = CRC.@ignore_derivatives PSY.get_component(
+            dynamic_device.static_type,
+            system,
+            PSY.get_name(dynamic_device),
+        )
+        CRC.@ignore_derivatives @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
+        _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
+        _parameters = @view parameters[_get_wrapper_name(dynamic_device)]  
+        _states = @view initial_guess[get_ix_range(dynamic_device)]       
+        initialize_dynamic_device!(
+            dynamic_device,
+            static,
+            _inner_vars,
+            _parameters,
+            _states,
+        )
     end
     return BUILD_INCOMPLETE
 end
@@ -104,19 +67,12 @@ function initialize_dynamic_branches!(
     inputs::SimulationInputs,
 )
     parameters = get_parameters(inputs)
-    try
-        CRC.@ignore_derivatives @debug "Initializing Dynamic Branches"
-        for br in get_dynamic_branches(inputs)
-            CRC.@ignore_derivatives @debug "$(PSY.get_name(br)) -  $(typeof(br))"
-            _parameters = @view parameters[get_p_range(br)]
-            _states = @view initial_guess[get_ix_range(br)]
-            initialize_dynamic_device!(br, _parameters, _states)
-        end
-    catch e
-        bt = catch_backtrace()
-        CRC.@ignore_derivatives @error "Dynamic Branches Failed to Initialize" exception =
-            e, bt
-        return BUILD_FAILED
+    CRC.@ignore_derivatives @debug "Initializing Dynamic Branches"
+    for br in get_dynamic_branches(inputs)
+        CRC.@ignore_derivatives @debug "$(PSY.get_name(br)) -  $(typeof(br))"
+        _parameters = @view parameters[get_p_range(br)]
+        _states = @view initial_guess[get_ix_range(br)]
+        initialize_dynamic_device!(br, _parameters, _states)
     end
     return BUILD_INCOMPLETE
 end
@@ -155,38 +111,30 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
     return BUILD_IN_PROGRESS
 end
 
-# Default implementation for both models. This implementation is to future proof if there is
-# a divergence between the required build methods
-function _calculate_initial_guess!(sim::Simulation, ::Val{POWERFLOW_AND_DEVICES})
-    CRC.@ignore_derivatives @info("Pre-Initializing Simulation States")
-    inputs = get_simulation_inputs(sim)
-    @assert sim.status == BUILD_INCOMPLETE
-    while sim.status == BUILD_INCOMPLETE
-        CRC.@ignore_derivatives @debug "Start state intialization routine"
-        TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
-            sim.status = power_flow_solution!(sim.x0, get_system(sim), inputs)
-        end
-        TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
-            sim.status = initialize_static_injection!(inputs)
-        end
-        TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
-            sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
-        end
-        if has_dyn_lines(inputs)
-            TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
-                sim.status = initialize_dynamic_branches!(sim.x0, inputs)
-            end
-        else
-            CRC.@ignore_derivatives @debug "No Dynamic Branches in the system"
-        end
-        sim.status = check_valid_values(sim.x0, inputs)
-    end
-    return
+#Setter functions for CA
+function set_V_ref!(array, value)
+    @view(array["refs"])["V_ref"] = value
+end
+function set_ω_ref!(array, value)
+    @view(array["refs"])["ω_ref"] = value
+end
+function set_θ_ref!(array, value)
+    @view(array["refs"])["θ_ref"] = value
+end
+function set_P_ref!(array, value)
+    @view(array["refs"])["P_ref"] = value
+end
+function set_Q_ref!(array, value)
+    @view(array["refs"])["Q_ref"] = value
 end
 
+# Default implementation for both models. This implementation is to future proof if there is
+# a divergence between the required build methods
+#PASS x0, not sim....?
 function _initialize_state_space(
     sim::Simulation{T},
     ::Val{POWERFLOW_AND_DEVICES},
+    ::Val{false},  #not yet supported with sensitivity analysis 
 ) where {T <: SimulationModel}
     inputs = get_simulation_inputs(sim)
     sim.x0 = _get_flat_start(inputs)
@@ -194,19 +142,11 @@ function _initialize_state_space(
     @assert sim.status == BUILD_INCOMPLETE
     while sim.status == BUILD_INCOMPLETE
         CRC.@ignore_derivatives @debug "Start state intialization routine"
-        TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
-            sim.status = power_flow_solution!(sim.x0, get_system(sim), inputs)
-        end
-        TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
-            sim.status = initialize_static_injection!(inputs)
-        end
-        TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
-            sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
-        end
+        sim.status = power_flow_solution!(sim.x0, get_system(sim), inputs)
+        sim.status = initialize_static_injection!(inputs)
+        sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
         if has_dyn_lines(inputs)
-            TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
-                sim.status = initialize_dynamic_branches!(sim.x0, inputs)
-            end
+            sim.status = initialize_dynamic_branches!(sim.x0, inputs)
         else
             CRC.@ignore_derivatives @debug "No Dynamic Branches in the system"
         end
@@ -214,25 +154,23 @@ function _initialize_state_space(
     end
 end
 
+#GET rid of try catch at that level. 
+#GET rid of timing at that level 
 function _initialize_state_space(
     sim::Simulation{T},
     ::Val{DEVICES_ONLY},
+    ::Val{false},  #not yet supported with sensitivity analysis 
 ) where {T <: SimulationModel}
     CRC.@ignore_derivatives @info("Pre-Initializing Simulation States")
     inputs = get_simulation_inputs(sim)
+    #GET INNER VARS, PARAMETERS, AND STATES AT THIS LEVEL ... 
     @assert sim.status == BUILD_INCOMPLETE
     while sim.status == BUILD_INCOMPLETE
         CRC.@ignore_derivatives @debug "Start state intialization routine"
-        TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
-            sim.status = initialize_static_injection!(inputs)
-        end
-        TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
-            sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
-        end
+        sim.status = initialize_static_injection!(inputs)
+        sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
         if has_dyn_lines(inputs)
-            TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
-                sim.status = initialize_dynamic_branches!(sim.x0, inputs)
-            end
+            sim.status = initialize_dynamic_branches!(sim.x0, inputs)
         else
             CRC.@ignore_derivatives @debug "No Dynamic Branches in the system"
         end
@@ -243,6 +181,7 @@ end
 function _initialize_state_space(
     sim::Simulation{T},
     ::Val{FLAT_START},
+    ::Union{Val{true}, Val{false}},
 ) where {T <: SimulationModel}
     simulation_inputs = get_simulation_inputs(sim)
     sim.x0 = _get_flat_start(simulation_inputs)
@@ -251,6 +190,7 @@ end
 function _initialize_state_space(
     sim::Simulation{T},
     ::Val{INITIALIZED},
+    ::Union{Val{true}, Val{false}},
 ) where {T <: SimulationModel}
     simulation_inputs = get_simulation_inputs(sim)
     @assert sim.status == BUILD_INCOMPLETE

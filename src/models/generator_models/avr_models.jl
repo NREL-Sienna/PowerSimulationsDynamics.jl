@@ -318,15 +318,14 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
     h,
     t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
     #Obtain references
-    V0_ref = get_V_ref(dynamic_device)
-
+    V0_ref = p[:refs][:V_ref]
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.SEXS)
 
@@ -340,9 +339,13 @@ function mdl_avr_ode!(
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SEXS)
-    internal_params = @view device_parameters[local_ix_params]
-    Ta_Tb, Tb, K, Te, V_min, V_max = internal_params
+    params = @view(p[:params][:AVR])
+    Ta_Tb = params[:Ta_Tb]
+    Tb = params[:Tb]
+    K = params[:K]
+    Te = params[:Te]
+    V_min = params[:V_lim][:min]
+    V_max = params[:V_lim][:max]
     Ta = Tb * Ta_Tb
 
     #Compute auxiliary parameters

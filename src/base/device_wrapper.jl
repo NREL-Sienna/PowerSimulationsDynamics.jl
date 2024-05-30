@@ -44,11 +44,9 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
     inner_vars_index::Vector{Int}
     ix_range::Vector{Int}
     ode_range::Vector{Int}
-    p_range::Vector{Int}
     bus_ix::Int
     global_index::Base.ImmutableDict{Symbol, Int}
     component_state_mapping::Base.ImmutableDict{Int, Vector{Int}}
-    component_parameter_mapping::Base.ImmutableDict{Int, Vector{Int}}
     input_port_mapping::Base.ImmutableDict{Int, Vector{Int}}
     ext::Dict{String, Any}
 
@@ -66,11 +64,9 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
         inner_vars_index,
         ix_range,
         ode_range,
-        p_range,
         bus_ix::Int,
         global_index::Base.ImmutableDict{Symbol, Int},
         component_state_mapping::Base.ImmutableDict{Int, Vector{Int}},
-        component_parameter_mapping::Base.ImmutableDict{Int, Vector{Int}},
         input_port_mapping::Base.ImmutableDict{Int, Vector{Int}},
         ext::Dict{String, Any},
     ) where {T <: PSY.DynamicInjection}
@@ -90,11 +86,9 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
             Vector{Int}(inner_vars_index),
             Vector{Int}(ix_range),
             Vector{Int}(ode_range),
-            Vector{Int}(p_range),
             bus_ix,
             global_index,
             component_state_mapping,
-            component_parameter_mapping,
             input_port_mapping,
             ext,
         )
@@ -121,29 +115,6 @@ function state_port_mappings(dynamic_device::PSY.DynamicInjection, device_states
     return (component_state_mapping, input_port_mapping)
 end
 
-function parameter_mappings(
-    dynamic_device::T,
-    device_parameters,
-) where {T <: Union{PSY.DynamicGenerator, PSY.DynamicInverter}}
-    component_parameter_mapping = Dict{Int, Vector{Int}}()
-    for c in PSY.get_dynamic_components(dynamic_device)
-        ix = index(typeof(c))
-        component_parameter_mapping[ix] = _index_local_parameters(c, device_parameters)
-    end
-    return component_parameter_mapping
-end
-
-function parameter_mappings(dynamic_device::PSY.DynamicInjection, device_parameters)
-    return Dict{Int, Vector{Int}}()
-end
-
-function _get_parameter_symbols(
-    dynamic_device::PSY.DynamicInjection,
-    static_device::PSY.StaticInjection,
-)
-    return get_params_symbol(dynamic_device)
-end
-
 function DynamicWrapper(
     static_device::T,
     dynamic_device::D,
@@ -156,13 +127,8 @@ function DynamicWrapper(
     sys_base_freq,
 ) where {T <: PSY.StaticInjection, D <: PSY.DynamicInjection}
     device_states = PSY.get_states(dynamic_device)
-    device_parameters = _get_parameter_symbols(dynamic_device, static_device)
-    #Parameter mappings depend on unique parameters per device
-    @assert allunique(device_parameters)
-
     component_state_mapping, input_port_mapping =
         state_port_mappings(dynamic_device, device_states)
-    component_parameter_mapping = parameter_mappings(dynamic_device, device_parameters)
     # Consider the special case when the static device is StandardLoad
     if isa(static_device, PSY.StandardLoad)
         reactive_power = PF.get_total_q(static_device)
@@ -183,7 +149,6 @@ function DynamicWrapper(
         inner_var_range,
         ix_range,
         ode_range,
-        p_range,
         bus_ix,
         Base.ImmutableDict(
             sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
@@ -192,11 +157,6 @@ function DynamicWrapper(
             Base.ImmutableDict{Int, Vector{Int}}()
         else
             Base.ImmutableDict(component_state_mapping...)
-        end,
-        if isempty(component_parameter_mapping)
-            Base.ImmutableDict{Int, Vector{Int}}()
-        else
-            Base.ImmutableDict(component_parameter_mapping...)
         end,
         if isempty(input_port_mapping)
             Base.ImmutableDict{Int, Vector{Int}}()
@@ -213,7 +173,6 @@ function DynamicWrapper(
     bus_ix::Int,
     ix_range,
     ode_range,
-    p_range,
     inner_var_range,
     sys_base_power,
     sys_base_freq,
@@ -238,7 +197,6 @@ function DynamicWrapper(
         inner_var_range,
         ix_range,
         ode_range,
-        p_range,
         bus_ix,
         Base.ImmutableDict(
             sort!(device_states .=> ix_range; by = x -> x.second, rev = true)...,
@@ -248,7 +206,6 @@ function DynamicWrapper(
         else
             Base.ImmutableDict(component_state_mapping...)
         end,
-        Base.ImmutableDict{Int, Vector{Int}}(),
         if isempty(input_port_mapping)
             Base.ImmutableDict{Int, Vector{Int}}()
         else
@@ -264,7 +221,6 @@ function DynamicWrapper(
     bus_ix::Int,
     ix_range,
     ode_range,
-    p_range,
     inner_var_range,
     sys_base_power,
     sys_base_freq,
@@ -287,26 +243,12 @@ function DynamicWrapper(
         collect(inner_var_range),
         collect(ix_range),
         collect(ode_range),
-        collect(p_range),
         bus_ix,
         Base.ImmutableDict(Dict(device_states .=> ix_range)...),
         Base.ImmutableDict{Int, Vector{Int}}(),
         Base.ImmutableDict{Int, Vector{Int}}(),
-        Base.ImmutableDict{Int, Vector{Int}}(),
         Dict{String, Any}(),
     )
-end
-
-function _index_local_parameters(
-    component::PSY.DynamicComponent,
-    device_parameters::Vector{Symbol},
-)
-    component_paramter_index = Vector{Int}(undef, length(get_params(component)))
-    component_parameters = get_params_symbol(component)
-    for (ix, s) in enumerate(component_parameters)
-        component_paramter_index[ix] = findfirst(x -> x == s, device_parameters)
-    end
-    return component_paramter_index
 end
 
 function _index_local_states(component::PSY.DynamicComponent, device_states::Vector{Symbol})
@@ -338,12 +280,9 @@ get_bus_category(wrapper::DynamicWrapper) = wrapper.bus_category
 get_inner_vars_index(wrapper::DynamicWrapper) = wrapper.inner_vars_index
 get_ix_range(wrapper::DynamicWrapper) = wrapper.ix_range
 get_ode_ouput_range(wrapper::DynamicWrapper) = wrapper.ode_range
-get_p_range(wrapper::DynamicWrapper) = wrapper.p_range
 get_bus_ix(wrapper::DynamicWrapper) = wrapper.bus_ix
 get_global_index(wrapper::DynamicWrapper) = wrapper.global_index
 get_component_state_mapping(wrapper::DynamicWrapper) = wrapper.component_state_mapping
-get_component_parameter_mapping(wrapper::DynamicWrapper) =
-    wrapper.component_parameter_mapping
 get_input_port_mapping(wrapper::DynamicWrapper) = wrapper.input_port_mapping
 get_ext(wrapper::DynamicWrapper) = wrapper.ext
 
@@ -436,7 +375,7 @@ struct StaticWrapper{T <: PSY.StaticInjection, V}
     θ_ref::Base.RefValue{Float64}
     P_ref::Base.RefValue{Float64}
     Q_ref::Base.RefValue{Float64}
-    p_range::Vector{Int}
+    #p_range::Vector{Int}
     bus_ix::Int
     ext::Dict{String, Any}
 end
@@ -465,7 +404,7 @@ function StaticWrapper(device::T, bus_ix::Int, p_range) where {T <: PSY.Source}
         Base.Ref(PSY.get_internal_angle(device)),
         Base.Ref(PSY.get_active_power(device)),
         Base.Ref(PSY.get_reactive_power(device)),
-        p_range,
+        #p_range,
         bus_ix,
         Dict{String, Any}(),
     )
@@ -476,7 +415,7 @@ get_bus_category(::StaticWrapper{<:PSY.StaticInjection, U}) where {U} = U
 
 # TODO: something smart to forward fields
 get_device(wrapper::StaticWrapper) = wrapper.device
-get_p_range(wrapper::StaticWrapper) = wrapper.p_range
+#get_p_range(wrapper::StaticWrapper) = wrapper.p_range
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
 get_ext(wrapper::StaticWrapper) = wrapper.ext
 

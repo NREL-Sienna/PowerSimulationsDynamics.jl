@@ -30,19 +30,15 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
     h,
     t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
-
-    #Update inner vars
-    local_ix_params = get_local_parameter_ix(device, PSY.TGFixed)
-    internal_params = @view device_parameters[local_ix_params]
-    efficiency = internal_params[1]
-    P_ref = get_P_ref(device)
+    efficiency = p[:params][:TurbineGov][:efficiency]
+    P_ref = p[:refs][:P_ref]
     inner_vars[τm_var] = P_ref * efficiency
     return
 end
@@ -148,7 +144,7 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
@@ -159,7 +155,7 @@ function mdl_tg_ode!(
     #Obtain TG
     tg = PSY.get_prime_mover(device)
     #Obtain references
-    P_ref = get_P_ref(device)
+    P_ref = p[:refs][:P_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, typeof(tg))
@@ -174,15 +170,14 @@ function mdl_tg_ode!(
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    local_ix_params = get_local_parameter_ix(device, PSY.SteamTurbineGov1)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    T1,
-    V_min,
-    V_max,
-    T2,
-    T3,
-    D_T = internal_params
+    params = @view(p[:params][:TurbineGov])
+    R = params[:R]
+    T1 = params[:T1]
+    V_min = params[:valve_position_limits][:min]
+    V_max = params[:valve_position_limits][:max]
+    T2 = params[:T2]
+    T3 = params[:T3]
+    D_T = params[:D_T]
     inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     #Compute auxiliary parameters

@@ -57,7 +57,7 @@ end
 
 function initialize_static_device!(
     device::StaticWrapper{PSY.Source, T},
-    local_parameters::AbstractArray{U},
+    p::AbstractArray{U},
 ) where {T <: BusCategory, U <: ACCEPTED_REAL_TYPES}
     #PowerFlow Data
     P0 = PSY.get_active_power(device)
@@ -71,12 +71,13 @@ function initialize_static_device!(
     I = conj(S0 / V)
     I_R = real(I)
     I_I = imag(I)
-    R_th, X_th = local_parameters
-    Zmag = R_th^2 + X_th^2
-
-    function f!(out, x)
+    params = p[:params]
+    function f!(out, x, params)
         V_R_internal = x[1]
         V_I_internal = x[2]
+        R_th = params[:R_th]
+        X_th = params[:X_th]
+        Zmag = R_th^2 + X_th^2
 
         out[1] =
             R_th * (V_R_internal - V_R) / Zmag + X_th * (V_I_internal - V_I) / Zmag - I_R
@@ -84,18 +85,25 @@ function initialize_static_device!(
             R_th * (V_I_internal - V_I) / Zmag - X_th * (V_R_internal - V_R) / Zmag - I_I
     end
     x0 = [V_R, V_I]
-    sol = NLsolve.nlsolve(f!, x0)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn("Initialization in Source failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
         θ_internal = atan(sol_x0[2], sol_x0[1])
         PSY.set_internal_voltage!(device.device, V_internal)
         PSY.set_internal_angle!(device.device, θ_internal)
-        set_V_ref(device, PSY.get_internal_voltage(device.device))
-        set_θ_ref(device, PSY.get_internal_angle(device.device))
+        set_V_ref!(p, PSY.get_internal_voltage(device.device))
+        set_θ_ref!(p, PSY.get_internal_angle(device.device))
     end
     return
 end

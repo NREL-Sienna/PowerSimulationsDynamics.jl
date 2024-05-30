@@ -1,4 +1,4 @@
-struct SimulationInputs
+mutable struct SimulationInputs
     dynamic_injectors::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
     static_injectors::Vector
     static_loads::Vector
@@ -19,7 +19,7 @@ struct SimulationInputs
     total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int}
     DAE_vector::Vector{Bool}
     mass_matrix::LinearAlgebra.Diagonal{Float64}
-    parameters::Vector{Float64}
+    parameters::ComponentArrays.ComponentVector{Float64}
     constant_lags::Vector
 end
 
@@ -65,11 +65,11 @@ function SimulationInputs(
     total_shunts = _make_total_shunts(wrapped_branches, n_buses)
     TimerOutputs.@timeit BUILD_TIMER "Build initial parameters" begin
         parameter_count = n_parameters
-        initial_parameters = zeros(parameter_count)
-        _update_initial_parameters!(initial_parameters, wrapped_branches)
-        _update_initial_parameters!(initial_parameters, wrapped_injectors)
-        _update_initial_parameters!(initial_parameters, wrapped_loads)
-        _update_initial_parameters!(initial_parameters, wrapped_static_injectors)
+        initial_parameters = ComponentArrays.ComponentVector{Float64}()
+        initial_parameters = _add_parameters(initial_parameters, wrapped_branches)
+        initial_parameters = _add_parameters(initial_parameters, wrapped_injectors)
+        initial_parameters = _add_parameters(initial_parameters, wrapped_loads)
+        initial_parameters = _add_parameters(initial_parameters, wrapped_static_injectors)
     end
 
     mass_matrix = _make_mass_matrix(wrapped_injectors, n_vars, n_buses)
@@ -175,26 +175,63 @@ function SimulationInputs(
     return SimulationInputs(sys, frequency_reference)
 end
 
-function _update_initial_parameters!(initial_parameters, wrapped_devices)
+function _get_wrapper_name(wrapped_device::Union{DynamicWrapper, StaticWrapper})
+    Symbol(PSY.get_name(get_device(wrapped_device)))
+end
+function _get_wrapper_name(wrapped_device::StaticLoadWrapper)
+    Symbol(PSY.get_name(PSY.get_bus(wrapped_device)))
+end
+function _get_wrapper_name(wrapped_device::BranchWrapper)
+    Symbol(PSY.get_name(PSY.get_branch(wrapped_device)))
+end
+
+#Eventually remove references from wrapper and get the values here from static/dynamic devices 
+#This would require having the static device included in the dynamic wrapper (in order to get reactive power...)
+#For now, the wrappers get the references correctly already, so can just put those values directly into p 
+function _add_parameters(initial_parameters, wrapped_devices)
     for wrapped_device in wrapped_devices
         p = get_params(wrapped_device)
-        p_range = get_p_range(wrapped_device)
-        initial_parameters[p_range] .= p
+        name = _get_wrapper_name(wrapped_device)
+        if isa(wrapped_device, DynamicWrapper)
+            refs = (
+                V_ref = get_V_ref(wrapped_device),
+                ω_ref = get_ω_ref(wrapped_device),
+                P_ref = get_P_ref(wrapped_device),
+                Q_ref = get_Q_ref(wrapped_device),
+            )
+        elseif isa(wrapped_device, StaticWrapper)
+            refs = (
+                V_ref = get_V_ref(wrapped_device),
+                θ_ref = get_θ_ref(wrapped_device),
+                P_ref = get_P_ref(wrapped_device),
+                Q_ref = get_Q_ref(wrapped_device),
+            )
+        else
+            refs = (;)
+        end
+        initial_parameters = ComponentArrays.ComponentVector(
+            initial_parameters;
+            name => (
+                params = p,
+                refs = refs,
+            ),
+        )
     end
+    return initial_parameters
 end
 
 function _get_n_params(
     dynamic_device::PSY.DynamicInjection,
     static_device::PSY.StaticInjection,
 )
-    return length(get_params(dynamic_device))
+    return length(ComponentArrays.ComponentVector(get_params(dynamic_device)))
 end
 
 function _get_n_params(
     dynamic_device::T,
     static_device::PSY.StaticInjection,
 ) where {T <: Union{PSY.DynamicGenerator, PSY.DynamicInverter}}
-    return length(get_params(dynamic_device))
+    return length(ComponentArrays.ComponentVector(get_params(dynamic_device)))
 end
 
 function _wrap_dynamic_injector_data(
@@ -227,6 +264,7 @@ function _wrap_dynamic_injector_data(
         @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range p_range=$p_range"
         dynamic_device = PSY.get_dynamic_injector(device)
         @assert dynamic_device !== nothing
+        #TODO - add check if name of device is unique? 
         wrapped_injector[ix] = DynamicWrapper(
             device,
             dynamic_device,

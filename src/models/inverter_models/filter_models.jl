@@ -64,10 +64,11 @@ function mdl_filter_ode!(
     #Get parameters
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.LCLFilter)
-    internal_params = @view device_parameters[local_ix_params]
-    lf, rf, cf, lg, rg = internal_params
-
+    lf = device_parameters[:Filter][:lf]
+    rf = device_parameters[:Filter][:rf]
+    cf = device_parameters[:Filter][:cf]
+    lg = device_parameters[:Filter][:lg]
+    rg = device_parameters[:Filter][:rg]
     basepower = PSY.get_base_power(dynamic_device)
     sys_Sbase = get_system_base_power(dynamic_device)
 
@@ -140,9 +141,8 @@ function mdl_filter_ode!(
     ratio_power = basepower / sys_Sbase
 
     #Obtain parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.RLFilter)
-    internal_params = @view device_parameters[local_ix_params]
-    rf, lf = internal_params
+    rf = device_parameters[:Filter][:rf]
+    lf = device_parameters[:Filter][:lf]
 
     Vr_cnv = inner_vars[Vr_cnv_var]
     Vi_cnv = inner_vars[Vi_cnv_var]

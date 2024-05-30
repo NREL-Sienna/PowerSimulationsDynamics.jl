@@ -9,7 +9,7 @@ end
 function mdl_shaft_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
@@ -29,9 +29,8 @@ function mdl_shaft_ode!(
     τm = inner_vars[τm_var]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SingleMass)
-    internal_params = @view device_parameters[local_ix_params]
-    H, D = internal_params
+    H = p[:params][:Shaft][:H]
+    D = p[:params][:Shaft][:D]
 
     #Compute 2 states ODEs
     output_ode[local_ix[1]] = 2 * π * f0 * (ω - ω_sys)                    #15.5

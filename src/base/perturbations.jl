@@ -510,10 +510,12 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::SourceBusVolta
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_static_injectors(inputs)[wrapped_device_ix]
+        wrapped_device_name = _get_wrapper_name(wrapped_device)
+        refs = @view(@view(integrator.p[wrapped_device_name])[:refs])
         if pert.signal == :V_ref
-            set_V_ref(wrapped_device, pert.ref_value)
+            refs[:V_ref] = pert.ref_value
         elseif pert.signal == :θ_ref
-            set_θ_ref(wrapped_device, pert.ref_value)
+            refs[:θ_ref] = pert.ref_value
         else
             error("Signal $signal not accepted as a control reference change in SourceBus")
         end

@@ -284,7 +284,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SEXS, TG, P}},
     inner_vars::AbstractVector,
@@ -296,15 +296,17 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SEXS)
-    internal_params = @view device_parameters[local_ix_params]
-    Ta_Tb, _, K, _, V_min, V_max = internal_params
+    params = p[:params][:AVR]
+    V_min = params[:V_lim][:min]
+    V_max = params[:V_lim][:max]
 
     #States of AVRTypeI are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr
-    function f!(out, x)
+    function f!(out, x, params)
         V_ref = x[1]
         Vr = x[2]
+        Ta_Tb = params[:Ta_Tb]
+        K = params[:K]
 
         V_in = V_ref - Vm
         V_LL = Vr + Ta_Tb * V_in
@@ -313,13 +315,19 @@ function initialize_avr!(
         out[2] = V_in * (1 - Ta_Tb) - Vr
     end
     x0 = [1.0, Vf0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn(
             "Initialization of AVR in $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         if (sol_x0[2] >= V_max + BOUNDS_TOLERANCE) ||
            (sol_x0[2] <= V_min - BOUNDS_TOLERANCE)
             CRC.@ignore_derivatives @error(
@@ -328,7 +336,7 @@ function initialize_avr!(
         end
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        set_V_ref!(p, sol_x0[1])
 
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.SEXS)

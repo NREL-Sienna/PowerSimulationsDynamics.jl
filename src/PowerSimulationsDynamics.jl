@@ -61,8 +61,9 @@ export is_valid
 export transform_load_to_constant_impedance
 export transform_load_to_constant_current
 export transform_load_to_constant_power
-export get_parameter_sensitivity_function!
-export get_parameter_sensitivity_values
+export get_parameter_values
+export get_forward_function
+export get_gradient_function
 
 ####################################### Package Imports ####################################
 import Logging
@@ -75,7 +76,7 @@ import ForwardDiff
 import SparseArrays
 import LinearAlgebra
 import Base.to_index
-import NLsolve
+import NonlinearSolve
 import PrettyTables
 import Base.ImmutableDict
 import PowerSystems
@@ -83,9 +84,20 @@ import PowerFlows
 import PowerNetworkMatrices
 import TimerOutputs
 import FastClosures: @closure
-import Zygote
+import Enzyme
+Enzyme.API.runtimeActivity!(true)
+Enzyme.API.looseTypeAnalysis!(true)  #Required for using component arrays with Enzyme
+Enzyme.API.maxtypeoffset!(1024)
+Enzyme.API.maxtypedepth!(20)  
+#Enzyme.API.runtimeActivity!(true)
+#= Generally, the preferred solution to these type of activity unstable codes should be to make 
+your variables all activity-stable (e.g. always containing differentiable memory or always
+ containing non-differentiable memory). However, with care, Enzyme does support "Runtime Activity" 
+ as a way to differentiate these programs without having to modify your code. =#
+#Enzyme.API.looseTypeAnalysis!(true)    #Best guess if it cannot determine the type; this was needed for using ComponentArrays/ODEFunction
+#Enzyme.API.maxtypedepth!(20)    
 import ChainRulesCore
-import Accessors
+import ComponentArrays
 
 const PSY = PowerSystems
 const IS = InfrastructureSystems

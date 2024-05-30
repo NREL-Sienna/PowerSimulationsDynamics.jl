@@ -115,20 +115,16 @@ end
 function mdl_pss_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed}},
     h,
     t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, TG <: PSY.TurbineGov}
-
     #Update V_pss on inner vars
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.PSSFixed)
-    internal_params = @view device_parameters[local_ix_params]
-    V_pss = internal_params[1]
+    V_pss = p[:params][:PSS][:V_pss]
     inner_vars[V_pss_var] = V_pss
-
     return
 end
 

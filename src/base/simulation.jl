@@ -1,5 +1,5 @@
 mutable struct Simulation{T <: SimulationModel}
-    status::STATUS
+    status::STATUS                             
     problem::Union{Nothing, SciMLBase.DEProblem}
     tspan::NTuple{2, Float64}
     sys::PSY.System
@@ -252,7 +252,7 @@ function _get_flat_start(inputs::SimulationInputs)
 end
 
 function _pre_initialize_simulation!(sim::Simulation)
-    _initialize_state_space(sim, Val(sim.initialize_level))
+    _initialize_state_space(sim, Val(sim.initialize_level), Val(sim.enable_sensitivity))
     return
 end
 

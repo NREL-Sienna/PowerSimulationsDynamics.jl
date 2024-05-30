@@ -1,6 +1,6 @@
 function initialize_filter!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter, L}},
     inner_vars::AbstractVector,
@@ -26,10 +26,12 @@ function initialize_filter!(
     Ii_filter = imag(I)
 
     #Get Parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.LCLFilter)
-    internal_params = @view device_parameters[local_ix_params]
-    lf, rf, cf, lg, rg = internal_params
-
+    params = p[:params][:Filter]
+     lf = params[:lf]
+    rf = params[:rf]
+    cf = params[:cf]
+    lg = params[:lg]
+    rg = params[:rg]
     #Set parameters
     ω_sys = get_ω_ref(dynamic_device)
 
@@ -92,7 +94,7 @@ end
 
 function initialize_filter!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -130,10 +132,9 @@ function initialize_filter!(
     I_I = imag(I)
 
     #Get Parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.RLFilter)
-    internal_params = @view device_parameters[local_ix_params]
-    rf, lf = internal_params
-
+    params = p[:params][:Filter]
+    rf = params[:rf]
+    lf = params[:lf]
     converter = PSY.get_converter(dynamic_device)
     R_source = PSY.get_R_source(converter)
     X_source = PSY.get_X_source(converter)

@@ -89,8 +89,8 @@ function system_residual!(
         device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
-        p_ix = get_p_range(dynamic_device)
-        device_parameters = view(p, p_ix)
+        device_name = _get_wrapper_name(dynamic_device)
+        device_parameters = p[device_name]
         device!(
             device_states,
             device_ode_output,
@@ -128,8 +128,8 @@ function system_residual!(
 
     for static_device in get_static_injectors(inputs)
         bus_ix = get_bus_ix(static_device)
-        p_ix = get_p_range(static_device)
-        device_parameters = view(p, p_ix)
+        device_name = _get_wrapper_name(static_device)
+        device_parameters = p[device_name]
         device!(
             device_parameters,
             voltage_r[bus_ix],
@@ -279,8 +279,8 @@ function system_mass_matrix!(
         device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
-        p_ix = get_p_range(dynamic_device)
-        device_parameters = view(p, p_ix)
+        device_name = _get_wrapper_name(dynamic_device)
+        device_parameters = p[device_name]  #TODO should be a view... 
         device!(
             device_states,
             device_ode_output,
@@ -317,8 +317,8 @@ function system_mass_matrix!(
 
     for static_device in get_static_injectors(inputs)
         bus_ix = get_bus_ix(static_device)
-        p_ix = get_p_range(static_device)
-        device_parameters = view(p, p_ix)
+        device_name = _get_wrapper_name(static_device)
+        device_parameters = p[device_name]
         device!(
             device_parameters,
             voltage_r[bus_ix],

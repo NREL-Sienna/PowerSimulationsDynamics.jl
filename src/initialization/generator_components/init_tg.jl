@@ -1,20 +1,18 @@
 function initialize_tg!(
     device_states,
-    device_parameters,
+    p,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
     tg = PSY.get_prime_mover(dynamic_device)
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.TGFixed)
-    internal_params = @view device_parameters[local_ix_params]
-    eff = internal_params[1]
+    eff = p[:params][:TurbineGov][:efficiency]
     τm0 = inner_vars[τm_var]
 
     P_ref = τm0 / eff
     #Update Control Refs
     PSY.set_P_ref!(tg, P_ref)
-    set_P_ref(dynamic_device, P_ref)
+    set_P_ref!(p, P_ref)
     return
 end
 
@@ -206,7 +204,7 @@ end
 
 function initialize_tg!(
     device_states,
-    device_parameters,
+    p,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
     inner_vars::AbstractVector,
@@ -218,21 +216,25 @@ function initialize_tg!(
 
     tg = PSY.get_prime_mover(dynamic_device)
     #Get Parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SteamTurbineGov1)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    T1,
-    V_min,
-    V_max,
-    T2,
-    T3,
-    D_T = internal_params
+    params = p[:params][:TurbineGov]
+    R = params[:R]
+    V_min = params[:valve_position_limits][:min]
+    V_max = params[:valve_position_limits][:max]
     inv_R = R < eps() ? 0.0 : (1.0 / R)
 
-    function f!(out, x)
+    function f!(out, x, params)
         P_ref = x[1]
         x_g1 = x[2]
         x_g2 = x[3]
+
+        R = params[:R]
+        T1 = params[:T1]
+        V_min = params[:valve_position_limits][:min]
+        V_max = params[:valve_position_limits][:max]
+        T2 = params[:T2]
+        T3 = params[:T3]
+        D_T = params[:D_T]
+        inv_R = R < eps() ? 0.0 : (1.0 / R)
 
         ref_in = inv_R * (P_ref - Δω)
         Pm = x_g2 + (T2 / T3) * x_g1
@@ -243,11 +245,17 @@ function initialize_tg!(
         out[3] = (Pm - D_T * Δω) - τm0
     end
     x0 = [1.0 / inv_R, τm0, τm0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn("Initialization in TG failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         if (sol_x0[2] >= V_max + BOUNDS_TOLERANCE) ||
            (sol_x0[2] <= V_min - BOUNDS_TOLERANCE)
             CRC.@ignore_derivatives @error(
@@ -256,7 +264,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        set_P_ref!(p, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
