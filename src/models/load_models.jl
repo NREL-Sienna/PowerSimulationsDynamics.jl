@@ -37,28 +37,28 @@ Ii_im  = V_i * P0 * (V^(α - 2) / V0^α) - V_r * Q0 * (V^(β - 2)/ V0^β)
 
 """
 function mdl_zip_load!(
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
     current_i::AbstractArray{T},
     wrapper::StaticLoadWrapper,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    #V0_mag_inv = 1.0 / get_V_ref(wrapper)
-    V0_mag_inv = 1.0 / PSY.get_magnitude(PSY.get_bus(wrapper))
+    V0_mag_inv = 1.0 / p[:refs][:V_ref]
+    #V0_mag_inv = 1.0 / PSY.get_magnitude(PSY.get_bus(wrapper))
     V0_mag_sq_inv = V0_mag_inv^2
 
     V_mag = sqrt(voltage_r^2 + voltage_i^2)
     V_mag_inv = 1.0 / V_mag
     V_mag_sq_inv = V_mag_inv^2
 
-    # Load device parameters
-    P_power = get_P_power(wrapper)
-    P_current = get_P_current(wrapper)
-    P_impedance = get_P_impedance(wrapper)
-    Q_power = get_Q_power(wrapper)
-    Q_current = get_Q_current(wrapper)
-    Q_impedance = get_Q_impedance(wrapper)
+    # Load device references
+    P_power = p[:refs][:P_power]
+    P_current = p[:refs][:P_current]
+    P_impedance = p[:refs][:P_impedance]
+    Q_power = p[:refs][:Q_power]
+    Q_current = p[:refs][:Q_current]
+    Q_impedance = p[:refs][:Q_impedance]
     exp_params = get_exp_params(wrapper)
     Ir_exp = zero(T)
     Ii_exp = zero(T)

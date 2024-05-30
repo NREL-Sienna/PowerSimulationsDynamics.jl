@@ -214,6 +214,17 @@ function _add_parameters(initial_parameters, wrapped_devices)
                     Q_ref = PSY.get_reactive_power(device),
                 )
             end
+        elseif isa(wrapped_device, StaticLoadWrapper)
+            refs = (
+                V_ref = get_V_ref(wrapped_device),
+                θ_ref = get_θ_ref(wrapped_device),
+                P_power = get_P_power(wrapped_device),
+                P_current = get_P_current(wrapped_device),
+                P_impedance = get_P_impedance(wrapped_device),
+                Q_power = get_Q_power(wrapped_device),
+                Q_current = get_Q_current(wrapped_device),
+                Q_impedance = get_Q_impedance(wrapped_device),
+            )
         else
             refs = (;)
         end

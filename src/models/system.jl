@@ -111,8 +111,8 @@ function system_residual!(
 
     for static_load in get_static_loads(inputs)
         bus_ix = get_bus_ix(static_load)
-        p_ix = get_p_range(static_load)
-        device_parameters = view(p, p_ix)
+        device_name = _get_wrapper_name(static_load)
+        device_parameters = p[device_name]
         device!(
             device_parameters,
             voltage_r[bus_ix],
@@ -300,8 +300,8 @@ function system_mass_matrix!(
 
     for static_load in get_static_loads(inputs)
         bus_ix = get_bus_ix(static_load)
-        p_ix = get_p_range(static_load)
-        device_parameters = view(p, p_ix)
+        device_name = _get_wrapper_name(static_load)
+        device_parameters = p[device_name]
         device!(
             device_parameters,
             voltage_r[bus_ix],

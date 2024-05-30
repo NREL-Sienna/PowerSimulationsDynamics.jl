@@ -67,7 +67,7 @@ function _convergence_check(
         )
     else
         CRC.@ignore_derivatives @warn(
-            "Initialization non-linear solve convergence failed, initial conditions do not meet conditions for an stable equilibrium.\nAttempting again with reduced numeric tolerance and using another solver"
+            "Initialization non-linear solve convergence failed with a tolerance of $(tol) using solver $(solv), initial conditions do not meet conditions for an stable equilibrium.\nAttempting again with reduced numeric tolerance and using another solver"
         )
     end
     return converged(sys_solve)

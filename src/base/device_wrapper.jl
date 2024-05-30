@@ -388,6 +388,8 @@ mutable struct ExpLoadParams
     Q_coeff::Float64
 end
 
+#Note: References are left in StaticLoadWrapper but transfered to ComponentArray.
+#Can remove from the StaticLoadWrapper but would need access to the ElectricLoad components when calculating references. 
 mutable struct StaticLoadWrapper
     bus::PSY.Bus
     V_ref::Float64
@@ -480,19 +482,9 @@ get_Q_power(wrapper::StaticLoadWrapper) = wrapper.Q_power
 get_Q_current(wrapper::StaticLoadWrapper) = wrapper.Q_current
 get_Q_impedance(wrapper::StaticLoadWrapper) = wrapper.Q_impedance
 
-get_p_range(wrapper::StaticLoadWrapper) = wrapper.p_range
 get_exp_params(wrapper::StaticLoadWrapper) = wrapper.exp_params
 get_exp_names(wrapper::StaticLoadWrapper) = wrapper.exp_names
 get_bus_ix(wrapper::StaticLoadWrapper) = wrapper.bus_ix
-
-set_V_ref!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.V_ref = val
-set_θ_ref!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.θ_ref = val
-set_P_power!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.P_power = val
-set_P_current!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.P_current = val
-set_P_impedance!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.P_impedance = val
-set_Q_power!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_power = val
-set_Q_current!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_current = val
-set_Q_impedance!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_impedance = val
 
 function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, val::Int)
     if val == 0
