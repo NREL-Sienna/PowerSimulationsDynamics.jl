@@ -61,9 +61,9 @@ export is_valid
 export transform_load_to_constant_impedance
 export transform_load_to_constant_current
 export transform_load_to_constant_power
-export get_parameter_values
-export get_forward_function
-export get_gradient_function
+#export get_parameter_values
+#export get_forward_function
+#export get_gradient_function
 
 ####################################### Package Imports ####################################
 import Logging
@@ -136,7 +136,7 @@ include("base/nlsolve_wrapper.jl")
 include("base/simulation_initialization.jl")
 include("base/small_signal.jl")
 include("base/model_validation.jl")
-include("base/sensitivity_analysis.jl")
+#include("base/sensitivity_analysis.jl")
 
 #Common Models
 include("models/branch.jl")

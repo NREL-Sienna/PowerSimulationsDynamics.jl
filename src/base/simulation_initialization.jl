@@ -130,11 +130,10 @@ end
 
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-#PASS x0, not sim....?
+#PASS x0 and inputs, but not the full simulation not sim....?
 function _initialize_state_space(
     sim::Simulation{T},
     ::Val{POWERFLOW_AND_DEVICES},
-    ::Val{false},  #not yet supported with sensitivity analysis 
 ) where {T <: SimulationModel}
     inputs = get_simulation_inputs(sim)
     sim.x0 = _get_flat_start(inputs)
@@ -159,7 +158,6 @@ end
 function _initialize_state_space(
     sim::Simulation{T},
     ::Val{DEVICES_ONLY},
-    ::Val{false},  #not yet supported with sensitivity analysis 
 ) where {T <: SimulationModel}
     CRC.@ignore_derivatives @info("Pre-Initializing Simulation States")
     inputs = get_simulation_inputs(sim)
@@ -181,7 +179,6 @@ end
 function _initialize_state_space(
     sim::Simulation{T},
     ::Val{FLAT_START},
-    ::Union{Val{true}, Val{false}},
 ) where {T <: SimulationModel}
     simulation_inputs = get_simulation_inputs(sim)
     sim.x0 = _get_flat_start(simulation_inputs)
@@ -190,7 +187,6 @@ end
 function _initialize_state_space(
     sim::Simulation{T},
     ::Val{INITIALIZED},
-    ::Union{Val{true}, Val{false}},
 ) where {T <: SimulationModel}
     simulation_inputs = get_simulation_inputs(sim)
     @assert sim.status == BUILD_INCOMPLETE

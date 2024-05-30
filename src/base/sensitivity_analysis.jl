@@ -35,7 +35,6 @@ function get_parameter_sensitivity_function!(sim, device_param_pairs, f)
     reset!(sim)
     @assert sim.status == BUILT
     sim.initialize_level = sim_level
-    sim.enable_sensitivity = true
     sensitivity_function = (p, data) ->
         begin
             sim.inputs = deepcopy(sim.inputs_init)
