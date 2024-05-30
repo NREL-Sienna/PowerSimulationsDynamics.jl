@@ -1,6 +1,6 @@
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
     inner_vars::AbstractVector,
@@ -9,7 +9,7 @@ function initialize_avr!(
     Vf = inner_vars[Vf_var]
     #Update Control Refs
     avr = PSY.get_avr(dynamic_device)
-    set_V_ref(dynamic_device, Vf)
+    set_V_ref!(p, Vf)
     PSY.set_Vf!(avr, Vf)
     PSY.set_V_ref!(avr, Vf)
     return

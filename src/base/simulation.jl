@@ -1,5 +1,5 @@
 mutable struct Simulation{T <: SimulationModel}
-    status::STATUS                             
+    status::STATUS
     problem::Union{Nothing, SciMLBase.DEProblem}
     tspan::NTuple{2, Float64}
     sys::PSY.System
@@ -339,8 +339,6 @@ function _get_diffeq_problem(
     return
 end
 
-
-
 function _get_diffeq_problem(
     sim::Simulation,
     model::SystemModel{MassMatrixModel, NoDelays},
@@ -470,7 +468,6 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     end
     return
 end
-
 
 function build!(sim; kwargs...)
     logger = configure_logging(sim, "w")

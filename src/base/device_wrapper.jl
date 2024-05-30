@@ -32,15 +32,12 @@ status, and allocate the required indexes of the state space and parameter space
 """
 struct DynamicWrapper{T <: PSY.DynamicInjection}
     device::T
+    reactive_power::Float64
     system_base_power::Float64
     system_base_frequency::Float64
     static_type::Type{<:PSY.StaticInjection}
     bus_category::Type{<:BusCategory}
     connection_status::Base.RefValue{Float64}
-    V_ref::Base.RefValue{Float64}
-    ω_ref::Base.RefValue{Float64}
-    P_ref::Base.RefValue{Float64}
-    Q_ref::Base.RefValue{Float64}
     inner_vars_index::Vector{Int}
     ix_range::Vector{Int}
     ode_range::Vector{Int}
@@ -52,15 +49,12 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
 
     function DynamicWrapper(
         device::T,
+        reactive_power::Float64,
         system_base_power::Float64,
         system_base_frequency::Float64,
         static_type::Type{<:PSY.StaticInjection},
         bus_category::Type{<:BusCategory},
         connection_status::Base.RefValue{Float64},
-        V_ref::Base.RefValue{Float64},
-        ω_ref::Base.RefValue{Float64},
-        P_ref::Base.RefValue{Float64},
-        Q_ref::Base.RefValue{Float64},
         inner_vars_index,
         ix_range,
         ode_range,
@@ -74,15 +68,12 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
 
         new{T}(
             device,
+            reactive_power,
             system_base_power,
             system_base_frequency,
             static_type,
             bus_category,
             connection_status,
-            V_ref,
-            ω_ref,
-            P_ref,
-            Q_ref,
             Vector{Int}(inner_vars_index),
             Vector{Int}(ix_range),
             Vector{Int}(ode_range),
@@ -137,15 +128,12 @@ function DynamicWrapper(
     end
     return DynamicWrapper(
         dynamic_device,
+        reactive_power,
         sys_base_power,
         sys_base_freq,
         T,
         BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
         Base.Ref(1.0),
-        Base.Ref(PSY.get_V_ref(dynamic_device)),
-        Base.Ref(PSY.get_ω_ref(dynamic_device)),
-        Base.Ref(PSY.get_P_ref(dynamic_device)),
-        Base.Ref(reactive_power),
         inner_var_range,
         ix_range,
         ode_range,
@@ -190,10 +178,6 @@ function DynamicWrapper(
         PSY.ThermalStandard,
         BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
         Base.Ref(1.0),
-        Base.Ref(PSY.get_V_ref(dynamic_device)),
-        Base.Ref(PSY.get_ω_ref(dynamic_device)),
-        Base.Ref(PSY.get_P_ref(dynamic_device)),
-        Base.Ref(PSY.get_reactive_power(static_device)),
         inner_var_range,
         ix_range,
         ode_range,
@@ -236,10 +220,6 @@ function DynamicWrapper(
         PSY.Source,
         BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
         Base.Ref(1.0),
-        Base.Ref(0.0),
-        Base.Ref(0.0),
-        Base.Ref(0.0),
-        Base.Ref(0.0),
         collect(inner_var_range),
         collect(ix_range),
         collect(ode_range),
@@ -275,6 +255,7 @@ function _index_port_mapping!(
 end
 
 get_device(wrapper::DynamicWrapper) = wrapper.device
+get_reactive_power(wrapper::DynamicWrapper) = wrapper.reactive_power
 get_device_type(::DynamicWrapper{T}) where {T <: PSY.DynamicInjection} = T
 get_bus_category(wrapper::DynamicWrapper) = wrapper.bus_category
 get_inner_vars_index(wrapper::DynamicWrapper) = wrapper.inner_vars_index
@@ -288,16 +269,6 @@ get_ext(wrapper::DynamicWrapper) = wrapper.ext
 
 get_system_base_power(wrapper::DynamicWrapper) = wrapper.system_base_power
 get_system_base_frequency(wrapper::DynamicWrapper) = wrapper.system_base_frequency
-
-get_P_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
-get_Q_ref(wrapper::DynamicWrapper) = wrapper.Q_ref[]
-get_V_ref(wrapper::DynamicWrapper) = wrapper.V_ref[]
-get_ω_ref(wrapper::DynamicWrapper) = wrapper.ω_ref[]
-
-set_P_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.P_ref[] = val
-set_Q_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.Q_ref[] = val
-set_V_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.V_ref[] = val
-set_ω_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.ω_ref[] = val
 
 # PSY overloads for the wrapper
 PSY.get_name(wrapper::DynamicWrapper) = PSY.get_name(wrapper.device)
@@ -375,7 +346,6 @@ struct StaticWrapper{T <: PSY.StaticInjection, V}
     θ_ref::Base.RefValue{Float64}
     P_ref::Base.RefValue{Float64}
     Q_ref::Base.RefValue{Float64}
-    #p_range::Vector{Int}
     bus_ix::Int
     ext::Dict{String, Any}
 end
@@ -404,7 +374,6 @@ function StaticWrapper(device::T, bus_ix::Int, p_range) where {T <: PSY.Source}
         Base.Ref(PSY.get_internal_angle(device)),
         Base.Ref(PSY.get_active_power(device)),
         Base.Ref(PSY.get_reactive_power(device)),
-        #p_range,
         bus_ix,
         Dict{String, Any}(),
     )

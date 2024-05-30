@@ -88,7 +88,7 @@ import Enzyme
 Enzyme.API.runtimeActivity!(true)
 Enzyme.API.looseTypeAnalysis!(true)  #Required for using component arrays with Enzyme
 Enzyme.API.maxtypeoffset!(1024)
-Enzyme.API.maxtypedepth!(20)  
+Enzyme.API.maxtypedepth!(20)
 #Enzyme.API.runtimeActivity!(true)
 #= Generally, the preferred solution to these type of activity unstable codes should be to make 
 your variables all activity-stable (e.g. always containing differentiable memory or always

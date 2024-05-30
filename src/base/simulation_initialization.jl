@@ -49,8 +49,8 @@ function initialize_dynamic_injection!(
         )
         CRC.@ignore_derivatives @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
         _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
-        _parameters = @view parameters[_get_wrapper_name(dynamic_device)]  
-        _states = @view initial_guess[get_ix_range(dynamic_device)]       
+        _parameters = @view parameters[_get_wrapper_name(dynamic_device)]
+        _states = @view initial_guess[get_ix_range(dynamic_device)]
         initialize_dynamic_device!(
             dynamic_device,
             static,

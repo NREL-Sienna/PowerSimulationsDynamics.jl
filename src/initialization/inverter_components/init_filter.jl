@@ -27,7 +27,7 @@ function initialize_filter!(
 
     #Get Parameters
     params = p[:params][:Filter]
-     lf = params[:lf]
+    lf = params[:lf]
     rf = params[:rf]
     cf = params[:cf]
     lg = params[:lg]

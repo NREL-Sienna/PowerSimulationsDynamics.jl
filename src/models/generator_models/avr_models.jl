@@ -64,16 +64,15 @@ end
 function mdl_avr_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRFixed, TG, P}},
     h,
     t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
-
+    V_ref = p[:refs][:V_ref]
     #Update Vf voltage on inner vars. In AVRFixed, Vf = V_ref
-    inner_vars[Vf_var] = get_V_ref(dynamic_device)
-
+    inner_vars[Vf_var] = V_ref
     return
 end
 

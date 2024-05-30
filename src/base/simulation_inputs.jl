@@ -185,19 +185,16 @@ function _get_wrapper_name(wrapped_device::BranchWrapper)
     Symbol(PSY.get_name(PSY.get_branch(wrapped_device)))
 end
 
-#Eventually remove references from wrapper and get the values here from static/dynamic devices 
-#This would require having the static device included in the dynamic wrapper (in order to get reactive power...)
-#For now, the wrappers get the references correctly already, so can just put those values directly into p 
 function _add_parameters(initial_parameters, wrapped_devices)
     for wrapped_device in wrapped_devices
         p = get_params(wrapped_device)
         name = _get_wrapper_name(wrapped_device)
         if isa(wrapped_device, DynamicWrapper)
             refs = (
-                V_ref = get_V_ref(wrapped_device),
-                ω_ref = get_ω_ref(wrapped_device),
-                P_ref = get_P_ref(wrapped_device),
-                Q_ref = get_Q_ref(wrapped_device),
+                V_ref = PSY.get_V_ref(get_device(wrapped_device)),
+                ω_ref = PSY.get_ω_ref(get_device(wrapped_device)),
+                P_ref = PSY.get_P_ref(get_device(wrapped_device)),
+                Q_ref = get_reactive_power(wrapped_device),
             )
         elseif isa(wrapped_device, StaticWrapper)
             refs = (
@@ -527,12 +524,14 @@ end
 
 function get_setpoints(inputs::SimulationInputs)
     dic = Dict{String, Dict{String, Float64}}()
+    p = inputs.parameters
     for w in get_dynamic_injectors(inputs)
+        wrapped_device_name = _get_wrapper_name(w)
         dic_w = Dict{String, Float64}()
-        dic_w["P_ref"] = get_P_ref(w)
-        dic_w["Q_ref"] = get_Q_ref(w)
-        dic_w["ω_ref"] = get_ω_ref(w)
-        dic_w["V_ref"] = get_V_ref(w)
+        dic_w["P_ref"] = p[wrapped_device_name][:refs][:P_ref]
+        dic_w["Q_ref"] = p[wrapped_device_name][:refs][:Q_ref]
+        dic_w["ω_ref"] = p[wrapped_device_name][:refs][:ω_ref]
+        dic_w["V_ref"] = p[wrapped_device_name][:refs][:V_ref]
         dic[PSY.get_name(w)] = dic_w
     end
     return dic
