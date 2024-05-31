@@ -1,7 +1,7 @@
 function mdl_branch_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r_from::T,
     voltage_i_from::T,
     voltage_r_to::T,
@@ -12,7 +12,9 @@ function mdl_branch_ode!(
     current_i_to::AbstractArray{T},
     branch::BranchWrapper,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    R, L = device_parameters
+    R = p[:params][:r]
+    L = p[:params][:x]
+
     ω_b = get_system_base_frequency(branch) * 2 * π
 
     Il_r = device_states[1]

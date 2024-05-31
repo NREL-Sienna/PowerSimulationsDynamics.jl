@@ -168,7 +168,7 @@ end
 function mdl_inner_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, PSY.LCLFilter, L},
@@ -198,16 +198,21 @@ function mdl_inner_ode!(
     v_refr = inner_vars[V_oc_var]
     Vdc = inner_vars[Vdc_var]
 
-    #Get Voltage Controller parameters
-    filter = PSY.get_filter(dynamic_device)
-    filter_ix_params = get_local_parameter_ix(dynamic_device, typeof(filter))
-    filter_params = @view device_parameters[filter_ix_params]
-    cf = filter_params[3]
-    lf = filter_params[1]
+    cf = p[:params][:Filter][:cf]
+    lf = p[:params][:Filter][:lf]
 
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.VoltageModeControl)
-    internal_params = @view device_parameters[local_ix_params]
-    kpv, kiv, kffv, rv, lv, kpc, kic, kffi, ωad, kad = internal_params
+    #Get Voltage Controller parameters
+    params = p[:params][:InnerControl]
+    kpv = params[:kpv]
+    kiv = params[:kiv]
+    kffv = params[:kffv]
+    rv = params[:rv]
+    lv = params[:lv]
+    kpc = params[:kpc]
+    kic = params[:kic]
+    kffi = params[:kffi]
+    ωad = params[:ωad]
+    kad = params[:kad]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.VoltageModeControl)

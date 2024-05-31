@@ -149,8 +149,8 @@ function system_residual!(
             dyn_branch = get_branch(dynamic_branch) # DynamicBranch
             branch = PSY.get_branch(dyn_branch) # Line or Transformer2W
             ix_range = get_ix_range(dynamic_branch)
-            p_ix = get_p_range(dynamic_branch)
-            branch_parameters = view(p, p_ix)
+            branch_name = _get_wrapper_name(dynamic_branch)
+            branch_parameters = @view p[branch_name]
             branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
             branch_states = @view x[ix_range]
             bus_ix_from = get_bus_ix_from(dynamic_branch)
@@ -338,8 +338,8 @@ function system_mass_matrix!(
             dyn_branch = get_branch(dynamic_branch) # DynamicBranch
             branch = PSY.get_branch(dyn_branch) # Line or Transformer2W
             ix_range = get_ix_range(dynamic_branch)
-            p_ix = get_p_range(dynamic_branch)
-            branch_parameters = view(p, p_ix)
+            branch_name = _get_wrapper_name(dynamic_branch)
+            branch_parameters = @view p[branch_name]
             branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
             branch_states = @view x[ix_range]
             bus_ix_from = get_bus_ix_from(dynamic_branch)

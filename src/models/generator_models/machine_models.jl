@@ -65,7 +65,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_machine_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -93,9 +93,14 @@ function mdl_machine_ode!(
     Vf = inner_vars[Vf_var]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.OneDOneQMachine)
-    internal_params = @view device_parameters[local_ix_params]
-    R, Xd, Xq, Xd_p, Xq_p, Td0_p, Tq0_p = internal_params
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xd = params[:Xd]
+    Xq = params[:Xq]
+    Xd_p = params[:Xd_p]
+    Xq_p = params[:Xq_p]
+    Td0_p = params[:Td0_p]
+    Tq0_p = params[:Tq0_p]
 
     basepower = PSY.get_base_power(dynamic_device)
 

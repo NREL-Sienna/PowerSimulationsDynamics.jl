@@ -1,6 +1,6 @@
 function initialize_outer!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -37,7 +37,7 @@ function initialize_outer!(
     Vi_cnv = inner_vars[Vi_cnv_var]
     θ0_oc = atan(Vi_cnv, Vr_cnv)
 
-    ω_ref = get_ω_ref(dynamic_device)
+    ω_ref = p[:refs][:ω_ref]
     #Obtain additional expressions
     p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
@@ -57,13 +57,13 @@ function initialize_outer!(
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
     inner_vars[ω_oc_var] = ω_ref
-    set_P_ref(dynamic_device, p_elec_out)
+    set_P_ref!(p, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    set_Q_ref(dynamic_device, q_elec_out)
+    set_Q_ref!(p, q_elec_out)
     return
 end
 

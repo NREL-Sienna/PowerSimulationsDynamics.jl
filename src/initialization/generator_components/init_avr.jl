@@ -40,7 +40,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
     inner_vars::AbstractVector,
@@ -52,34 +52,45 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeI)
-    internal_params = @view device_parameters[local_ix_params]
-    Ka, Ke, Kf, _, _, Tf, _, Ae, Be = internal_params
-    #Obtain saturated Vf
-    Se_Vf = Ae * exp(Be * abs(Vf0))
+    params = p[:params][:AVR]
 
     #States of AVRTypeI are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr1, Vr2
-    function f!(out, x)
+    function f!(out, x, params)
         V_ref = x[1]
         Vr1 = x[2]
         Vr2 = x[3]
+
+        Ka = params[:Ka]
+        Ke = params[:Ke]
+        Kf = params[:Kf]
+        Tf = params[:Tf]
+        Ae = params[:Ae]
+        Be = params[:Be]
+        #Obtain saturated Vf
+        Se_Vf = Ae * exp(Be * abs(Vf0))
 
         out[1] = Vf0 * (Ke + Se_Vf) - Vr1 #16.12c
         out[2] = Ka * (V_ref - Vm - Vr2 - (Kf / Tf) * Vf0) - Vr1 #16.12a
         out[3] = (Kf / Tf) * Vf0 + Vr2 #16.12b
     end
     x0 = [1.0, Vf0, Vf0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn(
             "Initialization of AVR in $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        set_V_ref!(p, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeI)
         avr_states = @view device_states[avr_ix]

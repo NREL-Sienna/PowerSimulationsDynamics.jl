@@ -1,6 +1,6 @@
 function initialize_converter!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F, L},

@@ -184,7 +184,7 @@ end
 function device!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -208,14 +208,14 @@ function device!(
     inner_vars[Vi_inv_var] = voltage_i
 
     #Update V_ref
-    V_ref = get_V_ref(dynamic_device)
+    V_ref = p[:refs][:V_ref]
     inner_vars[V_oc_var] = V_ref
 
     #Update current inner_vars
     _update_inner_vars!(
         device_states,
         output_ode,
-        device_parameters,
+        p,
         sys_ω,
         inner_vars,
         dynamic_device,
@@ -225,7 +225,7 @@ function device!(
     mdl_DCside_ode!(
         device_states,
         output_ode,
-        device_parameters,
+        p,
         sys_ω,
         inner_vars,
         dynamic_device,
@@ -237,7 +237,7 @@ function device!(
     mdl_freq_estimator_ode!(
         device_states,
         output_ode,
-        device_parameters,
+        p,
         inner_vars,
         sys_ω,
         dynamic_device,
@@ -249,7 +249,7 @@ function device!(
     mdl_outer_ode!(
         device_states,
         output_ode,
-        device_parameters,
+        p,
         inner_vars,
         sys_ω,
         dynamic_device,
@@ -261,7 +261,7 @@ function device!(
     mdl_inner_ode!(
         device_states,
         output_ode,
-        device_parameters,
+        p,
         inner_vars,
         dynamic_device,
         h,
@@ -272,7 +272,7 @@ function device!(
     mdl_converter_ode!(
         device_states,
         output_ode,
-        device_parameters,
+        p,
         inner_vars,
         dynamic_device,
         h,
@@ -283,7 +283,7 @@ function device!(
     mdl_filter_ode!(
         device_states,
         output_ode,
-        device_parameters,
+        p,
         current_r,
         current_i,
         inner_vars,

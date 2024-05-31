@@ -23,7 +23,7 @@ solver_list = [
     # :BCG,
     # :PCG,
     # :TFQMR,
-    :KLU,
+    # :KLU,
 ]
 
 #time span

@@ -636,7 +636,7 @@ end
 function mdl_outer_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
@@ -674,16 +674,16 @@ function mdl_outer_ode!(
     #Obtain inner variables for component
     ω_pll = inner_vars[ω_freq_estimator_var]
 
-    Ta = device_parameters[:OuterControl][:ActivePowerControl][:Ta]
-    kd = device_parameters[:OuterControl][:ActivePowerControl][:kd]
-    kω = device_parameters[:OuterControl][:ActivePowerControl][:kω]
-    kq = device_parameters[:OuterControl][:ReactivePowerControl][:kq]
-    ωf = device_parameters[:OuterControl][:ReactivePowerControl][:ωf]
+    Ta = p[:params][:OuterControl][:ActivePowerControl][:Ta]
+    kd = p[:params][:OuterControl][:ActivePowerControl][:kd]
+    kω = p[:params][:OuterControl][:ActivePowerControl][:kω]
+    kq = p[:params][:OuterControl][:ReactivePowerControl][:kq]
+    ωf = p[:params][:OuterControl][:ReactivePowerControl][:ωf]
 
-    q_ref = get_Q_ref(dynamic_device)
-    V_ref = get_V_ref(dynamic_device)
-    ω_ref = get_ω_ref(dynamic_device)
-    p_ref = get_P_ref(dynamic_device)
+    q_ref = p[:refs][:Q_ref]
+    V_ref = p[:refs][:V_ref]
+    ω_ref = p[:refs][:ω_ref]
+    p_ref = p[:refs][:P_ref]
 
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency

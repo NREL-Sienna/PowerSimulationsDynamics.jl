@@ -112,7 +112,6 @@ function DynamicWrapper(
     bus_ix::Int,
     ix_range,
     ode_range,
-    p_range,
     inner_var_range,
     sys_base_power,
     sys_base_freq,
@@ -357,7 +356,7 @@ function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
     )
 end
 
-function StaticWrapper(device::T, bus_ix::Int, p_range) where {T <: PSY.Source}
+function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.Source}
     bus = PSY.get_bus(device)
     return StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
@@ -402,14 +401,12 @@ mutable struct StaticLoadWrapper
     Q_impedance::Float64
     exp_params::Vector{ExpLoadParams}
     exp_names::Dict{String, Int}
-    p_range::Vector{Int}
     bus_ix::Int
 end
 
 function StaticLoadWrapper(
     bus::PSY.Bus,
     loads::Vector{PSY.ElectricLoad},
-    p_range,
     bus_ix::Int,
     sys_base_power::Float64,
 )
@@ -465,7 +462,6 @@ function StaticLoadWrapper(
         Q_impedance,
         exp_params,
         dict_names,
-        p_range,
         bus_ix,
     )
 end

@@ -203,33 +203,33 @@ get_params_metadata(::PSY.ReactiveRenewableControllerAB) =
 ParamsMetadata(:dbd_pnts1_ReactivePowerControl, false, false, false, false),
 ParamsMetadata(:dbd_pnts2_ReactivePowerControl, false, false, false, false),
  =#
-#= 
 
 #INNER CONTROL
-get_params(x::PSY.VoltageModeControl) = [
-    PSY.get_kpv(x),
-    PSY.get_kiv(x),
-    PSY.get_kffv(x),
-    PSY.get_rv(x),
-    PSY.get_lv(x),
-    PSY.get_kpc(x),
-    PSY.get_kic(x),
-    PSY.get_kffi(x),
-    PSY.get_ωad(x),
-    PSY.get_kad(x),
-]
-get_params_metadata(::PSY.VoltageModeControl) = [
-    ParamsMetadata(:kpv_InnerControl, false, false, true, false),
-    ParamsMetadata(:kiv_InnerControl, false, false, true, false),
-    ParamsMetadata(:kffv_InnerControl, false, false, true, false),
-    ParamsMetadata(:rv_InnerControl, false, false, true, false),
-    ParamsMetadata(:lv_InnerControl, false, false, true, false),
-    ParamsMetadata(:kpc_InnerControl, false, false, true, false),
-    ParamsMetadata(:kic_InnerControl, false, false, true, false),
-    ParamsMetadata(:kffi_InnerControl, false, false, true, false),
-    ParamsMetadata(:ωad_InnerControl, false, false, false, false),
-    ParamsMetadata(:kad_InnerControl, false, false, true, false),
-]
+get_params(x::PSY.VoltageModeControl) = (
+    kpv = PSY.get_kpv(x),
+    kiv = PSY.get_kiv(x),
+    kffv = PSY.get_kffv(x),
+    rv = PSY.get_rv(x),
+    lv = PSY.get_lv(x),
+    kpc = PSY.get_kpc(x),
+    kic = PSY.get_kic(x),
+    kffi = PSY.get_kffi(x),
+    ωad = PSY.get_ωad(x),
+    kad = PSY.get_kad(x),
+)
+get_params_metadata(::PSY.VoltageModeControl) = (
+    kpv = ParamsMetadata(false, false, true),
+    kiv = ParamsMetadata(false, false, true),
+    kffv = ParamsMetadata(false, false, true),
+    rv = ParamsMetadata(false, false, true),
+    lv = ParamsMetadata(false, false, true),
+    kpc = ParamsMetadata(false, false, true),
+    kic = ParamsMetadata(false, false, true),
+    kffi = ParamsMetadata(false, false, true),
+    ωad = ParamsMetadata(false, false, false),
+    kad = ParamsMetadata(false, false, true),
+)
+#= 
 get_params(x::PSY.RECurrentControlB) = [
     PSY.get_Vdip_lim(x)[1],
     PSY.get_Vdip_lim(x)[2],
@@ -260,27 +260,31 @@ get_params_metadata(::PSY.RECurrentControlB) = [
     ParamsMetadata(:T_iq_InnerControl, true, false, false, false),
     ParamsMetadata(:I_max_InnerControl, false, false, false, false),
 ]
-
+ =#
 #DC SOURCE 
-get_params(x::PSY.FixedDCSource) = [PSY.get_voltage(x)]
-get_params_metadata(::PSY.FixedDCSource) =
-    [ParamsMetadata(:voltage_DCSource, false, false, false, false)]
+get_params(x::PSY.FixedDCSource) = (voltage = PSY.get_voltage(x),)
+get_params_metadata(::PSY.FixedDCSource) = (voltage = ParamMetadata(false, false, false),)
 
 #FREQ ESTIMATOR
-get_params(x::PSY.KauraPLL) = [PSY.get_ω_lp(x), PSY.get_kp_pll(x), PSY.get_ki_pll(x)]
-get_params_metadata(::PSY.KauraPLL) = [
-    ParamsMetadata(:ω_lp_FrequencyEstimator, false, false, false, false)
-    ParamsMetadata(:kp_pll_FrequencyEstimator, false, false, true, false)
-    ParamsMetadata(:ki_pll_FrequencyEstimator, false, false, true, false)
-]
-get_params(x::PSY.FixedFrequency) = [PSY.get_frequency(x)]
+get_params(x::PSY.KauraPLL) = (
+    ω_lp = PSY.get_ω_lp(x),
+    kp_pll = PSY.get_kp_pll(x),
+    ki_pll = PSY.get_ki_pll(x),
+)
+get_params_metadata(::PSY.KauraPLL) = (
+    ω_lp = ParamsMetadata(false, false, false),
+    kp_pll = ParamsMetadata(false, false, true),
+    ki_pll = ParamsMetadata(false, false, true),
+)
+#= get_params(x::PSY.FixedFrequency) = [PSY.get_frequency(x)]
 get_params_metadata(::PSY.FixedFrequency) =
     [ParamsMetadata(:frequency_FrequencyEstimator, false, false, false, false)]
-
+ =#
 #CONVERTER 
-get_params(::PSY.AverageConverter) = Float64[]
-get_params_metadata(::PSY.AverageConverter) = ParamsMetadata[]
-get_params(x::PSY.RenewableEnergyConverterTypeA) = [
+get_params(::PSY.AverageConverter) = (;)
+get_params_metadata(::PSY.AverageConverter) = (;)
+
+#= get_params(x::PSY.RenewableEnergyConverterTypeA) = [
     PSY.get_T_g(x),
     PSY.get_Rrpwr(x),
     PSY.get_Brkpt(x),
@@ -317,8 +321,8 @@ get_params_metadata(::PSY.RenewableEnergyConverterTypeA) = [
     ParamsMetadata(:Q_ref_Converter, false, false, false, false)
     ParamsMetadata(:R_source_Converter, false, false, false, false)
     ParamsMetadata(:X_source_Converter, false, false, false, false)
-] =#
-
+]
+ =#
 ########### GENERATORS #############
 function get_params(g::PSY.DynamicGenerator)
     return (
@@ -347,24 +351,25 @@ get_params_metadata(::PSY.BaseMachine) = (
     Xd_p = ParamsMetadata(false, false, true),
     eq_p = ParamsMetadata(false, false, true),
 )
-#= get_params(x::PSY.OneDOneQMachine) = [
-    PSY.get_R(x),
-    PSY.get_Xd(x),
-    PSY.get_Xq(x),
-    PSY.get_Xd_p(x),
-    PSY.get_Xq_p(x),
-    PSY.get_Td0_p(x),
-    PSY.get_Tq0_p(x),
-]
-get_params_metadata(::PSY.OneDOneQMachine) = [
-    ParamsMetadata(:R_Machine, false, false, true, false),
-    ParamsMetadata(:Xd_Machine, false, false, true, false),
-    ParamsMetadata(:Xq_Machine, false, false, true, false),
-    ParamsMetadata(:Xd_p_Machine, false, false, true, false),
-    ParamsMetadata(:Xq_p_Machine, false, false, true, false),
-    ParamsMetadata(:Td0_p_Machine, false, false, false, false),
-    ParamsMetadata(:Tq0_p_Machine, false, false, false, false),
-]
+get_params(x::PSY.OneDOneQMachine) = (
+    R = PSY.get_R(x),
+    Xd = PSY.get_Xd(x),
+    Xq = PSY.get_Xq(x),
+    Xd_p = PSY.get_Xd_p(x),
+    Xq_p = PSY.get_Xq_p(x),
+    Td0_p = PSY.get_Td0_p(x),
+    Tq0_p = PSY.get_Tq0_p(x),
+)
+get_params_metadata(::PSY.OneDOneQMachine) = (
+    R = PartamsMetadata(false, false, true),
+    Xd = PartamsMetadata(false, false, true),
+    Xq = PartamsMetadata(false, false, true),
+    Xd_p = PartamsMetadata(false, false, true),
+    Xq_p = PartamsMetadata(false, false, true),
+    Td0_p = PartamsMetadata(false, false, false),
+    Tq0_p = PartamsMetadata(false, false, false),
+)
+#= 
 #TODO - SimpleMarconatoMachine
 get_params(x::PSY.MarconatoMachine) = [
     PSY.get_R(x),
@@ -552,30 +557,29 @@ get_params_metadata(::PSY.AVRFixed) = (;)
 
 #= get_params(x::PSY.AVRSimple) = [PSY.get_Kv(x)]
 get_params_metadata(::PSY.AVRSimple) = [ParamsMetadata(:Kv_AVR, false, false, false, false)]
-get_params(x::PSY.AVRTypeI) = [
-    PSY.get_Ka(x),
-    PSY.get_Ke(x),
-    PSY.get_Kf(x),
-    PSY.get_Ta(x),
-    PSY.get_Te(x),
-    PSY.get_Tf(x),
-    PSY.get_Tr(x),
-    PSY.get_Ae(x),
-    PSY.get_Be(x),
-]
-get_params_metadata(::PSY.AVRTypeI) = [
-    ParamsMetadata(:Ka_AVR, false, false, true, false),
-    ParamsMetadata(:Ke_AVR, false, false, true, false),
-    ParamsMetadata(:Kf_AVR, false, false, true, false),
-    ParamsMetadata(:Ta_AVR, false, false, false, false),
-    ParamsMetadata(:Te_AVR, false, false, false, false),
-    ParamsMetadata(:Tf_AVR, false, false, true, false),
-    ParamsMetadata(:Tr_AVR, false, false, false, false),
-    ParamsMetadata(:Ae_AVR, false, false, true, false),
-    ParamsMetadata(:Be_AVR, false, false, true, false),
-]
  =#
-
+get_params(x::PSY.AVRTypeI) = (
+    Ka = PSY.get_Ka(x),
+    Ke = PSY.get_Ke(x),
+    Kf = PSY.get_Kf(x),
+    Ta = PSY.get_Ta(x),
+    Te = PSY.get_Te(x),
+    Tf = PSY.get_Tf(x),
+    Tr = PSY.get_Tr(x),
+    Ae = PSY.get_Ae(x),
+    Be = PSY.get_Be(x),
+)
+get_params_metadata(::PSY.AVRTypeI) = (
+    Ka = ParamsMetadata(false, false, true),
+    Ke = ParamsMetadata(false, false, true),
+    Kf = ParamsMetadata(false, false, true),
+    Ta = ParamsMetadata(false, false, false),
+    Te = ParamsMetadata(false, false, false),
+    Tf = ParamsMetadata(false, false, true),
+    Tr = ParamsMetadata(false, false, false),
+    Ae = ParamsMetadata(false, false, true),
+    Be = ParamsMetadata(false, false, true),
+)
 get_params(x::PSY.SEXS) = (
     Ta_Tb = PSY.get_Ta_Tb(x),
     Tb = PSY.get_Tb(x),

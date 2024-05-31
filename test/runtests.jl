@@ -1,3 +1,4 @@
+using Revise
 using PowerSimulationsDynamics
 using PowerSystems
 using Test
@@ -19,10 +20,11 @@ using Enzyme
 Enzyme.API.runtimeActivity!(true)
 Enzyme.API.looseTypeAnalysis!(true)  #Required for using component arrays with Enzyme
 Enzyme.API.maxtypeoffset!(1024)
-Enzyme.API.maxtypedepth!(20) 
+Enzyme.API.maxtypedepth!(20)
 using Zygote
-using Optimization
-using OptimizationOptimisers
+##
+#using Optimization #incompatible with latest Enzyme 
+#using OptimizationOptimisers
 
 import Aqua
 Aqua.test_unbound_args(PowerSimulationsDynamics)

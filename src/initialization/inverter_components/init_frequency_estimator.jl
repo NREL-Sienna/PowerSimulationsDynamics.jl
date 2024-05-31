@@ -1,6 +1,6 @@
 function initialize_frequency_estimator!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F, L}},
     inner_vars::AbstractVector,
@@ -16,10 +16,8 @@ function initialize_frequency_estimator!(
     Vi_filter = inner_vars[Vi_filter_var]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.KauraPLL)
-    internal_params = @view device_parameters[local_ix_params]
-    _, kp_pll, ki_pll = internal_params
-    ω_ref = get_ω_ref(dynamic_device)
+    params = p[:params][:FrequencyEstimator]
+    ω_ref = p[:refs][:ω_ref]
 
     #Get initial guess
     θ0_pll = atan(Vi_filter, Vr_filter)
@@ -27,11 +25,13 @@ function initialize_frequency_estimator!(
     Vpll_q0 = 0.0
     ϵ_pll0 = 0.0
 
-    function f!(out, x)
+    function f!(out, x, params)
         vpll_d = x[1]
         vpll_q = x[2]
         ϵ_pll = x[3]
         θ_pll = x[4]
+        kp_pll = params[:kp_pll]
+        ki_pll = params[:ki_pll]
 
         V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
 
@@ -43,11 +43,17 @@ function initialize_frequency_estimator!(
     end
 
     x0 = [Vpll_d0, Vpll_q0, ϵ_pll0, θ0_pll]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn("Initialization in PLL failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
 
         #Obtain indices for component w/r to device
         local_ix = get_local_state_ix(dynamic_device, PSY.KauraPLL)

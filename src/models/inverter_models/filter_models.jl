@@ -35,7 +35,7 @@ end
 function mdl_filter_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -64,11 +64,11 @@ function mdl_filter_ode!(
     #Get parameters
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0
-    lf = device_parameters[:Filter][:lf]
-    rf = device_parameters[:Filter][:rf]
-    cf = device_parameters[:Filter][:cf]
-    lg = device_parameters[:Filter][:lg]
-    rg = device_parameters[:Filter][:rg]
+    lf = p[:params][:Filter][:lf]
+    rf = p[:params][:Filter][:rf]
+    cf = p[:params][:Filter][:cf]
+    lg = p[:params][:Filter][:lg]
+    rg = p[:params][:Filter][:rg]
     basepower = PSY.get_base_power(dynamic_device)
     sys_Sbase = get_system_base_power(dynamic_device)
 

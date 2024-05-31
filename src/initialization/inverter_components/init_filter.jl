@@ -25,24 +25,24 @@ function initialize_filter!(
     Ir_filter = real(I)
     Ii_filter = imag(I)
 
-    #Get Parameters
-    params = p[:params][:Filter]
-    lf = params[:lf]
-    rf = params[:rf]
-    cf = params[:cf]
-    lg = params[:lg]
-    rg = params[:rg]
-    #Set parameters
-    ω_sys = get_ω_ref(dynamic_device)
-
     #To solve Vr_cnv, Vi_cnv, Ir_cnv, Ii_cnv, Vr_filter, Vi_filter
-    function f!(out, x)
+    function f!(out, x, p)
         Vr_cnv = x[1]
         Vi_cnv = x[2]
         Ir_cnv = x[3]
         Ii_cnv = x[4]
         Vr_filter = x[5]
         Vi_filter = x[6]
+
+        #Get Parameters
+        params = p[:params][:Filter]
+        lf = params[:lf]
+        rf = params[:rf]
+        cf = params[:cf]
+        lg = params[:lg]
+        rg = params[:rg]
+        #Set parameters
+        ω_sys = p[:refs][:ω_ref]
 
         #𝜕Ir_cnv/𝜕t
         out[1] = Vr_cnv - Vr_filter - rf * Ir_cnv + ω_sys * lf * Ii_cnv
@@ -58,13 +58,19 @@ function initialize_filter!(
         out[6] = Vi_filter - V_I - rg * Ii_filter - ω_sys * lg * Ir_filter
     end
     x0 = [V_R, V_I, Ir_filter, Ii_filter, V_R, V_I]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, p)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn(
             "Initialization in Filter failed $(PSY.get_name(static))"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[Vr_inv_var] = V_R
         inner_vars[Vi_inv_var] = V_I

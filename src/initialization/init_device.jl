@@ -174,7 +174,7 @@ function initialize_dynamic_device!(
 end
 
 function initialize_dynamic_device!(branch::BranchWrapper,
-    parameters::AbstractVector,
+    p::AbstractVector,
     device_states::AbstractVector)
     #PowerFlow Data
     arc = PSY.get_arc(branch)
@@ -186,7 +186,8 @@ function initialize_dynamic_device!(branch::BranchWrapper,
     V_I_from = Vm_from * sin(θ_from)
     V_R_to = Vm_to * cos(θ_to)
     V_I_to = Vm_to * sin(θ_to)
-    R, X = parameters
+    R = p[:params][:r]
+    X = p[:params][:x]
     Zmag_sq = R^2 + X^2
     #Compute Current
     I_R = R * (V_R_from - V_R_to) / Zmag_sq + X * (V_I_from - V_I_to) / Zmag_sq

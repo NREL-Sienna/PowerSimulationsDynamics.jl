@@ -116,15 +116,14 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeI, TG, P}},
     h,
     t,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
-
     #Obtain references
-    V0_ref = get_V_ref(dynamic_device)
+    V0_ref = p[:refs][:V_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeI)
@@ -141,9 +140,16 @@ function mdl_avr_ode!(
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeI)
-    internal_params = @view device_parameters[local_ix_params]
-    Ka, Ke, Kf, Ta, Te, Tf, Tr, Ae, Be = internal_params
+    params = p[:params][:AVR]
+    Ka = params[:Ka]
+    Ke = params[:Ke]
+    Kf = params[:Kf]
+    Ta = params[:Ta]
+    Te = params[:Te]
+    Tf = params[:Tf]
+    Tr = params[:Tr]
+    Ae = params[:Ae]
+    Be = params[:Be]
 
     #Compute auxiliary parameters
     Se_Vf = Ae * exp(Be * abs(Vf)) #16.13

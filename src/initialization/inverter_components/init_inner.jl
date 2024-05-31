@@ -1,6 +1,6 @@
 function initialize_inner!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, PSY.LCLFilter, L},
@@ -24,7 +24,7 @@ function initialize_inner!(
     Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
-    ω_oc = get_ω_ref(dynamic_device)
+    ω_oc = p[:refs][:ω_ref]
     θ0_oc = inner_vars[θ_oc_var]
     Vdc = inner_vars[Vdc_var]
 
@@ -33,17 +33,10 @@ function initialize_inner!(
     Vi_cnv0 = inner_vars[Vi_cnv_var]
 
     #Get Voltage Controller parameters
-    filter = PSY.get_filter(dynamic_device)
-    filter_ix_params = get_local_parameter_ix(dynamic_device, typeof(filter))
-    filter_params = @view device_parameters[filter_ix_params]
-    cf = filter_params[3]
-    lf = filter_params[1]
-
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.VoltageModeControl)
-    internal_params = @view device_parameters[local_ix_params]
-    kpv, kiv, kffv, rv, lv, kpc, kic, kffi, ωad, kad = internal_params
-
-    function f!(out, x)
+    params = p[:params][:InnerControl]
+    cf = p[:params][:Filter][:cf]
+    lf = p[:params][:Filter][:lf]
+    function f!(out, x, params)
         θ_oc = x[1]
         v_refr = x[2]
         ξ_d = x[3]
@@ -52,6 +45,16 @@ function initialize_inner!(
         γ_q = x[6]
         ϕ_d = x[7]
         ϕ_q = x[8]
+
+        kpv = params[:kpv]
+        kiv = params[:kiv]
+        kffv = params[:kffv]
+        rv = params[:rv]
+        lv = params[:lv]
+        kpc = params[:kpc]
+        kic = params[:kic]
+        kffi = params[:kffi]
+        kad = params[:kad]
 
         #Reference Frame Transformations
         I_dq_filter = ri_dq(θ_oc + pi / 2) * [Ir_filter; Ii_filter]
@@ -97,11 +100,17 @@ function initialize_inner!(
         out[8] = Vq_cnv_ref - V_dq_cnv0[q]
     end
     x0 = [θ0_oc, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn("Initialization in Inner Control failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update angle:
         inner_vars[θ_oc_var] = sol_x0[1]
         outer_ix = get_local_state_ix(dynamic_device, O)
@@ -109,7 +118,7 @@ function initialize_inner!(
         #Assumes that angle is in second position
         outer_states[1] = sol_x0[1]
         inner_vars[θ_oc_var] = sol_x0[1]
-        set_V_ref(dynamic_device, sol_x0[2])
+        set_V_ref!(p, sol_x0[2])
         PSY.set_V_ref!(
             PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
             sol_x0[2],

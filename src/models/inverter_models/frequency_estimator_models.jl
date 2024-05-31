@@ -9,7 +9,7 @@ end
 function mdl_freq_estimator_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, PSY.KauraPLL, F, L}},
@@ -30,9 +30,10 @@ function mdl_freq_estimator_ode!(
     Vi_filter = device_states[external_ix[2]]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.KauraPLL)
-    internal_params = @view device_parameters[local_ix_params]
-    ω_lp, kp_pll, ki_pll = internal_params
+    params = p[:params][:FrequencyEstimator]
+    ω_lp = params[:ω_lp]
+    kp_pll = params[:kp_pll]
+    ki_pll = params[:ki_pll]
 
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2.0 * pi * f0

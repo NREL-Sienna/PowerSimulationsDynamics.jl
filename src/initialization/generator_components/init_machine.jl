@@ -85,7 +85,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.OneDOneQMachine, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -102,9 +102,9 @@ function initialize_mach_shaft!(
     I = conj(S0 / V)
 
     #Machine Data
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.OneDOneQMachine)
-    internal_params = @view device_parameters[local_ix_params]
-    R, Xd, Xq, Xd_p, Xq_p, _, _ = internal_params
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xq = params[:Xq]
 
     #States of OneDOneQMachine are [1] eq_p and [2] ed_p
     δ0 = angle(V + (R + Xq * 1im) * I)
@@ -112,12 +112,18 @@ function initialize_mach_shaft!(
     τm0 = real(V * conj(I))
     @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE) τm0, P0
     #To solve: δ, τm, Vf0, eq_p, ed_p
-    function f!(out, x)
+    function f!(out, x, params)
         δ = x[1]
         τm = x[2]
         Vf0 = x[3]
         eq_p = x[4]
         ed_p = x[5]
+
+        R = params[:R]
+        Xd = params[:Xd]
+        Xq = params[:Xq]
+        Xd_p = params[:Xd_p]
+        Xq_p = params[:Xq_p]
 
         V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / (R^2 + Xd_p * Xq_p)) * (Xq_p * (eq_p - V_dq[2]) + R * (ed_p - V_dq[1]))  #15.32
@@ -132,13 +138,19 @@ function initialize_mach_shaft!(
     end
     V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1]]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         CRC.@ignore_derivatives @warn(
             "Initialization in Machine $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I

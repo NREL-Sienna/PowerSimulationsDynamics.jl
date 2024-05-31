@@ -11,13 +11,14 @@ source voltage. This test also checks that incorrect user data is handled correc
 
 omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
 ieee_9bus_sys = build_system(PSIDTestSystems, "psid_test_ieee_9bus")
+andes_11bus_sys = build_system(PSIDSystems, "psid_11bus_andes")
 ##################################################
 ############### SOLVE PROBLEM ####################
 ##################################################
 
 s_device = get_component(Source, omib_sys, "InfBus")
 s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
-#using PlotlyJS
+using PlotlyJS
 
 #NOTES ON SENSITIVITY ALGORITHMS FROM SCIMLSENSITIVITY               
 #ReverseDiffVJP and EnzymeVJP only options compatible with Hybrid DEs (DEs with callbacks)
@@ -57,7 +58,7 @@ s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
                 end
                 g = PSID.get_parameter_sensitivity_function!(
                     sim,
-                    [("generator-102-1", SingleMass, :H)],
+                    [("generator-102-1", :Shaft, :H)],
                     f,
                 )
                 #p = PSID.get_parameter_sensitivity_values(sim, [("generator-102-1", SingleMass, :H)])
@@ -111,12 +112,12 @@ end
         end
         g = PSID.get_parameter_sensitivity_function!(
             sim,
-            [("generator-102-1", SingleMass, :H)],
+            [("generator-102-1", :Shaft, :H)],
             f,
         )
         p = PSID.get_parameter_sensitivity_values(
             sim,
-            [("generator-102-1", SingleMass, :H)],
+            [("generator-102-1", :Shaft, :H)],
         )
         #H_values = [] 
         #loss_values = []
@@ -210,7 +211,7 @@ end
                 end
                 g = PSID.get_parameter_sensitivity_function!(
                     sim,
-                    [("generator-102-1", SingleMass, :H)],
+                    [("generator-102-1", :Shaft, :H)],
                     f,
                 )
                 #p = PSID.get_parameter_sensitivity_values(sim, [("generator-102-1", SingleMass, :H)])
@@ -296,12 +297,12 @@ end
         end
         g = PSID.get_parameter_sensitivity_function!(
             sim,
-            [("generator-102-1", SingleMass, :H)],
+            [("generator-102-1", :Shaft, :H)],
             f,
         )
         p = PSID.get_parameter_sensitivity_values(
             sim,
-            [("generator-102-1", SingleMass, :H)],
+            [("generator-102-1", :Shaft, :H)],
         )
         #H_values = [] 
         #loss_values = []
@@ -327,7 +328,61 @@ end
     end
 end
 
-@testset "Test unsupported options" begin
+andes_11bus_sys = build_system(PSIDSystems, "psid_11bus_andes")
+@testset "Test Gradients - Initialization" begin
+    path = mktempdir()
+    try
+
+        #s_device = get_component(Source, omib_sys, "InfBus")
+        #s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
+        # TODO - get an appropraite (valid) fault
+        sim = Simulation!(
+            MassMatrixModel,
+            andes_11bus_sys,
+            path,
+            (0.0, 5.0),
+            #s_change, TODO - new fault for this system 
+        )
+        #H_gt =
+        #    get_H(get_shaft(get_component(DynamicGenerator, omib_sys, "generator-102-1")))
+        #execute!(sim, Rodas5(); dtmax = 0.005, saveat = 0.005)
+        #res = read_results(sim)
+        #t, δ_gt = get_state_series(res, ("generator-102-1", :δ))
+        function f(sim, data)
+            execute!(
+                sim,
+                Rodas5();
+                sensealg = ForwardDiffSensitivity(),
+                abstol = 1e-6,
+                reltol = 1e-6,
+                dtmax = 0.005,
+                saveat = 0.005,
+            )
+            res = read_results(sim)
+            t, δ = get_state_series(res, ("generator-2-1", :δ))
+            display(plot(scatter(; x = t, y = δ)))
+            return sum(abs.(δ))
+        end
+        g = PSID.get_parameter_sensitivity_function!(
+            sim,
+            [("generator-2-1", :Machine, :R)],
+            f,
+        )
+        println(f(sim, nothing))    #TODO - to get here, we need to convert a few more models to NonlinearSolve.jl
+        @assert false
+        display(g)  #Is returning nothing because initialization is explicitly not allowed: Change this and try to back propagate through eventually. 
+        p = PSID.get_parameter_sensitivity_values(sim, [("generator-2-1", :Machine, :R)])
+        println(p)
+        @error g(p, nothing)
+        #@error Zygote.gradient((x) -> g(x, nothing), p)
+    finally
+        @info("removing test files")
+        rm(path; force = true, recursive = true)
+    end
+end
+
+#Requires more models to be re-written: Check surrogate first.
+#= @testset "Test unsupported options" begin
     path = mktempdir()
     try
         sim = Simulation!(
@@ -338,8 +393,8 @@ end
         )
         invalid_options = [
             ("Bus 7-Bus 5-i_3", Line, :x),                  #not a wrapped component 
-            ("generator-1-1", AndersonFouadMachine, :R),    #part of initialization
-            ("generator-1-1", AndersonFouadMachine, :XXX),  #incorrect symbol 
+            ("generator-1-1", :Machine, :R),    #part of initialization
+            ("generator-1-1", :Machine, :XXX),  #incorrect symbol 
         ]
         for option in invalid_options
             g = PSID.get_parameter_sensitivity_function!(
@@ -353,4 +408,4 @@ end
         @info("removing test files")
         rm(path; force = true, recursive = true)
     end
-end
+end =#

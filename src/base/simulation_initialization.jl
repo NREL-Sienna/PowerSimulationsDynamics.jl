@@ -70,7 +70,8 @@ function initialize_dynamic_branches!(
     CRC.@ignore_derivatives @debug "Initializing Dynamic Branches"
     for br in get_dynamic_branches(inputs)
         CRC.@ignore_derivatives @debug "$(PSY.get_name(br)) -  $(typeof(br))"
-        _parameters = @view parameters[get_p_range(br)]
+        wrapper_name = _get_wrapper_name(br)
+        _parameters = @view parameters[wrapper_name]
         _states = @view initial_guess[get_ix_range(br)]
         initialize_dynamic_device!(br, _parameters, _states)
     end
