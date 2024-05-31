@@ -66,7 +66,7 @@ function initialize_filter!(
         abstol = STRICT_NLSOLVE_F_TOLERANCE,
     )
     if !SciMLBase.successful_retcode(sol)
-        CRC.@ignore_derivatives @warn(
+        @warn(
             "Initialization in Filter failed $(PSY.get_name(static))"
         )
     else

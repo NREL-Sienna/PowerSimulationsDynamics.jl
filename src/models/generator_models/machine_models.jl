@@ -3,7 +3,7 @@ function mass_matrix_machine_entries!(
     machine::M,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {M <: PSY.Machine}
-    CRC.@ignore_derivatives @debug "Using default mass matrix entries $M"
+    @debug "Using default mass matrix entries $M"
 end
 
 """

@@ -72,7 +72,7 @@ function initialize_converter!(
     _, Lv_pnt1 = PSY.get_Lv_pnts(converter)
 
     if (Iq < Io_lim) || (V_t > Vo_lim) || (V_t < Lv_pnt1)
-        CRC.@ignore_derivatives @error(
+        @error(
             "Power flow solution outside of inverter limits $(PSY.get_name(static)). Update parameters."
         )
     end
@@ -125,7 +125,7 @@ function initialize_converter!(
     _, Lv_pnt1 = PSY.get_Lv_pnts(converter)
 
     if (Iq < Io_lim) || (V_t > Vo_lim) || (V_t < Lv_pnt1)
-        CRC.@ignore_derivatives @error(
+        @error(
             "Power flow solution outside of inverter limits $(PSY.get_name(static)). Update parameters."
         )
     end

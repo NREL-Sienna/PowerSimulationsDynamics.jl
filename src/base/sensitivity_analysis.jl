@@ -119,7 +119,7 @@ function get_indices_in_parameter_vector(sim, device_param_pairs)
             if ix !== nothing
                 wrapped_device = sim.inputs_init.static_injectors[ix]
             else
-                CRC.@ignore_derivatives @warn "Device $device_name not found in dynamic or static injectors"
+                @warn "Device $device_name not found in dynamic or static injectors"
                 return nothing
             end
         end

@@ -484,9 +484,9 @@ get_bus_ix(wrapper::StaticLoadWrapper) = wrapper.bus_ix
 
 function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, val::Int)
     if val == 0
-        CRC.@ignore_derivatives @debug "Generator $(PSY.get_name(wrapper)) status set to off"
+        @debug "Generator $(PSY.get_name(wrapper)) status set to off"
     elseif val == 1
-        CRC.@ignore_derivatives @debug "Generator $(PSY.get_name(wrapper)) status set to on"
+        @debug "Generator $(PSY.get_name(wrapper)) status set to on"
     else
         error("Invalid status $val. It can only take values 1 or 0")
     end

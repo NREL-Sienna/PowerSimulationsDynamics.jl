@@ -59,7 +59,7 @@ function initialize_tg!(
     ]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        CRC.@ignore_derivatives @warn(
+        @warn(
             "Initialization of Turbine Governor $(PSY.get_name(static)) failed"
         )
     else
@@ -71,7 +71,7 @@ function initialize_tg!(
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeI)
         tg_states = @view device_states[tg_ix]
         if (sol_x0[2] > V_max) || (sol_x0[2] < V_min)
-            CRC.@ignore_derivatives @error(
+            @error(
                 "Valve limits for TG in $(PSY.get_name(dynamic_device)) (x_g1 = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min. Consider updating the operating point."
             )
         end
@@ -110,7 +110,7 @@ function initialize_tg!(
     x0 = [τm0, 0.0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        CRC.@ignore_derivatives @warn(
+        @warn(
             "Initialization of Turbine Governor $(PSY.get_name(static)) failed"
         )
     else
@@ -161,7 +161,7 @@ function initialize_tg!(
     x0 = [1.0 / inv_R, τm0, τm0, τm0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        CRC.@ignore_derivatives @error(
+        @error(
             "Initialization of Turbine Governor $(PSY.get_name(static)) failed"
         )
     else
@@ -253,12 +253,12 @@ function initialize_tg!(
         abstol = STRICT_NLSOLVE_F_TOLERANCE,
     )
     if !SciMLBase.successful_retcode(sol)
-        CRC.@ignore_derivatives @warn("Initialization in TG failed")
+        @warn("Initialization in TG failed")
     else
         sol_x0 = sol.u
         if (sol_x0[2] >= V_max + BOUNDS_TOLERANCE) ||
            (sol_x0[2] <= V_min - BOUNDS_TOLERANCE)
-            CRC.@ignore_derivatives @error(
+            @error(
                 "Valve limits for TG in $(PSY.get_name(dynamic_device)) (x_g1 = $(sol_x0[2])), outside its limits V_max = $V_max, Vmin = $V_min.  Consider updating the operating point."
             )
         end
@@ -324,7 +324,7 @@ function initialize_tg!(
     x0 = [P0, 0, (r * Tr) * P0 / R, P0 / R, P0 / R]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        CRC.@ignore_derivatives @warn(
+        @warn(
             "Initialization of Turbine Governor $(PSY.get_name(static)) failed"
         )
     else

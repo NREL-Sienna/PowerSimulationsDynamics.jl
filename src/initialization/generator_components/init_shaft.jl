@@ -82,7 +82,7 @@ function initialize_shaft!(
     x0 = [τm0, δ0, δ0, δ0, δ0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        CRC.@ignore_derivatives @warn("Initialization in Shaft failed")
+        @warn("Initialization in Shaft failed")
     else
         sol_x0 = sol.zero
         inner_vars[τm_var] = sol_x0[1] #τm

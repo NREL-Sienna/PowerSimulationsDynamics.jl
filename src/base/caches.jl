@@ -22,7 +22,7 @@ end
 function JacobianCache{U}(F, inputs::SimulationInputs) where {U <: ForwardDiff.Dual}
     n_inj = get_injection_n_states(inputs)
     n_branches = get_branches_n_states(inputs)
-    CRC.@ignore_derivatives @debug "injection ode size = $n_inj branches ode size = $n_branches"
+    @debug "injection ode size = $n_inj branches ode size = $n_branches"
     bus_count = get_bus_count(inputs)
     inner_vars_count = get_inner_vars_count(inputs)
     n_global_vars = length(keys(get_global_vars_update_pointers(inputs)))
@@ -80,11 +80,11 @@ end
 function SimCache(f!, inputs::SimulationInputs)
     n_inj = get_injection_n_states(inputs)
     n_branches = get_branches_n_states(inputs)
-    CRC.@ignore_derivatives @debug "injection ode size = $n_inj branches ode size = $n_branches"
+    @debug "injection ode size = $n_inj branches ode size = $n_branches"
     bus_count = get_bus_count(inputs)
     inner_vars_count = get_inner_vars_count(inputs)
     n_global_vars = length(keys(get_global_vars_update_pointers(inputs)))
-    global_vars = CRC.@ignore_derivatives setindex!(
+    global_vars = setindex!(
         zeros(Real, n_global_vars),
         1.0,
         GLOBAL_VAR_SYS_FREQ_INDEX,

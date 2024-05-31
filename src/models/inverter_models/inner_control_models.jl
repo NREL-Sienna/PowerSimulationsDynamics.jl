@@ -3,7 +3,7 @@ function mass_matrix_inner_entries!(
     inner_control::IC,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {IC <: PSY.InnerControl}
-    CRC.@ignore_derivatives @debug "Using default mass matrix entries $IC"
+    @debug "Using default mass matrix entries $IC"
     return
 end
 

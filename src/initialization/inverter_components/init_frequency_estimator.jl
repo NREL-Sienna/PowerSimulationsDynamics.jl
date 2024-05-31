@@ -51,7 +51,7 @@ function initialize_frequency_estimator!(
         abstol = STRICT_NLSOLVE_F_TOLERANCE,
     )
     if !SciMLBase.successful_retcode(sol)
-        CRC.@ignore_derivatives @warn("Initialization in PLL failed")
+        @warn("Initialization in PLL failed")
     else
         sol_x0 = sol.u
 
@@ -115,7 +115,7 @@ function initialize_frequency_estimator!(
     x0 = [Vpll_q0, ϵ_pll0, θ0_pll]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
-        CRC.@ignore_derivatives @warn("Initialization in PLL failed")
+        @warn("Initialization in PLL failed")
     else
         sol_x0 = sol.zero
 

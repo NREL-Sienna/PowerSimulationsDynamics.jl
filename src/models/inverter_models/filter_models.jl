@@ -4,7 +4,7 @@ function mass_matrix_filter_entries!(
     global_index::Base.ImmutableDict{Symbol, Int64},
     f0::Float64,
 ) where {F <: PSY.Filter}
-    CRC.@ignore_derivatives @debug "Using default mass matrix entries $F"
+    @debug "Using default mass matrix entries $F"
     return
 end
 

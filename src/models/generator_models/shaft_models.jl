@@ -3,7 +3,7 @@ function mass_matrix_shaft_entries!(
     shaft::S,
     global_index::Base.ImmutableDict{Symbol, Int64},
 ) where {S <: PSY.Shaft}
-    CRC.@ignore_derivatives @debug "Using default mass matrix entries $S"
+    @debug "Using default mass matrix entries $S"
 end
 
 function mdl_shaft_ode!(

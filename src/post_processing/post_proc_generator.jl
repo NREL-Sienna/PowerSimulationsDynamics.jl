@@ -528,7 +528,7 @@ function _field_current(
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
 ) where {M <: PSY.Machine}
-    CRC.@ignore_derivatives @warn(
+    @warn(
         "Field current is not supported in the machine type $(M). Returning zeros."
     )
     ts, _ = post_proc_state_series(res, (name, :δ), dt)

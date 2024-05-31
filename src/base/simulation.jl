@@ -207,10 +207,10 @@ function Simulation(
 end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
-    CRC.@ignore_derivatives @info "Rebuilding the simulation after reset"
+    @info "Rebuilding the simulation after reset"
     sim.status = BUILD_INCOMPLETE
     build!(sim)
-    CRC.@ignore_derivatives @info "Simulation reset to status $(sim.status)"
+    @info "Simulation reset to status $(sim.status)"
     return
 end
 
@@ -278,9 +278,9 @@ function _get_jacobian(sim::Simulation{MassMatrixModel})
 end
 
 function _build_perturbations!(sim::Simulation)
-    CRC.@ignore_derivatives @info "Attaching Perturbations"
+    @info "Attaching Perturbations"
     if isempty(sim.perturbations)
-        CRC.@ignore_derivatives @debug "The simulation has no perturbations"
+        @debug "The simulation has no perturbations"
         return SciMLBase.CallbackSet(), [0.0]
     end
     inputs = get_simulation_inputs(sim)
@@ -304,7 +304,7 @@ function _add_callback!(
     sim::Simulation,
     inputs::SimulationInputs,
 ) where {T <: Perturbation}
-    CRC.@ignore_derivatives @debug pert
+    @debug pert
     condition = (x, t, integrator) -> t in [pert.time]
     affect = get_affect(inputs, get_system(sim), pert)
     callback_vector[ix] = SciMLBase.DiscreteCallback(condition, affect)
@@ -481,7 +481,7 @@ function build!(sim; kwargs...)
             sortby = :firstexec,
             compact = true,
         )
-        CRC.@ignore_derivatives @info "\n$(String(take!(string_buffer)))\n"
+        @info "\n$(String(take!(string_buffer)))\n"
         #end
     end
     close(logger)
@@ -494,10 +494,10 @@ function simulation_pre_step!(sim::Simulation)
             "The Simulation status is $(sim.status). Can not continue, correct your inputs and build the simulation again.",
         )
     elseif sim.status == BUILT
-        CRC.@ignore_derivatives @debug "Simulation status is $(sim.status)."
+        @debug "Simulation status is $(sim.status)."
     elseif sim.status == SIMULATION_FINALIZED
         reset!(sim)
-        CRC.@ignore_derivatives @info "The Simulation status is $(sim.status). Resetting the simulation"
+        @info "The Simulation status is $(sim.status). Resetting the simulation"
     else
         error("Simulation status is $(sim.status). Can't continue.")
     end
@@ -515,8 +515,8 @@ function _filter_kwargs(kwargs)
 end
 
 function _execute!(sim::Simulation, solver; kwargs...)
-    CRC.@ignore_derivatives @debug "status before execute" sim.status
-    CRC.@ignore_derivatives simulation_pre_step!(sim)
+    @debug "status before execute" sim.status
+    simulation_pre_step!(sim)
     sim.status = SIMULATION_STARTED
     time_log = Dict{Symbol, Any}()
     if get(kwargs, :auto_abstol, false)
@@ -525,7 +525,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
     else
         callbacks = SciMLBase.CallbackSet((), tuple(sim.callbacks...))
     end
-    progress_enable = CRC.@ignore_derivatives _prog_meter_enabled()
+    progress_enable = _prog_meter_enabled()
     solution,
     time_log[:timed_solve_time],
     time_log[:solve_bytes_alloc],
@@ -549,7 +549,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
             solution,
         )
     else
-        CRC.@ignore_derivatives @error(
+        @error(
             "The simulation failed with return code $(solution.retcode)"
         )
         sim.status = SIMULATION_FAILED
@@ -577,7 +577,7 @@ function execute!(sim::Simulation, solver; kwargs...)
         try
             _execute!(sim, solver; kwargs...)
         catch e
-            CRC.@ignore_derivatives @error "Execution failed" exception =
+            @error "Execution failed" exception =
                 (e, catch_backtrace())
             sim.status = SIMULATION_FAILED
         end
