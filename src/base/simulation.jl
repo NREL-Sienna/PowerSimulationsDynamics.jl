@@ -236,7 +236,6 @@ function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
         simulation_system,
         sim.frequency_reference,
     )
-    sim.inputs_init = deepcopy(sim.inputs)
     @debug "Simulation Inputs Created"
     return
 end
@@ -456,6 +455,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                 TimerOutputs.@timeit BUILD_TIMER "Make DiffEq Problem" begin
                     _get_diffeq_problem(sim, model, jacobian)
                 end
+                sim.inputs_init = deepcopy(sim.inputs)
                 @info "Simulations status = $(sim.status)"
             else
                 @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"

@@ -1,190 +1,134 @@
-"""
-    function get_parameter_sensitivity_function!(
-        sim::Simulation,
-        device_parameter_pairs::Vector{Tuple{String, Type{T}, Symbol}},
-        f::function,
-    )
-
-Gets a function for taking gradients with respect to parameters. 
-# Arguments    
-- `sim::Simulation` : Initialized simulation object
-- `device_parameter_pairs::Vector{Tuple{String, Type{T}, Symbol}}` : Tuple used to identify the parameter, via the device name, as a `String`, the type of the Device or DynamicComponent, and the parameter as a `Symbol`. 
-- `f::function` : User provided function with two inputs: a simulation and an additional input which can be used for data (```f(sim::Simulation, data::Any)```) The output must be a scalar value. This function can include executing the simulation and post-processing of results.  
-
-# Example 
-```julia
-function f(sim::Simulation)
-    execute!(sim, Rodas5())
-    res = read_results(sim)
-    _, δ = get_state_series(res, ("generator-1", :δ))
-    sum(δ)
-end 
-g = get_parameter_sensitivity_function!(sim, ("generator-1", SingleMass, :H), f)
-Zygote.gradient(g, [2.0]);
-```
-"""
-function get_parameter_sensitivity_function!(sim, device_param_pairs, f)
-    indices = get_indices_in_parameter_vector(sim, device_param_pairs)
-    if indices === nothing
-        return nothing
-    end
-    sim_level = get_required_initialization_level(sim, device_param_pairs)
-    if sim_level === nothing
-        return nothing
-    end
-    reset!(sim)
-    @assert sim.status == BUILT
-    sim.initialize_level = sim_level
-    sensitivity_function = (p, data) ->
-        begin
-            sim.inputs = deepcopy(sim.inputs_init)
-            set_parameters!(sim, indices, p)
-            reset!(sim)
-            return f(sim, data)
-        end
-    return sensitivity_function
-end
-
-"""
-    function get_parameter_sensitivity_function!(
-        sim::Simulation,
-        device_parameter_pairs::Vector{Tuple{String, Type{T}, Symbol}},
-        f::function,
-    )
-
-get_parameter_sensitivity_values can be used in conjunction with get_parameter_sensitivity_function! to get the starting values of the parameters for taking gradients. 
-
-# Arguments    
-- `sim::Simulation` : Initialized simulation object
-- `device_parameter_pairs::Vector{Tuple{String, Type{T}, Symbol}}` : Tuple used to identify the parameter, via the device name, as a `String`, the type of the Device or DynamicComponent, and the parameter as a `Symbol`. 
-
-# Example 
-```julia
-function f(sim::Simulation)
-    execute!(sim, Rodas5())
-    res = read_results(sim)
-    _, δ = get_state_series(res, ("generator-1", :δ))
-    sum(δ)
-end 
-g = get_parameter_sensitivity_function!(sim, ("generator-1", SingleMass, :H), f)
-p = get_parameter_sensitivity_values(sim, ("generator-1", SingleMass, :H))
-Zygote.gradient(g, p);
-```
-"""
-function get_parameter_sensitivity_values(sim, device_param_pairs)
-    indices = get_indices_in_parameter_vector(sim, device_param_pairs)
-    param_vector = sim.inputs.parameters
-    return param_vector[indices]
-end
-
-function _append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.Device}
-    return s
-end
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.AVR} = Symbol(s, :_AVR)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.Machine} = Symbol(s, :_Machine)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.PSS} = Symbol(s, :_PSS)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.Shaft} = Symbol(s, :_Shaft)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.TurbineGov} = Symbol(s, :_TurbineGov)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.Converter} = Symbol(s, :_Converter)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.DCSource} = Symbol(s, :_DCSource)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.Filter} = Symbol(s, :_Filter)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.FrequencyEstimator} =
-    Symbol(s, :_FrequencyEstimator)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.InnerControl} =
-    Symbol(s, :_InnerControl)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.OuterControl} =
-    @error "Specify PSY.ActivePowerControl or PSY.ReactivePowerControl"
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.ActivePowerControl} =
-    Symbol(s, :_ActivePowerControl)
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.ReactivePowerControl} =
-    Symbol(s, :_ReactivePowerControl)
-
-_append_symbol(s::Symbol, ::Type{T}) where {T <: PSY.InverterLimiter} =
-    Symbol(s, :_InverterLimiter)
-
-function get_indices_in_parameter_vector(sim, device_param_pairs)
+function get_indices_in_parameter_vector(p, device_param_pairs)
     indices = Int[]
-    for (device_name, component_type, param_symbol) in device_param_pairs
-        ix = findfirst(
-            x -> PSY.get_name(x.device) == device_name,
-            sim.inputs_init.dynamic_injectors,
-        )
-        if ix !== nothing
-            wrapped_device = sim.inputs_init.dynamic_injectors[ix]
-        else
-            ix = findfirst(
-                x -> PSY.get_name(x.device) == device_name,
-                sim.inputs_init.static_injectors,
-            )
-            if ix !== nothing
-                wrapped_device = sim.inputs_init.static_injectors[ix]
-            else
-                @warn "Device $device_name not found in dynamic or static injectors"
-                return nothing
-            end
-        end
-        full_symbol = _append_symbol(param_symbol, component_type)
-        external_ix = get_p_range(wrapped_device)
-        internal_ix = findfirst(isequal(full_symbol), get_params_symbol(wrapped_device))
-        if internal_ix === nothing
-            @warn "Parameter :$param_symbol of $component_type not found."
+    for tuple in device_param_pairs
+        label = join((tuple[1], "params", tuple[2:end]...), ".")
+        ix = ComponentArrays.label2index(p, label)[1]
+        if ix === nothing
+            @error "Index not found for entry $tuple"
             return nothing
         end
-        global_ix = external_ix[internal_ix]
-        push!(indices, global_ix)
-        return indices
+        push!(indices, ix)
     end
+    return indices
 end
 
-function get_required_initialization_level(sim, device_param_pairs)
+function get_required_initialization_level(device_param_pairs)  #Don't n eed the values. 
     init_level = INITIALIZED
-    for (device_name, component_type, param_symbol) in device_param_pairs
-        metadata = get_params_metadata(component_type(nothing))
-        symbols = [m.symbol for m in metadata]
-        full_symbol = _append_symbol(param_symbol, component_type)
-        ix = findfirst(isequal(full_symbol), symbols)
-        metadata_entry = metadata[ix]
-        if metadata_entry.in_mass_matrix == true
-            @warn "Parameter :$param_symbol of $component_type appears in mass matrix -- not supported"
-            return
-        end
-        if metadata_entry.in_network == true
-            @warn "Parameter :$param_symbol of $component_type appears in network -- not supported"
-            return
-        end
-        if metadata_entry.impacts_ic == true
-            @warn "Parameter :$param_symbol of $component_type appears in initialization -- not supported"
-            return
-        end
-        if metadata_entry.impacts_pf == true
-            @warn "Parameter :$param_symbol of $component_type impacts power flow -- not supported"
-            return
-        end
-    end
+    #TODO - check parameters and return appropriate init_level 
     return init_level
 end
 
-function make_buffer(a)
-    buf = Zygote.Buffer(a)
-    for i in eachindex(a)
-        buf[i] = a[i]
+function get_indices_in_state_vector(sim, state_data)
+    @assert sim.results !== nothing
+    res = sim.results
+    global_state_index = get_global_index(res)
+    state_ixs = Vector{Int64}(undef, length(state_data))
+    for (ix, ref) in enumerate(state_data)
+        if !haskey(global_state_index, ref[1])
+            @error "$(keys(global_state_index))"
+            error("State $(ref[2]) device $(ref[1]) not found in the system. ")
+        end
+        state_ixs[ix] = get(global_state_index[ref[1]], ref[2], 0)
     end
-    return buf
+    return state_ixs
 end
 
-function make_array(b)
-    return copy(b)
+function get_parameter_values(sim, device_param_pairs)
+    p = sim.inputs.parameters
+    ixs = get_indices_in_parameter_vector(p, device_param_pairs)
+    if ixs === nothing
+        return nothing
+    else
+        return p[ixs]
+    end
 end
 
-#TODO - try to go back to making simulation inputs mutable and not using Accessors.jl?
-#https://fluxml.ai/Zygote.jl/latest/limitations/#mutable-structs-1
-#https://github.com/FluxML/Zygote.jl/issues/1127
-function set_parameters!(sim, indices, params)
-    inputs = sim.inputs
-    parameter_buffer = make_buffer(inputs.parameters)
-    for (ix, p) in zip(indices, params)
-        parameter_buffer[ix] = p
+#TODO - think more carefully about how data should be included so it works with with Optimization API. 
+#TODO - avoid code repetition with _execute! by defining functions appropriately.
+#TODO - extend for initialization - first for H...
+#TODO - extend for parameters that require initialization.
+function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; kwargs...)
+    init_level = get_required_initialization_level(param_data)
+    p = sim.inputs.parameters
+    param_ixs = get_indices_in_parameter_vector(p, param_data)
+    state_ixs = get_indices_in_state_vector(sim, state_data)
+    init_level = get_required_initialization_level(param_data)
+    sim_inputs = deepcopy(sim.inputs_init)
+    if get(kwargs, :auto_abstol, false)
+        cb = AutoAbstol(true, get(kwargs, :abstol, 1e-9))
+        callbacks =
+            SciMLBase.CallbackSet((), tuple(push!(sim.callbacks, cb)...))
+    else
+        callbacks = SciMLBase.CallbackSet((), tuple(sim.callbacks...))
     end
-    Accessors.@reset inputs.parameters = make_array(parameter_buffer)
-    sim.inputs = inputs
+    tstops = if !isempty(sim.tstops)
+        [sim.tstops[1] ÷ 2, sim.tstops...]  #Note: Don't need to make a tuple because it is in ODEproblem. not a kwarg
+    else
+        []
+    end
+
+    prob_old = sim.problem
+    f_old = prob_old.f
+    f_new = SciMLBase.ODEFunction{true}(
+        f_old.f;
+        mass_matrix = f_old.mass_matrix,
+    )
+
+    prob_new = SciMLBase.remake(
+        prob_old;
+        f = f_new,
+        tstops = tstops,
+        advance_to_tstop = !isempty(tstops),
+        initializealg = SciMLBase.NoInit(),
+        callback = callbacks,
+        kwargs...,
+    )
+    if param_ixs === nothing
+        return nothing
+    else
+        function f_enzyme(p, sim_inputs, prob, data)
+            p_new = sim_inputs.parameters
+            p_new[param_ixs] .= p
+            # TODO - INSERT APPROPRIATE INITIALIZATION HERE WHICH MODIFIES p - Add initialization_level as a (contstant) input?
+            prob_new = SciMLBase.remake(prob; p = p_new)
+            sol = SciMLBase.solve(prob_new, solver)
+
+            @assert length(state_ixs) == 1  #Hardcode for single state for now 
+            ix = state_ixs[1]
+            ix_t = unique(i -> sol.t[i], eachindex(sol.t))
+            state = sol[ix, ix_t]
+
+            return f_loss(state, data)
+        end
+        function f_forward(p, data)
+            f_enzyme(
+                p,
+                deepcopy(sim.inputs_init),
+                prob_new,
+                data,
+            )
+        end
+        function f_grad(p, data)
+            dp = Enzyme.make_zero(p)
+            sim_inputs = deepcopy(sim.inputs_init)
+            dsim_inputs = Enzyme.make_zero(sim_inputs)
+            dprob_new = Enzyme.make_zero(prob_new)
+            ddata = Enzyme.make_zero(data)
+            Enzyme.autodiff(
+                Enzyme.Reverse,
+                f_enzyme,
+                Enzyme.Active,
+                Enzyme.Duplicated(p, dp),
+                Enzyme.Duplicated(sim_inputs, dsim_inputs),
+                Enzyme.Duplicated(prob_new, dprob_new),
+                Enzyme.Duplicated(data, ddata),
+            )
+            return dp
+        end
+        f_forward, f_grad
+    end
 end
+
+#Inactive Rules
+#Enzyme.EnzymeRules.inactive(::typeof(SimulationResults), args...) = nothing
+#Enzyme.EnzymeRules.inactive(::typeof(get_activepower_branch_flow), args...) = nothing
