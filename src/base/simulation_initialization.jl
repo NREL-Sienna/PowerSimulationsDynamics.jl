@@ -42,11 +42,7 @@ function initialize_dynamic_injection!(
     initial_inner_vars = zeros(get_inner_vars_count(inputs))
     parameters = get_parameters(inputs)
     for dynamic_device in get_dynamic_injectors(inputs)
-        static = PSY.get_component(
-            dynamic_device.static_type,
-            system,
-            PSY.get_name(dynamic_device),
-        )
+        static = get_static_device(dynamic_device)
         @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
         _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
         _parameters = @view parameters[_get_wrapper_name(dynamic_device)]

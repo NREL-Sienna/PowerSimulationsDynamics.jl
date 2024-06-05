@@ -184,11 +184,18 @@ function _add_parameters(initial_parameters, wrapped_devices)
         p = get_params(wrapped_device)
         name = _get_wrapper_name(wrapped_device)
         if isa(wrapped_device, DynamicWrapper)
+            # Consider the special case when the static device is StandardLoad
+            static_device = get_static_device(wrapped_device)
+            if isa(static_device, PSY.StandardLoad)
+                reactive_power = PF.get_total_q(static_device)
+            else
+                reactive_power = PSY.get_reactive_power(static_device)
+            end
             refs = (
                 V_ref = PSY.get_V_ref(get_device(wrapped_device)),
                 ω_ref = PSY.get_ω_ref(get_device(wrapped_device)),
                 P_ref = PSY.get_P_ref(get_device(wrapped_device)),
-                Q_ref = get_reactive_power(wrapped_device),
+                Q_ref = reactive_power,
             )
         elseif isa(wrapped_device, StaticWrapper)
             device = get_device(wrapped_device)

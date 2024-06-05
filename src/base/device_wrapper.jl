@@ -32,10 +32,9 @@ status, and allocate the required indexes of the state space and parameter space
 """
 struct DynamicWrapper{T <: PSY.DynamicInjection}
     device::T
-    reactive_power::Float64
     system_base_power::Float64
     system_base_frequency::Float64
-    static_type::Type{<:PSY.StaticInjection}
+    static_device::PSY.StaticInjection
     bus_category::Type{<:BusCategory}
     connection_status::Base.RefValue{Float64}
     inner_vars_index::Vector{Int}
@@ -49,10 +48,9 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
 
     function DynamicWrapper(
         device::T,
-        reactive_power::Float64,
         system_base_power::Float64,
         system_base_frequency::Float64,
-        static_type::Type{<:PSY.StaticInjection},
+        static_device::PSY.StaticInjection,
         bus_category::Type{<:BusCategory},
         connection_status::Base.RefValue{Float64},
         inner_vars_index,
@@ -68,10 +66,9 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
 
         new{T}(
             device,
-            reactive_power,
             system_base_power,
             system_base_frequency,
-            static_type,
+            static_device,
             bus_category,
             connection_status,
             Vector{Int}(inner_vars_index),
@@ -119,18 +116,11 @@ function DynamicWrapper(
     device_states = PSY.get_states(dynamic_device)
     component_state_mapping, input_port_mapping =
         state_port_mappings(dynamic_device, device_states)
-    # Consider the special case when the static device is StandardLoad
-    if isa(static_device, PSY.StandardLoad)
-        reactive_power = PF.get_total_q(static_device)
-    else
-        reactive_power = PSY.get_reactive_power(static_device)
-    end
     return DynamicWrapper(
         dynamic_device,
-        reactive_power,
         sys_base_power,
         sys_base_freq,
-        T,
+        static_device,
         BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
         Base.Ref(1.0),
         inner_var_range,
@@ -174,7 +164,7 @@ function DynamicWrapper(
         dynamic_device,
         sys_base_power,
         sys_base_freq,
-        PSY.ThermalStandard,
+        static_device,
         BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
         Base.Ref(1.0),
         inner_var_range,
@@ -216,7 +206,7 @@ function DynamicWrapper(
         dynamic_device,
         sys_base_power,
         sys_base_freq,
-        PSY.Source,
+        static_device,
         BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
         Base.Ref(1.0),
         collect(inner_var_range),
@@ -254,7 +244,7 @@ function _index_port_mapping!(
 end
 
 get_device(wrapper::DynamicWrapper) = wrapper.device
-get_reactive_power(wrapper::DynamicWrapper) = wrapper.reactive_power
+get_static_device(wrapper::DynamicWrapper) = wrapper.static_device
 get_device_type(::DynamicWrapper{T}) where {T <: PSY.DynamicInjection} = T
 get_bus_category(wrapper::DynamicWrapper) = wrapper.bus_category
 get_inner_vars_index(wrapper::DynamicWrapper) = wrapper.inner_vars_index
