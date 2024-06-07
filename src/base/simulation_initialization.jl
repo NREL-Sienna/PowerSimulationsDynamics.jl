@@ -36,7 +36,6 @@ end
 function initialize_dynamic_injection!(
     initial_guess::AbstractArray,
     inputs::SimulationInputs,
-    system::PSY.System,
 )
     @debug "Updating Dynamic Injection Component Initial Guess"
     initial_inner_vars = zeros(get_inner_vars_count(inputs))
@@ -125,69 +124,85 @@ function set_Q_ref!(array, value)
     @view(array["refs"])["Q_ref"] = value
 end
 
+function _get_starting_initialization(
+    sim::Simulation,
+    inputs::SimulationInputs,
+    ::Union{Val{POWERFLOW_AND_DEVICES}, Val{FLAT_START}},
+)
+    return _get_flat_start(inputs)
+end
+
+function _get_starting_initialization(
+    sim::Simulation,
+    inputs::SimulationInputs,
+    ::Union{Val{DEVICES_ONLY}, Val{INITIALIZED}},
+)
+    return deepcopy(sim.x0_init)
+end
+
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-#PASS x0 and inputs, but not the full simulation not sim....?
 function _initialize_state_space(
-    sim::Simulation{T},
+    x0::AbstractArray,
+    inputs::SimulationInputs,
+    sys::PSY.System,
     ::Val{POWERFLOW_AND_DEVICES},
-) where {T <: SimulationModel}
-    inputs = get_simulation_inputs(sim)
-    sim.x0 = _get_flat_start(inputs)
+)
+    #x0 = _get_flat_start(inputs)
     @info("Pre-Initializing Simulation States")
-    @assert sim.status == BUILD_INCOMPLETE
-    while sim.status == BUILD_INCOMPLETE
+    status = BUILD_INCOMPLETE
+    while status == BUILD_INCOMPLETE
         @debug "Start state intialization routine"
-        sim.status = power_flow_solution!(sim.x0, get_system(sim), inputs)
-        sim.status = initialize_static_injection!(inputs)
-        sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
+        status = power_flow_solution!(x0, sys, inputs)
+        status = initialize_static_injection!(inputs)
+        status = initialize_dynamic_injection!(x0, inputs)
         if has_dyn_lines(inputs)
-            sim.status = initialize_dynamic_branches!(sim.x0, inputs)
+            status = initialize_dynamic_branches!(x0, inputs)
         else
             @debug "No Dynamic Branches in the system"
         end
-        sim.status = check_valid_values(sim.x0, inputs)
+        status = check_valid_values(x0, inputs)
     end
+    return status
 end
 
-#GET rid of try catch at that level. 
-#GET rid of timing at that level 
 function _initialize_state_space(
-    sim::Simulation{T},
+    x0::AbstractArray,
+    inputs::SimulationInputs,
+    sys::PSY.System,
     ::Val{DEVICES_ONLY},
-) where {T <: SimulationModel}
+)
     @info("Pre-Initializing Simulation States")
-    inputs = get_simulation_inputs(sim)
-    #GET INNER VARS, PARAMETERS, AND STATES AT THIS LEVEL ... 
-    @assert sim.status == BUILD_INCOMPLETE
-    while sim.status == BUILD_INCOMPLETE
+    status = BUILD_INCOMPLETE
+    while status == BUILD_INCOMPLETE
         @debug "Start state intialization routine"
-        sim.status = initialize_static_injection!(inputs)
-        sim.status = initialize_dynamic_injection!(sim.x0, inputs, get_system(sim))
+        status = initialize_static_injection!(inputs)
+        status = initialize_dynamic_injection!(x0, inputs)
         if has_dyn_lines(inputs)
-            sim.status = initialize_dynamic_branches!(sim.x0, inputs)
+            status = initialize_dynamic_branches!(x0, inputs)
         else
             @debug "No Dynamic Branches in the system"
         end
-        sim.status = check_valid_values(sim.x0, inputs)
+        status = check_valid_values(x0, inputs)
     end
+    return status
 end
 
 function _initialize_state_space(
-    sim::Simulation{T},
+    x0::AbstractArray,
+    inputs::SimulationInputs,
+    sys::PSY.System,
     ::Val{FLAT_START},
-) where {T <: SimulationModel}
-    simulation_inputs = get_simulation_inputs(sim)
-    sim.x0 = _get_flat_start(simulation_inputs)
+)
 end
 
 function _initialize_state_space(
-    sim::Simulation{T},
+    x0::AbstractArray,
+    inputs::SimulationInputs,
+    sys::PSY.System,
     ::Val{INITIALIZED},
-) where {T <: SimulationModel}
-    simulation_inputs = get_simulation_inputs(sim)
-    @assert sim.status == BUILD_INCOMPLETE
-    if length(sim.x0) != get_variable_count(simulation_inputs)
+)
+    if length(x0) != get_variable_count(inputs)
         throw(
             IS.ConflictingInputsError(
                 "The size of the provided initial state space does not match the model's state space.",
@@ -197,9 +212,7 @@ function _initialize_state_space(
     @warn(
         "Using existing initial conditions value for simulation initialization"
     )
-    sim.x0 = deepcopy(sim.x0_init)
-    sim.status = SIMULATION_INITIALIZED
-    return
+    return SIMULATION_INITIALIZED
 end
 
 """
@@ -264,7 +277,7 @@ function set_operating_point!(
     while status == BUILD_INCOMPLETE
         status = power_flow_solution!(x0_init, system, inputs)
         status = initialize_static_injection!(inputs)
-        status = initialize_dynamic_injection!(x0_init, inputs, system)
+        status = initialize_dynamic_injection!(x0_init, inputs)
         status = initialize_dynamic_branches!(x0_init, inputs)
         status = SIMULATION_INITIALIZED
     end

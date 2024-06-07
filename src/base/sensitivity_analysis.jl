@@ -12,7 +12,7 @@ function get_indices_in_parameter_vector(p, device_param_pairs)
     return indices
 end
 
-function get_required_initialization_level(device_param_pairs)  #Don't n eed the values. 
+function get_required_initialization_level(sys, device_param_pairs)
     init_level = INITIALIZED
     #TODO - check parameters and return appropriate init_level 
     return init_level
@@ -48,11 +48,11 @@ end
 #TODO - extend for initialization - first for H...
 #TODO - extend for parameters that require initialization.
 function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; kwargs...)
-    init_level = get_required_initialization_level(param_data)
+    init_level = get_required_initialization_level(sim.sys, param_data)
     p = sim.inputs.parameters
     param_ixs = get_indices_in_parameter_vector(p, param_data)
     state_ixs = get_indices_in_state_vector(sim, state_data)
-    init_level = get_required_initialization_level(param_data)
+    init_level = get_required_initialization_level(sim.sys, param_data)
     sim_inputs = deepcopy(sim.inputs_init)
     if get(kwargs, :auto_abstol, false)
         cb = AutoAbstol(true, get(kwargs, :abstol, 1e-9))
@@ -86,11 +86,18 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     if param_ixs === nothing
         return nothing
     else
-        function f_enzyme(p, sim_inputs, prob, data)
+        x0 = deepcopy(sim.x0_init)
+        sys = deepcopy(sim.sys)
+        function f_enzyme(p, x0, sys, sim_inputs, prob, data)
             p_new = sim_inputs.parameters
             p_new[param_ixs] .= p
-            # TODO - INSERT APPROPRIATE INITIALIZATION HERE WHICH MODIFIES p - Add initialization_level as a (contstant) input?
-            prob_new = SciMLBase.remake(prob; p = p_new)
+            _initialize_state_space(      
+                x0,
+                sim_inputs,
+                sys,
+                Val(init_level),   
+            )
+            prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0) 
             sol = SciMLBase.solve(prob_new, solver)
 
             @assert length(state_ixs) == 1  #Hardcode for single state for now 
@@ -103,6 +110,8 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
         function f_forward(p, data)
             f_enzyme(
                 p,
+                x0,
+                sys,
                 deepcopy(sim.inputs_init),
                 prob_new,
                 data,
@@ -110,6 +119,8 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
         end
         function f_grad(p, data)
             dp = Enzyme.make_zero(p)
+            dx0 = Enzyme.make_zero(x0)
+            dsys = Enzyme.make_zero(sys)
             sim_inputs = deepcopy(sim.inputs_init)
             dsim_inputs = Enzyme.make_zero(sim_inputs)
             dprob_new = Enzyme.make_zero(prob_new)
@@ -119,6 +130,8 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 f_enzyme,
                 Enzyme.Active,
                 Enzyme.Duplicated(p, dp),
+                Enzyme.Duplicated(x0, dx0),
+                Enzyme.Duplicated(sys, dsys),
                 Enzyme.Duplicated(sim_inputs, dsim_inputs),
                 Enzyme.Duplicated(prob_new, dprob_new),
                 Enzyme.Duplicated(data, ddata),

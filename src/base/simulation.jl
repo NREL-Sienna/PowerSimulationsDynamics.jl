@@ -249,9 +249,13 @@ function _get_flat_start(inputs::SimulationInputs)
 end
 
 function _pre_initialize_simulation!(sim::Simulation)
-    _initialize_state_space(sim, Val(sim.initialize_level))
+    sys = get_system(sim)
+    inputs = get_simulation_inputs(sim)
+    @assert sim.status == BUILD_INCOMPLETE
+    sim.x0 = _get_starting_initialization(sim, inputs, Val(sim.initialize_level))
+    sim.status = _initialize_state_space(sim.x0, inputs, sys, Val(sim.initialize_level))
     return
-end
+end                                                                             
 
 function _get_jacobian(sim::Simulation{ResidualModel})
     inputs = get_simulation_inputs(sim)
