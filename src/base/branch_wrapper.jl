@@ -2,11 +2,11 @@
 Wraps DynamicBranch devices from PowerSystems to handle changes in controls and connection
 status, and allocate the required indexes of the state space.
 """
-struct BranchWrapper
+mutable struct BranchWrapper
     branch::PSY.DynamicBranch
     system_base_power::Float64
     system_base_frequency::Float64
-    connection_status::Base.RefValue{Float64}
+    connection_status::Float64
     bus_ix_from::Int
     bus_ix_to::Int
     ix_range::Vector{Int}
@@ -26,7 +26,7 @@ struct BranchWrapper
             branch,
             sys_base_power,
             sys_base_freq,
-            Base.Ref(1.0),
+            1.0,
             bus_ix_from,
             bus_ix_to,
             ix_range,

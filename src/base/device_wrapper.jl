@@ -30,13 +30,13 @@ get_delays(
 Wraps DynamicInjection devices from PowerSystems to handle changes in controls and connection
 status, and allocate the required indexes of the state space and parameter space. 
 """
-struct DynamicWrapper{T <: PSY.DynamicInjection}
+mutable struct DynamicWrapper{T <: PSY.DynamicInjection}
     device::T
     system_base_power::Float64
     system_base_frequency::Float64
     static_device::PSY.StaticInjection
     bus_category::Type{<:BusCategory}
-    connection_status::Base.RefValue{Float64}
+    connection_status::Float64
     inner_vars_index::Vector{Int}
     ix_range::Vector{Int}
     ode_range::Vector{Int}
@@ -52,7 +52,7 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
         system_base_frequency::Float64,
         static_device::PSY.StaticInjection,
         bus_category::Type{<:BusCategory},
-        connection_status::Base.RefValue{Float64},
+        connection_status::Float64,
         inner_vars_index,
         ix_range,
         ode_range,
@@ -122,7 +122,7 @@ function DynamicWrapper(
         sys_base_freq,
         static_device,
         BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
-        Base.Ref(1.0),
+        1.0,
         inner_var_range,
         ix_range,
         ode_range,
@@ -166,7 +166,7 @@ function DynamicWrapper(
         sys_base_freq,
         static_device,
         BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
-        Base.Ref(1.0),
+        1.0,
         inner_var_range,
         ix_range,
         ode_range,
@@ -208,7 +208,7 @@ function DynamicWrapper(
         sys_base_freq,
         static_device,
         BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
-        Base.Ref(1.0),
+        1.0,
         collect(inner_var_range),
         collect(ix_range),
         collect(ode_range),
@@ -328,9 +328,9 @@ function get_input_port_ix(wrapper::DynamicWrapper, ::T) where {T <: PSY.Dynamic
     return get_input_port_ix(wrapper, T)
 end
 
-struct StaticWrapper{T <: PSY.StaticInjection, V}
+mutable struct StaticWrapper{T <: PSY.StaticInjection, V}
     device::T
-    connection_status::Base.RefValue{Float64}
+    connection_status::Float64
     bus_ix::Int
     ext::Dict{String, Any}
 end
@@ -339,7 +339,7 @@ function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
     bus = PSY.get_bus(device)
     StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
-        Base.Ref(1.0),
+        1.0,
         Vector{Int}(),
         bus_ix,
         Dict{String, Any}(),
@@ -350,7 +350,7 @@ function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.Source}
     bus = PSY.get_bus(device)
     return StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
-        Base.Ref(1.0),
+        1.0,
         bus_ix,
         Dict{String, Any}(),
     )
