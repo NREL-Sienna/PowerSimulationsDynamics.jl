@@ -124,29 +124,12 @@ function set_Q_ref!(array, value)
     @view(array["refs"])["Q_ref"] = value
 end
 
-function _get_starting_initialization(
-    sim::Simulation,
-    inputs::SimulationInputs,
-    ::Union{Val{POWERFLOW_AND_DEVICES}, Val{FLAT_START}},
-)
-    return _get_flat_start(inputs)
-end
-
-function _get_starting_initialization(
-    sim::Simulation,
-    inputs::SimulationInputs,
-    ::Union{Val{DEVICES_ONLY}, Val{INITIALIZED}},
-)
-    return deepcopy(sim.x0_init)
-end
-
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-function _initialize_state_space(
+function _initialize_powerflow_and_devices!(
     x0::AbstractArray,
     inputs::SimulationInputs,
     sys::PSY.System,
-    ::Val{POWERFLOW_AND_DEVICES},
 )
     #x0 = _get_flat_start(inputs)
     @info("Pre-Initializing Simulation States")
@@ -166,11 +149,9 @@ function _initialize_state_space(
     return status
 end
 
-function _initialize_state_space(
+function _initialize_devices_only!(
     x0::AbstractArray,
     inputs::SimulationInputs,
-    sys::PSY.System,
-    ::Val{DEVICES_ONLY},
 )
     @info("Pre-Initializing Simulation States")
     status = BUILD_INCOMPLETE
@@ -186,33 +167,6 @@ function _initialize_state_space(
         status = check_valid_values(x0, inputs)
     end
     return status
-end
-
-function _initialize_state_space(
-    x0::AbstractArray,
-    inputs::SimulationInputs,
-    sys::PSY.System,
-    ::Val{FLAT_START},
-)
-end
-
-function _initialize_state_space(
-    x0::AbstractArray,
-    inputs::SimulationInputs,
-    sys::PSY.System,
-    ::Val{INITIALIZED},
-)
-    if length(x0) != get_variable_count(inputs)
-        throw(
-            IS.ConflictingInputsError(
-                "The size of the provided initial state space does not match the model's state space.",
-            ),
-        )
-    end
-    @warn(
-        "Using existing initial conditions value for simulation initialization"
-    )
-    return SIMULATION_INITIALIZED
 end
 
 """

@@ -252,10 +252,30 @@ function _pre_initialize_simulation!(sim::Simulation)
     sys = get_system(sim)
     inputs = get_simulation_inputs(sim)
     @assert sim.status == BUILD_INCOMPLETE
-    sim.x0 = _get_starting_initialization(sim, inputs, Val(sim.initialize_level))
-    sim.status = _initialize_state_space(sim.x0, inputs, sys, Val(sim.initialize_level))
+    if sim.initialize_level == POWERFLOW_AND_DEVICES
+        sim.x0 = _get_flat_start(inputs)
+        sim.status = _initialize_powerflow_and_devices!(sim.x0, inputs, sys)
+    elseif sim.initialize_level == DEVICE_ONLY
+        sim.x0 = deepcopy(sim.x0_init)
+        sim.status = _initialize_devices_only!(sim.x0, inputs)
+    elseif sim.initialize_level == FLAT_START
+        sim.x0 = _get_flat_start(inputs)
+    elseif sim.initialize_level == INITILAIZED
+        sim.x0 = deepcopy(sim.x0_init)
+        if length(x0) != get_variable_count(inputs)
+            throw(
+                IS.ConflictingInputsError(
+                    "The size of the provided initial state space does not match the model's state space.",
+                ),
+            )
+        end
+        @warn(
+            "Using existing initial conditions value for simulation initialization"
+        )
+        sim.status = SIMULATION_INITIALIZED
+    end
     return
-end                                                                             
+end
 
 function _get_jacobian(sim::Simulation{ResidualModel})
     inputs = get_simulation_inputs(sim)
@@ -446,12 +466,14 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                     model = T(simulation_inputs, get_x0(sim), SimCache)
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Initial Condition NLsolve refinement" begin
-                    refine_initial_condition!(
-                        sim,
-                        model,
-                        jacobian,
-                        Val(sim.initialize_level),
-                    )
+                    if (sim.initialize_level == POWERFLOW_AND_DEVICES) ||
+                       (sim.initialize_level == DEVICES_ONLY)
+                        refine_initial_condition!(
+                            sim,
+                            model,
+                            jacobian,
+                        )
+                    end
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Build Perturbations" begin
                     _build_perturbations!(sim)

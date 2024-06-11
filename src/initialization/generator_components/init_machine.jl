@@ -31,13 +31,12 @@ function initialize_mach_shaft!(
     τm0 = real(V * conj(I))
     @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE) τm0, P0
     #To solve: δ, τm, Vf0
-    function f!(out, x, params)
+    p_nl = [R, Xd_p, V_R, V_I, P0, Q0]
+    function f!(out, x, p_nl)
         δ = x[1]
         τm = x[2]
         Vf0 = x[3]
-
-        R = params[:R]
-        Xd_p = params[:Xd_p]
+        R, Xd_p, V_R, V_I, P0, Q0 = p_nl
         V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / (R^2 + Xd_p^2)) * (Xd_p * (Vf0 - V_dq[2]) - R * V_dq[1])  #15.36
         i_q = (1.0 / (R^2 + Xd_p^2)) * (Xd_p * V_dq[1] + R * (Vf0 - V_dq[2])) #15.36
@@ -47,7 +46,7 @@ function initialize_mach_shaft!(
         out[3] = Q0 - (V_dq[2] * i_d - V_dq[1] * i_q) #Output Reactive Power
     end
     x0 = [δ0, τm0, 1.0]
-    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, p_nl)
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();
@@ -138,7 +137,7 @@ function initialize_mach_shaft!(
     end
     V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1]]
-    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();
@@ -829,7 +828,7 @@ function initialize_mach_shaft!(
     end
     x0 = [δ0, τm0, Vf0, eq_p0, ed_p0, ψ_kd0, ψ_kq0, Xad_Ifd0]
 
-    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();

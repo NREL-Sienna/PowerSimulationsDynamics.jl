@@ -85,7 +85,7 @@ function initialize_static_device!(
             R_th * (V_I_internal - V_I) / Zmag - X_th * (V_R_internal - V_R) / Zmag - I_I
     end
     x0 = [V_R, V_I]
-    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();

@@ -58,7 +58,7 @@ function initialize_filter!(
         out[6] = Vi_filter - V_I - rg * Ii_filter - ω_sys * lg * Ir_filter
     end
     x0 = [V_R, V_I, Ir_filter, Ii_filter, V_R, V_I]
-    prob = NonlinearSolve.NonlinearProblem(f!, x0, p)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, p)
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();

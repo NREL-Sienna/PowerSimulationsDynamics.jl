@@ -245,7 +245,7 @@ function initialize_tg!(
         out[3] = (Pm - D_T * Δω) - τm0
     end
     x0 = [1.0 / inv_R, τm0, τm0]
-    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();

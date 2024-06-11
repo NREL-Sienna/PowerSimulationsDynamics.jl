@@ -88,16 +88,18 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     else
         x0 = deepcopy(sim.x0_init)
         sys = deepcopy(sim.sys)
-        function f_enzyme(p, x0, sys, sim_inputs, prob, data)
+        function f_enzyme(p, x0, sys, sim_inputs, prob, data, init_level)   #Make separate f_enzymes depending on init_level? 
             p_new = sim_inputs.parameters
             p_new[param_ixs] .= p
-            _initialize_state_space(      
-                x0,
-                sim_inputs,
-                sys,
-                Val(init_level),   
-            )
-            prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0) 
+            if init_level == POWERFLOW_AND_DEVICES
+                @error "POWERFLOW AND DEVICES -- not yet supported"
+                #_initialize_powerflow_and_devices!(x0, inputs, sys)
+            elseif init_level == DEVICES_ONLY
+                @error "DEVICES ONLY"
+            elseif init_level == INITIALIZED
+                _initialize_devices_only!(x0, sim_inputs)
+            end
+            prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0)
             sol = SciMLBase.solve(prob_new, solver)
 
             @assert length(state_ixs) == 1  #Hardcode for single state for now 
@@ -115,6 +117,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 deepcopy(sim.inputs_init),
                 prob_new,
                 data,
+                init_level,
             )
         end
         function f_grad(p, data)
@@ -135,6 +138,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 Enzyme.Duplicated(sim_inputs, dsim_inputs),
                 Enzyme.Duplicated(prob_new, dprob_new),
                 Enzyme.Duplicated(data, ddata),
+                Enzyme.Const(init_level),
             )
             return dp
         end

@@ -75,7 +75,7 @@ function initialize_avr!(
         out[3] = (Kf / Tf) * Vf0 + Vr2 #16.12b
     end
     x0 = [1.0, Vf0, Vf0]
-    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();
@@ -326,7 +326,7 @@ function initialize_avr!(
         out[2] = V_in * (1 - Ta_Tb) - Vr
     end
     x0 = [1.0, Vf0]
-    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();
