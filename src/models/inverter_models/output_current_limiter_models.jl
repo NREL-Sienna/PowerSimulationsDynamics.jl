@@ -3,6 +3,7 @@ function limit_output_current(limiter :: Nothing, Id_cnv_ref :: Union{Float64, F
 end
 
 function limit_output_current(limiter:: PSY.InstantaneousOutputCurrentLimiter, Id_cnv_ref :: Union{Float64, ForwardDiff.Dual}, Iq_cnv_ref :: Union{Float64, ForwardDiff.Dual})
+    @show "HEEERE1"
     d_lim = PSY.get_Id_max(limiter)
     q_lim = PSY.get_Iq_max(limiter)
     Id_cnv_ref2 = clamp(Id_cnv_ref, -d_lim, d_lim)
@@ -11,6 +12,7 @@ function limit_output_current(limiter:: PSY.InstantaneousOutputCurrentLimiter, I
 end
 
 function limit_output_current(limiter :: PSY.MagnitudeOutputCurrentLimiter, Id_cnv_ref :: Union{Float64, ForwardDiff.Dual}, Iq_cnv_ref :: Union{Float64, ForwardDiff.Dual})
+    @show "HEEERE2"
     limit_value = PSY.get_I_max(limiter)
     theta = atan(Iq_cnv_ref, Id_cnv_ref)
     if (Id_cnv_ref^2 + Iq_cnv_ref^2)^(1/2) > limit_value
@@ -24,6 +26,7 @@ function limit_output_current(limiter :: PSY.MagnitudeOutputCurrentLimiter, Id_c
 end
 
 function limit_output_current(limiter :: PSY.SaturationOutputCurrentLimiter, Id_cnv_ref :: Union{Float64, ForwardDiff.Dual}, Iq_cnv_ref :: Union{Float64, ForwardDiff.Dual})
+    @show "HEEERE3"
     limit_value = PSY.get_I_max(limiter)
     gain = PSY.get_kw(limiter)
     theta = atan(Iq_cnv_ref, Id_cnv_ref)
@@ -40,6 +43,7 @@ function limit_output_current(limiter :: PSY.SaturationOutputCurrentLimiter, Id_
 end
 
 function limit_output_current(limiter :: PSY.HybridOutputCurrentLimiter, Id_cnv_ref :: Union{Float64, ForwardDiff.Dual}, Iq_cnv_ref :: Union{Float64, ForwardDiff.Dual}, ω :: Union{Float64, ForwardDiff.Dual})
+    @show "HEEERE4"
     limit_value = PSY.get_I_max(limiter)
     real_imped = PSY.get_rv(limiter)
     imag_imped = PSY.get_lv(limiter)
