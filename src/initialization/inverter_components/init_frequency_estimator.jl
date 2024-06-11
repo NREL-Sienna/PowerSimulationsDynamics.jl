@@ -43,7 +43,7 @@ function initialize_frequency_estimator!(
     end
 
     x0 = [Vpll_d0, Vpll_q0, ϵ_pll0, θ0_pll]
-    prob = NonlinearSolve.NonlinearProblem(f!, x0, params)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();

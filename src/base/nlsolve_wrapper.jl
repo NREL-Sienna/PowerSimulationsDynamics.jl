@@ -44,7 +44,7 @@ function _nlsolve_call(
     show_trace::Bool,
 )
     f = SciMLBase.NonlinearFunction(f_eval; jac = jacobian)
-    prob = NonlinearSolve.NonlinearProblem(f, initial_guess, p)
+    prob = NonlinearSolve.NonlinearProblem{true}(f, initial_guess, p)
     sol = NonlinearSolve.solve(
         prob,
         solver;
@@ -131,7 +131,6 @@ function refine_initial_condition!(
     sim::Simulation,
     model::SystemModel,
     jacobian::JacobianFunctionWrapper,
-    ::Val{POWERFLOW_AND_DEVICES},
 )
     @assert sim.status != BUILD_INCOMPLETE
     converged = false
@@ -182,8 +181,8 @@ function refine_initial_condition!(
         _check_residual(residual, inputs, MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE)
         @warn(
             "Initialization didn't found a solution to desired tolerances.\\
-Initial conditions do not meet conditions for an stable equilibrium. \\
-Simulation might fail"
+            Initial conditions do not meet conditions for an stable equilibrium. \\
+            Simulation might fail"
         )
     end
 
@@ -192,28 +191,4 @@ Simulation might fail"
         @warn "The resulting voltages in the initial conditions differ from the power flow results"
     end
     return
-end
-
-function refine_initial_condition!(
-    sim::Simulation,
-    model::SystemModel,
-    jacobian::JacobianFunctionWrapper,
-    ::Val{DEVICES_ONLY},
-)
-    refine_initial_condition!(sim, model, jacobian, Val(POWERFLOW_AND_DEVICES))
-end
-
-function refine_initial_condition!(
-    sim::Simulation,
-    model::SystemModel,
-    jacobian::JacobianFunctionWrapper,
-    ::Val{FLAT_START},
-)
-end
-function refine_initial_condition!(
-    sim::Simulation,
-    model::SystemModel,
-    jacobian::JacobianFunctionWrapper,
-    ::Val{INITIALIZED},
-)
 end
