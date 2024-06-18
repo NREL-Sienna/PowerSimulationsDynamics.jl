@@ -37,6 +37,8 @@ function _mdl_ode_RE_inner_controller_B!(
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
     },
     inner_vars::AbstractVector,
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -92,6 +94,8 @@ function _mdl_ode_RE_inner_controller_B!(
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
     },
     inner_vars::AbstractVector,
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -153,6 +157,8 @@ function mdl_inner_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, L},
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -733,6 +739,8 @@ function mdl_inner_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F, L},
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -805,6 +813,8 @@ function mdl_inner_ode!(
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
     },
+    h,
+    t,
 ) where {
     C <: PSY.Converter,
     O <: PSY.OuterControl,
@@ -833,6 +843,8 @@ function mdl_inner_ode!(
         inner_control,
         dynamic_device,
         inner_vars,
+        h,
+        t,
     )
     return
 end
