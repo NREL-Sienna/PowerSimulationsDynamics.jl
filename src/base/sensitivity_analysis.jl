@@ -12,10 +12,31 @@ function get_indices_in_parameter_vector(p, device_param_pairs)
     return indices
 end
 
-function get_required_initialization_level(sys, device_param_pairs)
-    init_level = INITIALIZED
-    #TODO - check parameters and return appropriate init_level 
-    return init_level
+function get_required_initialization_level(p_metadata, param_ixs)
+    #Check for invalid parameters 
+    for metadata_entry in p_metadata[param_ixs]
+        if metadata_entry.type === DEVICE_SETPOINT
+            @error "The parameter given is unsupported because it is a device setpoint."
+            return nothing
+        end
+        if metadata_entry.in_mass_matrix === DEVICE_SETPOINT
+            @error "The parameter given is not yet supported because it appears in the mass matrix"
+            return nothing
+        end
+    end
+    #Check for parameters which change the power flow 
+    for metadata_entry in p_metadata[param_ixs]
+        if metadata_entry.type === NETWORK_PARAM || metadata_entry.type === NETWORK_SETPOINT
+            return POWERFLOW_AND_DEVICES
+        end
+    end
+    #Check for parameters which change device initialization
+    for metadata_entry in p_metadata[param_ixs]
+        if metadata_entry.impacts_ic == true
+            return DEVICES_ONLY
+        end
+    end
+    return INITIALIZED
 end
 
 function get_indices_in_state_vector(sim, state_data)
@@ -43,16 +64,15 @@ function get_parameter_values(sim, device_param_pairs)
     end
 end
 
-#TODO - think more carefully about how data should be included so it works with with Optimization API. 
-#TODO - avoid code repetition with _execute! by defining functions appropriately.
-#TODO - extend for initialization - first for H...
-#TODO - extend for parameters that require initialization.
 function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; kwargs...)
-    init_level = get_required_initialization_level(sim.sys, param_data)
+    p_metadata = sim.inputs.parameters_metadata
     p = sim.inputs.parameters
     param_ixs = get_indices_in_parameter_vector(p, param_data)
+    init_level = get_required_initialization_level(p_metadata, param_ixs)
+    if init_level === nothing
+        return nothing
+    end
     state_ixs = get_indices_in_state_vector(sim, state_data)
-    init_level = get_required_initialization_level(sim.sys, param_data)
     sim_inputs = deepcopy(sim.inputs_init)
     if get(kwargs, :auto_abstol, false)
         cb = AutoAbstol(true, get(kwargs, :abstol, 1e-9))
@@ -95,9 +115,11 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 @error "POWERFLOW AND DEVICES -- not yet supported"
                 #_initialize_powerflow_and_devices!(x0, inputs, sys)
             elseif init_level == DEVICES_ONLY
-                @error "DEVICES ONLY"
-            elseif init_level == INITIALIZED
+                @info "Reinitializing devices only"
                 _initialize_devices_only!(x0, sim_inputs)
+                _refine_initial_condition!(x0, p_new, prob)
+            elseif init_level == INITIALIZED
+                @info "I.C.s not impacted by parameter change"
             end
             prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0)
             sol = SciMLBase.solve(prob_new, solver)

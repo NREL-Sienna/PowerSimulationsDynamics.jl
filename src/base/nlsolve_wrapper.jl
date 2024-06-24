@@ -127,6 +127,34 @@ function _check_residual(
     return
 end
 
+function _refine_initial_condition!(x0, p, prob)
+    function ff(u, x0, p)
+        prob.f.f(u, x0, p, 0.0)
+    end
+    #residual = similar(x0)
+    #ff(residual, x0, p) #Error: ERROR: AssertionError: length(getcolptr(S)) == size(S, 2) + 1 && (getcolptr(S))[end] - 1 == length(rowvals(S)) == length(nonzeros(S))
+    #_check_residual(residual, inputs, MAX_INIT_RESIDUAL)
+    solver = NonlinearSolve.TrustRegion()
+    probnl = NonlinearSolve.NonlinearProblem{true}(ff, x0, p)
+    #for tol in [STRICT_NLSOLVE_F_TOLERANCE, RELAXED_NLSOLVE_F_TOLERANCE] #ERROR: Enzyme execution failed., Enzyme: Non-constant keyword argument found for Tuple{UInt64, typeof(Core.kwcall), Duplicated{@NamedTuple{reltol::Float64, abstol::Float64}},
+    for solver in [NonlinearSolve.TrustRegion(), NonlinearSolve.NewtonRaphson()]
+        sol = NonlinearSolve.solve(
+            probnl,
+            solver;
+            reltol = STRICT_NLSOLVE_F_TOLERANCE,
+            abstol = STRICT_NLSOLVE_F_TOLERANCE,
+            maxiters = MAX_NLSOLVE_INTERATIONS,
+        )
+        converged = SciMLBase.successful_retcode(sol)
+        x0 .= sol.u
+        if converged
+            break
+        end
+    end
+    #end 
+    return nothing
+end
+
 function refine_initial_condition!(
     sim::Simulation,
     model::SystemModel,

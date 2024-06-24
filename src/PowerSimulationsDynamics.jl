@@ -75,6 +75,7 @@ import ForwardDiff
 import SparseArrays
 import LinearAlgebra
 import Base.to_index
+import Base.length
 import NonlinearSolve
 import PrettyTables
 import Base.ImmutableDict
@@ -121,6 +122,7 @@ include("base/device_wrapper.jl")
 include("base/branch_wrapper.jl")
 include("base/frequency_reference.jl")
 include("base/simulation_model.jl")
+include("utils/parameters.jl")
 include("base/simulation_inputs.jl")
 include("base/perturbations.jl")
 include("base/caches.jl")
@@ -204,6 +206,5 @@ include("utils/immutable_dicts.jl")
 include("utils/print.jl")
 include("utils/kwargs_check.jl")
 include("utils/logging.jl")
-include("utils/parameters.jl")
 
 end # module

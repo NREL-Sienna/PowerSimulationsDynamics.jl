@@ -19,6 +19,7 @@ mutable struct SimulationInputs
     DAE_vector::Vector{Bool}
     mass_matrix::LinearAlgebra.Diagonal{Float64}
     parameters::ComponentArrays.ComponentVector{Float64}
+    parameters_metadata::ComponentArrays.ComponentVector{ParamsMetadata}
     constant_lags::Vector
 end
 
@@ -66,8 +67,15 @@ function SimulationInputs(
         initial_parameters = _add_parameters(initial_parameters, wrapped_injectors)
         initial_parameters = _add_parameters(initial_parameters, wrapped_loads)
         initial_parameters = _add_parameters(initial_parameters, wrapped_static_injectors)
+        #initial_parameters = _add_bus_parameters(initial_parameters, PSY.get_components(PSY.ACBus, sys)) #For extending sensitivity API to Power Flow
+        parameter_metadata = ComponentArrays.ComponentVector{ParamsMetadata}()
+        parameter_metadata = _add_parameters_metadata(parameter_metadata, wrapped_branches)
+        parameter_metadata = _add_parameters_metadata(parameter_metadata, wrapped_injectors)
+        parameter_metadata = _add_parameters_metadata(parameter_metadata, wrapped_loads)
+        parameter_metadata =
+            _add_parameters_metadata(parameter_metadata, wrapped_static_injectors)
     end
-
+    @assert length(initial_parameters) == length(parameter_metadata)
     mass_matrix = _make_mass_matrix(wrapped_injectors, n_vars, n_buses)
     DAE_vector = _make_DAE_vector(mass_matrix, n_vars, n_buses)
     _adjust_states!(
@@ -104,6 +112,7 @@ function SimulationInputs(
         DAE_vector,
         mass_matrix,
         initial_parameters,
+        parameter_metadata,
         delays,
     )
 end
@@ -177,6 +186,88 @@ function _get_wrapper_name(wrapped_device::StaticLoadWrapper)
 end
 function _get_wrapper_name(wrapped_device::BranchWrapper)
     Symbol(PSY.get_name(get_branch(wrapped_device)))
+end
+
+# For Extending Sensitivity API to Power Flow
+#= function _add_bus_parameters(initial_parameters, buses)
+    for bus in buses
+        name = Symbol(PSY.get_name(bus))
+        bus_type = PSY.get_bustype(bus)
+        if bus_type === PSY.ACBusTypes.REF
+            refs = (
+                V_ref = PSY.get_magnitude(bus),  
+                θ_ref = PSY.get_angle(bus),  
+                P_ref = 0.0, 
+                Q_ref = 0.0,
+            )
+        else #TODO- set appropriate references for PV and PQ buses. 
+            refs = (
+                V_ref = 0.0, 
+                θ_ref = 0.0,
+                P_ref = 0.0, 
+                Q_ref = 0.0,
+            )
+        end 
+        initial_parameters = ComponentArrays.ComponentVector(
+            initial_parameters;
+            name => (
+                refs = refs,
+            ),
+        )
+    end 
+    return initial_parameters 
+end  =#
+
+function _add_parameters_metadata(parameter_metadata, wrapped_devices)
+    for wrapped_device in wrapped_devices
+        p_metadata = get_params_metadata(wrapped_device)
+        name = _get_wrapper_name(wrapped_device)
+        if isa(wrapped_device, DynamicWrapper)
+            # Consider the special case when the static device is StandardLoad
+            static_device = get_static_device(wrapped_device)
+            if isa(static_device, PSY.StandardLoad)
+                reactive_power = PF.get_total_q(static_device)
+            else
+                reactive_power = PSY.get_reactive_power(static_device)
+            end
+            refs_metadata = (
+                V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                ω_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                P_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                Q_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+            )
+        elseif isa(wrapped_device, StaticWrapper)
+            device = get_device(wrapped_device)
+            refs_metadata = (
+                V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                P_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                Q_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+            )
+
+        elseif isa(wrapped_device, StaticLoadWrapper)
+            refs = (
+                V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                P_power = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                P_current = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                P_impedance = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                Q_power = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                Q_current = ParamsMetadata(DEVICE_SETPOINT, false, true),
+                Q_impedance = ParamsMetadata(DEVICE_SETPOINT, false, true),
+            )
+        else
+            refs = (;)
+        end
+        parameter_metadata = ComponentArrays.ComponentVector(
+            parameter_metadata;
+            name => (
+                params = p_metadata,
+                refs = refs_metadata,
+            ),
+        )
+    end
+    return parameter_metadata
 end
 
 function _add_parameters(initial_parameters, wrapped_devices)

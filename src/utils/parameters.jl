@@ -1,8 +1,17 @@
+
+@enum PARAM_TYPES begin
+    DEVICE_PARAM = 0
+    DEVICE_SETPOINT = 1
+    NETWORK_PARAM = 2
+    NETWORK_SETPOINT = 3
+end
+
 struct ParamsMetadata
+    type::PARAM_TYPES
     in_mass_matrix::Bool
-    in_network::Bool
     impacts_ic::Bool
 end
+Base.length(::ParamsMetadata) = 1
 
 function get_params(x)
     @error "Parameters not yet defined for component: $(typeof(x))"
@@ -37,8 +46,8 @@ get_params_metadata(x::PSY.DynamicBranch) = get_params_metadata(PSY.get_branch(x
 
 get_params(x::PSY.Line) = (r = PSY.get_r(x), x = PSY.get_x(x))
 get_params_metadata(::PSY.Line) = (
-    r = ParamsMetadata(false, true, true),
-    x = ParamsMetadata(false, true, true),
+    r = ParamsMetadata(NETWORK_PARAM, false, true),
+    x = ParamsMetadata(NETWORK_PARAM, false, true),
 )
 get_params(::StaticLoadWrapper) = (;)
 get_params_metadata(::StaticLoadWrapper) = (;)
@@ -74,16 +83,16 @@ get_params(x::PSY.LCLFilter) =
         rg = PSY.get_rg(x),
     )
 get_params_metadata(::PSY.LCLFilter) = (
-    lf = ParamsMetadata(true, false, true),
-    rf = ParamsMetadata(false, false, true),
-    cf = ParamsMetadata(true, false, true),
-    lg = ParamsMetadata(true, false, true),
-    rg = ParamsMetadata(false, false, true),
+    lf = ParamsMetadata(DEVICE_PARAM, true, true),
+    rf = ParamsMetadata(DEVICE_PARAM, false, true),
+    cf = ParamsMetadata(DEVICE_PARAM, true, true),
+    lg = ParamsMetadata(DEVICE_PARAM, true, true),
+    rg = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 get_params(x::PSY.RLFilter) = (rf = PSY.get_rf(x), lf = PSY.get_lf(x))
 get_params_metadata(::PSY.RLFilter) = (
-    rf = ParamsMetadata(false, false, true),
-    lf = ParamsMetadata(false, false, true),
+    rf = ParamsMetadata(DEVICE_PARAM, false, true),
+    lf = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 
 #OUTER CONTROL,                                                                                                                                                                
@@ -99,9 +108,9 @@ get_params_metadata(x::PSY.OuterControl) = (
 get_params(x::PSY.VirtualInertia) =
     (Ta = PSY.get_Ta(x), kd = PSY.get_kd(x), kω = PSY.get_kω(x))
 get_params_metadata(::PSY.VirtualInertia) = (
-    Ta = ParamsMetadata(false, false, false),
-    kd = ParamsMetadata(false, false, false),
-    kω = ParamsMetadata(false, false, false),
+    Ta = ParamsMetadata(DEVICE_PARAM, false, false),
+    kd = ParamsMetadata(DEVICE_PARAM, false, false),
+    kω = ParamsMetadata(DEVICE_PARAM, false, false),
 )
 #Note: Removed fbdd_pnts from parameters because it is not a NamedTuple
 get_params(x::PSY.ActiveRenewableControllerAB) = (
@@ -118,35 +127,35 @@ get_params(x::PSY.ActiveRenewableControllerAB) = (
     T_pord = PSY.get_T_pord(x),
 )
 get_params_metadata(::PSY.ActiveRenewableControllerAB) = (
-    K_pg = ParamsMetadata(false, false, false),
-    K_ig = ParamsMetadata(false, false, true),
-    T_p = ParamsMetadata(false, false, true),
+    K_pg = ParamsMetadata(DEVICE_PARAM, false, false),
+    K_ig = ParamsMetadata(DEVICE_PARAM, false, true),
+    T_p = ParamsMetadata(DEVICE_PARAM, false, true),
     fe_lim = (
-        min = ParamsMetadata(false, false, false),
-        max = ParamsMetadata(false, false, false),
+        min = ParamsMetadata(DEVICE_PARAM, false, false),
+        max = ParamsMetadata(DEVICE_PARAM, false, false),
     ),
     P_lim = (
-        min = ParamsMetadata(false, false, false),
-        max = ParamsMetadata(false, false, false),
+        min = ParamsMetadata(DEVICE_PARAM, false, false),
+        max = ParamsMetadata(DEVICE_PARAM, false, false),
     ),
-    T_g = ParamsMetadata(false, false, false),
-    D_dn = ParamsMetadata(false, false, false),
-    D_up = ParamsMetadata(false, false, false),
+    T_g = ParamsMetadata(DEVICE_PARAM, false, false),
+    D_dn = ParamsMetadata(DEVICE_PARAM, false, false),
+    D_up = ParamsMetadata(DEVICE_PARAM, false, false),
     dP_lim = (
-        min = ParamsMetadata(false, false, false),
-        max = ParamsMetadata(false, false, false),
+        min = ParamsMetadata(DEVICE_PARAM, false, false),
+        max = ParamsMetadata(DEVICE_PARAM, false, false),
     ),
     P_lim_innem_inner = (
-        min = ParamsMetadata(false, false, false),
-        max = ParamsMetadata(false, false, false),
+        min = ParamsMetadata(DEVICE_PARAM, false, false),
+        max = ParamsMetadata(DEVICE_PARAM, false, false),
     ),
-    T_pord = ParamsMetadata(false, false, false),
+    T_pord = ParamsMetadata(DEVICE_PARAM, false, false),
 )
 #REACTIVE POWER CONTROL
 get_params(x::PSY.ReactivePowerDroop) = (kq = PSY.get_kq(x), ωf = PSY.get_ωf(x))
 get_params_metadata(::PSY.ReactivePowerDroop) = (
-    kq = ParamsMetadata(false, false, false),
-    ωf = ParamsMetadata(false, false, false),
+    kq = ParamsMetadata(DEVICE_PARAM, false, false),
+    ωf = ParamsMetadata(DEVICE_PARAM, false, false),
 )
 get_params(x::PSY.ReactiveRenewableControllerAB) = (
     T_fltr = PSY.get_T_fltr(x),
@@ -167,34 +176,34 @@ get_params(x::PSY.ReactiveRenewableControllerAB) = (
     K_qi = PSY.get_K_qi(x),
 )
 get_params_metadata(::PSY.ReactiveRenewableControllerAB) =
-    (T_fltr = ParamsMetadata(false, false, false),
-        K_p = ParamsMetadata(false, false, false),
-        K_i = ParamsMetadata(false, false, true),
-        T_ft = ParamsMetadata(false, false, false),
-        T_fv = ParamsMetadata(false, false, false),
-        V_frz = ParamsMetadata(false, false, false),
-        R_c = ParamsMetadata(false, false, true),
-        X_c = ParamsMetadata(false, false, true),
-        K_c = ParamsMetadata(false, false, true),
+    (T_fltr = ParamsMetadata(DEVICE_PARAM, false, false),
+        K_p = ParamsMetadata(DEVICE_PARAM, false, false),
+        K_i = ParamsMetadata(DEVICE_PARAM, false, true),
+        T_ft = ParamsMetadata(DEVICE_PARAM, false, false),
+        T_fv = ParamsMetadata(DEVICE_PARAM, false, false),
+        V_frz = ParamsMetadata(DEVICE_PARAM, false, false),
+        R_c = ParamsMetadata(DEVICE_PARAM, false, true),
+        X_c = ParamsMetadata(DEVICE_PARAM, false, true),
+        K_c = ParamsMetadata(DEVICE_PARAM, false, true),
         e_lim = (
-            min = ParamsMetadata(false, false, false),
-            max = ParamsMetadata(false, false, false),
+            min = ParamsMetadata(DEVICE_PARAM, false, false),
+            max = ParamsMetadata(DEVICE_PARAM, false, false),
         ),
         Q_lim = (
-            min = ParamsMetadata(false, false, false),
-            max = ParamsMetadata(false, false, false),
+            min = ParamsMetadata(DEVICE_PARAM, false, false),
+            max = ParamsMetadata(DEVICE_PARAM, false, false),
         ),
-        T_p = ParamsMetadata(false, false, true),
+        T_p = ParamsMetadata(DEVICE_PARAM, false, true),
         Q_lim_inner = (
-            min = ParamsMetadata(false, false, false),
-            max = ParamsMetadata(false, false, false),
+            min = ParamsMetadata(DEVICE_PARAM, false, false),
+            max = ParamsMetadata(DEVICE_PARAM, false, false),
         ),
         V_lim = (
-            min = ParamsMetadata(false, false, false),
-            max = ParamsMetadata(false, false, false),
+            min = ParamsMetadata(DEVICE_PARAM, false, false),
+            max = ParamsMetadata(DEVICE_PARAM, false, false),
         ),
-        K_qp = ParamsMetadata(false, false, false),
-        K_qi = ParamsMetadata(false, false, true),
+        K_qp = ParamsMetadata(DEVICE_PARAM, false, false),
+        K_qi = ParamsMetadata(DEVICE_PARAM, false, true),
     )
 #= 
 = PSY.get_dbd_pnts(x)[1],
@@ -218,16 +227,16 @@ get_params(x::PSY.VoltageModeControl) = (
     kad = PSY.get_kad(x),
 )
 get_params_metadata(::PSY.VoltageModeControl) = (
-    kpv = ParamsMetadata(false, false, true),
-    kiv = ParamsMetadata(false, false, true),
-    kffv = ParamsMetadata(false, false, true),
-    rv = ParamsMetadata(false, false, true),
-    lv = ParamsMetadata(false, false, true),
-    kpc = ParamsMetadata(false, false, true),
-    kic = ParamsMetadata(false, false, true),
-    kffi = ParamsMetadata(false, false, true),
-    ωad = ParamsMetadata(false, false, false),
-    kad = ParamsMetadata(false, false, true),
+    kpv = ParamsMetadata(DEVICE_PARAM, false, true),
+    kiv = ParamsMetadata(DEVICE_PARAM, false, true),
+    kffv = ParamsMetadata(DEVICE_PARAM, false, true),
+    rv = ParamsMetadata(DEVICE_PARAM, false, true),
+    lv = ParamsMetadata(DEVICE_PARAM, false, true),
+    kpc = ParamsMetadata(DEVICE_PARAM, false, true),
+    kic = ParamsMetadata(DEVICE_PARAM, false, true),
+    kffi = ParamsMetadata(DEVICE_PARAM, false, true),
+    ωad = ParamsMetadata(DEVICE_PARAM, false, false),
+    kad = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 #= 
 get_params(x::PSY.RECurrentControlB) = [
@@ -263,7 +272,8 @@ get_params_metadata(::PSY.RECurrentControlB) = [
  =#
 #DC SOURCE 
 get_params(x::PSY.FixedDCSource) = (voltage = PSY.get_voltage(x),)
-get_params_metadata(::PSY.FixedDCSource) = (voltage = ParamMetadata(false, false, false),)
+get_params_metadata(::PSY.FixedDCSource) =
+    (voltage = ParamMetadata(DEVICE_PARAM, false, false),)
 
 #FREQ ESTIMATOR
 get_params(x::PSY.KauraPLL) = (
@@ -272,9 +282,9 @@ get_params(x::PSY.KauraPLL) = (
     ki_pll = PSY.get_ki_pll(x),
 )
 get_params_metadata(::PSY.KauraPLL) = (
-    ω_lp = ParamsMetadata(false, false, false),
-    kp_pll = ParamsMetadata(false, false, true),
-    ki_pll = ParamsMetadata(false, false, true),
+    ω_lp = ParamsMetadata(DEVICE_PARAM, false, false),
+    kp_pll = ParamsMetadata(DEVICE_PARAM, false, true),
+    ki_pll = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 #= get_params(x::PSY.FixedFrequency) = [PSY.get_frequency(x)]
 get_params_metadata(::PSY.FixedFrequency) =
@@ -347,9 +357,9 @@ end
 get_params(x::PSY.BaseMachine) =
     (R = PSY.get_R(x), Xd_p = PSY.get_Xd_p(x), eq_p = PSY.get_eq_p(x))
 get_params_metadata(::PSY.BaseMachine) = (
-    R = ParamsMetadata(false, false, true),
-    Xd_p = ParamsMetadata(false, false, true),
-    eq_p = ParamsMetadata(false, false, true),
+    R = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    eq_p = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 get_params(x::PSY.OneDOneQMachine) = (
     R = PSY.get_R(x),
@@ -361,13 +371,13 @@ get_params(x::PSY.OneDOneQMachine) = (
     Tq0_p = PSY.get_Tq0_p(x),
 )
 get_params_metadata(::PSY.OneDOneQMachine) = (
-    R = PartamsMetadata(false, false, true),
-    Xd = PartamsMetadata(false, false, true),
-    Xq = PartamsMetadata(false, false, true),
-    Xd_p = PartamsMetadata(false, false, true),
-    Xq_p = PartamsMetadata(false, false, true),
-    Td0_p = PartamsMetadata(false, false, false),
-    Tq0_p = PartamsMetadata(false, false, false),
+    R = PartamsMetadata(DEVICE_PARAM, false, true),
+    Xd = PartamsMetadata(DEVICE_PARAM, false, true),
+    Xq = PartamsMetadata(DEVICE_PARAM, false, true),
+    Xd_p = PartamsMetadata(DEVICE_PARAM, false, true),
+    Xq_p = PartamsMetadata(DEVICE_PARAM, false, true),
+    Td0_p = PartamsMetadata(DEVICE_PARAM, false, false),
+    Tq0_p = PartamsMetadata(DEVICE_PARAM, false, false),
 )
 #= 
 #TODO - SimpleMarconatoMachine
@@ -453,22 +463,22 @@ get_params(
 get_params_metadata(
     ::Union{PSY.RoundRotorMachine, PSY.RoundRotorExponential, PSY.RoundRotorQuadratic},
 ) = (
-    R = ParamsMetadata(false, false, true),
-    Td0_p = ParamsMetadata(false, false, true),
-    Td0_pp = ParamsMetadata(false, false, true),
-    Tq0_p = ParamsMetadata(false, false, true),
-    Tq0_pp = ParamsMetadata(false, false, true),
-    Xd = ParamsMetadata(false, false, true),
-    Xq = ParamsMetadata(false, false, true),
-    Xd_p = ParamsMetadata(false, false, true),
-    Xq_p = ParamsMetadata(false, false, true),
-    Xd_pp = ParamsMetadata(false, false, true),
-    Xl = ParamsMetadata(false, false, true),
-    γ_d1 = ParamsMetadata(false, false, true),
-    γ_q1 = ParamsMetadata(false, false, true),
-    γ_d2 = ParamsMetadata(false, false, true),
-    γ_q2 = ParamsMetadata(false, false, true),
-    γ_qd = ParamsMetadata(false, false, true),
+    R = ParamsMetadata(DEVICE_PARAM, false, true),
+    Td0_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Td0_pp = ParamsMetadata(DEVICE_PARAM, false, true),
+    Tq0_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Tq0_pp = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xq = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xq_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd_pp = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xl = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_d1 = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_q1 = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_d2 = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_q2 = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_qd = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 #= get_params(
     x::Union{PSY.SalientPoleMachine, PSY.SalientPoleExponential, PSY.SalientPoleQuadratic},
@@ -506,8 +516,8 @@ get_params_metadata(
 #SHAFTS
 get_params(x::PSY.SingleMass) = (H = PSY.get_H(x), D = PSY.get_D(x))
 get_params_metadata(::PSY.SingleMass) = (
-    H = ParamsMetadata(false, false, false),
-    D = ParamsMetadata(false, false, false),
+    H = ParamsMetadata(DEVICE_PARAM, false, false),
+    D = ParamsMetadata(DEVICE_PARAM, false, false),
 )
 
 #= get_params(x::PSY.FiveMassShaft) = [
@@ -570,15 +580,15 @@ get_params(x::PSY.AVRTypeI) = (
     Be = PSY.get_Be(x),
 )
 get_params_metadata(::PSY.AVRTypeI) = (
-    Ka = ParamsMetadata(false, false, true),
-    Ke = ParamsMetadata(false, false, true),
-    Kf = ParamsMetadata(false, false, true),
-    Ta = ParamsMetadata(false, false, false),
-    Te = ParamsMetadata(false, false, false),
-    Tf = ParamsMetadata(false, false, true),
-    Tr = ParamsMetadata(false, false, false),
-    Ae = ParamsMetadata(false, false, true),
-    Be = ParamsMetadata(false, false, true),
+    Ka = ParamsMetadata(DEVICE_PARAM, false, true),
+    Ke = ParamsMetadata(DEVICE_PARAM, false, true),
+    Kf = ParamsMetadata(DEVICE_PARAM, false, true),
+    Ta = ParamsMetadata(DEVICE_PARAM, false, false),
+    Te = ParamsMetadata(DEVICE_PARAM, false, false),
+    Tf = ParamsMetadata(DEVICE_PARAM, false, true),
+    Tr = ParamsMetadata(DEVICE_PARAM, false, false),
+    Ae = ParamsMetadata(DEVICE_PARAM, false, true),
+    Be = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 get_params(x::PSY.SEXS) = (
     Ta_Tb = PSY.get_Ta_Tb(x),
@@ -588,13 +598,13 @@ get_params(x::PSY.SEXS) = (
     V_lim = PSY.get_V_lim(x),
 )
 get_params_metadata(::PSY.SEXS) = (
-    Ta_Tb = ParamsMetadata(false, false, true),
-    Tb = ParamsMetadata(false, false, false),
-    K = ParamsMetadata(false, false, true),
-    Te = ParamsMetadata(false, false, false),
+    Ta_Tb = ParamsMetadata(DEVICE_PARAM, false, true),
+    Tb = ParamsMetadata(DEVICE_PARAM, false, false),
+    K = ParamsMetadata(DEVICE_PARAM, false, true),
+    Te = ParamsMetadata(DEVICE_PARAM, false, false),
     V_lim = (
-        min = ParamsMetadata(false, false, true),
-        max = ParamsMetadata(false, false, true),
+        min = ParamsMetadata(DEVICE_PARAM, false, true),
+        max = ParamsMetadata(DEVICE_PARAM, false, true),
     ),
 )
 #= get_params(x::PSY.AVRTypeII) = [
@@ -717,7 +727,8 @@ get_params_metadata(::PSY.EXAC1) = [
  =#
 #TurbineGov
 get_params(x::PSY.TGFixed) = (; efficiency = PSY.get_efficiency(x))
-get_params_metadata(::PSY.TGFixed) = (; efficiency = ParamsMetadata(false, false, true))
+get_params_metadata(::PSY.TGFixed) =
+    (; efficiency = ParamsMetadata(DEVICE_PARAM, false, true))
 #= 
 get_params(x::PSY.TGTypeII) = [PSY.get_R(x), PSY.get_T1(x), PSY.get_T2(x)]
 get_params_metadata(::PSY.TGTypeII) = [
@@ -778,15 +789,15 @@ get_params(x::PSY.SteamTurbineGov1) = (
     D_T = PSY.get_D_T(x),
 )
 get_params_metadata(::PSY.SteamTurbineGov1) = (
-    R = ParamsMetadata(false, false, true),
-    T1 = ParamsMetadata(false, false, true),
+    R = ParamsMetadata(DEVICE_PARAM, false, true),
+    T1 = ParamsMetadata(DEVICE_PARAM, false, true),
     valve_position = (
-        min = ParamsMetadata(false, false, true),
-        max = ParamsMetadata(false, false, true),
+        min = ParamsMetadata(DEVICE_PARAM, false, true),
+        max = ParamsMetadata(DEVICE_PARAM, false, true),
     ),
-    T2 = ParamsMetadata(false, false, true),
-    T3 = ParamsMetadata(false, false, true),
-    D_T = ParamsMetadata(false, false, true),
+    T2 = ParamsMetadata(DEVICE_PARAM, false, true),
+    T3 = ParamsMetadata(DEVICE_PARAM, false, true),
+    D_T = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 #= get_params(x::PSY.HydroTurbineGov) = [
     PSY.get_R(x),
@@ -819,7 +830,7 @@ get_params_metadata(::PSY.HydroTurbineGov) = [
 
 #PSS
 get_params(x::PSY.PSSFixed) = (; V_pss = PSY.get_V_pss(x))
-get_params_metadata(::PSY.PSSFixed) = (; V_pss = ParamsMetadata(false, false, false))
+get_params_metadata(::PSY.PSSFixed) = (; V_pss = ParamsMetadata(DEVICE_PARAM, false, false))
 #= 
 get_params(x::PSY.STAB1) = [
     PSY.get_KT(x),
@@ -846,8 +857,8 @@ get_params(x::PSY.Source) = (
     X_th = PSY.get_X_th(x),
 )
 get_params_metadata(::PSY.Source) = (
-    R_th = ParamsMetadata(false, false, true),
-    X_th = ParamsMetadata(false, false, true),
+    R_th = ParamsMetadata(DEVICE_PARAM, false, true),
+    X_th = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 #Parameters not implemented for PeriodicVariableSource - requires change in PSY Struct to have information required to construct and deconstruct parameter vector
 #= 
