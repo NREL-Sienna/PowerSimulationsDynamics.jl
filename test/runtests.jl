@@ -17,10 +17,8 @@ import LinearAlgebra
 using Logging
 using SciMLSensitivity
 using Enzyme
-Enzyme.API.runtimeActivity!(true)
+Enzyme.API.runtimeActivity!(true)  #Needed for "activity unstable" code: https://enzymead.github.io/Enzyme.jl/stable/faq/
 Enzyme.API.looseTypeAnalysis!(true)  #Required for using component arrays with Enzyme
-Enzyme.API.maxtypeoffset!(1024)
-Enzyme.API.maxtypedepth!(20)
 using Zygote
 using Optimization
 using OptimizationOptimisers

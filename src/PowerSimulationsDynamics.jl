@@ -85,17 +85,8 @@ import PowerNetworkMatrices
 import TimerOutputs
 import FastClosures: @closure
 import Enzyme
-Enzyme.API.runtimeActivity!(true)
+Enzyme.API.runtimeActivity!(true)  #Needed for "activity unstable" code: https://enzymead.github.io/Enzyme.jl/stable/faq/
 Enzyme.API.looseTypeAnalysis!(true)  #Required for using component arrays with Enzyme
-Enzyme.API.maxtypeoffset!(1024)
-Enzyme.API.maxtypedepth!(20)
-#Enzyme.API.runtimeActivity!(true)
-#= Generally, the preferred solution to these type of activity unstable codes should be to make 
-your variables all activity-stable (e.g. always containing differentiable memory or always
- containing non-differentiable memory). However, with care, Enzyme does support "Runtime Activity" 
- as a way to differentiate these programs without having to modify your code. =#
-#Enzyme.API.looseTypeAnalysis!(true)    #Best guess if it cannot determine the type; this was needed for using ComponentArrays/ODEFunction
-#Enzyme.API.maxtypedepth!(20)    
 import ChainRulesCore
 import ComponentArrays
 
