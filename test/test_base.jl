@@ -472,11 +472,8 @@ end
     ωref_affect_f = PSID.get_affect(inputs, threebus_sys, ωref)
     cref_affect_f(integrator_for_test)
     ωref_affect_f(integrator_for_test)
-    p_ix1 = PSID.get_p_range(PSID.get_dynamic_injectors(inputs)[1])
-    p_ix2 = PSID.get_p_range(PSID.get_dynamic_injectors(inputs)[2])
-
-    @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
-    @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
+    @test inputs.parameters["generator-102-1"][:refs][:P_ref] == 10.0
+    @test inputs.parameters["generator-103-1"][:refs][:ω_ref] == 0.9
     inputs = PSID.SimulationInputs(
         ResidualModel,
         threebus_sys,
@@ -531,14 +528,10 @@ end
     ltrip_affect_f = PSID.get_affect(inputs, threebus_sys, load_trip)
 
     lref_affect_f(integrator_for_test)
-    zip_load1 =
-        first(filter(x -> PSY.get_name(x) == "BUS 1", PSID.get_static_loads(inputs)))
-    @test PSID.get_P_impedance(zip_load1) == 10.0
+    @test inputs.parameters["BUS 1"][:refs][:P_impedance] == 10.0
     ltrip_affect_f(integrator_for_test)
-    zip_load2 =
-        first(filter(x -> PSY.get_name(x) == "BUS 2", PSID.get_static_loads(inputs)))
-    @test PSID.get_P_impedance(zip_load2) == 0.0
-    @test PSID.get_Q_impedance(zip_load2) == 0.0
+    @test inputs.parameters["BUS 2"][:refs][:P_impedance] == 0.0
+    @test inputs.parameters["BUS 2"][:refs][:Q_impedance] == 0.0
 end
 
 @testset "Global Index" begin
@@ -801,7 +794,6 @@ end
         gen,
         case_gen,
         1,
-        1:6,
         1:6,
         1:6,
         1:9,

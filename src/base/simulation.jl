@@ -255,14 +255,14 @@ function _pre_initialize_simulation!(sim::Simulation)
     if sim.initialize_level == POWERFLOW_AND_DEVICES
         sim.x0 = _get_flat_start(inputs)
         sim.status = _initialize_powerflow_and_devices!(sim.x0, inputs, sys)
-    elseif sim.initialize_level == DEVICE_ONLY
+    elseif sim.initialize_level == DEVICES_ONLY
         sim.x0 = deepcopy(sim.x0_init)
         sim.status = _initialize_devices_only!(sim.x0, inputs)
     elseif sim.initialize_level == FLAT_START
         sim.x0 = _get_flat_start(inputs)
-    elseif sim.initialize_level == INITILAIZED
+    elseif sim.initialize_level == INITIALIZED
         sim.x0 = deepcopy(sim.x0_init)
-        if length(x0) != get_variable_count(inputs)
+        if length(sim.x0) != get_variable_count(inputs)
             throw(
                 IS.ConflictingInputsError(
                     "The size of the provided initial state space does not match the model's state space.",

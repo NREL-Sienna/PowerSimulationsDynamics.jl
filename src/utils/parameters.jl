@@ -273,7 +273,7 @@ get_params_metadata(::PSY.RECurrentControlB) = [
 #DC SOURCE 
 get_params(x::PSY.FixedDCSource) = (voltage = PSY.get_voltage(x),)
 get_params_metadata(::PSY.FixedDCSource) =
-    (voltage = ParamMetadata(DEVICE_PARAM, false, false),)
+    (voltage = ParamsMetadata(DEVICE_PARAM, false, false),)
 
 #FREQ ESTIMATOR
 get_params(x::PSY.KauraPLL) = (
@@ -371,13 +371,13 @@ get_params(x::PSY.OneDOneQMachine) = (
     Tq0_p = PSY.get_Tq0_p(x),
 )
 get_params_metadata(::PSY.OneDOneQMachine) = (
-    R = PartamsMetadata(DEVICE_PARAM, false, true),
-    Xd = PartamsMetadata(DEVICE_PARAM, false, true),
-    Xq = PartamsMetadata(DEVICE_PARAM, false, true),
-    Xd_p = PartamsMetadata(DEVICE_PARAM, false, true),
-    Xq_p = PartamsMetadata(DEVICE_PARAM, false, true),
-    Td0_p = PartamsMetadata(DEVICE_PARAM, false, false),
-    Tq0_p = PartamsMetadata(DEVICE_PARAM, false, false),
+    R = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xq = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xq_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Td0_p = ParamsMetadata(DEVICE_PARAM, false, false),
+    Tq0_p = ParamsMetadata(DEVICE_PARAM, false, false),
 )
 #= 
 #TODO - SimpleMarconatoMachine
@@ -749,35 +749,38 @@ get_params_metadata(::PSY.DEGOV) = (
     T6 = ParamsMetadata(DEVICE_PARAM, true, false),
     Td = ParamsMetadata(DEVICE_PARAM, false, false),
 )
-#= 
-get_params(x::PSY.TGTypeII) = [PSY.get_R(x), PSY.get_T1(x), PSY.get_T2(x)]
+
+#= get_params(x::PSY.TGTypeII) = [PSY.get_R(x), PSY.get_T1(x), PSY.get_T2(x)]
 get_params_metadata(::PSY.TGTypeII) = [
     ParamsMetadata(:R_tg_TurbineGovR, false, false, true, false),
     ParamsMetadata(:T1_TurbineGov, false, false, true, false),
     ParamsMetadata(:T2_TurbineGov, false, false, true, false),
-]
-get_params(x::PSY.GasTG) = [
-    PSY.get_R(x),
-    PSY.get_T1(x),
-    PSY.get_T2(x),
-    PSY.get_T3(x),
-    PSY.get_AT(x),
-    PSY.get_Kt(x),
-    PSY.get_V_lim(x)[1],
-    PSY.get_V_lim(x)[2],
-    PSY.get_D_turb(x),
-]
-get_params_metadata(::PSY.GasTG) = [
-    ParamsMetadata(:R_TurbineGov, false, false, true, false),
-    ParamsMetadata(:T1_TurbineGov, false, false, false, false),
-    ParamsMetadata(:T2_TurbineGov, false, false, false, false),
-    ParamsMetadata(:T3_TurbineGov, false, false, false, false),
-    ParamsMetadata(:AT_TurbineGov, false, false, true, false),
-    ParamsMetadata(:Kt_TurbineGov, false, false, true, false),
-    ParamsMetadata(:V_min_TurbineGov, false, false, true, false),
-    ParamsMetadata(:V_max_TurbineGov, false, false, true, false),
-    ParamsMetadata(:D_turb_TurbineGov, false, false, true, false),
-]
+] =#
+get_params(x::PSY.GasTG) = (
+    R = PSY.get_R(x),
+    T1 = PSY.get_T1(x),
+    T2 = PSY.get_T2(x),
+    T3 = PSY.get_T3(x),
+    AT = PSY.get_AT(x),
+    Kt = PSY.get_Kt(x),
+    V_lim = (min = PSY.get_V_lim(x)[1], max = PSY.get_V_lim(x)[2]),
+    D_turb = PSY.get_D_turb(x),
+)
+get_params_metadata(::PSY.GasTG) = (
+    R = ParamsMetadata(DEVICE_PARAM, false, true),
+    T1 = ParamsMetadata(DEVICE_PARAM, false, false),
+    T2 = ParamsMetadata(DEVICE_PARAM, false, false),
+    T3 = ParamsMetadata(DEVICE_PARAM, false, false),
+    AT = ParamsMetadata(DEVICE_PARAM, false, true),
+    Kt = ParamsMetadata(DEVICE_PARAM, false, true),
+    V_lim = (
+        min = ParamsMetadata(DEVICE_PARAM, false, true),
+        max = ParamsMetadata(DEVICE_PARAM, false, true),
+    ),
+    D_turb = ParamsMetadata(DEVICE_PARAM, false, true),
+)
+
+#= 
 get_params(x::PSY.TGTypeI) = [
     PSY.get_R(x),
     PSY.get_Ts(x),

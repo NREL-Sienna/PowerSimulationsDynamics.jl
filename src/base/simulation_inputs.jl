@@ -237,7 +237,6 @@ function _add_parameters_metadata(parameter_metadata, wrapped_devices)
                 Q_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
             )
         elseif isa(wrapped_device, StaticWrapper)
-            device = get_device(wrapped_device)
             refs_metadata = (
                 V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
                 θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
@@ -257,7 +256,7 @@ function _add_parameters_metadata(parameter_metadata, wrapped_devices)
                 Q_impedance = ParamsMetadata(DEVICE_SETPOINT, false, true),
             )
         else
-            refs = (;)
+            refs_metadata = (;)
         end
         parameter_metadata = ComponentArrays.ComponentVector(
             parameter_metadata;

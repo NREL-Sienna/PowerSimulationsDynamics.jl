@@ -201,7 +201,7 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
@@ -210,7 +210,7 @@ function mdl_tg_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    P_ref = get_P_ref(device)
+    P_ref = p[:refs][:P_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.GasTG)
@@ -226,9 +226,16 @@ function mdl_tg_ode!(
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    local_ix_params = get_local_parameter_ix(device, PSY.GasTG)
-    internal_params = @view device_parameters[local_ix_params]
-    R, T1, T2, T3, AT, Kt, V_min, V_max, D_turb = internal_params
+    params = p[:params][:TurbineGov]
+    R = params[:R]
+    T1 = params[:T1]
+    T2 = params[:T2]
+    T3 = params[:T3]
+    AT = params[:AT]
+    Kt = params[:Kt]
+    V_min = params[:V_lim][:min]
+    V_max = params[:V_lim][:max]
+    D_turb = params[:D_turb]
     inv_R = R < eps() ? 0.0 : (1.0 / R)
 
     #Compute auxiliary parameters

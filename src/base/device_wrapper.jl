@@ -480,8 +480,8 @@ function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, va
     else
         error("Invalid status $val. It can only take values 1 or 0")
     end
-    wrapper.connection_status[] = Float64(val)
+    wrapper.connection_status = Float64(val)
 end
 
 get_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}) =
-    wrapper.connection_status[]
+    wrapper.connection_status

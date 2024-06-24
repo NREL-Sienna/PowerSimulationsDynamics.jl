@@ -128,7 +128,7 @@ end
 
 function initialize_tg!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
     inner_vars::AbstractVector,
@@ -140,16 +140,21 @@ function initialize_tg!(
 
     tg = PSY.get_prime_mover(dynamic_device)
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.GasTG)
-    internal_params = @view device_parameters[local_ix_params]
-    R, _, _, _, AT, Kt, V_min, V_max, D_turb = internal_params
+    params = p[:params][:TurbineGov]
+    R = params[:R]
     inv_R = R < eps() ? 0.0 : (1.0 / R)
 
-    function f!(out, x)
+    function f!(out, x, params)
         P_ref = x[1]
         x_g1 = x[2]
         x_g2 = x[3]
         x_g3 = x[4]
+
+        AT = params[:AT]
+        Kt = params[:Kt]
+        V_min = params[:V_lim][:min]
+        V_max = params[:V_lim][:max]
+        D_turb = params[:D_turb]
 
         x_in = min((P_ref - inv_R * Δω), (AT + Kt * (AT - x_g3)))
         out[1] = (x_in - x_g1) #dx_g1/dt
@@ -159,16 +164,20 @@ function initialize_tg!(
         out[4] = (x_g2 - D_turb * Δω) - τm0
     end
     x0 = [1.0 / inv_R, τm0, τm0, τm0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @error(
-            "Initialization of Turbine Governor $(PSY.get_name(static)) failed"
-        )
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn("Initialization in TG failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        set_P_ref!(p, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]

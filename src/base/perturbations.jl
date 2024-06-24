@@ -474,8 +474,10 @@ function get_affect(inputs::SimulationInputs, ::PSY.System, pert::ControlReferen
     wrapped_device_ix = _find_device_index(inputs, pert.device)
     return (integrator) -> begin
         wrapped_device = get_dynamic_injectors(inputs)[wrapped_device_ix]
+        wrapped_device_name = _get_wrapper_name(wrapped_device)
+        refs = @view(@view(integrator.p[wrapped_device_name])[:refs])
         @debug "Changing $(PSY.get_name(wrapped_device)) $(pert.signal) to $(pert.ref_value)"
-        getfield(wrapped_device, pert.signal)[] = pert.ref_value
+        refs[pert.signal] = pert.ref_value
         return
     end
 end
@@ -640,10 +642,12 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadChange)
                 )
             end
             wrapped_zip = get_static_loads(inputs)[wrapped_device_ix]
-            P_power = get_P_power(wrapped_zip)
-            Q_power = get_Q_power(wrapped_zip)
-            set_P_power!(wrapped_zip, P_power + P_change)
-            set_Q_power!(wrapped_zip, Q_power + Q_change)
+            wrapped_zip_name = _get_wrapper_name(wrapped_zip)
+            refs = @view(@view(integrator.p[wrapped_zip_name])[:refs])
+            P_power = refs[:P_power]
+            Q_power = refs[:Q_power]
+            refs[:P_power] = P_power + P_change
+            refs[:Q_power] = Q_power + Q_change
             @debug "Changing load at bus $(PSY.get_name(wrapped_zip)) $(pert.signal) to $(pert.ref_value)"
             return
         end
@@ -651,37 +655,33 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadChange)
         return (integrator) -> begin
             base_power_conversion = PSY.get_base_power(ld) / sys_base_power
             wrapped_zip = get_static_loads(inputs)[wrapped_device_ix]
+            wrapped_zip_name = _get_wrapper_name(wrapped_zip)
+            refs = @view(@view(integrator.p[wrapped_zip_name])[:refs])
             # List all cases for StandardLoad changes
             if signal ∈ [:P_ref, :P_ref_impedance]
                 P_old = PSY.get_impedance_active_power(ld)
                 P_change = (ref_value - P_old) * base_power_conversion
-                P_impedance = get_P_impedance(wrapped_zip)
-                set_P_impedance!(wrapped_zip, P_impedance + P_change)
+                refs[:P_impedance] = refs[:P_impedance] + P_change
             elseif signal ∈ [:Q_ref, :Q_ref_impedance]
                 Q_old = PSY.get_impedance_reactive_power(ld)
                 Q_change = (ref_value - Q_old) * base_power_conversion
-                Q_impedance = get_Q_impedance(wrapped_zip)
-                set_Q_impedance!(wrapped_zip, Q_impedance + Q_change)
+                refs[:Q_impedance] = refs[:Q_impedance] + Q_change
             elseif signal == :P_ref_power
                 P_old = PSY.get_constant_active_power(ld)
                 P_change = (ref_value - P_old) * base_power_conversion
-                P_power = get_P_power(wrapped_zip)
-                set_P_power!(wrapped_zip, P_power + P_change)
+                refs[:P_power] = refs[:P_power] + P_change
             elseif signal == :Q_ref_power
                 Q_old = PSY.get_constant_reactive_power(ld)
                 Q_change = (ref_value - Q_old) * base_power_conversion
-                Q_power = get_Q_power(wrapped_zip)
-                set_Q_power!(wrapped_zip, Q_power + Q_change)
+                refs[:Q_power] = refs[:Q_power] + Q_change
             elseif signal == :P_ref_current
                 P_old = PSY.get_current_active_power(ld)
                 P_change = (ref_value - P_old) * base_power_conversion
-                P_current = get_P_current(wrapped_zip)
-                set_P_current!(wrapped_zip, P_current + P_change)
+                refs[:P_current] = refs[:P_current] + P_change
             elseif signal == :Q_ref_current
                 Q_old = PSY.get_current_reactive_power(ld)
                 Q_change = (ref_value - Q_old) * base_power_conversion
-                Q_current = get_Q_current(wrapped_zip)
-                set_Q_current!(wrapped_zip, Q_current + Q_change)
+                refs[:Q_current] = refs[:Q_current] + Q_change
             else
                 error("It should never be here. Should have failed in the constructor.")
             end
@@ -690,6 +690,8 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadChange)
         return (integrator) -> begin
             ld_name = PSY.get_name(ld)
             wrapped_zip = get_static_loads(inputs)[wrapped_device_ix]
+            wrapped_zip_name = _get_wrapper_name(wrapped_zip)
+            refs = @view(@view(integrator.p[wrapped_zip_name])[:refs])
             exp_names = get_exp_names(wrapped_zip)
             exp_vects = get_exp_params(wrapped_zip)
             tuple_ix = exp_names[ld_name]
@@ -744,10 +746,10 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadTrip)
         return (integrator) -> begin
             PSY.set_available!(ld, false)
             wrapped_zip = get_static_loads(inputs)[wrapped_device_ix]
-            P_power = get_P_power(wrapped_zip)
-            Q_power = get_Q_power(wrapped_zip)
-            set_P_power!(wrapped_zip, P_power - P_trip)
-            set_Q_power!(wrapped_zip, Q_power - Q_trip)
+            wrapped_zip_name = _get_wrapper_name(wrapped_zip)
+            refs = @view(@view(integrator.p[wrapped_zip_name])[:refs])
+            refs[:P_power] = refs[:P_power] - P_trip
+            refs[:Q_power] = refs[:Q_power] - Q_trip
             @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
             return
         end
@@ -762,21 +764,17 @@ function get_affect(inputs::SimulationInputs, sys::PSY.System, pert::LoadTrip)
         return (integrator) -> begin
             PSY.set_available!(ld, false)
             wrapped_zip = get_static_loads(inputs)[wrapped_device_ix]
+            wrapped_zip_name = _get_wrapper_name(wrapped_zip)
+            refs = @view(@view(integrator.p[wrapped_zip_name])[:refs])
             # Update Constant Power
-            P_power = get_P_power(wrapped_zip)
-            Q_power = get_Q_power(wrapped_zip)
-            set_P_power!(wrapped_zip, P_power - P_power_trip)
-            set_Q_power!(wrapped_zip, Q_power - Q_power_trip)
+            refs[:P_power] = refs[:P_power] - P_power_trip
+            refs[:Q_power] = refs[:Q_power] - Q_power_trip
             # Update Constant Current
-            P_current = get_P_current(wrapped_zip)
-            Q_current = get_Q_current(wrapped_zip)
-            set_P_current!(wrapped_zip, P_current - P_current_trip)
-            set_Q_current!(wrapped_zip, Q_current - Q_current_trip)
+            refs[:P_current] = refs[:P_current] - P_current_trip
+            refs[:Q_current] = refs[:Q_current] - Q_current_trip
             # Update Constant Impedance
-            P_impedance = get_P_impedance(wrapped_zip)
-            Q_impedance = get_Q_impedance(wrapped_zip)
-            set_P_impedance!(wrapped_zip, P_impedance - P_impedance_trip)
-            set_Q_impedance!(wrapped_zip, Q_impedance - Q_impedance_trip)
+            refs[:P_impedance] = refs[:P_impedance] - P_impedance_trip
+            refs[:Q_impedance] = refs[:Q_impedance] - Q_impedance_trip
             @debug "Removing load power values from ZIP load at $(PSY.get_name(wrapped_zip))"
             return
         end
