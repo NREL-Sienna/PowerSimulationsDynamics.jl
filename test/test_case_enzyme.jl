@@ -79,6 +79,68 @@ using PlotlyJS
     end
 end
 
+@testset "Test Optimization - OMIB; H" begin
+    path = mktempdir()
+    try
+        sim = Simulation!(
+            MassMatrixModel,
+            omib_sys,
+            path,
+            (0.0, 5.0),
+            s_change,
+        )
+
+        #GET GROUND TRUTH DATA 
+        execute!(sim, Rodas4(); abstol = 1e-9, reltol = 1e-9, dtmax = 0.005, saveat = 0.005)
+        res = read_results(sim)
+        t, δ_gt = get_state_series(res, ("generator-102-1", :δ))
+
+        #GET PARAMETER VALUES 
+        p = get_parameter_values(sim, [("generator-102-1", :Shaft, :H)])
+
+        function f_loss(δ, δ_gt)
+            #display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
+            return sum(abs.(δ - δ_gt))
+        end
+
+        #GET SENSITIVITY FUNCTIONS 
+        f_forward, f_grad = get_sensitivity_functions(
+            sim,
+            [("generator-102-1", :Shaft, :H)],
+            [("generator-102-1", :δ)],
+            Rodas4(),
+            f_loss;
+            sensealg = ForwardDiffSensitivity(),
+            abstol = 1e-9,
+            reltol = 1e-9,
+            dtmax = 0.005,
+            saveat = 0.005,
+        )
+        #H_values = [] 
+        #loss_values = []
+        function callback(u, l)
+            #push!(H_values, u.u[1])
+            #push!(loss_values, l)
+            return false
+        end
+        optfun = OptimizationFunction{false}(
+            (u, p) -> f_forward(u, δ_gt);
+            grad = (res, u, p) -> res .= f_grad(u, δ_gt),
+        )
+        optprob = OptimizationProblem{false}(optfun, [3.14])
+        sol = Optimization.solve(
+            optprob,
+            OptimizationOptimisers.Adam(0.002);
+            callback = callback,
+            maxiters = 3,
+        )
+        @test isapprox(sol.u[1], 3.144000187737475, atol = 1e-6)
+    finally
+        @info("removing test files")
+        rm(path; force = true, recursive = true)
+    end
+end
+
 @testset "Test Gradients - OMIB; Xd_p" begin
     path = mktempdir()
     try

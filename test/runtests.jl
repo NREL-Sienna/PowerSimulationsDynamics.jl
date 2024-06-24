@@ -22,9 +22,8 @@ Enzyme.API.looseTypeAnalysis!(true)  #Required for using component arrays with E
 Enzyme.API.maxtypeoffset!(1024)
 Enzyme.API.maxtypedepth!(20)
 using Zygote
-##
-#using Optimization #incompatible with latest Enzyme 
-#using OptimizationOptimisers
+using Optimization
+using OptimizationOptimisers
 
 import Aqua
 Aqua.test_unbound_args(PowerSimulationsDynamics)
