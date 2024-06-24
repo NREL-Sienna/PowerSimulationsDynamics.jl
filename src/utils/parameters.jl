@@ -729,6 +729,26 @@ get_params_metadata(::PSY.EXAC1) = [
 get_params(x::PSY.TGFixed) = (; efficiency = PSY.get_efficiency(x))
 get_params_metadata(::PSY.TGFixed) =
     (; efficiency = ParamsMetadata(DEVICE_PARAM, false, true))
+get_params(x::PSY.DEGOV) = (
+    T1 = PSY.get_T1(x),
+    T2 = PSY.get_T2(x),
+    T3 = PSY.get_T3(x),
+    K = PSY.get_K(x),
+    T4 = PSY.get_T4(x),
+    T5 = PSY.get_T5(x),
+    T6 = PSY.get_T6(x),
+    Td = PSY.get_Td(x),
+)
+get_params_metadata(::PSY.DEGOV) = (
+    T1 = ParamsMetadata(DEVICE_PARAM, true, false),
+    T2 = ParamsMetadata(DEVICE_PARAM, true, false),
+    T3 = ParamsMetadata(DEVICE_PARAM, false, false),
+    K = ParamsMetadata(DEVICE_PARAM, false, false),
+    T4 = ParamsMetadata(DEVICE_PARAM, false, false),
+    T5 = ParamsMetadata(DEVICE_PARAM, true, false),
+    T6 = ParamsMetadata(DEVICE_PARAM, true, false),
+    Td = ParamsMetadata(DEVICE_PARAM, false, false),
+)
 #= 
 get_params(x::PSY.TGTypeII) = [PSY.get_R(x), PSY.get_T1(x), PSY.get_T2(x)]
 get_params_metadata(::PSY.TGTypeII) = [

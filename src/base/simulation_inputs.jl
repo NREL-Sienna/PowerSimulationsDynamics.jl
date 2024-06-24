@@ -246,7 +246,7 @@ function _add_parameters_metadata(parameter_metadata, wrapped_devices)
             )
 
         elseif isa(wrapped_device, StaticLoadWrapper)
-            refs = (
+            refs_metadata = (
                 V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
                 θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
                 P_power = ParamsMetadata(DEVICE_SETPOINT, false, true),

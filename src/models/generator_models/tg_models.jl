@@ -328,7 +328,7 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.DEGOV, P}},
@@ -337,7 +337,7 @@ function mdl_tg_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    P_ref = get_P_ref(device)
+    P_ref = p[:refs][:P_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.DEGOV)
@@ -355,15 +355,15 @@ function mdl_tg_ode!(
     ω = @view device_states[external_ix]
 
     #Get Parameters
-    tg = PSY.get_prime_mover(device)
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
-    T3 = PSY.get_T3(tg)
-    K = PSY.get_K(tg)
-    T4 = PSY.get_T4(tg)
-    T5 = PSY.get_T5(tg)
-    T6 = PSY.get_T6(tg)
-    Td = PSY.get_Td(tg)
+    params = p[:params][:TurbineGov]
+    T1 = params[:T1]
+    T2 = params[:T2]
+    T3 = params[:T3]
+    K = params[:K]
+    T4 = params[:T4]
+    T5 = params[:T5]
+    T6 = params[:T6]
+    Td = params[:Td]
 
     #Compute block derivatives 
     Δω = ω[1] - 1.0

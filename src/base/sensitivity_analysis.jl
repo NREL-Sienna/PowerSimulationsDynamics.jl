@@ -89,11 +89,19 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
 
     prob_old = sim.problem
     f_old = prob_old.f
-    f_new = SciMLBase.ODEFunction{true}(
-        f_old.f;
-        mass_matrix = f_old.mass_matrix,
-    )
-
+    if typeof(prob_old) <: SciMLBase.ODEProblem
+        f_new = SciMLBase.ODEFunction{true}(
+            f_old.f;
+            mass_matrix = f_old.mass_matrix,
+        )
+    elseif typeof(prob_old) <: SciMLBase.DDEProblem
+        f_new = SciMLBase.DDEFunction{true}(
+            f_old.f;
+            mass_matrix = f_old.mass_matrix,
+        )
+    else
+        @error "Problem type not supported"
+    end
     prob_new = SciMLBase.remake(
         prob_old;
         f = f_new,
