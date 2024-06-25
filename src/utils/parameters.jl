@@ -17,12 +17,33 @@ function get_params(x)
     @error "Parameters not yet defined for component: $(typeof(x))"
     (;)
 end
+function get_params_metadata(x)
+    @error "Parameters metadata not yet defined for component: $(typeof(x))"
+    (;)
+end
+#Overloads for refs 
+PSY.get_V_ref(x) = 0.0
+PSY.get_ω_ref(x) = 0.0
+PSY.get_P_ref(x) = 0.0
 
 get_params_metadata(::T) where {T <: PSY.DynamicComponent} = (;)
-get_params(::PSY.ActivePowerControl) = (;)
-get_params_metadata(::PSY.ActivePowerControl) = (;)
-get_params(::PSY.ReactivePowerControl) = (;)
-get_params_metadata(::PSY.ReactivePowerControl) = (;)
+
+function get_params(x::PSY.ActivePowerControl)
+    @error "Parameters not yet defined for component: $(typeof(x))"
+    (;)
+end
+function get_params_metadata(x::PSY.ActivePowerControl)
+    @error "Parameters metadata not yet defined for component: $(typeof(x))"
+    (;)
+end
+function get_params(x::PSY.ReactivePowerControl)
+    @error "Parameters not yet defined for component: $(typeof(x))"
+    (;)
+end
+function get_params_metadata(x::PSY.ReactivePowerControl)
+    @error "Parameters metadata not yet defined for component: $(typeof(x))"
+    (;)
+end
 
 get_params(
     d::DynamicWrapper{T},
@@ -105,6 +126,21 @@ get_params_metadata(x::PSY.OuterControl) = (
     ReactivePowerControl = get_params_metadata(PSY.get_reactive_power_control(x)),
 )
 #ACTIVE POWER CONTROL
+get_params(x::PSY.ActivePowerPI) = (
+    Kp_p = PSY.get_Kp_p(x),
+    Ki_p = PSY.get_Ki_p(x),
+    ωz = PSY.get_ωz(x),
+)
+get_params_metadata(::PSY.ActivePowerPI) = (
+    Kp_p = ParamsMetadata(DEVICE_PARAM, false, false),
+    Ki_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    ωz = ParamsMetadata(DEVICE_PARAM, false, false),
+)
+get_params(x::PSY.ActivePowerDroop) = (Rp = PSY.get_Rp(x), ωz = PSY.get_ωz(x))
+get_params_metadata(::PSY.ActivePowerDroop) = (
+    Rp = ParamsMetadata(DEVICE_PARAM, false, false),
+    ωz = ParamsMetadata(DEVICE_PARAM, false, false),
+)
 get_params(x::PSY.VirtualInertia) =
     (Ta = PSY.get_Ta(x), kd = PSY.get_kd(x), kω = PSY.get_kω(x))
 get_params_metadata(::PSY.VirtualInertia) = (
@@ -152,6 +188,16 @@ get_params_metadata(::PSY.ActiveRenewableControllerAB) = (
     T_pord = ParamsMetadata(DEVICE_PARAM, false, false),
 )
 #REACTIVE POWER CONTROL
+get_params(x::PSY.ReactivePowerPI) = (
+    Kp_q = PSY.get_Kp_q(x),
+    Ki_q = PSY.get_Ki_q(x),
+    ωf = PSY.get_ωf(x),
+)
+get_params_metadata(::PSY.ReactivePowerPI) = (
+    Kp_q = ParamsMetadata(DEVICE_PARAM, false, false),
+    Ki_q = ParamsMetadata(DEVICE_PARAM, false, true),
+    ωf = ParamsMetadata(DEVICE_PARAM, false, false),
+)
 get_params(x::PSY.ReactivePowerDroop) = (kq = PSY.get_kq(x), ωf = PSY.get_ωf(x))
 get_params_metadata(::PSY.ReactivePowerDroop) = (
     kq = ParamsMetadata(DEVICE_PARAM, false, false),
@@ -238,6 +284,16 @@ get_params_metadata(::PSY.VoltageModeControl) = (
     ωad = ParamsMetadata(DEVICE_PARAM, false, false),
     kad = ParamsMetadata(DEVICE_PARAM, false, true),
 )
+get_params(x::PSY.CurrentModeControl) = (
+    kpc = PSY.get_kpc(x),
+    kic = PSY.get_kic(x),
+    kffv = PSY.get_kffv(x),
+)
+get_params_metadata(::PSY.CurrentModeControl) = (
+    kpc = ParamsMetadata(DEVICE_PARAM, false, true),
+    kic = ParamsMetadata(DEVICE_PARAM, false, true),
+    kffv = ParamsMetadata(DEVICE_PARAM, false, true),
+)
 #= 
 get_params(x::PSY.RECurrentControlB) = [
     PSY.get_Vdip_lim(x)[1],
@@ -286,10 +342,20 @@ get_params_metadata(::PSY.KauraPLL) = (
     kp_pll = ParamsMetadata(DEVICE_PARAM, false, true),
     ki_pll = ParamsMetadata(DEVICE_PARAM, false, true),
 )
-#= get_params(x::PSY.FixedFrequency) = [PSY.get_frequency(x)]
+get_params(x::PSY.ReducedOrderPLL) = (
+    ω_lp = PSY.get_ω_lp(x),
+    kp_pll = PSY.get_kp_pll(x),
+    ki_pll = PSY.get_ki_pll(x),
+)
+get_params_metadata(::PSY.ReducedOrderPLL) = (
+    ω_lp = ParamsMetadata(DEVICE_PARAM, false, false),
+    kp_pll = ParamsMetadata(DEVICE_PARAM, false, true),
+    ki_pll = ParamsMetadata(DEVICE_PARAM, false, true),
+)
+get_params(x::PSY.FixedFrequency) = (; frequency = PSY.get_frequency(x))
 get_params_metadata(::PSY.FixedFrequency) =
-    [ParamsMetadata(:frequency_FrequencyEstimator, false, false, false, false)]
- =#
+    (; frequency = ParamsMetadata(DEVICE_PARAM, false, true))
+
 #CONVERTER 
 get_params(::PSY.AverageConverter) = (;)
 get_params_metadata(::PSY.AverageConverter) = (;)
@@ -378,6 +444,42 @@ get_params_metadata(::PSY.OneDOneQMachine) = (
     Xq_p = ParamsMetadata(DEVICE_PARAM, false, true),
     Td0_p = ParamsMetadata(DEVICE_PARAM, false, false),
     Tq0_p = ParamsMetadata(DEVICE_PARAM, false, false),
+)
+get_params(x::PSY.SauerPaiMachine) = (
+    R = PSY.get_R(x),
+    Xd = PSY.get_Xd(x),
+    Xq = PSY.get_Xq(x),
+    Xd_p = PSY.get_Xd_p(x),
+    Xq_p = PSY.get_Xq_p(x),
+    Xd_pp = PSY.get_Xd_pp(x),
+    Xq_pp = PSY.get_Xq_pp(x),
+    Xl = PSY.get_Xl(x),
+    Td0_p = PSY.get_Td0_p(x),
+    Tq0_p = PSY.get_Tq0_p(x),
+    Td0_pp = PSY.get_Td0_pp(x),
+    Tq0_pp = PSY.get_Tq0_pp(x),
+    γ_d1 = PSY.get_γ_d1(x),
+    γ_q1 = PSY.get_γ_q1(x),
+    γ_d2 = PSY.get_γ_d2(x),
+    γ_q2 = PSY.get_γ_q2(x),
+)
+get_params_metadata(::PSY.SauerPaiMachine) = (
+    R = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xq = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xq_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd_pp = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xq_pp = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xl = ParamsMetadata(DEVICE_PARAM, false, true),
+    Td0_p = ParamsMetadata(DEVICE_PARAM, false, false),
+    Tq0_p = ParamsMetadata(DEVICE_PARAM, false, false),
+    Td0_pp = ParamsMetadata(DEVICE_PARAM, false, false),
+    Tq0_pp = ParamsMetadata(DEVICE_PARAM, false, false),
+    γ_d1 = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_q1 = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_d2 = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_q2 = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 #= 
 #TODO - SimpleMarconatoMachine

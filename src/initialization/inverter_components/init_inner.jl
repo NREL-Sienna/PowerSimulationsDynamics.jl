@@ -147,7 +147,7 @@ end
 
 function initialize_inner!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F, L},
@@ -171,7 +171,7 @@ function initialize_inner!(
     Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
-    ω_oc = get_ω_ref(dynamic_device)
+    ω_oc = p[:refs][:ω_ref]
     θ0_oc = inner_vars[θ_freq_estimator_var]
     Vdc = inner_vars[Vdc_var]
     Id_cnv_ref = inner_vars[Id_oc_var]
@@ -182,17 +182,15 @@ function initialize_inner!(
     Vi_cnv0 = inner_vars[Vi_cnv_var]
 
     #Get Current Controller parameters
-    inner_control = PSY.get_inner_control(dynamic_device)
-    filter = PSY.get_filter(dynamic_device)
-    kpc = PSY.get_kpc(inner_control)
-    kic = PSY.get_kic(inner_control)
-    kffv = PSY.get_kffv(inner_control)
-    lf = PSY.get_lf(filter)
-
-    function f!(out, x)
+    kpc = p[:params][:InnerControl][:kpc]
+    kic = p[:params][:InnerControl][:kic]
+    kffv = p[:params][:InnerControl][:kffv]
+    lf = p[:params][:Filter][:lf]
+    params = [kpc, kic, kffv, lf]
+    function f!(out, x, params)
         γ_d = x[1]
         γ_q = x[2]
-
+        kpc, kic, kffv, lf = params
         #Reference Frame Transformations
         I_dq_cnv = ri_dq(θ0_oc + pi / 2) * [Ir_cnv; Ii_cnv]
         V_dq_filter = ri_dq(θ0_oc + pi / 2) * [Vr_filter; Vi_filter]
@@ -214,11 +212,19 @@ function initialize_inner!(
         out[2] = Vq_cnv_ref - V_dq_cnv0[q]
     end
     x0 = [0.0, 0.0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @warn("Initialization in Inner Control failed")
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update Converter modulation
         m0_dq = (ri_dq(θ0_oc + pi / 2) * [Vr_cnv0; Vi_cnv0]) ./ Vdc
         inner_vars[md_var] = m0_dq[d]

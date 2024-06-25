@@ -278,7 +278,7 @@ end
 function mdl_inner_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F, L},
@@ -309,12 +309,10 @@ function mdl_inner_ode!(
     Vdc = inner_vars[Vdc_var]
 
     #Get Current Controller parameters
-    inner_control = PSY.get_inner_control(dynamic_device)
-    filter = PSY.get_filter(dynamic_device)
-    kpc = PSY.get_kpc(inner_control)
-    kic = PSY.get_kic(inner_control)
-    kffv = PSY.get_kffv(inner_control)
-    lf = PSY.get_lf(filter)
+    kpc = p[:params][:InnerControl][:kpc]
+    kic = p[:params][:InnerControl][:kic]
+    kffv = p[:params][:InnerControl][:kffv]
+    lf = p[:params][:Filter][:lf]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.CurrentModeControl)

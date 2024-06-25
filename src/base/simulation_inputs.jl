@@ -75,7 +75,7 @@ function SimulationInputs(
         parameter_metadata =
             _add_parameters_metadata(parameter_metadata, wrapped_static_injectors)
     end
-    @assert length(initial_parameters) == length(parameter_metadata)
+    #@assert length(initial_parameters) == length(parameter_metadata)   Can be different with parameters that are vectors (e.g. NN)
     mass_matrix = _make_mass_matrix(wrapped_injectors, n_vars, n_buses)
     DAE_vector = _make_DAE_vector(mass_matrix, n_vars, n_buses)
     _adjust_states!(

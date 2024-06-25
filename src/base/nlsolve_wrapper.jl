@@ -128,8 +128,14 @@ function _check_residual(
 end
 
 function _refine_initial_condition!(x0, p, prob)
+    h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0
     function ff(u, x0, p)
-        prob.f.f(u, x0, p, 0.0)
+        if typeof(prob) <: SciMLBase.ODEProblem
+            prob.f.f(u, x0, p, 0.0)
+        elseif typeof(prob) <: SciMLBase.DDEProblem
+            prob.f.f(u, x0, h, p, 0.0)
+        end
+        return
     end
     #residual = similar(x0)
     #ff(residual, x0, p) #Error: ERROR: AssertionError: length(getcolptr(S)) == size(S, 2) + 1 && (getcolptr(S))[end] - 1 == length(rowvals(S)) == length(nonzeros(S))

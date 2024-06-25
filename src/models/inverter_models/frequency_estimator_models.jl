@@ -77,7 +77,7 @@ end
 function mdl_freq_estimator_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
@@ -100,10 +100,10 @@ function mdl_freq_estimator_ode!(
     Vi_filter = device_states[external_ix[2]]
 
     #Get parameters
-    pll_control = PSY.get_freq_estimator(dynamic_device)
-    ω_lp = PSY.get_ω_lp(pll_control)
-    kp_pll = PSY.get_kp_pll(pll_control)
-    ki_pll = PSY.get_ki_pll(pll_control)
+    params = p[:params][:FrequencyEstimator]
+    ω_lp = params[:ω_lp]
+    kp_pll = params[:kp_pll]
+    ki_pll = params[:ki_pll]
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2.0 * pi * f0
 
@@ -141,7 +141,7 @@ end
 function mdl_freq_estimator_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
@@ -158,10 +158,7 @@ function mdl_freq_estimator_ode!(
     L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.FixedFrequency)
-    internal_params = @view device_parameters[local_ix_params]
-    frequency = internal_params[1]
-
+    frequency = p[:params][:FrequencyEstimator][:frequency]
     #Update inner_vars
     #PLL frequency
     inner_vars[ω_freq_estimator_var] = frequency

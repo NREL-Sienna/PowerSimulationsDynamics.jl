@@ -130,7 +130,7 @@ function initialize_dynamic_device!(
     R_th = PSY.get_R_th(source)
     X_th = PSY.get_X_th(source)
     Zmag = R_th^2 + X_th^2
-    function f!(out, x)
+    function f!(out, x, p)
         V_R_internal = x[1]
         V_I_internal = x[2]
 
@@ -140,11 +140,17 @@ function initialize_dynamic_device!(
             R_th * (V_I_internal - V_I) / Zmag - X_th * (V_R_internal - V_R) / Zmag - I_I
     end
     x0 = [V_R, V_I]
-    sol = NLsolve.nlsolve(f!, x0)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, nothing)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn("Initialization in Periodic Variable Source failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         V_internal = sqrt(sol_x0[1]^2 + sol_x0[2]^2)
         θ_internal = atan(sol_x0[2], sol_x0[1])

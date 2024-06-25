@@ -73,7 +73,7 @@ end
 
 function initialize_frequency_estimator!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, DC, PSY.ReducedOrderPLL, F, L},
@@ -91,20 +91,20 @@ function initialize_frequency_estimator!(
     Vi_filter = inner_vars[Vi_filter_var]
 
     #Get parameters
-    pll_control = PSY.get_freq_estimator(dynamic_device)
-    kp_pll = PSY.get_kp_pll(pll_control)
-    ki_pll = PSY.get_ki_pll(pll_control)
+    params = p[:params][:FrequencyEstimator]
 
     #Get initial guess
     θ0_pll = atan(Vi_filter, Vr_filter)
     Vpll_q0 = 0.0
     ϵ_pll0 = 0.0
 
-    function f!(out, x)
+    function f!(out, x, params)
         vpll_q = x[1]
         ϵ_pll = x[2]
         θ_pll = x[3]
 
+        kp_pll = params[:kp_pll]
+        ki_pll = params[:ki_pll]
         V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
 
         out[1] = V_dq_pll[q] - vpll_q
@@ -113,11 +113,17 @@ function initialize_frequency_estimator!(
     end
 
     x0 = [Vpll_q0, ϵ_pll0, θ0_pll]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn("Initialization in PLL failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
 
         #Obtain indices for component w/r to device
         local_ix = get_local_state_ix(dynamic_device, PSY.ReducedOrderPLL)
@@ -129,7 +135,7 @@ function initialize_frequency_estimator!(
         pll_states[3] = sol_x0[3]
 
         #Update guess of frequency estimator
-        inner_vars[ω_freq_estimator_var] = get_ω_ref(dynamic_device)
+        inner_vars[ω_freq_estimator_var] = p[:refs][:ω_ref]
         inner_vars[θ_freq_estimator_var] = sol_x0[3]
     end
     return
@@ -137,7 +143,7 @@ end
 
 function initialize_frequency_estimator!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, DC, PSY.FixedFrequency, F, L},
@@ -152,9 +158,7 @@ function initialize_frequency_estimator!(
     L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.FixedFrequency)
-    internal_params = @view device_parameters[local_ix_params]
-    frequency = internal_params[1]
+    frequency = p[:params][:FrequencyEstimator][:frequency]
 
     #Update guess of frequency estimator
     inner_vars[ω_freq_estimator_var] = frequency

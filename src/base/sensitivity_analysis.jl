@@ -2,12 +2,16 @@ function get_indices_in_parameter_vector(p, device_param_pairs)
     indices = Int[]
     for tuple in device_param_pairs
         label = join((tuple[1], "params", tuple[2:end]...), ".")
-        ix = ComponentArrays.label2index(p, label)[1]
+        ix = ComponentArrays.label2index(p, label)
         if ix === nothing
             @error "Index not found for entry $tuple"
             return nothing
         end
-        push!(indices, ix)
+        if isa(ix, AbstractArray)
+            indices = vcat(indices, ix)
+        else
+            push!(indices, ix)
+        end
     end
     return indices
 end
@@ -68,7 +72,8 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     p_metadata = sim.inputs.parameters_metadata
     p = sim.inputs.parameters
     param_ixs = get_indices_in_parameter_vector(p, param_data)
-    init_level = get_required_initialization_level(p_metadata, param_ixs)
+    metadata_ixs = get_indices_in_parameter_vector(p_metadata, param_data)
+    init_level = get_required_initialization_level(p_metadata, metadata_ixs)
     if init_level === nothing
         return nothing
     end
@@ -116,6 +121,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     else
         x0 = deepcopy(sim.x0_init)
         sys = deepcopy(sim.sys)
+        sim_inputs = deepcopy(sim.inputs_init)
         function f_enzyme(p, x0, sys, sim_inputs, prob, data, init_level)   #Make separate f_enzymes depending on init_level? 
             p_new = sim_inputs.parameters
             p_new[param_ixs] .= p
@@ -144,7 +150,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 p,
                 x0,
                 sys,
-                deepcopy(sim.inputs_init),
+                sim_inputs,
                 prob_new,
                 data,
                 init_level,
@@ -154,7 +160,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             dp = Enzyme.make_zero(p)
             dx0 = Enzyme.make_zero(x0)
             dsys = Enzyme.make_zero(sys)
-            sim_inputs = deepcopy(sim.inputs_init)
+            #sim_inputs = deepcopy(sim.inputs_init)
             dsim_inputs = Enzyme.make_zero(sim_inputs)
             dprob_new = Enzyme.make_zero(prob_new)
             ddata = Enzyme.make_zero(data)

@@ -69,7 +69,7 @@ end
 
 function initialize_outer!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -124,14 +124,14 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = p[:refs][:ω_ref]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    set_P_ref!(p, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    set_Q_ref!(p, q_elec_out)
 end
 
 function initialize_outer!(
@@ -202,7 +202,7 @@ end
 
 function initialize_outer!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -244,12 +244,8 @@ function initialize_outer!(
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
 
     #Get Outer Controller parameters
-    outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power_control(outer_control)
-    Ki_p = PSY.get_Ki_p(active_power_control) #Integral Gain
-    reactive_power_control = PSY.get_reactive_power_control(outer_control)
-    Ki_q = PSY.get_Ki_q(reactive_power_control) #Integral Gain
-
+    Ki_p = p[:params][:OuterControl][:ActivePowerControl][:Ki_p]
+    Ki_q = p[:params][:OuterControl][:ReactivePowerControl][:Ki_q]
     #Update inner_vars
     inner_vars[P_ES_var] = p_elec_out
     #Update states
@@ -265,16 +261,16 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = p[:refs][:ω_ref]
     inner_vars[Id_oc_var] = I_dq_cnv[d]
     inner_vars[Iq_oc_var] = I_dq_cnv[q]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    set_P_ref!(p, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    set_Q_ref!(p, q_elec_out)
     PSY.set_Q_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,

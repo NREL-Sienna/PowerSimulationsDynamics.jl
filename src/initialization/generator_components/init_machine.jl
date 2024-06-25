@@ -178,7 +178,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SauerPaiMachine, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -196,20 +196,9 @@ function initialize_mach_shaft!(
     I = conj(S0 / V)
 
     #Machine Data
-    machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xq_p = PSY.get_Xq_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
-    Xq_pp = PSY.get_Xq_pp(machine)
-    Xl = PSY.get_Xl(machine)
-    Td0_p = PSY.get_Td0_p(machine)
-    γ_d1 = PSY.get_γ_d1(machine)
-    γ_q1 = PSY.get_γ_q1(machine)
-    γ_d2 = PSY.get_γ_d2(machine)
-    γ_q2 = PSY.get_γ_q2(machine)
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xq = params[:Xq]
 
     #States of SauerPaiMachine are [1] ψq, [2] ψd, [3] eq_p, [4] ed_p, [5] ψd_pp and [6] ψq_pp
     δ0 = angle(V + (R + Xq * 1im) * I)
@@ -217,7 +206,7 @@ function initialize_mach_shaft!(
     τm0 = real(V * conj(I))
     @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
-    function f!(out, x)
+    function f!(out, x, params)
         δ = x[1]
         τm = x[2]
         Vf0 = x[3]
@@ -227,6 +216,19 @@ function initialize_mach_shaft!(
         ed_p = x[7]
         ψd_pp = x[8]
         ψq_pp = x[9]
+
+        R = params[:R]
+        Xd = params[:Xd]
+        Xq = params[:Xq]
+        Xd_p = params[:Xd_p]
+        Xq_p = params[:Xq_p]
+        Xd_pp = params[:Xd_pp]
+        Xq_pp = params[:Xq_pp]
+        Xl = params[:Xl]
+        γ_d1 = params[:γ_d1]
+        γ_q1 = params[:γ_q1]
+        γ_d2 = params[:γ_d2]
+        γ_q2 = params[:γ_q2]
 
         V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / Xd_pp) * (γ_d1 * eq_p - ψd + (1 - γ_d1) * ψd_pp)      #15.15
@@ -247,13 +249,19 @@ function initialize_mach_shaft!(
 
     V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[1], V_dq0[2], V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
-            "Initialization in Machine $(PSY.get_name(static)) failed"
+            "Initialization of Machine in $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I
