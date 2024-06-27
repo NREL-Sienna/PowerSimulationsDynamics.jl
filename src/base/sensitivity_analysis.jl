@@ -121,7 +121,6 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     else
         x0 = deepcopy(sim.x0_init)
         sys = deepcopy(sim.sys)
-        sim_inputs = deepcopy(sim.inputs_init)
         function f_enzyme(p, x0, sys, sim_inputs, prob, data, init_level)   #Make separate f_enzymes depending on init_level? 
             p_new = sim_inputs.parameters
             p_new[param_ixs] .= p
@@ -150,7 +149,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 p,
                 x0,
                 sys,
-                sim_inputs,
+                deepcopy(sim.inputs_init),
                 prob_new,
                 data,
                 init_level,
@@ -160,7 +159,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             dp = Enzyme.make_zero(p)
             dx0 = Enzyme.make_zero(x0)
             dsys = Enzyme.make_zero(sys)
-            #sim_inputs = deepcopy(sim.inputs_init)
+            sim_inputs = deepcopy(sim.inputs_init)
             dsim_inputs = Enzyme.make_zero(sim_inputs)
             dprob_new = Enzyme.make_zero(prob_new)
             ddata = Enzyme.make_zero(data)
