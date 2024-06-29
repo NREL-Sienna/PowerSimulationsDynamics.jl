@@ -50,3 +50,31 @@ function get_ybus_fault_threebus_sys(sys)
     Ybus_fault = PNM.Ybus(fault_branch, sorted_buses)[:, :]
     return Ybus_fault
 end
+
+function add_degov_to_omib!(omib_sys)
+    gen = get_component(ThermalStandard, omib_sys, "generator-102-1")
+    dyn_gen = get_component(DynamicGenerator, omib_sys, "generator-102-1")
+    new_gov = PSY.DEGOV(;
+        T1 = 0.0,
+        T2 = 0.0,
+        T3 = 0.0,
+        K = 18.0,
+        T4 = 12.0,
+        T5 = 5.0,
+        T6 = 0.2,
+        Td = 0.5,
+        P_ref = 0.0,
+    )
+    dyn_gen_new = DynamicGenerator(;
+        name = get_name(dyn_gen),
+        ω_ref = get_ω_ref(dyn_gen),
+        machine = get_machine(dyn_gen),
+        shaft = get_shaft(dyn_gen),
+        avr = get_avr(dyn_gen),
+        prime_mover = new_gov,
+        pss = get_pss(dyn_gen),
+        base_power = get_base_power(dyn_gen),
+    )
+    remove_component!(omib_sys, dyn_gen)
+    add_component!(omib_sys, dyn_gen_new, gen)
+end
