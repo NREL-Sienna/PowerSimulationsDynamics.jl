@@ -370,7 +370,8 @@ function mdl_tg_ode!(
     T4 = params[:T4]
     T5 = params[:T5]
     T6 = params[:T6]
-    Td = params[:Td]
+    tg = PSY.get_prime_mover(device)
+    Td = PSY.get_Td(tg)
 
     #Compute block derivatives 
     Δω = ω[1] - 1.0

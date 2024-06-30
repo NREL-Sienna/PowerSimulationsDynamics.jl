@@ -839,7 +839,6 @@ get_params(x::PSY.DEGOV) = (
     T4 = PSY.get_T4(x),
     T5 = PSY.get_T5(x),
     T6 = PSY.get_T6(x),
-    Td = PSY.get_Td(x),
 )
 get_params_metadata(::PSY.DEGOV) = (
     T1 = ParamsMetadata(DEVICE_PARAM, true, false),
@@ -849,7 +848,6 @@ get_params_metadata(::PSY.DEGOV) = (
     T4 = ParamsMetadata(DEVICE_PARAM, false, false),
     T5 = ParamsMetadata(DEVICE_PARAM, true, false),
     T6 = ParamsMetadata(DEVICE_PARAM, true, false),
-    Td = ParamsMetadata(DEVICE_PARAM, false, false),
 )
 
 #= get_params(x::PSY.TGTypeII) = [PSY.get_R(x), PSY.get_T1(x), PSY.get_T2(x)]
