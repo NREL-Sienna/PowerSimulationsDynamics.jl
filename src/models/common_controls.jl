@@ -13,9 +13,9 @@ u -> │ ────────────│ -> y
 function low_pass_modified_mass_matrix(
     u::Z,
     y::V,
-    K::Float64,
+    K::ACCEPTED_REAL_TYPES,
     K_den::W,
-    ::Float64,
+    ::ACCEPTED_REAL_TYPES,
 ) where {V <: ACCEPTED_REAL_TYPES, W <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
     return y, K * u - K_den * y
 end
@@ -23,9 +23,9 @@ end
 function low_pass_modified(
     u::Z,
     y::V,
-    K::Float64,
+    K::ACCEPTED_REAL_TYPES,
     K_den::W,
-    T::Float64,
+    T::ACCEPTED_REAL_TYPES,
 ) where {V <: ACCEPTED_REAL_TYPES, W <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
     return y, (1.0 / T) * low_pass_modified_mass_matrix(u, y, K, K_den, T)[2]
 end
@@ -52,8 +52,8 @@ end
 function low_pass(
     u::Z,
     y::V,
-    K::Float64,
-    T::Float64,
+    K::ACCEPTED_REAL_TYPES,
+    T::ACCEPTED_REAL_TYPES,
 ) where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
     return low_pass_modified(u, y, K, 1.0, T)
 end
@@ -133,14 +133,19 @@ Internal State: x
 function high_pass_mass_matrix(
     u::Z,
     x::Z,
-    K::Float64,
-    T::Float64,
+    K::ACCEPTED_REAL_TYPES,
+    T::ACCEPTED_REAL_TYPES,
 ) where {Z <: ACCEPTED_REAL_TYPES}
     K_T = T < eps() ? 0.0 : (K / T)
     return x + K_T * u, -(K_T * u + x)
 end
 
-function high_pass(u::Z, x::Z, K::Float64, T::Float64) where {Z <: ACCEPTED_REAL_TYPES}
+function high_pass(
+    u::Z,
+    x::Z,
+    K::ACCEPTED_REAL_TYPES,
+    T::ACCEPTED_REAL_TYPES,
+) where {Z <: ACCEPTED_REAL_TYPES}
     y, dxdt_scaled = high_pass_mass_matrix(u, x, K, T)
     return y, (1.0 / T) * dxdt_scaled
 end
@@ -230,10 +235,10 @@ function lead_lag_2nd_mass_matrix(
     u::Z,
     x1::Z,
     x2::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
 ) where {Z <: ACCEPTED_REAL_TYPES}
     dx1dt = u - T1 * x1 - x2
     dx2dt = x1
@@ -1527,10 +1532,10 @@ Integrator with windup limits
 function integrator_windup_mass_matrix(
     u::Z,
     y::Z,
-    K::Float64,
+    K::ACCEPTED_REAL_TYPES,
     ::Float64,
-    y_min::Float64,
-    y_max::Float64,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
 ) where {Z <: ACCEPTED_REAL_TYPES}
     dydt_scaled = K * u
     y_sat = clamp(y, y_min, y_max)
@@ -1541,10 +1546,10 @@ end
 function integrator_windup(
     u::Z,
     y::Z,
-    K::Float64,
-    T::Float64,
-    y_min::Float64,
-    y_max::Float64,
+    K::ACCEPTED_REAL_TYPES,
+    T::ACCEPTED_REAL_TYPES,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
 ) where {Z <: ACCEPTED_REAL_TYPES}
     y_sat = clamp(y, y_min, y_max)
     return y_sat, (1.0 / T) * integrator_windup_mass_matrix(u, y, K, T, y_min, y_max)[2]
