@@ -17,7 +17,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
     inner_vars::AbstractVector,
@@ -34,7 +34,7 @@ function initialize_avr!(
     #Set V_ref
     PSY.set_V_ref!(PSY.get_avr(dynamic_device), Vm)
     #Update Control Refs
-    set_V_ref(dynamic_device, Vm)
+    set_V_ref!(p, Vm)
     return
 end
 
@@ -104,7 +104,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
     inner_vars::AbstractVector,
@@ -115,29 +115,33 @@ function initialize_avr!(
     Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
+    params = p[:params][:AVR]
+    K0 = params[:K0]
+    T1 = params[:T1]
+    T2 = params[:T2]
+    T3 = params[:T3]
+    T4 = params[:T4]
+    Va_min = params[:Va_lim][:min]
+    Va_max = params[:Va_lim][:max]
+    Ae = params[:Ae]
+    Be = params[:Be]
     avr = PSY.get_avr(dynamic_device)
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeII)
-    internal_params = @view device_parameters[local_ix_params]
-    K0,
-    T1,
-    T2,
-    T3,
-    T4,
-    Te,
-    _,
-    Va_min,
-    Va_max,
-    Ae,
-    Be = internal_params
-    #Obtain saturated Vf
-    Se_Vf = Ae * (exp(Be * abs(Vf0)))
 
     #States of AVRTypeII are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr1, Vr2
-    function f!(out, x)
+    function f!(out, x, params)
         V_ref = x[1]
         Vr1 = x[2]
         Vr2 = x[3]
+        K0 = params[:K0]
+        T1 = params[:T1]
+        T2 = params[:T2]
+        T3 = params[:T3]
+        T4 = params[:T4]
+        Te = params[:Te]
+
+        #Obtain saturated Vf
+        Se_Vf = Ae * (exp(Be * abs(Vf0)))
 
         y_ll1, dVr1_dt = lead_lag(V_ref - Vm, Vr1, K0, T2, T1)
         y_ll2, dVr2_dt = lead_lag(y_ll1, K0 * Vr2, 1.0, K0 * T4, K0 * T3)
@@ -149,16 +153,22 @@ function initialize_avr!(
         out[3] = dVr2_dt #16.20
     end
     x0 = [1.0, Vf0, Vf0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
             "Initialization of AVR in $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        set_V_ref!(p, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeII)
         avr_states = @view device_states[avr_ix]

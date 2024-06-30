@@ -92,7 +92,6 @@ function initialize_static_device!(
         reltol = STRICT_NLSOLVE_F_TOLERANCE,
         abstol = STRICT_NLSOLVE_F_TOLERANCE,
     )
-
     if !SciMLBase.successful_retcode(sol)
         @warn("Initialization in Source failed")
     else

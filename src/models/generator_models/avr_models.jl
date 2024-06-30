@@ -79,7 +79,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRSimple, TG, P}},
     h,
@@ -87,7 +87,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = get_V_ref(dynamic_device)
+    V_ref = p[:refs][:V_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AVRSimple)
@@ -100,9 +100,7 @@ function mdl_avr_ode!(
     V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get Parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRSimple)
-    internal_params = @view device_parameters[local_ix_params]
-    Kv = internal_params[1]
+    Kv = p[:params][:AVR][:Kv]
 
     #Compute ODEs
     output_ode[local_ix[1]] = Kv * (V_ref - V_th)
@@ -176,7 +174,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.AVRTypeII, TG, P}},
     h,
@@ -184,7 +182,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = get_V_ref(dynamic_device)
+    V0_ref = p[:refs][:V_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.AVRTypeII)
@@ -201,19 +199,18 @@ function mdl_avr_ode!(
     Vs = inner_vars[V_pss_var]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AVRTypeII)
-    internal_params = @view device_parameters[local_ix_params]
-    K0,
-    T1,
-    T2,
-    T3,
-    T4,
-    Te,
-    Tr,
-    Va_min,
-    Va_max,
-    Ae,
-    Be = internal_params
+    params = p[:params][:AVR]
+    K0 = params[:K0]
+    T1 = params[:T1]
+    T2 = params[:T2]
+    T3 = params[:T3]
+    T4 = params[:T4]
+    Te = params[:Te]
+    Tr = params[:Tr]
+    Va_min = params[:Va_lim][:min]
+    Va_max = params[:Va_lim][:max]
+    Ae = params[:Ae]
+    Be = params[:Be]
 
     #Compute auxiliary parameters
     Se_Vf = Ae * exp(Be * abs(Vf)) #16.13

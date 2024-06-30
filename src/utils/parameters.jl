@@ -666,10 +666,8 @@ get_params_metadata(::PSY.FiveMassShaft) = [
 #AVRS 
 get_params(::PSY.AVRFixed) = (;)
 get_params_metadata(::PSY.AVRFixed) = (;)
-
-#= get_params(x::PSY.AVRSimple) = [PSY.get_Kv(x)]
-get_params_metadata(::PSY.AVRSimple) = [ParamsMetadata(:Kv_AVR, false, false, false, false)]
- =#
+get_params(x::PSY.AVRSimple) = (Kv = PSY.get_Kv(x),)
+get_params_metadata(::PSY.AVRSimple) = (Kv = ParamsMetadata(DEVICE_PARAM, false, false),)
 get_params(x::PSY.AVRTypeI) = (
     Ka = PSY.get_Ka(x),
     Ke = PSY.get_Ke(x),
@@ -709,32 +707,34 @@ get_params_metadata(::PSY.SEXS) = (
         max = ParamsMetadata(DEVICE_PARAM, false, true),
     ),
 )
-#= get_params(x::PSY.AVRTypeII) = [
-    PSY.get_K0(x),
-    PSY.get_T1(x),
-    PSY.get_T2(x),
-    PSY.get_T3(x),
-    PSY.get_T4(x),
-    PSY.get_Te(x),
-    PSY.get_Tr(x),
-    PSY.get_Va_lim(x)[1],
-    PSY.get_Va_lim(x)[2],
-    PSY.get_Ae(x),
-    PSY.get_Be(x),
-]
-get_params_metadata(::PSY.AVRTypeII) = [
-    ParamsMetadata(:K0_AVR, false, false, true, false),
-    ParamsMetadata(:T1_AVR, false, false, true, false),
-    ParamsMetadata(:T2_AVR, false, false, true, false),
-    ParamsMetadata(:T3_AVR, false, false, true, false),
-    ParamsMetadata(:T4_AVR, false, false, true, false),
-    ParamsMetadata(:Te_AVR, false, false, true, false),
-    ParamsMetadata(:Tr_AVR, false, false, false, false),
-    ParamsMetadata(:Va_min_AVR, false, false, true, false),
-    ParamsMetadata(:Va_max_AVR, false, false, true, false),
-    ParamsMetadata(:Ae_AVR, false, false, true, false),
-    ParamsMetadata(:Be_AVR, false, false, true, false),
-]
+get_params(x::PSY.AVRTypeII) = (
+    K0 = PSY.get_K0(x),
+    T1 = PSY.get_T1(x),
+    T2 = PSY.get_T2(x),
+    T3 = PSY.get_T3(x),
+    T4 = PSY.get_T4(x),
+    Te = PSY.get_Te(x),
+    Tr = PSY.get_Tr(x),
+    Va_lim = PSY.get_Va_lim(x),
+    Ae = PSY.get_Ae(x),
+    Be = PSY.get_Be(x),
+)
+get_params_metadata(::PSY.AVRTypeII) = (
+    K0 = ParamsMetadata(DEVICE_PARAM, false, true),
+    T1 = ParamsMetadata(DEVICE_PARAM, false, true),
+    T2 = ParamsMetadata(DEVICE_PARAM, false, true),
+    T3 = ParamsMetadata(DEVICE_PARAM, false, true),
+    T4 = ParamsMetadata(DEVICE_PARAM, false, true),
+    Te = ParamsMetadata(DEVICE_PARAM, false, true),
+    Tr = ParamsMetadata(DEVICE_PARAM, false, false),
+    Va_lim = (
+        min = ParamsMetadata(DEVICE_PARAM, false, true),
+        max = ParamsMetadata(DEVICE_PARAM, false, true),
+    ),
+    Ae = ParamsMetadata(DEVICE_PARAM, false, true),
+    Be = ParamsMetadata(DEVICE_PARAM, false, true),
+)
+#=
 get_params(x::PSY.ESAC1A) = [
     PSY.get_Tr(x),
     PSY.get_Tb(x),
@@ -849,13 +849,16 @@ get_params_metadata(::PSY.DEGOV) = (
     T5 = ParamsMetadata(DEVICE_PARAM, true, false),
     T6 = ParamsMetadata(DEVICE_PARAM, true, false),
 )
-
-#= get_params(x::PSY.TGTypeII) = [PSY.get_R(x), PSY.get_T1(x), PSY.get_T2(x)]
-get_params_metadata(::PSY.TGTypeII) = [
-    ParamsMetadata(:R_tg_TurbineGovR, false, false, true, false),
-    ParamsMetadata(:T1_TurbineGov, false, false, true, false),
-    ParamsMetadata(:T2_TurbineGov, false, false, true, false),
-] =#
+get_params(x::PSY.TGTypeII) = (
+    R = PSY.get_R(x),
+    T1 = PSY.get_T1(x),
+    T2 = PSY.get_T2(x),
+)
+get_params_metadata(::PSY.TGTypeII) = (
+    R = ParamsMetadata(DEVICE_PARAM, false, true),
+    T1 = ParamsMetadata(DEVICE_PARAM, false, true),
+    T2 = ParamsMetadata(DEVICE_PARAM, false, true),
+)
 get_params(x::PSY.GasTG) = (
     R = PSY.get_R(x),
     T1 = PSY.get_T1(x),
@@ -880,29 +883,28 @@ get_params_metadata(::PSY.GasTG) = (
     D_turb = ParamsMetadata(DEVICE_PARAM, false, true),
 )
 
-#= 
-get_params(x::PSY.TGTypeI) = [
-    PSY.get_R(x),
-    PSY.get_Ts(x),
-    PSY.get_Tc(x),
-    PSY.get_T3(x),
-    PSY.get_T4(x),
-    PSY.get_T5(x),
-    PSY.get_valve_position_limits(x)[1],
-    PSY.get_valve_position_limits(x)[2],
-]
-get_params_metadata(::PSY.TGTypeI) = [
-    ParamsMetadata(:R_tg_TurbineGov, false, false, true, false),
-    ParamsMetadata(:Ts_TurbineGov, false, false, false, false),
-    ParamsMetadata(:Tc_TurbineGov, false, false, true, false),
-    ParamsMetadata(:T3_TurbineGov, false, false, true, false),
-    ParamsMetadata(:T4_TurbineGov, false, false, true, false),
-    ParamsMetadata(:T5_TurbineGov, false, false, true, false),
-    ParamsMetadata(:valve_position_min_TurbineGov, false, false, true, false),
-    ParamsMetadata(:valve_position_max_TurbineGov, false, false, true, false),
-]
- =#
+get_params(x::PSY.TGTypeI) = (
+    R = PSY.get_R(x),
+    Ts = PSY.get_Ts(x),
+    Tc = PSY.get_Tc(x),
+    T3 = PSY.get_T3(x),
+    T4 = PSY.get_T4(x),
+    T5 = PSY.get_T5(x),
+    valve_position_limits = PSY.get_valve_position_limits(x),
+)
 
+get_params_metadata(::PSY.TGTypeI) = (
+    R = ParamsMetadata(DEVICE_PARAM, false, true),
+    Ts = ParamsMetadata(DEVICE_PARAM, false, false),
+    Tc = ParamsMetadata(DEVICE_PARAM, false, true),
+    T3 = ParamsMetadata(DEVICE_PARAM, false, true),
+    T4 = ParamsMetadata(DEVICE_PARAM, false, true),
+    T5 = ParamsMetadata(DEVICE_PARAM, false, true),
+    valve_position_limits = (
+        min = ParamsMetadata(DEVICE_PARAM, false, true),
+        max = ParamsMetadata(DEVICE_PARAM, false, true),
+    ),
+)
 get_params(x::PSY.SteamTurbineGov1) = (
     R = PSY.get_R(x),
     T1 = PSY.get_T1(x),
