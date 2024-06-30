@@ -661,7 +661,7 @@ end
 function mdl_machine_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -694,20 +694,19 @@ function mdl_machine_ode!(
     Vf = inner_vars[Vf_var] #E_fd: Field voltage
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SalientPoleQuadratic)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    Td0_p,
-    Td0_pp,
-    Tq0_pp,
-    Xd,
-    Xq,
-    Xd_p,
-    Xd_pp,
-    Xl,
-    γ_d1,
-    γ_q1,
-    γ_d2 = internal_params
+    params = p[:params][:Machine]
+    R = params[:R]
+    Td0_p = params[:Td0_p]
+    Td0_pp = params[:Td0_pp]
+    Tq0_pp = params[:Tq0_pp]
+    Xd = params[:Xd]
+    Xq = params[:Xq]
+    Xd_p = params[:Xd_p]
+    Xd_pp = params[:Xd_pp]
+    Xl = params[:Xl]
+    γ_d1 = params[:γ_d1]
+    γ_q1 = params[:γ_q1]
+    γ_d2 = params[:γ_d2]
     Xq_pp = Xd_pp
     basepower = PSY.get_base_power(dynamic_device)
 
@@ -747,7 +746,7 @@ end
 function mdl_machine_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -780,20 +779,19 @@ function mdl_machine_ode!(
     Vf = inner_vars[Vf_var] #E_fd: Field voltage
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SalientPoleExponential)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    Td0_p,
-    Td0_pp,
-    Tq0_pp,
-    Xd,
-    Xq,
-    Xd_p,
-    Xd_pp,
-    Xl,
-    γ_d1,
-    γ_q1,
-    γ_d2 = internal_params
+    params = p[:params][:Machine]
+    R = params[:R]
+    Td0_p = params[:Td0_p]
+    Td0_pp = params[:Td0_pp]
+    Tq0_pp = params[:Tq0_pp]
+    Xd = params[:Xd]
+    Xq = params[:Xq]
+    Xd_p = params[:Xd_p]
+    Xd_pp = params[:Xd_pp]
+    Xl = params[:Xl]
+    γ_d1 = params[:γ_d1]
+    γ_q1 = params[:γ_q1]
+    γ_d2 = params[:γ_d2]
     Xq_pp = Xd_pp
     γ_qd = (Xq - Xl) / (Xd - Xl)
     basepower = PSY.get_base_power(dynamic_device)

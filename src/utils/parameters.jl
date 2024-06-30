@@ -582,38 +582,39 @@ get_params_metadata(
     γ_q2 = ParamsMetadata(DEVICE_PARAM, false, true),
     γ_qd = ParamsMetadata(DEVICE_PARAM, false, true),
 )
-#= get_params(
+
+get_params(
     x::Union{PSY.SalientPoleMachine, PSY.SalientPoleExponential, PSY.SalientPoleQuadratic},
-) = [
-    PSY.get_R(x),
-    PSY.get_Td0_p(x),
-    PSY.get_Td0_pp(x),
-    PSY.get_Tq0_pp(x),
-    PSY.get_Xd(x),
-    PSY.get_Xq(x),
-    PSY.get_Xd_p(x),
-    PSY.get_Xd_pp(x),
-    PSY.get_Xl(x),
-    PSY.get_γ_d1(x),
-    PSY.get_γ_q1(x),
-    PSY.get_γ_d2(x),
-]
+) = (
+    R = PSY.get_R(x),
+    Td0_p = PSY.get_Td0_p(x),
+    Td0_pp = PSY.get_Td0_pp(x),
+    Tq0_pp = PSY.get_Tq0_pp(x),
+    Xd = PSY.get_Xd(x),
+    Xq = PSY.get_Xq(x),
+    Xd_p = PSY.get_Xd_p(x),
+    Xd_pp = PSY.get_Xd_pp(x),
+    Xl = PSY.get_Xl(x),
+    γ_d1 = PSY.get_γ_d1(x),
+    γ_q1 = PSY.get_γ_q1(x),
+    γ_d2 = PSY.get_γ_d2(x),
+)
 get_params_metadata(
     ::Union{PSY.SalientPoleMachine, PSY.SalientPoleExponential, PSY.SalientPoleQuadratic},
-) = [
-    ParamsMetadata(:R_Machine, false, false, true, false),
-    ParamsMetadata(:Td0_p_Machine, false, false, true, false),
-    ParamsMetadata(:Td0_pp_Machine, false, false, true, false),
-    ParamsMetadata(:Tq0_pp_Machine, false, false, true, false),
-    ParamsMetadata(:Xd_Machine, false, false, true, false),
-    ParamsMetadata(:Xq_Machine, false, false, true, false),
-    ParamsMetadata(:Xd_p_Machine, false, false, true, false),
-    ParamsMetadata(:Xd_pp_Machine, false, false, true, false),
-    ParamsMetadata(:Xl_Machine, false, false, true, false),
-    ParamsMetadata(:γ_d1_Machine, false, false, true, false),
-    ParamsMetadata(:γ_q1_Machine, false, false, true, false),
-    ParamsMetadata(:γ_d2_Machine, false, false, true, false),
-]  =#
+) = (
+    R = ParamsMetadata(DEVICE_PARAM, false, true),
+    Td0_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Td0_pp = ParamsMetadata(DEVICE_PARAM, false, true),
+    Tq0_pp = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xq = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd_p = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xd_pp = ParamsMetadata(DEVICE_PARAM, false, true),
+    Xl = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_d1 = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_q1 = ParamsMetadata(DEVICE_PARAM, false, true),
+    γ_d2 = ParamsMetadata(DEVICE_PARAM, false, true),
+)
 
 #SHAFTS
 get_params(x::PSY.SingleMass) = (H = PSY.get_H(x), D = PSY.get_D(x))

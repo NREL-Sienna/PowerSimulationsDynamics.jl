@@ -877,7 +877,7 @@ end
 
 function initialize_mach_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleQuadratic, S, A, TG, P},
@@ -899,20 +899,20 @@ function initialize_mach_shaft!(
 
     machine = PSY.get_machine(dynamic_device)
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SalientPoleQuadratic)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    Td0_p,
-    Td0_pp,
-    Tq0_pp,
-    Xd,
-    Xq,
-    Xd_p,
-    Xd_pp,
-    Xl,
-    γ_d1,
-    γ_q1,
-    γ_d2 = internal_params
+    params = @view(p[:params][:Machine])
+    R = params[:R]
+    # Td0_p = params[:Td0_p]
+    # Td0_pp = params[:Td0_pp]
+    # Tq0_pp = params[:Tq0_pp]
+    Xd = params[:Xd]
+    Xq = params[:Xq]
+    Xd_p = params[:Xd_p]
+    Xd_pp = params[:Xd_pp]
+    Xl = params[:Xl]
+    γ_d1 = params[:γ_d1]
+    γ_q1 = params[:γ_q1]
+    γ_d2 = params[:γ_d2]
+
     Xq_pp = Xd_pp
 
     ## Initialization ##
@@ -938,7 +938,7 @@ function initialize_mach_shaft!(
         Se0 * eq_p0 +
         (Xd - Xd_p) * (I_d0 + γ_d2 * (eq_p0 - ψ_kd0 - (Xd_p - Xl) * I_d0))
 
-    function f!(out, x)
+    function f!(out, x, params)
         δ = x[1]
         τm = x[2]
         Vf = x[3]
@@ -946,6 +946,20 @@ function initialize_mach_shaft!(
         ψ_kd = x[5]
         ψq_pp = x[6]
         Xad_Ifd_aux = x[7]
+
+        R = params[:R]
+        Td0_p = params[:Td0_p]
+        Td0_pp = params[:Td0_pp]
+        Tq0_pp = params[:Tq0_pp]
+        Xd = params[:Xd]
+        Xq = params[:Xq]
+        Xd_p = params[:Xd_p]
+        Xd_pp = params[:Xd_pp]
+        Xl = params[:Xl]
+        γ_d1 = params[:γ_d1]
+        γ_q1 = params[:γ_q1]
+        γ_d2 = params[:γ_d2]
+        Xq_pp = Xd_pp
 
         V_d, V_q = ri_dq(δ) * [V_R; V_I]
         #Additional Fluxes
@@ -970,13 +984,19 @@ function initialize_mach_shaft!(
         out[7] = Xad_Ifd_aux - Xad_Ifd
     end
     x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0, Xad_Ifd0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
             "Initialization in Machine $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I
@@ -1004,7 +1024,7 @@ end
 
 function initialize_mach_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.SalientPoleExponential, S, A, TG, P},
@@ -1026,20 +1046,16 @@ function initialize_mach_shaft!(
 
     machine = PSY.get_machine(dynamic_device)
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SalientPoleExponential)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    Td0_p,
-    Td0_pp,
-    Tq0_pp,
-    Xd,
-    Xq,
-    Xd_p,
-    Xd_pp,
-    Xl,
-    γ_d1,
-    γ_q1,
-    γ_d2 = internal_params
+    params = @view(p[:params][:Machine])
+    R = params[:R]
+    Xd = params[:Xd]
+    Xq = params[:Xq]
+    Xd_p = params[:Xd_p]
+    Xd_pp = params[:Xd_pp]
+    Xl = params[:Xl]
+    γ_d1 = params[:γ_d1]
+    γ_q1 = params[:γ_q1]
+    γ_d2 = params[:γ_d2]
     Xq_pp = Xd_pp
     γ_qd = (Xq - Xl) / (Xd - Xl)
 
@@ -1077,7 +1093,7 @@ function initialize_mach_shaft!(
         Se0 * ψd_pp0 +
         (Xd - Xd_p) * (I_d0 + γ_d2 * (eq_p0 - ψ_kd0 - (Xd_p - Xl) * I_d0))
 
-    function f!(out, x)
+    function f!(out, x, params)
         δ = x[1]
         τm = x[2]
         Vf = x[3]
@@ -1085,6 +1101,19 @@ function initialize_mach_shaft!(
         ψ_kd = x[5]
         ψq_pp = x[6]
         Xad_Ifd_aux = x[7]
+
+        R = params[:R]
+        Td0_p = params[:Td0_p]
+        Td0_pp = params[:Td0_pp]
+        Tq0_pp = params[:Tq0_pp]
+        Xd = params[:Xd]
+        Xq = params[:Xq]
+        Xd_p = params[:Xd_p]
+        Xd_pp = params[:Xd_pp]
+        Xl = params[:Xl]
+        γ_d1 = params[:γ_d1]
+        γ_q1 = params[:γ_q1]
+        γ_d2 = params[:γ_d2]
 
         V_d, V_q = ri_dq(δ) * [V_R; V_I]
         #Additional Fluxes
@@ -1109,13 +1138,19 @@ function initialize_mach_shaft!(
         out[7] = Xad_Ifd_aux - Xad_Ifd
     end
     x0 = [δ0, τm0, Vf0, eq_p0, ψ_kd0, ψq_pp0, Xad_Ifd0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
             "Initialization in Machine $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I
