@@ -136,7 +136,7 @@ end
 
 function initialize_outer!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -280,7 +280,7 @@ end
 
 function initialize_outer!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -324,7 +324,7 @@ function initialize_outer!(
     ## Set references
     Vm = V_t
     PSY.set_Q_ref!(PSY.get_converter(dynamic_device), q_elec_out)
-    set_Q_ref(dynamic_device, q_elec_out)
+    set_Q_ref!(p, q_elec_out)
     PSY.set_Q_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
@@ -333,15 +333,15 @@ function initialize_outer!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_P_ref(dynamic_device, p_elec_out)
+    set_P_ref!(p, p_elec_out)
     PSY.set_V_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         Vm,
     )
-    set_V_ref(dynamic_device, Vm)
+    set_V_ref!(p, Vm)
 
     #Get Outer Controller parameters
-    q_ref = get_Q_ref(dynamic_device)
+    q_ref = p[:refs][:Q_ref]
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power_control(outer_control)
     reactive_power_control = PSY.get_reactive_power_control(outer_control)
@@ -363,15 +363,15 @@ function initialize_outer!(
     )
     internal_states = @view device_states[local_ix]
 
-    #Get parameters 
-    K_ig = device_parameters[:OuterControl][:ActivePowerControl][:K_ig]
-    T_p = device_parameters[:OuterControl][:ActivePowerControl][:T_p]
-    K_i = device_parameters[:OuterControl][:ReactivePowerControl][:K_i]
-    R_c = device_parameters[:OuterControl][:ReactivePowerControl][:R_c]
-    X_c = device_parameters[:OuterControl][:ReactivePowerControl][:X_c]
-    K_c = device_parameters[:OuterControl][:ReactivePowerControl][:K_c]
-    T_p = device_parameters[:OuterControl][:ReactivePowerControl][:T_p]
-    K_qi = device_parameters[:OuterControl][:ReactivePowerControl][:K_qi]
+    #Get parameters OuterControl
+    K_ig = p[:params][:OuterControl][:ActivePowerControl][:K_ig]
+    T_p = p[:params][:OuterControl][:ActivePowerControl][:T_p]
+    K_i = p[:params][:OuterControl][:ReactivePowerControl][:K_i]
+    R_c = p[:params][:OuterControl][:ReactivePowerControl][:R_c]
+    X_c = p[:params][:OuterControl][:ReactivePowerControl][:X_c]
+    K_c = p[:params][:OuterControl][:ReactivePowerControl][:K_c]
+    T_p = p[:params][:OuterControl][:ReactivePowerControl][:T_p]
+    K_qi = p[:params][:OuterControl][:ReactivePowerControl][:K_qi]
 
     if Freq_Flag == 1
         #Update States

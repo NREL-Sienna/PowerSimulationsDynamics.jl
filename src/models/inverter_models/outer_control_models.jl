@@ -16,7 +16,7 @@ end
 function _mdl_ode_RE_active_controller_AB!(
     active_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     active_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     p_elec_out::ACCEPTED_REAL_TYPES,
     ω_sys::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
@@ -47,27 +47,28 @@ function _mdl_ode_RE_active_controller_AB!(
 }
 
     #Obtain external parameters
-    p_ref = get_P_ref(dynamic_device)
-    ω_ref = get_ω_ref(dynamic_device)
+    p_ref = p[:refs][:P_ref]
+    ω_ref = p[:refs][:ω_ref]
     # To do: Obtain proper frequency for a plant. For now using the system frequency.
     ω_plant = ω_sys
 
-    #Obtain additional Active Power Controller parameters
-    K_pg = device_parameters[:OuterControl][:ActivePowerControl][:K_pg]
-    K_ig = device_parameters[:OuterControl][:ActivePowerControl][:K_ig]
-    T_p = device_parameters[:OuterControl][:ActivePowerControl][:T_p]
-    fe_min = device_parameters[:OuterControl][:ActivePowerControl][:fe_lim][:min]
-    fe_max = device_parameters[:OuterControl][:ActivePowerControl][:fe_lim][:max]
-    P_min = device_parameters[:OuterControl][:ActivePowerControl][:P_lim][:min]
-    P_max = device_parameters[:OuterControl][:ActivePowerControl][:P_lim][:max]
-    T_g = device_parameters[:OuterControl][:ActivePowerControl][:T_g]
-    D_dn = device_parameters[:OuterControl][:ActivePowerControl][:D_dn]
-    D_up = device_parameters[:OuterControl][:ActivePowerControl][:D_up]
-    dP_min = device_parameters[:OuterControl][:ActivePowerControl][:dP_lim][:min]
-    dP_max = device_parameters[:OuterControl][:ActivePowerControl][:dP_lim][:max]
-    P_min_inner = device_parameters[:OuterControl][:ActivePowerControl][:P_lim_inner][:min]
-    P_max_inner = device_parameters[:OuterControl][:ActivePowerControl][:P_lim_inner][:max]
-    T_pord = device_parameters[:OuterControl][:ActivePowerControl][:T_pord]
+    #Obtain additional Active Power Controller parameters   
+    params = p[:params][:OuterControl][:ActivePowerControl]
+    K_pg = params[:K_pg]
+    K_ig = params[:K_ig]
+    T_p = params[:T_p]
+    fe_min = params[:fe_lim][:min]
+    fe_max = params[:fe_lim][:max]
+    P_min = params[:P_lim][:min]
+    P_max = params[:P_lim][:max]
+    T_g = params[:T_g]
+    D_dn = params[:D_dn]
+    D_up = params[:D_up]
+    dP_min = params[:dP_lim][:min]
+    dP_max = params[:dP_lim][:max]
+    P_min_inner = params[:P_lim_inner][:min]
+    P_max_inner = params[:P_lim_inner][:max]
+    T_pord = params[:T_pord]
 
     # Not considered parameters because not named tuple
     fdbd1, fdbd2 = PSY.get_fdbd_pnts(active_power_control)
@@ -115,7 +116,7 @@ end
 function _mdl_ode_RE_active_controller_AB!(
     active_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     active_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     p_elec_out::ACCEPTED_REAL_TYPES,
     ω_sys::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
@@ -146,9 +147,9 @@ function _mdl_ode_RE_active_controller_AB!(
 }
 
     #Obtain external parameters
-    p_ref = get_P_ref(dynamic_device)
+    p_ref = p[:refs][:P_ref]
     #Obtain additional Active Power Controller parameters
-    T_pord = device_parameters[:OuterControl][:ActivePowerControl][:T_pord]
+    T_pord = p[:params][:OuterControl][:ActivePowerControl][:T_pord]
 
     #Define internal states for outer control
     p_ord = active_controller_states[1]
@@ -175,7 +176,7 @@ end
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
     ::Val{0},
@@ -207,45 +208,27 @@ function _mdl_ode_RE_reactive_controller_AB!(
 }
 
     #Obtain external parameters
-    q_ref = get_Q_ref(dynamic_device)
-
+    q_ref = p[:refs][:Q_ref]
+    params = p[:params][:OuterControl][:ReactivePowerControl]
     # Get Reactive Controller parameters
-    local_ix_params = get_local_parameter_ix(
-        dynamic_device,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
-        },
-    )
-    outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power_control(outer_control)
-    internal_params = @view device_parameters[local_ix_params]
-    active_n_params = length(get_params(active_power_control))
-    reactive_n_params = length(get_params(reactive_power_control))
-    reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
-    reactive_params = @view internal_params[reactive_ix_range_params]
-    T_fltr,
-    K_p,
-    K_i,
-    T_ft,
-    T_fv,
-    V_frz,     # V_frz not implemented yet
-    R_c,
-    X_c,
-    K_c,
-    e_min,
-    e_max,
-    dbd1,
-    dbd2,
-    Q_min,
-    Q_max,
-    T_p,
-    Q_min_inner,
-    Q_max_inner,
-    V_min,
-    V_max,
-    K_qp,
-    K_qi = reactive_params
+    T_fltr = params[:T_fltr]
+    K_p = params[:K_p]
+    K_i = params[:K_i]
+    T_ft = params[:T_ft]
+    T_fv = params[:T_fv]
+    e_min = params[:e_lim][:min]
+    e_max = params[:e_lim][:max]
+    dbd1 = params[:dbd_pnts1]
+    dbd2 = params[:dbd_pnts2]
+    Q_min = params[:Q_lim][:min]
+    Q_max = params[:Q_lim][:max]
+    # V_frz not implemented yet
+    Q_min_inner = params[:Q_lim_inner][:min]
+    Q_max_inner = params[:Q_lim_inner][:max]
+    V_min = params[:V_lim][:min]
+    V_max = params[:V_lim][:max]
+    K_qp = params[:K_qp]
+    K_qi = params[:K_qi]
 
     #Define internal states for Reactive Control
     q_flt = reactive_controller_states[1]
@@ -282,7 +265,7 @@ end
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     reactive_controller_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     q_elec_out::ACCEPTED_REAL_TYPES,
     Vt_filt::ACCEPTED_REAL_TYPES,
     ::Val{0},
@@ -313,45 +296,21 @@ function _mdl_ode_RE_reactive_controller_AB!(
     L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain external parameters
-    q_ref = get_Q_ref(dynamic_device)
-    outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power_control(outer_control)
+    q_ref = p[:refs][:Q_ref]
     # Get Reactive Controller parameters
-    local_ix_params = get_local_parameter_ix(
-        dynamic_device,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
-        },
-    )
-    internal_params = @view device_parameters[local_ix_params]
-    active_n_params = length(get_params(active_power_control))
-    reactive_n_params = length(get_params(reactive_power_control))
-    reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
-    reactive_params = @view internal_params[reactive_ix_range_params]
-    T_fltr,
-    K_p,
-    K_i,
-    T_ft,
-    T_fv,
-    V_frz,     # V_frz not implemented yet
-    R_c,
-    X_c,
-    K_c,
-    e_min,
-    e_max,
-    dbd1,
-    dbd2,
-    Q_min,
-    Q_max,
-    T_p,
-    Q_min_inner,
-    Q_max_inner,
-    V_min,
-    V_max,
-    K_qp,
-    K_qi = reactive_params
-
+    params = p[:params][:OuterControl][:ReactivePowerControl]
+    T_fltr = params[:T_fltr]
+    K_p = params[:K_p]
+    K_i = params[:K_i]
+    T_ft = params[:T_ft]
+    T_fv = params[:T_fv]
+    e_min = params[:e_lim][:min]
+    e_max = params[:e_lim][:max]
+    dbd1 = params[:dbd_pnts1]
+    dbd2 = params[:dbd_pnts2]
+    Q_min = params[:Q_lim][:min]
+    Q_max = params[:Q_lim][:max]
+    # V_frz not implemented yet
     #Define internal states for Reactive Control
     q_flt = reactive_controller_states[1]
     ξq_oc = reactive_controller_states[2]
@@ -385,7 +344,7 @@ end
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode,
     reactive_controller_states,
-    device_parameters,
+    p,
     q_elec_out,
     Vt_filt,
     ::Val{1},
@@ -416,7 +375,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain external parameters
-    V_ref = get_V_ref(dynamic_device)
+    V_ref = p[:refs][:V_ref]
 
     #Obtain regulated voltage (assumed to be terminal voltage)
     V_reg = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
@@ -426,42 +385,28 @@ function _mdl_ode_RE_reactive_controller_AB!(
     VC_Flag = PSY.get_VC_Flag(reactive_power_control)
 
     # Get Reactive Controller parameters
-    local_ix_params = get_local_parameter_ix(
-        dynamic_device,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
-        },
-    )
-    internal_params = @view device_parameters[local_ix_params]
-    outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power_control(outer_control)
-    active_n_params = length(get_params(active_power_control))
-    reactive_n_params = length(get_params(reactive_power_control))
-    reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
-    reactive_params = @view internal_params[reactive_ix_range_params]
-    T_fltr,
-    K_p,
-    K_i,
-    T_ft,
-    T_fv,
-    V_frz,     # V_frz not implemented yet
-    R_c,
-    X_c,
-    K_c,
-    e_min,
-    e_max,
-    dbd1,
-    dbd2,
-    Q_min,
-    Q_max,
-    T_p,
-    Q_min_inner,
-    Q_max_inner,
-    V_min,
-    V_max,
-    K_qp,
-    K_qi = reactive_params
+    params = p[:params][:OuterControl][:ReactivePowerControl]
+    T_fltr = params[:T_fltr]
+    K_p = params[:K_p]
+    K_i = params[:K_i]
+    T_ft = params[:T_ft]
+    T_fv = params[:T_fv]
+    e_min = params[:e_lim][:min]
+    e_max = params[:e_lim][:max]
+    dbd1 = params[:dbd_pnts1]
+    dbd2 = params[:dbd_pnts2]
+    Q_min = params[:Q_lim][:min]
+    Q_max = params[:Q_lim][:max]
+    # V_frz not implemented yet
+    R_c = params[:R_c]
+    X_c = params[:X_c]
+    K_c = params[:K_c]
+    Q_min_inner = params[:Q_lim_inner][:min]
+    Q_max_inner = params[:Q_lim_inner][:max]
+    V_min = params[:V_lim][:min]
+    V_max = params[:V_lim][:max]
+    K_qp = params[:K_qp]
+    K_qi = params[:K_qi]
 
     #Define internal states for Reactive Control
     V_cflt = reactive_controller_states[1]
@@ -514,7 +459,7 @@ end
 function _mdl_ode_RE_reactive_controller_AB!(
     reactive_controller_ode,
     reactive_controller_states,
-    device_parameters,
+    p,
     q_elec_out,
     Vt_filt,
     ::Val{1},
@@ -545,7 +490,7 @@ function _mdl_ode_RE_reactive_controller_AB!(
     L <: Union{Nothing, PSY.InverterLimiter},
 }
     #Obtain external parameters
-    V_ref = get_V_ref(dynamic_device)
+    V_ref = p[:refs][:V_ref]
 
     #Obtain regulated voltage (assumed to be terminal voltage)
     V_reg = sqrt(inner_vars[Vr_inv_var]^2 + inner_vars[Vi_inv_var]^2)
@@ -554,42 +499,25 @@ function _mdl_ode_RE_reactive_controller_AB!(
 
     # Get Reactive Controller parameters
     VC_Flag = PSY.get_VC_Flag(reactive_power_control)
-    local_ix_params = get_local_parameter_ix(
-        dynamic_device,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
-        },
-    )
-    internal_params = @view device_parameters[local_ix_params]
-    outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power_control(outer_control)
-    active_n_params = length(get_params(active_power_control))
-    reactive_n_params = length(get_params(reactive_power_control))
-    reactive_ix_range_params = (active_n_params + 1):(active_n_params + reactive_n_params)
-    reactive_params = @view internal_params[reactive_ix_range_params]
-    T_fltr,
-    K_p,
-    K_i,
-    T_ft,
-    T_fv,
-    V_frz,     # V_frz not implemented yet
-    R_c,
-    X_c,
-    K_c,
-    e_min,
-    e_max,
-    dbd1,
-    dbd2,
-    Q_min,
-    Q_max,
-    T_p,
-    Q_min_inner,
-    Q_max_inner,
-    V_min,
-    V_max,
-    K_qp,
-    K_qi = reactive_params
+
+    params = p[:params][:OuterControl][:ReactivePowerControl]
+    T_fltr = params[:T_fltr]
+    K_p = params[:K_p]
+    K_i = params[:K_i]
+    T_ft = params[:T_ft]
+    T_fv = params[:T_fv]
+    e_min = params[:e_lim][:min]
+    e_max = params[:e_lim][:max]
+    dbd1 = params[:dbd_pnts1]
+    dbd2 = params[:dbd_pnts2]
+    Q_min = params[:Q_lim][:min]
+    Q_max = params[:Q_lim][:max]
+    # V_frz not implemented yet
+    R_c = params[:R_c]
+    X_c = params[:X_c]
+    K_c = params[:K_c]
+    V_min = params[:V_lim][:min]
+    V_max = params[:V_lim][:max]
 
     #Define internal states for Reactive Control
     V_cflt = reactive_controller_states[1]
@@ -1007,7 +935,7 @@ end
 function mdl_outer_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
@@ -1083,13 +1011,6 @@ function mdl_outer_ode!(
             PSY.ReactiveRenewableControllerAB,
         },
     )
-    local_ix_params = get_local_parameter_ix(
-        dynamic_device,
-        PSY.OuterControl{
-            PSY.ActiveRenewableControllerAB,
-            PSY.ReactiveRenewableControllerAB,
-        },
-    )
 
     internal_states = @view device_states[local_ix]
     internal_ode = @view output_ode[local_ix]
@@ -1106,7 +1027,7 @@ function mdl_outer_ode!(
     _mdl_ode_RE_active_controller_AB!(
         active_ode,
         active_states,
-        device_parameters,
+        p,
         p_elec_out,
         ω_sys,
         Vt_filt,
@@ -1120,7 +1041,7 @@ function mdl_outer_ode!(
     _mdl_ode_RE_reactive_controller_AB!(
         reactive_ode,
         reactive_states,
-        device_parameters,
+        p,
         q_elec_out,
         Vt_filt,
         Val(Ref_Flag),

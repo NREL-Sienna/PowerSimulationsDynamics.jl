@@ -43,7 +43,7 @@ end
 function mdl_converter_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -74,26 +74,22 @@ function mdl_converter_ode!(
     Iq_cmd = inner_vars[Iq_ic_var]
 
     #Get Converter parameters
-    local_ix_params =
-        get_local_parameter_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
-    internal_params = @view device_parameters[local_ix_params]
-    T_g,
-    Rrpwr,
-    Brkpt,
-    Zerox,
-    Lvpl1,
-    Vo_lim,
-    Lv_pnt0,
-    Lv_pnt1,
-    Io_lim,
-    T_fltr,
-    K_hv,
-    Iqr_min,
-    Iqr_max,
-    Accel,
-    Q_ref,
-    R_source,
-    X_source = internal_params
+    params = p[:params][:Converter]
+    T_g = params[:T_g]
+    Rrpwr = params[:Rrpwr]
+    Brkpt = params[:Brkpt]
+    Zerox = params[:Zerox]
+    Lvpl1 = params[:Lvpl1]
+    Vo_lim = params[:Vo_lim]
+    Lv_pnt0 = params[:Lv_pnts][:min]
+    Lv_pnt1 = params[:Lv_pnts][:max]
+    T_fltr = params[:T_fltr]
+    K_hv = params[:K_hv]
+    Iqr_min = params[:Iqr_lims][:min]
+    Iqr_max = params[:Iqr_lims][:max]
+    Q_ref = params[:Q_ref]
+    R_source = params[:R_source]
+    X_source = params[:X_source]
     converter = PSY.get_converter(dynamic_device)
     Lvpl_sw = PSY.get_Lvpl_sw(converter)
 

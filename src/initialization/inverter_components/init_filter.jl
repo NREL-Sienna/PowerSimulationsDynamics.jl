@@ -141,9 +141,9 @@ function initialize_filter!(
     params = p[:params][:Filter]
     rf = params[:rf]
     lf = params[:lf]
-    converter = PSY.get_converter(dynamic_device)
-    R_source = PSY.get_R_source(converter)
-    X_source = PSY.get_X_source(converter)
+
+    R_source = p[:params][:Converter][:R_source]
+    X_source = p[:params][:Converter][:X_source]
 
     #Update terminal voltages
     inner_vars[Vr_inv_var] = V_R

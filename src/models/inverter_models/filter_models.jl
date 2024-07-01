@@ -119,7 +119,7 @@ end
 function mdl_filter_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -141,8 +141,8 @@ function mdl_filter_ode!(
     ratio_power = basepower / sys_Sbase
 
     #Obtain parameters
-    rf = device_parameters[:Filter][:rf]
-    lf = device_parameters[:Filter][:lf]
+    rf = p[:params][:Filter][:rf]
+    lf = p[:params][:Filter][:lf]
 
     Vr_cnv = inner_vars[Vr_cnv_var]
     Vi_cnv = inner_vars[Vi_cnv_var]

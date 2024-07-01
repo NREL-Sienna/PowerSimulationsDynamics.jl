@@ -570,7 +570,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
@@ -598,33 +598,23 @@ function _update_inner_vars!(
 
     #Get Converter parameters
     converter = PSY.get_converter(dynamic_device)
-    converter_ix_params = get_local_parameter_ix(dynamic_device, typeof(converter))
-    converter_params = @view device_parameters[converter_ix_params]
-    T_g,
-    Rrpwr,
-    Brkpt,
-    Zerox,
-    Lvpl1,
-    Vo_lim,
-    Lv_pnt0,
-    Lv_pnt1,
-    Io_lim,
-    T_fltr,
-    K_hv,
-    Iqr_min,
-    Iqr_max,
-    Accel,
-    Q_ref,
-    R_source,
-    X_source = converter_params
+    params = p[:params][:Converter]
+    Brkpt = params[:Brkpt]
+    Zerox = params[:Zerox]
+    Lvpl1 = params[:Lvpl1]
+    Vo_lim = params[:Vo_lim]
+    Lv_pnt0 = params[:Lv_pnts][:min]
+    Lv_pnt1 = params[:Lv_pnts][:max]
+    K_hv = params[:K_hv]
+    R_source = params[:R_source]
+    X_source = params[:X_source]
+
     Lvpl_sw = PSY.get_Lvpl_sw(converter)
     Z_source_sq = R_source^2 + X_source^2
 
     #Obtain filter parameters
-    filt = PSY.get_filter(dynamic_device)
-    filter_ix_params = get_local_parameter_ix(dynamic_device, typeof(filt))
-    filter_params = @view device_parameters[filter_ix_params]
-    rf, lf = filter_params
+    rf = p[:params][:Filter][:rf]
+    lf = p[:params][:Filter][:lf]
 
     #Define internal states for Converter
     converter_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
@@ -775,7 +765,7 @@ Oleg Wasynczuk and Scott Sudhoff for the equations
 function device!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -804,20 +794,20 @@ function device!(
     ωr = device_states[5]
 
     #Get parameters
-    R_s,
-    R_r,
-    X_ls,
-    X_lr,
-    X_m,
-    H,
-    A,
-    B,
-    base_power,
-    C,
-    τ_m0,
-    B_sh,
-    X_ad,
-    X_aq = device_parameters
+    params = p[:params]
+    R_s = params[:R_s]
+    R_r = params[:R_r]
+    X_ls = params[:X_ls]
+    X_lr = params[:X_lr]
+    H = params[:H]
+    A = params[:A]
+    B = params[:B]
+    base_power = params[:base_power]
+    C = params[:C]
+    τ_m0 = params[:τ_ref]
+    B_sh = params[:B_shunt]
+    X_ad = params[:X_ad]
+    X_aq = params[:X_aq]
 
     # voltages in QD
     v_qs = voltage_i

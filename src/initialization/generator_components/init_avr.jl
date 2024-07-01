@@ -189,7 +189,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
     inner_vars::AbstractVector,
@@ -204,42 +204,41 @@ function initialize_avr!(
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.ESAC1A)
-    internal_params = @view device_parameters[local_ix_params]
-    Tr,
-    Tb,
-    Tc,
-    Ka,
-    Ta,
-    Va_min,
-    Va_max,
-    Te,
-    Kf,
-    Tf,
-    Kc,
-    Kd,
-    Ke,
-    Vr_min,
-    Vr_max = internal_params
-    inv_Tr = Tr < eps() ? 1.0 : 1.0 / Tr
+    params = p[:params][:AVR]
+    Tb = params[:Tb]
+    Tc = params[:Tc]
+    Ka = params[:Ka]
+    Kf = params[:Kf]
+    Tf = params[:Tf]
+    Kc = params[:Kc]
+    Kd = params[:Kd]
+    Ke = params[:Ke]
+    Vr_min = params[:Vr_lim][:min]
+    Vr_max = params[:Vr_lim][:max]
     #Obtain saturation
     #Se_Vf = saturation_function(Vm)
 
     #Solve Ve from rectifier function
-    function f_Ve!(out, x)
+    function f_Ve!(out, x, params)
         V_e0 = x[1]
         I_N0 = Kc * Xad_Ifd0 / V_e0
 
         out[1] = Vf0 - V_e0 * rectifier_function(I_N0)
     end
     x0 = [1.0]
-    sol = NLsolve.nlsolve(f_Ve!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f_Ve!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
             "Initialization of AVR in $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         V_e0 = sol_x0[1]
         I_N0 = Kc * Xad_Ifd0 / V_e0
     end
@@ -258,13 +257,18 @@ function initialize_avr!(
 
     #States of ESAC1A are Vm, Vr1, Vr2, Ve, Vr3
     #To solve V_ref, Vr1, Vr2, Ve, Vr3
-    function f!(out, x)
+    function f!(out, x, params)
         V_ref = x[1]
         Vr1 = x[2]
         Vr2 = x[3]
         Ve = x[4]
         Vr3 = x[5]
-
+        Ka = params[:Ka]
+        Kf = params[:Kf]
+        Tf = params[:Tf]
+        Kc = params[:Kc]
+        Kd = params[:Kd]
+        Ke = params[:Ke]
         #Compute auxiliary variables
 
         I_N = Kc * Xad_Ifd0 / Ve
@@ -282,16 +286,22 @@ function initialize_avr!(
         out[5] = Vf0 - Ve * rectifier_function(I_N)
     end
     x0 = [V_ref0, V_r10, V_r20, V_e0, V_r30]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
             "Initialization of AVR in $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        set_V_ref!(p, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, typeof(avr))
         avr_states = @view device_states[avr_ix]

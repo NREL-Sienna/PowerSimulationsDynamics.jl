@@ -238,7 +238,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESAC1A, TG, P}},
     h,
@@ -246,7 +246,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = get_V_ref(dynamic_device)
+    V_ref = p[:refs][:V_ref]
 
     #Obtain avr
     avr = PSY.get_avr(dynamic_device)
@@ -268,23 +268,22 @@ function mdl_avr_ode!(
     Xad_Ifd = inner_vars[Xad_Ifd_var]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.ESAC1A)
-    internal_params = @view device_parameters[local_ix_params]
-    Tr,
-    Tb,
-    Tc,
-    Ka,
-    Ta,
-    Va_min,
-    Va_max,
-    Te,
-    Kf,
-    Tf,
-    Kc,
-    Kd,
-    Ke,
-    Vr_min,
-    Vr_max = internal_params
+    params = p[:params][:AVR]
+    Tr = params[:Tr]
+    Tb = params[:Tb]
+    Tc = params[:Tc]
+    Ka = params[:Ka]
+    Ta = params[:Ta]
+    Va_min = params[:Va_lim][:min]
+    Va_max = params[:Va_lim][:max]
+    Te = params[:Te]
+    Kf = params[:Kf]
+    Tf = params[:Tf]
+    Kc = params[:Kc]
+    Kd = params[:Kd]
+    Ke = params[:Ke]
+    Vr_min = params[:Vr_lim][:min]
+    Vr_max = params[:Vr_lim][:max]
     inv_Tr = Tr < eps() ? 1.0 : 1.0 / Tr
     #Obtain saturation
     Se = saturation_function(avr, Ve)

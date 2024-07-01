@@ -306,7 +306,7 @@ end
 
 function initialize_tg!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.HydroTurbineGov, P}},
     inner_vars::AbstractVector,
@@ -318,28 +318,28 @@ function initialize_tg!(
 
     tg = PSY.get_prime_mover(dynamic_device)
     #Get Parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.HydroTurbineGov)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    r,
-    Tr,
-    Tf,
-    Tg,
-    VELM,   #Gate velocity limits not implemented
-    G_min,
-    G_max,
-    Tw,
-    At,
-    D_T,
-    q_nl = internal_params
+    params = p[:params][:TurbineGov]
+    R = params[:R]
+    r = params[:r]
+    Tr = params[:Tr]
+    G_min = params[:gate_position_limits][:min]
+    G_max = params[:gate_position_limits][:max]
+    At = params[:At]
+    q_nl = params[:q_nl]
 
-    function f!(out, x)
+    function f!(out, x, params)
         P_ref = x[1]
         x_g1 = x[2]
         x_g2 = x[3]
         x_g3 = x[4]
         x_g4 = x[5]
 
+        R = params[:R]
+        r = params[:r]
+        Tr = params[:Tr]
+        At = params[:At]
+        D_T = params[:D_T]
+        q_nl = params[:q_nl]
         c = (1.0 / r) * x_g1 + (1.0 / (r * Tr)) * x_g2
         P_in = P_ref - Δω - R * c
         h = (x_g4 / x_g3)^2
@@ -352,13 +352,17 @@ function initialize_tg!(
     end
     P0 = R * (q_nl + τm0 / At) # mechanical power initial guess. It migth be different than electrical output power
     x0 = [P0, 0, (r * Tr) * P0 / R, P0 / R, P0 / R]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @warn(
-            "Initialization of Turbine Governor $(PSY.get_name(static)) failed"
-        )
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Error if x_g3 is outside PI limits
         if sol_x0[4] > G_max || sol_x0[4] < G_min
             error(
@@ -367,7 +371,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        set_P_ref!(p, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]

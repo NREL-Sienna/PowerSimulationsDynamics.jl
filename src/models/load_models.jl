@@ -44,8 +44,8 @@ function mdl_zip_load!(
     current_i::AbstractArray{T},
     wrapper::StaticLoadWrapper,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    V0_mag_inv = 1.0 / p[:refs][:V_ref]
-    #V0_mag_inv = 1.0 / PSY.get_magnitude(PSY.get_bus(wrapper))
+    #V0_mag_inv = 1.0 / p[:refs][:V_ref]
+    V0_mag_inv = 1.0 / PSY.get_magnitude(PSY.get_bus(wrapper))
     V0_mag_sq_inv = V0_mag_inv^2
 
     V_mag = sqrt(voltage_r^2 + voltage_i^2)

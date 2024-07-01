@@ -207,27 +207,21 @@ function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.SingleCageInductionMachine},
     device::PSY.StaticInjection,
     ::AbstractVector,
-    device_parameters::AbstractVector,
+    p::AbstractVector,
     device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
 
     # Get parameters
     dynamic_device = get_device(dynamic_wrapper)
-    R_s,
-    R_r,
-    X_ls,
-    X_lr,
-    X_m,
-    H,
-    A,
-    B,
-    base_power,
-    C,
-    τ_m0,
-    B_sh,
-    X_ad,
-    X_aq = device_parameters
+    params = p[:params]
+    R_s = params[:R_s]
+    X_ls = params[:X_ls]
+    X_lr = params[:X_lr]
+    base_power = params[:base_power]
+    τ_m0 = params[:τ_ref]
+    X_ad = params[:X_ad]
+    X_aq = params[:X_aq]
 
     #PowerFlow Data
     if isa(device, PSY.StandardLoad)
@@ -265,8 +259,7 @@ function initialize_dynamic_device!(
     τ_m00 = P0 / ωr0
     x0 = [i_qs0, i_ds0, B_sh0, ψ_qs0, ψ_ds0, ψ_qr0, ψ_dr0, ωr0, τ_m00]
 
-    #
-    function f!(out, x)
+    function f!(out, x, params)
         i_qs = x[1]
         i_ds = x[2]
         B_sh = x[3]
@@ -276,6 +269,17 @@ function initialize_dynamic_device!(
         ψ_dr = x[7]
         ωr = x[8]
         τ_m0 = x[9]
+
+        R_s = params[:R_s]
+        R_r = params[:R_r]
+        X_ls = params[:X_ls]
+        X_lr = params[:X_lr]
+        A = params[:A]
+        B = params[:B]
+        C = params[:C]
+        X_ad = params[:X_ad]
+        X_aq = params[:X_aq]
+
         ψ_mq = ψ_qs - i_qs * X_ls
         ψ_md = ψ_ds - i_ds * X_ls
         out[1] = -I_R + i_ds - V_I * B_sh # network interface
@@ -288,24 +292,28 @@ function initialize_dynamic_device!(
         out[8] = (1.0 - ωr) * ψ_qr + R_r / X_lr * (ψ_md - ψ_dr) # dψ_dr/dt = 0
         out[9] = ψ_ds * i_qs - ψ_qs * i_ds - τ_m0 * (A * ωr^2 + B * ωr + C) # dωr/dt = 0
     end
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @warn(
-            "Initialization in Ind. Motor $(PSY.get_name(device)) failed"
-        )
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn("Initialization in Ind. Motor $(PSY.get_name(device)) failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         device_states[1] = sol_x0[4] # ψ_qs
         device_states[2] = sol_x0[5] # ψ_ds
         device_states[3] = sol_x0[6] # ψ_qr
         device_states[4] = sol_x0[7] # ψ_dr
         device_states[5] = sol_x0[8] # ωr
         # update τ_ref and B_sh
-        device_parameters[12] = sol_x0[3]   # B_sh
+        params[:B_shunt] = sol_x0[3]   # B_sh
         PSY.set_B_shunt!(dynamic_device, sol_x0[3]) # B_sh
-        device_parameters[11] = sol_x0[9]   # τ_m0
-        PSY.set_τ_ref!(dynamic_device, sol_x0[9]) # τ_m0
-        set_P_ref(dynamic_wrapper, sol_x0[9]) # τ_m0
+        params[:τ_ref] = sol_x0[9]   # τ_ref
+        PSY.set_τ_ref!(dynamic_device, sol_x0[9]) # τ_ref
+        set_P_ref!(p, sol_x0[9]) # τ_m0
     end
     return
 end

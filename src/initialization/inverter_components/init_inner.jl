@@ -240,7 +240,7 @@ end
 
 function initialize_inner!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
@@ -266,21 +266,10 @@ function initialize_inner!(
     inner_control = PSY.get_inner_control(dynamic_device)
     Q_Flag = PSY.get_Q_Flag(inner_control)
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.RECurrentControlB)
-    internal_params = @view device_parameters[local_ix_params]
-    Vdip_min,
-    Vdip_max,
-    T_rv,
-    dbd1,
-    dbd2,
-    K_qv,
-    I_ql1,
-    I_qh1,
-    V_ref0,
-    K_vp,
-    K_vi,
-    T_iq,
-    I_max = internal_params
+    params = p[:params][:InnerControl]
+    V_ref0 = params[:V_ref0]
+    K_vi = params[:K_vi]
+
     Ip_min, Ip_max, Iq_min, Iq_max =
         current_limit_logic(inner_control, Val(PQ_Flag), V_t, Ip_oc, Iq_cmd)
 
@@ -315,7 +304,7 @@ function initialize_inner!(
     # Based on PSS/E manual, if user does not provide V_ref0, then
     # V_ref0 is considered to be the output voltage of the PF solution
     if V_ref0 == 0.0
-        internal_params[9] = V_t
+        params[:V_ref0] = V_t
     end
     return
 end

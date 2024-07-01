@@ -270,7 +270,7 @@ end
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.HydroTurbineGov, P}},
@@ -279,8 +279,8 @@ function mdl_tg_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
 
     #Obtain references
-    P_ref = get_P_ref(device)
-    ω_ref = get_ω_ref(device)
+    P_ref = p[:refs][:P_ref]
+    ω_ref = p[:refs][:ω_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(device, PSY.HydroTurbineGov)
@@ -298,20 +298,19 @@ function mdl_tg_ode!(
     Δω = ω - ω_ref
 
     #Get Parameters
-    local_ix_params = get_local_parameter_ix(device, PSY.HydroTurbineGov)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    r,
-    Tr,
-    Tf,
-    Tg,
-    VELM,
-    G_min,
-    G_max,
-    Tw,
-    At,
-    D_T,
-    q_nl = internal_params
+    params = p[:params][:TurbineGov]
+    R = params[:R]
+    r = params[:r]
+    Tr = params[:Tr]
+    Tf = params[:Tf]
+    Tg = params[:Tg]
+    VELM = params[:VELM]
+    G_min = params[:gate_position_limits][:min]
+    G_max = params[:gate_position_limits][:max]
+    Tw = params[:Tw]
+    At = params[:At]
+    D_T = params[:D_T]
+    q_nl = params[:q_nl]
 
     #Compute block derivatives
     c, dxg2_dt = pi_block_nonwindup(x_g1, x_g2, 1.0 / r, 1.0 / (r * Tr), G_min, G_max)
