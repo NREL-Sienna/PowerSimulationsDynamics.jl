@@ -164,7 +164,6 @@ function mdl_converter_ode!(
 
     #Compute converter voltage
     Vr_cnv, Vi_cnv = V_cnv_calc(Ir_cnv, Ii_cnv, V_R, V_I)
-
     #Update ODEs
     output_ode[local_ix[1]] = Ip_binary * (1.0 / T_g) * Ip_in #(Ip_cmd - Ip)
     output_ode[local_ix[2]] = (1.0 / T_g) * Iq_in # (Iq_cmd - Iq)

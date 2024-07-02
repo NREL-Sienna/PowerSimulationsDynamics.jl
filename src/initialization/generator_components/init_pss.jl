@@ -1,6 +1,6 @@
 function initialize_pss!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSSFixed}},
     inner_vars::AbstractVector,
@@ -32,20 +32,22 @@ function initialize_pss!(
     pss_states = @view device_states[pss_ix]
 
     # Get Parameters
-    A1 = PSY.get_A1(pss)
-    A2 = PSY.get_A2(pss)
-    A5 = PSY.get_A5(pss)
-    A6 = PSY.get_A6(pss)
-    T1 = PSY.get_T1(pss)
-    T2 = PSY.get_T2(pss)
-    T3 = PSY.get_T3(pss)
-    T4 = PSY.get_T4(pss)
-    T5 = PSY.get_T5(pss)
-    T6 = PSY.get_T6(pss)
-    Ks = PSY.get_Ks(pss)
-    Ls_min, Ls_max = PSY.get_Ls_lim(pss)
-    V_cu = PSY.get_Vcu(pss)
-    V_cl = PSY.get_Vcl(pss)
+    params = p[:params][:PSS]
+    A1 = params[:A1]
+    A2 = params[:A2]
+    A5 = params[:A5]
+    A6 = params[:A6]
+    T1 = params[:T1]
+    T2 = params[:T2]
+    T3 = params[:T3]
+    T4 = params[:T4]
+    T5 = params[:T5]
+    T6 = params[:T6]
+    Ks = params[:Ks]
+    Ls_min = params[:Ls_lim1]
+    Ls_max = params[:Ls_lim2]
+    V_cu = params[:V_cu]
+    V_cl = params[:V_cl]
 
     #Error non-valid parameters
     if A6 > eps() && A2 < eps()
@@ -118,7 +120,7 @@ end
 
 function initialize_pss!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.STAB1}},
     inner_vars::AbstractVector,

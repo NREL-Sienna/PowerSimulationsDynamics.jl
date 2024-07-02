@@ -266,7 +266,7 @@ function initialize_inner!(
     inner_control = PSY.get_inner_control(dynamic_device)
     Q_Flag = PSY.get_Q_Flag(inner_control)
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
-    params = p[:params][:InnerControl]
+    params = @view(@view(p[:params])[:InnerControl])
     V_ref0 = params[:V_ref0]
     K_vi = params[:K_vi]
 

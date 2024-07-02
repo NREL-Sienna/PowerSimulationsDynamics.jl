@@ -745,7 +745,7 @@ end
 function mdl_outer_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{
@@ -781,21 +781,20 @@ function mdl_outer_ode!(
     Ii_filter = device_states[external_ix[4]]
 
     #Get Active Power Controller parameters
-    outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power_control(outer_control)
-    k1 = PSY.get_k1(active_power_control)
-    ψ = PSY.get_ψ(active_power_control)
+    params_active = p[:params][:OuterControl][:ActivePowerControl]
+    k1 = params_active[:k1]
+    ψ = params_active[:ψ]
     f0 = get_system_base_frequency(dynamic_device)
     ωb = 2 * pi * f0 #Rated angular frequency
 
     #Get Reactive Power Controller parameters
-    reactive_power_control = PSY.get_reactive_power_control(outer_control)
-    k2 = PSY.get_k2(reactive_power_control)
+    params_reactive = p[:params][:OuterControl][:ReactivePowerControl]
+    k2 = params_reactive[:k2]
 
     #Obtain external parameters
-    p_ref = get_P_ref(dynamic_device)
-    V_ref = get_V_ref(dynamic_device)
-    q_ref = get_Q_ref(dynamic_device)
+    p_ref = p[:refs][:P_ref]
+    V_ref = p[:refs][:V_ref]
+    q_ref = p[:refs][:Q_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(
@@ -824,7 +823,7 @@ function mdl_outer_ode!(
             (k1 / E_oc) * (-sin(γ) * (p_ref - p_elec_out) + cos(γ) * (q_ref - q_elec_out)) +
             k2 * (V_ref^2 - E_oc^2) * E_oc
         )
-
+    outer_control = PSY.get_outer_control(dynamic_device)
     ext = PSY.get_ext(outer_control)
     bool_val = get(ext, "is_not_reference", 1.0)
 

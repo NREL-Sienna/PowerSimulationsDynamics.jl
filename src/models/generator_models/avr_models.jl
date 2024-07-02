@@ -430,7 +430,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray,
     output_ode::AbstractArray,
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
     h,
@@ -438,7 +438,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = get_V_ref(dynamic_device)
+    V0_ref = p[:refs][:V_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.EXST1)
@@ -456,20 +456,19 @@ function mdl_avr_ode!(
     Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base 
 
     #Get Parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXST1)
-    internal_params = @view device_parameters[local_ix_params]
-    Tr,
-    Vi_min,
-    Vi_max,
-    Tc,
-    Tb,
-    Ka,
-    Ta,
-    Vr_min,
-    Vr_max,
-    Kc,
-    Kf,
-    Tf = internal_params
+    params = p[:params][:AVR]
+    Tr = params[:Tr]
+    Vi_min = params[:Vi_lim][:min]
+    Vi_max = params[:Vi_lim][:max]
+    Tc = params[:Tc]
+    Tb = params[:Tb]
+    Ka = params[:Ka]
+    Ta = params[:Ta]
+    Vr_min = params[:Vr_lim][:min]
+    Vr_max = params[:Vr_lim][:max]
+    Kc = params[:Kc]
+    Kf = params[:Kf]
+    Tf = params[:Tf]
 
     #Compute auxiliary parameters
     V_ref = V0_ref + Vs
@@ -496,7 +495,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray,
     output_ode::AbstractArray,
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXAC1, TG, P}},
     h,
@@ -504,7 +503,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V_ref = get_V_ref(dynamic_device)
+    V_ref = p[:refs][:V_ref]
 
     #Obtain avr
     avr = PSY.get_avr(dynamic_device)
@@ -526,21 +525,20 @@ function mdl_avr_ode!(
     Xad_Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXAC1)
-    internal_params = @view device_parameters[local_ix_params]
-    Tr,
-    Tb,
-    Tc,
-    Ka,
-    Ta,
-    Vr_min,
-    Vr_max,
-    Te,
-    Kf,
-    Tf,
-    Kc,
-    Kd,
-    Ke = internal_params
+    params = p[:params][:AVR]
+    Tr = params[:Tr]
+    Tb = params[:Tb]
+    Tc = params[:Tc]
+    Ka = params[:Ka]
+    Ta = params[:Ta]
+    Vr_min = params[:Vr_lim][:min]
+    Vr_max = params[:Vr_lim][:max]
+    Te = params[:Te]
+    Kf = params[:Kf]
+    Tf = params[:Tf]
+    Kc = params[:Kc]
+    Kd = params[:Kd]
+    Ke = params[:Ke]
 
     #Obtain saturation
     Se = saturation_function(avr, Ve)

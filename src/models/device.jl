@@ -850,7 +850,7 @@ Oleg Wasynczuk and Scott Sudhoff.
 function device!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -877,21 +877,21 @@ function device!(
     ωr = device_states[3]
 
     #Get parameters
-    R_s,
-    R_r,
-    X_ls,
-    X_lr,
-    X_m,
-    H,
-    A,
-    B,
-    base_power,
-    C,
-    τ_m0,
-    B_sh,
-    X_ss,
-    X_rr,
-    X_p = device_parameters
+    params = p[:params]
+    R_s = params[:R_s]
+    R_r = params[:R_r]
+    X_ls = params[:X_ls]
+    X_lr = params[:X_lr]
+    X_m = params[:X_m]
+    H = params[:H]
+    A = params[:A]
+    B = params[:B]
+    base_power = params[:base_power]
+    C = params[:C]
+    τ_m0 = params[:τ_ref]
+    B_sh = params[:B_shunt]
+    X_rr = params[:X_rr]
+    X_p = params[:X_p]
 
     # voltages in QD
     v_qs = voltage_i
@@ -1246,7 +1246,7 @@ end
 function _mdl_ode_AggregateDistributedGenerationA!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::Val{0},
     voltage_r::T,
     voltage_i::T,
@@ -1263,9 +1263,9 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     dynamic_device = get_device(dynamic_wrapper)
     #Obtain References (from wrapper and device)
     Pfa_ref = PSY.get_Pfa_ref(dynamic_device)
-    P_ref = get_P_ref(dynamic_wrapper)
-    Q_ref = get_Q_ref(dynamic_wrapper)
-    V_ref = get_V_ref(dynamic_wrapper)
+    P_ref = p[:refs][:P_ref]
+    Q_ref = p[:refs][:Q_ref]
+    V_ref = p[:refs][:V_ref]
 
     #Get flags
     Pf_Flag = PSY.get_Pf_Flag(dynamic_device)
@@ -1283,35 +1283,25 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_cmd = Iq
 
     #Get parameters
-    T_rv,
-    Trf,
-    dbd1,
-    dbd2,
-    K_qv,
-    Tp,
-    T_iq,
-    D_dn,
-    D_up,
-    fdbd_pnts,
-    fdbd_pnts,
-    fe_min,
-    fe_max,
-    P_min,
-    P_max,
-    dP_min,
-    dP_max,
-    Tpord,
-    Kpg,
-    Kig,
-    I_max,
-    Tg,
-    rrpwr,
-    Tv,
-    Vpr,
-    Iq_min,
-    Iq_max,
-    basepower,
-    Pfa_ref = device_parameters
+    params = p[:params]
+    T_rv = params[:T_rv]
+    Trf = params[:Trf]
+    dbd1 = params[:dbd_pnts1]
+    dbd2 = params[:dbd_pnts2]
+    K_qv = params[:K_qv]
+    Tp = params[:Tp]
+    T_iq = params[:T_iq]
+    D_dn = params[:D_dn]
+    D_up = params[:D_up]
+    fdbd_pnts1 = params[:fdbd_pnts1]
+    fdbd_pnts2 = params[:fdbd_pnts2]
+    Tg = params[:Tg]
+    rrpwr = params[:rrpwr]
+    Tv = params[:Tv]
+    Iq_min = params[:Iq_lim][:min]
+    Iq_max = params[:Iq_lim][:max]
+    basepower = params[:base_power]
+    Pfa_ref = params[:Pfa_ref]
 
     base_power_ratio = basepower / Sbase
 
@@ -1387,7 +1377,7 @@ end
 function _mdl_ode_AggregateDistributedGenerationA!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::Val{1},
     voltage_r::T,
     voltage_i::T,
@@ -1404,10 +1394,10 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     dynamic_device = get_device(dynamic_wrapper)
     #Obtain References (from wrapper and device)
     Pfa_ref = PSY.get_Pfa_ref(dynamic_device)
-    P_ref = get_P_ref(dynamic_wrapper)
-    Q_ref = get_Q_ref(dynamic_wrapper)
-    V_ref = get_V_ref(dynamic_wrapper)
-    ω_ref = get_ω_ref(dynamic_wrapper)
+    P_ref = p[:refs][:P_ref]
+    Q_ref = p[:refs][:Q_ref]
+    V_ref = p[:refs][:V_ref]
+    ω_ref = p[:refs][:ω_ref]
 
     #Get flags
     Pf_Flag = PSY.get_Pf_Flag(dynamic_device)
@@ -1428,35 +1418,34 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_cmd = Iq
 
     #Get parameters
-    T_rv,
-    Trf,
-    dbd1,
-    dbd2,
-    K_qv,
-    Tp,
-    T_iq,
-    D_dn,
-    D_up,
-    fdbd1,
-    fdbd2,
-    fe_min,
-    fe_max,
-    P_min,
-    P_max,
-    dP_min,
-    dP_max,
-    Tpord,
-    Kpg,
-    Kig,
-    I_max,
-    Tg,
-    rrpwr,
-    Tv,
-    Vpr,
-    Iq_min,
-    Iq_max,
-    basepower,
-    Pfa_ref = device_parameters
+    params = p[:params]
+    T_rv = params[:T_rv]
+    Trf = params[:Trf]
+    dbd1 = params[:dbd_pnts1]
+    dbd2 = params[:dbd_pnts2]
+    K_qv = params[:K_qv]
+    Tp = params[:Tp]
+    T_iq = params[:T_iq]
+    D_dn = params[:D_dn]
+    D_up = params[:D_up]
+    fdbd1 = params[:fdbd_pnts1]
+    fdbd2 = params[:fdbd_pnts2]
+    fe_min = params[:fe_lim][:min]
+    fe_max = params[:fe_lim][:max]
+    P_min = params[:P_lim][:min]
+    P_max = params[:P_lim][:max]
+    dP_min = params[:dP_lim][:min]
+    dP_max = params[:dP_lim][:max]
+    Tpord = params[:Tpord]
+    Kpg = params[:Kpg]
+    Kig = params[:Kig]
+    Tg = params[:Tg]
+    rrpwr = params[:rrpwr]
+    Tv = params[:Tv]
+    Iq_min = params[:Iq_lim][:min]
+    Iq_max = params[:Iq_lim][:max]
+    basepower = params[:base_power]
+    Pfa_ref = params[:Pfa_ref]
 
     base_power_ratio = basepower / Sbase
 

@@ -214,7 +214,7 @@ function initialize_dynamic_device!(
 
     # Get parameters
     dynamic_device = get_device(dynamic_wrapper)
-    params = p[:params]
+    params = @view(p[:params])
     R_s = params[:R_s]
     X_ls = params[:X_ls]
     X_lr = params[:X_lr]
@@ -322,28 +322,19 @@ function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.SimplifiedSingleCageInductionMachine},
     device::PSY.StaticInjection,
     ::AbstractVector,
-    device_parameters::AbstractVector,
+    p::AbstractVector,
     device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
 
     dynamic_device = get_device(dynamic_wrapper)
     #Get parameters
-    R_s,
-    R_r,
-    X_ls,
-    X_lr,
-    X_m,
-    H,
-    A,
-    B,
-    base_power,
-    C,
-    τ_m0,
-    B_sh,
-    X_ss,
-    X_rr,
-    X_p = device_parameters
+    params = @view(p[:params])
+    R_s = params[:R_s]
+    X_m = params[:X_m]
+    base_power = params[:base_power]
+    X_rr = params[:X_rr]
+    X_p = params[:X_p]
 
     #PowerFlow Data
     if isa(device, PSY.StandardLoad)
@@ -381,8 +372,7 @@ function initialize_dynamic_device!(
     τ_m00 = P0 / ωr0
     x0 = [i_qs0, i_ds0, i_qr0, i_dr0, B_sh0, ψ_qs0, ψ_ds0, ψ_qr0, ψ_dr0, ωr0, τ_m00]
 
-    #
-    function f!(out, x)
+    function f!(out, x, params)
         i_qs = x[1]
         i_ds = x[2]
         i_qr = x[3]
@@ -394,6 +384,15 @@ function initialize_dynamic_device!(
         ψ_dr = x[9]
         ωr = x[10]
         τ_m0 = x[11]
+
+        R_s = params[:R_s]
+        R_r = params[:R_r]
+        X_m = params[:X_m]
+        A = params[:A]
+        B = params[:B]
+        C = params[:C]
+        X_ss = params[:X_ss]
+        X_rr = params[:X_rr]
 
         out[1] = -I_R + i_ds - V_I * B_sh # network interface
         out[2] = -I_I + i_qs + V_R * B_sh # network interface
@@ -407,22 +406,26 @@ function initialize_dynamic_device!(
         out[10] = (1.0 - ωr) * ψ_qr - R_r * i_dr # dψ_dr/dt = 0
         out[11] = ψ_qr * i_dr - ψ_dr * i_qr - τ_m0 * (A * ωr^2 + B * ωr + C) # dωr/dt = 0
     end
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @warn(
-            "Initialization in Ind. Motor $(PSY.get_name(device)) failed"
-        )
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn("Initialization in Ind. Motor $(PSY.get_name(device)) failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         device_states[1] = sol_x0[8] # ψ_qr
         device_states[2] = sol_x0[9] # ψ_dr
         device_states[3] = sol_x0[10] # ωr
         # update τ_ref and B_sh
         PSY.set_B_shunt!(dynamic_device, sol_x0[5]) # B_sh
-        device_parameters[12] = sol_x0[5]   # B_sh
+        params[:B_shunt] = sol_x0[5]   # B_sh
         PSY.set_τ_ref!(dynamic_device, sol_x0[11]) # τ_m0
-        device_parameters[11] = sol_x0[11]   # τ_m0
-        set_P_ref(dynamic_wrapper, sol_x0[11]) # τ_m0
+        params[:τ_ref] = sol_x0[11]   # τ_m0
+        set_P_ref!(p, sol_x0[11]) # τ_m0
     end
     return device_states
 end
@@ -599,7 +602,7 @@ function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     static::PSY.StaticInjection,
     ::AbstractVector,
-    device_parameters::AbstractVector,
+    p::AbstractVector,
     device_states::AbstractVector,
 )
     dynamic_device = get_device(dynamic_wrapper)
@@ -673,7 +676,7 @@ function initialize_dynamic_device!(
 
     #See Note 2 on PSSE Documentation
     Vref0 = PSY.get_V_ref(dynamic_device)
-    K_qv = device_parameters[5]
+    K_qv = p[:params][:K_qv]
     (dbd1, dbd2) = PSY.get_dbd_pnts(dynamic_device)
     if Vref0 == 0.0
         Vref = Vmeas
@@ -683,12 +686,12 @@ function initialize_dynamic_device!(
         Vref = Vmeas
     end
 
-    set_P_ref(dynamic_wrapper, Pref)
+    set_P_ref!(p, Pref)
     PSY.set_P_ref!(dynamic_device, Pref)
-    set_Q_ref(dynamic_wrapper, Qref)
-    set_V_ref(dynamic_wrapper, Vref)
-    set_ω_ref(dynamic_wrapper, Freq_ref)
+    set_Q_ref!(p, Qref)
+    set_V_ref!(p, Vref)
+    set_ω_ref!(p, Freq_ref)
     PSY.set_Pfa_ref!(dynamic_device, pfaref)
-    device_parameters[29] = pfaref
+    @view(p[:params])[:Pfa_ref] = pfaref
     return
 end

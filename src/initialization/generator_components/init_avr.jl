@@ -464,7 +464,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXST1, TG, P}},
     inner_vars::AbstractVector,
@@ -478,20 +478,15 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXST1)
-    internal_params = @view device_parameters[local_ix_params]
-    Tr,
-    Vi_min,
-    Vi_max,
-    Tc,
-    Tb,
-    Ka,
-    Ta,
-    Vr_min,
-    Vr_max,
-    Kc,
-    Kf,
-    Tf = internal_params
+    params = p[:params][:AVR]
+    Tc = params[:Tc]
+    Tb = params[:Tb]
+    Ka = params[:Ka]
+    Vr_min = params[:Vr_lim][:min]
+    Vr_max = params[:Vr_lim][:max]
+    Kc = params[:Kc]
+    Kf = params[:Kf]
+    Tf = params[:Tf]
 
     # Check limits to field voltage 
     if (Vt * Vr_min - Kc * Ifd > Vf0) || (Vf0 > Vt * Vr_max - Kc * Ifd)
@@ -504,7 +499,7 @@ function initialize_avr!(
     Vref0 = Vt + Vf0 / Ka
 
     PSY.set_V_ref!(avr, Vref0)
-    set_V_ref(dynamic_device, Vref0)
+    set_V_ref!(p, Vref0)
 
     #States of EXST1_PTI are Vm, Vll, Vr, Vfb
 
@@ -520,7 +515,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.EXAC1, TG, P}},
     inner_vars::AbstractVector,
@@ -535,37 +530,40 @@ function initialize_avr!(
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.EXAC1)
-    internal_params = @view device_parameters[local_ix_params]
-    Tr,
-    Tb,
-    Tc,
-    Ka,
-    Ta,
-    Vr_min,
-    Vr_max,
-    Te,
-    Kf,
-    Tf,
-    Kc,
-    Kd,
-    Ke = internal_params
-
+    params = p[:params][:AVR]
+    Tb = params[:Tb]
+    Tc = params[:Tc]
+    Ka = params[:Ka]
+    Vr_min = params[:Vr_lim][:min]
+    Vr_max = params[:Vr_lim][:max]
+    Kf = params[:Kf]
+    Tf = params[:Tf]
+    Kc = params[:Kc]
+    Kd = params[:Kd]
+    Ke = params[:Ke]
+    params_nl = [Ifd0, Kc]
     #Solve Ve from rectifier function
-    function f_Ve!(out, x)
+    function f_Ve!(out, x, params)
         Ve = x[1]
+        Ifd0, Kc = params
         IN = Kc * Ifd0 / Ve
 
         out[1] = Vf0 - Ve * rectifier_function(IN)
     end
     x0 = [10.0] # initial guess for Ve
-    sol = NLsolve.nlsolve(f_Ve!, x0)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f_Ve!, x0, params_nl)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
             "Initialization of AVR in $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         Ve = sol_x0[1]
         IN = Kc * Ifd0 / Ve
     end
@@ -583,7 +581,7 @@ function initialize_avr!(
 
     #Update V_ref
     PSY.set_V_ref!(avr, Vref0)
-    set_V_ref(dynamic_device, Vref0)
+    set_V_ref!(p, Vref0)
 
     #States of EXAC1 are Vm, Vr1, Vr2, Ve, Vr3
 
