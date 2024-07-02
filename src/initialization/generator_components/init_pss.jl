@@ -8,7 +8,7 @@ function initialize_pss!(
 
 function initialize_pss!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.IEEEST}},
     inner_vars::AbstractVector,
@@ -46,8 +46,8 @@ function initialize_pss!(
     Ks = params[:Ks]
     Ls_min = params[:Ls_lim1]
     Ls_max = params[:Ls_lim2]
-    V_cu = params[:V_cu]
-    V_cl = params[:V_cl]
+    V_cu = params[:Vcu]
+    V_cl = params[:Vcl]
 
     #Error non-valid parameters
     if A6 > eps() && A2 < eps()
