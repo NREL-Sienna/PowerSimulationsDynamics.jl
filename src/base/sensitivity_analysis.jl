@@ -134,8 +134,11 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             elseif init_level == INITIALIZED
                 @info "I.C.s not impacted by parameter change"
             end
-            prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0)
-            sol = SciMLBase.solve(prob_new, solver)
+            h(p, t; idxs = nothing) = begin
+                typeof(idxs) <: Number ? x0[idxs] : x0
+            end
+            prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0)   # TODO - Need to add h here for delays
+            sol = SciMLBase.solve(prob_new, solver)                 # TODO - wrap = Val(false) gets a different enzyme error, but ruins ODE
 
             @assert length(state_ixs) == 1  #Hardcode for single state for now 
             ix = state_ixs[1]
