@@ -59,7 +59,7 @@ end
 function _convergence_check(
     sys_solve::NLsolveWrapper,
     tol::Float64,
-    solv::NonlinearSolve.AbstractNonlinearSolveAlgorithm,
+    solv::Symbol,
 )
     if converged(sys_solve)
         @warn(
@@ -181,7 +181,7 @@ function refine_initial_condition!(
         if converged
             break
         end
-        for solv in [NonlinearSolve.TrustRegion(), NonlinearSolve.NewtonRaphson()]
+        for solv in [:trust_region, :newton]
             @debug "Start NLSolve System Run with $(solv) and F_tol = $tol"
             show_trace = sim.console_level <= Logging.Info
             sys_solve = _nlsolve_call(
@@ -190,7 +190,7 @@ function refine_initial_condition!(
                 f!,
                 jacobian,
                 tol,
-                solv,
+                NonlinearSolve.NLsolveJL(; method = solv),
                 show_trace,
             )
             failed(sys_solve) && return BUILD_FAILED

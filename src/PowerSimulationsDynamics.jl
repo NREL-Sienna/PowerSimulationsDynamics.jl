@@ -76,6 +76,7 @@ import SparseArrays
 import LinearAlgebra
 import Base.to_index
 import Base.length
+import NLsolve  #Using Nlsovle wrapped using NonlinearSolve interfaace
 import NonlinearSolve
 import PrettyTables
 import Base.ImmutableDict
