@@ -1,7 +1,7 @@
 """
 Case 27:
 This case study a three bus system with 1 machine (One d- One q-: 4th order model), a VSM of 19 states and an infinite source.
-The test changes botht he voltage magnitude and phase angle of the source bus.
+The test changes both the voltage magnitude and phase angle of the source bus.
 """
 
 ##################################################
