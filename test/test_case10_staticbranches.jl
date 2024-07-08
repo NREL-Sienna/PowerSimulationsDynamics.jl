@@ -44,7 +44,35 @@ Ybus_change = NetworkSwitch(
         @test (diff_val[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
-        small_sig = small_signal_analysis(sim)
+        try
+            small_sig = small_signal_analysis(sim)
+        catch e
+            inputs = PSID.get_simulation_inputs(sim)
+            x_eval = PSID.get_initial_conditions(sim)
+            jacobian = PSID.get_jacobian(T, inputs, x_eval, 0)
+            println("jacobian:")
+            println(jacobian)
+            mass_matrix = PSID.get_mass_matrix(inputs)
+            println("mass matrix:")
+            println(mass_matrix)
+            diff_states = PSID.get_DAE_vector(inputs)
+            println("diff states:")
+            println(diff_states)
+            global_index = PSID.make_global_state_map(inputs)
+            jac_index = PSID._make_reduced_jacobian_index(global_index, diff_states)
+            println("jac index:")
+            println(jac_index)
+            reduced_jacobian =
+                PSID._reduce_jacobian(jacobian, diff_states, mass_matrix, global_index)
+            println("reduced jacobian:")
+            println(reduced_jacobian)
+            eigen_vals, R_eigen_vect =
+                PSID._get_eigenvalues(reduced_jacobian, sim.multimachine)
+            println("eigvals:")
+            println(eigen_vals)
+            println("eigvecs")
+            println(R_eigen_vect)
+        end
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
