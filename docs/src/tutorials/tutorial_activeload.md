@@ -72,8 +72,8 @@ Since the load is an exponential load model we can change the exponent coefficie
 ```@repl tutorial_load
 # Update load coefficients to 2.0
 load = first(get_components(PSY.ExponentialLoad, sys));
-PSY.set_active_power_coefficient!(load, 2.0);
-PSY.set_reactive_power_coefficient!(load, 2.0);
+PSY.set_α!(load, 2.0);
+PSY.set_β!(load, 2.0);
 ```
 
 We then re-run the small-signal analysis:

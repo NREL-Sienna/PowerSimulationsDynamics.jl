@@ -492,9 +492,9 @@ function StaticLoadWrapper(
             dict_names[PSY.get_name(ld)] = ix
             exp_params[ix] = ExpLoadParams(
                 PSY.get_active_power(ld) * base_power_conversion,
-                PSY.get_active_power_coefficient(ld),
+                PSY.get_α(ld),
                 PSY.get_reactive_power(ld) * base_power_conversion,
-                PSY.get_reactive_power_coefficient(ld),
+                PSY.get_β(ld),
             )
         end
     end
