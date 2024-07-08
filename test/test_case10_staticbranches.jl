@@ -44,46 +44,7 @@ Ybus_change = NetworkSwitch(
         @test (diff_val[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
-        try
-            small_sig = small_signal_analysis(sim)
-        catch e
-            T = ResidualModel
-            inputs = PSID.get_simulation_inputs(sim)
-            x_eval = PSID.get_initial_conditions(sim)
-            jacwrapper = PSID.get_jacobian(T, inputs, x_eval, 0)
-            jacobian = jacwrapper.Jv
-            println("jacobian:")
-            for row in eachrow(jacobian)
-                println(row)
-            end
-            mass_matrix = PSID.get_mass_matrix(inputs)
-            println("mass matrix:")
-            for row in eachrow(mass_matrix)
-                println(row)
-            end
-            diff_states = PSID.get_DAE_vector(inputs)
-            println("diff states:")
-            @error(diff_states)
-            global_index = PSID.make_global_state_map(inputs)
-            jac_index = PSID._make_reduced_jacobian_index(global_index, diff_states)
-            println("jac index:")
-            @error(jac_index)
-            reduced_jacobian =
-                PSID._reduce_jacobian(jacobian, diff_states, mass_matrix, global_index)
-            println("reduced jacobian:")
-            for row in eachrow(reduced_jacobian)
-                println(row)
-            end
-            eigen_vals, R_eigen_vect = LinearAlgebra.eigen(Matrix(reduced_jacobian))
-            println("eigvals:")
-            for eig in eigen_vals
-                println(eig)
-            end
-            println("eigvecs")
-            for row in eachrow(R_eigen_vect)
-                println(row)
-            end
-        end
+        small_sig = small_signal_analysis(sim)
         eigs = small_sig.eigenvalues
         @test small_sig.stable
 
