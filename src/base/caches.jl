@@ -109,5 +109,5 @@ get_current_balance(sc::SimCache, ::Type{Float64}) = sc.current_balance
 get_inner_vars(sc::SimCache, ::Type{Float64}) = sc.inner_vars
 get_global_vars(sc::SimCache, ::Type{Float64}) = sc.global_vars
 
-get_ω_sys(cache::Cache, T::Type{<:Union{Float64, ForwardDiff.Dual}}) =
+get_ω_sys(cache::Cache, T::Type{<:ACCEPTED_REAL_TYPES}) =
     get_global_vars(cache, T)[GLOBAL_VAR_SYS_FREQ_INDEX]

@@ -1,15 +1,15 @@
 function limit_output_current(
     limiter::Nothing,
-    Id_cnv_ref::Union{Float64, ForwardDiff.Dual},
-    Iq_cnv_ref::Union{Float64, ForwardDiff.Dual},
+    Id_cnv_ref::ACCEPTED_REAL_TYPES,
+    Iq_cnv_ref::ACCEPTED_REAL_TYPES,
 )
     return Id_cnv_ref, Iq_cnv_ref
 end
 
 function limit_output_current(
     limiter::PSY.InstantaneousOutputCurrentLimiter,
-    Id_cnv_ref::Union{Float64, ForwardDiff.Dual},
-    Iq_cnv_ref::Union{Float64, ForwardDiff.Dual},
+    Id_cnv_ref::ACCEPTED_REAL_TYPES,
+    Iq_cnv_ref::ACCEPTED_REAL_TYPES,
 )
     d_lim = PSY.get_Id_max(limiter)
     q_lim = PSY.get_Iq_max(limiter)
@@ -20,8 +20,8 @@ end
 
 function limit_output_current(
     limiter::PSY.MagnitudeOutputCurrentLimiter,
-    Id_cnv_ref::Union{Float64, ForwardDiff.Dual},
-    Iq_cnv_ref::Union{Float64, ForwardDiff.Dual},
+    Id_cnv_ref::ACCEPTED_REAL_TYPES,
+    Iq_cnv_ref::ACCEPTED_REAL_TYPES,
 )
     limit_value = PSY.get_I_max(limiter)
     theta = atan(Iq_cnv_ref, Id_cnv_ref)
@@ -37,8 +37,8 @@ end
 
 function limit_output_current(
     limiter::PSY.SaturationOutputCurrentLimiter,
-    Id_cnv_ref::Union{Float64, ForwardDiff.Dual},
-    Iq_cnv_ref::Union{Float64, ForwardDiff.Dual},
+    Id_cnv_ref::ACCEPTED_REAL_TYPES,
+    Iq_cnv_ref::ACCEPTED_REAL_TYPES,
 )
     limit_value = PSY.get_I_max(limiter)
     gain = PSY.get_kw(limiter)
@@ -57,9 +57,9 @@ end
 
 function limit_output_current(
     limiter::PSY.HybridOutputCurrentLimiter,
-    Id_cnv_ref::Union{Float64, ForwardDiff.Dual},
-    Iq_cnv_ref::Union{Float64, ForwardDiff.Dual},
-    ω::Union{Float64, ForwardDiff.Dual},
+    Id_cnv_ref::ACCEPTED_REAL_TYPES,
+    Iq_cnv_ref::ACCEPTED_REAL_TYPES,
+    ω::ACCEPTED_REAL_TYPES,
 )
     limit_value = PSY.get_I_max(limiter)
     real_imped = PSY.get_rv(limiter)
