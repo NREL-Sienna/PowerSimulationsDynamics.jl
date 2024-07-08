@@ -12,27 +12,28 @@
 └───────────────────┴─────────────┘
 
 Static Components
-┌─────────────────┬───────┬────────────────────────┬───────────────┐
-│ Type            │ Count │ Has Static Time Series │ Has Forecasts │
-├─────────────────┼───────┼────────────────────────┼───────────────┤
-│ ACBus           │ 14    │ false                  │ false         │
-│ Arc             │ 20    │ false                  │ false         │
-│ Area            │ 1     │ false                  │ false         │
-│ Line            │ 16    │ false                  │ false         │
-│ LoadZone        │ 1     │ false                  │ false         │
-│ StandardLoad    │ 11    │ false                  │ false         │
-│ TapTransformer  │ 3     │ false                  │ false         │
-│ ThermalStandard │ 5     │ false                  │ false         │
-│ Transformer2W   │ 1     │ false                  │ false         │
-└─────────────────┴───────┴────────────────────────┴───────────────┘
+┌─────────────────┬───────┐
+│ Type            │ Count │
+├─────────────────┼───────┤
+│ ACBus           │ 14    │
+│ Arc             │ 20    │
+│ Area            │ 1     │
+│ Line            │ 16    │
+│ LoadZone        │ 1     │
+│ StandardLoad    │ 11    │
+│ TapTransformer  │ 3     │
+│ ThermalStandard │ 5     │
+│ Transformer2W   │ 1     │
+└─────────────────┴───────┘
 
 Dynamic Components
-┌──────────────────┬───────┐
-│ Type             │ Count │
-├──────────────────┼───────┤
-│ DynamicGenerator │ 4     │
-│ DynamicGenerator │ 1     │
-└──────────────────┴───────┘</code></pre><p><code>PowerSystemCaseBuilder.jl</code> is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data.</p><p>Define Simulation Problem with a 20 second simulation period and the branch trip at t = 1.0:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim = Simulation(
+┌───────────────────────────────────────────────────────────────────────────────
+│ Type                                                                         ⋯
+├───────────────────────────────────────────────────────────────────────────────
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, ESAC1A, GasTG, PSSFixed}   ⋯
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, ESAC1A, TGFixed, PSSFixed} ⋯
+└───────────────────────────────────────────────────────────────────────────────
+                                                                1 column omitted</code></pre><p><code>PowerSystemCaseBuilder.jl</code> is a helper library that makes it easier to reproduce examples in the documentation and tutorials. Normally you would pass your local files to create the system data.</p><p>Define Simulation Problem with a 20 second simulation period and the branch trip at t = 1.0:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim = Simulation(
            ResidualModel, #Type of model used
            sys,         #system
            mktempdir(),       #path for the simulation output
@@ -211,7 +212,7 @@ Vr3 -0.0986
 │ Time Span                  │ (0.0, 20.0) │
 │ Total Time Steps           │ 342         │
 │ Number of States           │ 86          │
-│ Total solve time           │ 2.202302834 │
+│ Total solve time           │ 2.333425813 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(ACBus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
            plot!(
@@ -265,38 +266,39 @@ Vr3 -0.0986
 └───────────────────┴─────────────┘
 
 Static Components
-┌─────────────────┬───────┬────────────────────────┬───────────────┐
-│ Type            │ Count │ Has Static Time Series │ Has Forecasts │
-├─────────────────┼───────┼────────────────────────┼───────────────┤
-│ ACBus           │ 14    │ false                  │ false         │
-│ Arc             │ 20    │ false                  │ false         │
-│ Area            │ 1     │ false                  │ false         │
-│ Line            │ 16    │ false                  │ false         │
-│ LoadZone        │ 1     │ false                  │ false         │
-│ StandardLoad    │ 11    │ false                  │ false         │
-│ TapTransformer  │ 3     │ false                  │ false         │
-│ ThermalStandard │ 5     │ false                  │ false         │
-│ Transformer2W   │ 1     │ false                  │ false         │
-└─────────────────┴───────┴────────────────────────┴───────────────┘
+┌─────────────────┬───────┐
+│ Type            │ Count │
+├─────────────────┼───────┤
+│ ACBus           │ 14    │
+│ Arc             │ 20    │
+│ Area            │ 1     │
+│ Line            │ 16    │
+│ LoadZone        │ 1     │
+│ StandardLoad    │ 11    │
+│ TapTransformer  │ 3     │
+│ ThermalStandard │ 5     │
+│ Transformer2W   │ 1     │
+└─────────────────┴───────┘
 
 Dynamic Components
-┌──────────────────┬───────┐
-│ Type             │ Count │
-├──────────────────┼───────┤
-│ DynamicGenerator │ 4     │
-│ DynamicGenerator │ 1     │
-└──────────────────┴───────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; thermal_gen = get_component(ThermalStandard, sys, &quot;generator-6-1&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">generator-6-1 (ThermalStandard):
+┌───────────────────────────────────────────────────────────────────────────────
+│ Type                                                                         ⋯
+├───────────────────────────────────────────────────────────────────────────────
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, ESAC1A, GasTG, PSSFixed}   ⋯
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, ESAC1A, TGFixed, PSSFixed} ⋯
+└───────────────────────────────────────────────────────────────────────────────
+                                                                1 column omitted</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; thermal_gen = get_component(ThermalStandard, sys, &quot;generator-6-1&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">ThermalStandard: generator-6-1:
    name: generator-6-1
    available: true
    status: true
-   bus: BUS 06 (ACBus)
+   bus: ACBus: BUS 06
    active_power: 0.15
    reactive_power: 0.14800000000000002
    rating: 99.99028802838804
    active_power_limits: (min = -99.99, max = 99.99)
    reactive_power_limits: (min = -0.06, max = 0.24)
    ramp_limits: (up = 24.9975, down = 24.9975)
-   operation_cost: ThreePartCost
+   operation_cost: ThermalGenerationCost composed of variable: CostCurve{QuadraticCurve}
    base_power: 25.0
    time_limits: nothing
    must_run: false
@@ -304,12 +306,13 @@ Dynamic Components
    fuel: ThermalFuels.OTHER = 14
    services: 0-element Vector{Service}
    time_at_status: 10000.0
-   dynamic_injector: generator-6-1 (DynamicGenerator{RoundRotorQuadratic, SingleMass, ESAC1A, TGFixed, PSSFixed})
+   dynamic_injector: DynamicGenerator: generator-6-1
    ext: Dict{String, Any}(&quot;z_source&quot; =&gt; Dict{String, Any}(&quot;x&quot; =&gt; 0.12, &quot;r&quot; =&gt; 0))
-   time_series_container:
    InfrastructureSystems.SystemUnitsSettings:
       base_value: 100.0
-      unit_system: UnitSystem.SYSTEM_BASE = 0</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; remove_component!(sys, get_dynamic_injector(thermal_gen))</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; remove_component!(sys, thermal_gen)
+      unit_system: UnitSystem.SYSTEM_BASE = 0
+   has_supplemental_attributes: false
+   has_time_series: false</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; remove_component!(sys, get_dynamic_injector(thermal_gen))</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; remove_component!(sys, thermal_gen)
        
        # We can now define our storage device and add it to the system</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; storage = GenericBattery(
            name = &quot;Battery&quot;,
@@ -326,7 +329,7 @@ Dynamic Components
            output_active_power_limits = (min = 0.0, max = 1.0),
            reactive_power_limits = (min = -1.0, max = 1.0),
            efficiency = (in = 0.80, out = 0.90),
-       )</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefKeywordError: keyword argument `prime_mover_type` not assigned</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(sys, storage)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `storage` not defined</code></pre><p>A good sanity check it running a power flow on the system to make sure all the components are properly scaled and that the system is properly balanced. We can use <code>PowerSystems</code> to perform this check. We can get the results back and perform a sanity check.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res = solve_powerflow(ACPowerFlow(), sys)</code><code class="nohighlight hljs ansi" style="display:block;">Dict{String, DataFrames.DataFrame} with 2 entries:
+       )</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `GenericBattery` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(sys, storage)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `storage` not defined</code></pre><p>A good sanity check it running a power flow on the system to make sure all the components are properly scaled and that the system is properly balanced. We can use <code>PowerSystems</code> to perform this check. We can get the results back and perform a sanity check.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res = solve_powerflow(ACPowerFlow(), sys)</code><code class="nohighlight hljs ansi" style="display:block;">Dict{String, DataFrames.DataFrame} with 2 entries:
   &quot;flow_results&quot; =&gt; 20×9 DataFrame…
   &quot;bus_results&quot;  =&gt; 14×9 DataFrame…</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; res[&quot;bus_results&quot;]</code><code class="nohighlight hljs ansi" style="display:block;">14×9 DataFrame
  Row │ bus_number  Vm       θ           P_gen    P_load   P_net    Q_gen       ⋯
@@ -386,27 +389,28 @@ Dynamic Components
 └───────────────────┴─────────────┘
 
 Static Components
-┌─────────────────┬───────┬────────────────────────┬───────────────┐
-│ Type            │ Count │ Has Static Time Series │ Has Forecasts │
-├─────────────────┼───────┼────────────────────────┼───────────────┤
-│ ACBus           │ 14    │ false                  │ false         │
-│ Arc             │ 20    │ false                  │ false         │
-│ Area            │ 1     │ false                  │ false         │
-│ Line            │ 16    │ false                  │ false         │
-│ LoadZone        │ 1     │ false                  │ false         │
-│ StandardLoad    │ 11    │ false                  │ false         │
-│ TapTransformer  │ 3     │ false                  │ false         │
-│ ThermalStandard │ 4     │ false                  │ false         │
-│ Transformer2W   │ 1     │ false                  │ false         │
-└─────────────────┴───────┴────────────────────────┴───────────────┘
+┌─────────────────┬───────┐
+│ Type            │ Count │
+├─────────────────┼───────┤
+│ ACBus           │ 14    │
+│ Arc             │ 20    │
+│ Area            │ 1     │
+│ Line            │ 16    │
+│ LoadZone        │ 1     │
+│ StandardLoad    │ 11    │
+│ TapTransformer  │ 3     │
+│ ThermalStandard │ 4     │
+│ Transformer2W   │ 1     │
+└─────────────────┴───────┘
 
 Dynamic Components
-┌──────────────────┬───────┐
-│ Type             │ Count │
-├──────────────────┼───────┤
-│ DynamicGenerator │ 3     │
-│ DynamicGenerator │ 1     │
-└──────────────────┴───────┘</code></pre><p>Define Simulation problem using the same parameters:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim = Simulation(
+┌───────────────────────────────────────────────────────────────────────────────
+│ Type                                                                         ⋯
+├───────────────────────────────────────────────────────────────────────────────
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, ESAC1A, GasTG, PSSFixed}   ⋯
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, ESAC1A, TGFixed, PSSFixed} ⋯
+└───────────────────────────────────────────────────────────────────────────────
+                                                                1 column omitted</code></pre><p>Define Simulation problem using the same parameters:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim = Simulation(
            ResidualModel, #Type of model used
            sys,         #system
            mktempdir(),       #path for the simulation output
@@ -420,13 +424,13 @@ Dynamic Components
 │      [1] error(s::String)
 │        @ Base ./error.jl:35
 │      [2] _reactive_power_redistribution_pv(sys::System, Q_gen::Float64, bus::ACBus)
-│        @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/post_processing.jl:310
+│        @ PowerFlows ~/.julia/packages/PowerFlows/zesCE/src/post_processing.jl:310
 │      [3] write_powerflow_solution!(sys::System, result::Vector{Float64})
-│        @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/post_processing.jl:447
+│        @ PowerFlows ~/.julia/packages/PowerFlows/zesCE/src/post_processing.jl:447
 │      [4] solve_ac_powerflow!(system::System; kwargs::@Kwargs{})
-│        @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/nlsolve_ac_powerflow.jl:46
+│        @ PowerFlows ~/.julia/packages/PowerFlows/zesCE/src/nlsolve_ac_powerflow.jl:46
 │      [5] solve_ac_powerflow!
-│        @ ~/.julia/packages/PowerFlows/6nw6s/src/nlsolve_ac_powerflow.jl:33 [inlined]
+│        @ ~/.julia/packages/PowerFlows/zesCE/src/nlsolve_ac_powerflow.jl:33 [inlined]
 │      [6] power_flow_solution!(initial_guess::Vector{Float64}, sys::System, inputs::PowerSimulationsDynamics.SimulationInputs)
 │        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:14
 │      [7] macro expansion
@@ -614,4 +618,4 @@ Closest candidates are:
 
 Closest candidates are:
   get_state_series(!Matched::SimulationResults, ::Tuple{String, Symbol}; dt)
-   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:310</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `state_series` not defined</code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines Simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 2 July 2024 15:48">Tuesday 2 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:310</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `state_series` not defined</code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines Simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 8 July 2024 17:10">Monday 8 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

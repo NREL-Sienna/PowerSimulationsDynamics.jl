@@ -14,34 +14,35 @@
 └───────────────────┴─────────────┘
 
 Static Components
-┌─────────────────┬───────┬────────────────────────┬───────────────┐
-│ Type            │ Count │ Has Static Time Series │ Has Forecasts │
-├─────────────────┼───────┼────────────────────────┼───────────────┤
-│ ACBus           │ 2     │ false                  │ false         │
-│ Arc             │ 1     │ false                  │ false         │
-│ Area            │ 1     │ false                  │ false         │
-│ ExponentialLoad │ 1     │ false                  │ false         │
-│ Line            │ 1     │ false                  │ false         │
-│ LoadZone        │ 1     │ false                  │ false         │
-│ ThermalStandard │ 1     │ false                  │ false         │
-└─────────────────┴───────┴────────────────────────┴───────────────┘</code></pre><p>Note that this system contains an Exponential Load, but the parameters are set up to zero, so it behaves a Constant Power Load:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; first(get_components(PSY.ExponentialLoad, sys_static))</code><code class="nohighlight hljs ansi" style="display:block;">load1021 (PowerSystems.ExponentialLoad):
+┌─────────────────┬───────┐
+│ Type            │ Count │
+├─────────────────┼───────┤
+│ ACBus           │ 2     │
+│ Arc             │ 1     │
+│ Area            │ 1     │
+│ ExponentialLoad │ 1     │
+│ Line            │ 1     │
+│ LoadZone        │ 1     │
+│ ThermalStandard │ 1     │
+└─────────────────┴───────┘</code></pre><p>Note that this system contains an Exponential Load, but the parameters are set up to zero, so it behaves a Constant Power Load:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; first(get_components(PSY.ExponentialLoad, sys_static))</code><code class="nohighlight hljs ansi" style="display:block;">ExponentialLoad: load1021:
    name: load1021
    available: true
-   bus: BUS 2 (ACBus)
+   bus: ACBus: BUS 2
    active_power: 0.1
    reactive_power: 0.032799999999999996
-   active_power_coefficient: 0.0
-   reactive_power_coefficient: 0.0
+   α: 0.0
+   β: 0.0
    base_power: 100.0
    max_active_power: 0.1
    max_reactive_power: 0.032799999999999996
    services: 0-element Vector{Service}
    dynamic_injector: nothing
    ext: Dict{String, Any}()
-   time_series_container:
    InfrastructureSystems.SystemUnitsSettings:
       base_value: 100.0
-      unit_system: UnitSystem.SYSTEM_BASE = 0</code></pre><h2 id="Create-a-P-V-curve"><a class="docs-heading-anchor" href="#Create-a-P-V-curve">Create a P-V curve</a><a id="Create-a-P-V-curve-1"></a><a class="docs-heading-anchor-permalink" href="#Create-a-P-V-curve" title="Permalink"></a></h2><p>The next step is to run multiple power flows and store the voltage at the load and the active power. For this example we will set up the power factor to be unitary (i.e. no reactive power at the load). </p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Create a Power Range to change the power load active power
+      unit_system: UnitSystem.SYSTEM_BASE = 0
+   has_supplemental_attributes: false
+   has_time_series: false</code></pre><h2 id="Create-a-P-V-curve"><a class="docs-heading-anchor" href="#Create-a-P-V-curve">Create a P-V curve</a><a id="Create-a-P-V-curve-1"></a><a class="docs-heading-anchor-permalink" href="#Create-a-P-V-curve" title="Permalink"></a></h2><p>The next step is to run multiple power flows and store the voltage at the load and the active power. For this example we will set up the power factor to be unitary (i.e. no reactive power at the load). </p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Create a Power Range to change the power load active power
        P_range = 0.01:0.01:4.6;
        # Choose the power factor</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; load_pf = 1.0;</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>Then create vectors to store the results</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # PV Curve Results
        P_load_p = Vector{Float64}();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; V_load_p = Vector{Float64}();</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>Then, we run multiple power flows in a for loop by changing the active power of the load:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; for p in P_range
@@ -65,9 +66,9 @@ Static Components
            push!(V_load_p, Vm)
            push!(P_load_p, power)
        end</code><code class="nohighlight hljs ansi" style="display:block;">┌ Error: The powerflow solver returned convergence = false
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/nlsolve_ac_powerflow.jl:153
+└ @ PowerFlows ~/.julia/packages/PowerFlows/zesCE/src/nlsolve_ac_powerflow.jl:153
 ┌ Error: The powerflow solver returned convergence = false
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/nlsolve_ac_powerflow.jl:52
+└ @ PowerFlows ~/.julia/packages/PowerFlows/zesCE/src/nlsolve_ac_powerflow.jl:52
 Power Flow failed at p = 4.53</code></pre><p>The plot can be visualized with:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(P_load_p,
             V_load_p,
             label = &quot;PV Curve&quot;,
@@ -87,24 +88,25 @@ Power Flow failed at p = 4.53</code></pre><p>The plot can be visualized with:</p
 └───────────────────┴─────────────┘
 
 Static Components
-┌─────────────────┬───────┬────────────────────────┬───────────────┐
-│ Type            │ Count │ Has Static Time Series │ Has Forecasts │
-├─────────────────┼───────┼────────────────────────┼───────────────┤
-│ ACBus           │ 2     │ false                  │ false         │
-│ Arc             │ 1     │ false                  │ false         │
-│ Area            │ 1     │ false                  │ false         │
-│ ExponentialLoad │ 1     │ false                  │ false         │
-│ Line            │ 1     │ false                  │ false         │
-│ LoadZone        │ 1     │ false                  │ false         │
-│ ThermalStandard │ 1     │ false                  │ false         │
-└─────────────────┴───────┴────────────────────────┴───────────────┘
+┌─────────────────┬───────┐
+│ Type            │ Count │
+├─────────────────┼───────┤
+│ ACBus           │ 2     │
+│ Arc             │ 1     │
+│ Area            │ 1     │
+│ ExponentialLoad │ 1     │
+│ Line            │ 1     │
+│ LoadZone        │ 1     │
+│ ThermalStandard │ 1     │
+└─────────────────┴───────┘
 
 Dynamic Components
-┌──────────────────┬───────┐
-│ Type             │ Count │
-├──────────────────┼───────┤
-│ DynamicGenerator │ 1     │
-└──────────────────┴───────┘</code></pre><p>Here are the components of the generator:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; first(get_components(DynamicGenerator, sys))</code><code class="nohighlight hljs ansi" style="display:block;">generator-101-1 (DynamicGenerator{RoundRotorQuadratic, SingleMass, SEXS, SteamTurbineGov1, PSSFixed}):
+┌───────────────────────────────────────────────────────────────────────────────
+│ Type                                                                         ⋯
+├───────────────────────────────────────────────────────────────────────────────
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, SEXS, SteamTurbineGov1, PS ⋯
+└───────────────────────────────────────────────────────────────────────────────
+                                                               2 columns omitted</code></pre><p>Here are the components of the generator:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; first(get_components(DynamicGenerator, sys))</code><code class="nohighlight hljs ansi" style="display:block;">DynamicGenerator: generator-101-1:
    name: generator-101-1
    ω_ref: 1.0
    machine: RoundRotorQuadratic
@@ -118,7 +120,9 @@ Dynamic Components
    ext: Dict{String, Any}()
    InfrastructureSystems.SystemUnitsSettings:
       base_value: 100.0
-      unit_system: UnitSystem.SYSTEM_BASE = 0</code></pre><p>Besides the results of the P-V curve, we need to store if the system is small-signal stable or not by looking if there is a positive real part eigenvalue.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Vectors to store stability using a boolean (true for stable).
+      unit_system: UnitSystem.SYSTEM_BASE = 0
+   has_supplemental_attributes: false
+   has_time_series: false</code></pre><p>Besides the results of the P-V curve, we need to store if the system is small-signal stable or not by looking if there is a positive real part eigenvalue.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Vectors to store stability using a boolean (true for stable).
        stable_vec = Vector{Bool}();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; status_vec = Vector{Bool}();
        
        # PV Curve Results</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; P_load_p = Vector{Float64}();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; V_load_p = Vector{Float64}();</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p>We then run the main for loop by updating the load active power, but in addition we create a PowerSimulationsDynamics simulation on which we can run a small-signal analysis to check stability.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; for p in P_range
@@ -161,10 +165,10 @@ Dynamic Components
                push!(status_vec, false)
            end
        end</code><code class="nohighlight hljs ansi" style="display:block;">┌ Error: The powerflow solver returned convergence = false
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/nlsolve_ac_powerflow.jl:153
+└ @ PowerFlows ~/.julia/packages/PowerFlows/zesCE/src/nlsolve_ac_powerflow.jl:153
 ┌ Error: The powerflow solver returned convergence = false
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/nlsolve_ac_powerflow.jl:52
+└ @ PowerFlows ~/.julia/packages/PowerFlows/zesCE/src/nlsolve_ac_powerflow.jl:52
 Power Flow failed at p = 4.53</code></pre><p>The following plot showcases the P-V curve, while also showcasing (in red) the regions on which the system is small-signal stable.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; # Find where is stable and unstable
        dict_true_ixs_p = Vector();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; dict_false_ixs_p = Vector();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; dict_true_ixs_p = findall(x-&gt;x, stable_vec);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; dict_false_ixs_p = findall(x-&gt;!x, stable_vec);
        
-       # Create plot</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; true_ixs = dict_true_ixs_p;</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(P_load_p, V_load_p, color = :blue, label = &quot;PV Curve&quot;, xlabel = &quot;Load Power [pu]&quot;, ylabel = &quot;Load Bus Voltage [pu]&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">Plot{Plots.GRBackend() n=1}</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(Plots.scatter!(P_load_p[true_ixs] , V_load_p[true_ixs], markerstrokewidth= 0, label = &quot;GENROU SSA&quot;))</code><code class="nohighlight hljs ansi" style="display:block;">Plot{Plots.GRBackend() n=2}</code></pre><p><img src="../figs/pv_curve_cpl_genrou.svg" alt="plot"/></p><p>This results is consistent with most of the literature for dynamic generator models supplying constant power loads, on which by increasing the active power of the load, produce critical eigenvalues which cross the <span>$j\omega$</span> axis at some point. This is called a Hopf Bifurcation, in this case a subcritical one since the limit cycles are unstable.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_240bus/">« 240 WECC solver comparison</a><a class="docs-footer-nextpage" href="../tutorial_activeload/">Active Load Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Tuesday 2 July 2024 15:48">Tuesday 2 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+       # Create plot</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; true_ixs = dict_true_ixs_p;</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(P_load_p, V_load_p, color = :blue, label = &quot;PV Curve&quot;, xlabel = &quot;Load Power [pu]&quot;, ylabel = &quot;Load Bus Voltage [pu]&quot;)</code><code class="nohighlight hljs ansi" style="display:block;">Plot{Plots.GRBackend() n=1}</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(Plots.scatter!(P_load_p[true_ixs] , V_load_p[true_ixs], markerstrokewidth= 0, label = &quot;GENROU SSA&quot;))</code><code class="nohighlight hljs ansi" style="display:block;">Plot{Plots.GRBackend() n=2}</code></pre><p><img src="../figs/pv_curve_cpl_genrou.svg" alt="plot"/></p><p>This results is consistent with most of the literature for dynamic generator models supplying constant power loads, on which by increasing the active power of the load, produce critical eigenvalues which cross the <span>$j\omega$</span> axis at some point. This is called a Hopf Bifurcation, in this case a subcritical one since the limit cycles are unstable.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_240bus/">« 240 WECC solver comparison</a><a class="docs-footer-nextpage" href="../tutorial_activeload/">Active Load Model »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 8 July 2024 17:10">Monday 8 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
