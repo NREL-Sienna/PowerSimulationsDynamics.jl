@@ -53,10 +53,14 @@ Ybus_change = NetworkSwitch(
             jacwrapper = PSID.get_jacobian(T, inputs, x_eval, 0)
             jacobian = jacwrapper.Jv
             println("jacobian:")
-            @error(jacobian)
+            for row in eachrow(jacobian)
+                println(row)
+            end
             mass_matrix = PSID.get_mass_matrix(inputs)
             println("mass matrix:")
-            @error(mass_matrix)
+            for row in eachrow(mass_matrix)
+                println(row)
+            end
             diff_states = PSID.get_DAE_vector(inputs)
             println("diff states:")
             @error(diff_states)
@@ -67,13 +71,19 @@ Ybus_change = NetworkSwitch(
             reduced_jacobian =
                 PSID._reduce_jacobian(jacobian, diff_states, mass_matrix, global_index)
             println("reduced jacobian:")
-            @error(reduced_jacobian)
+            for row in eachrow(reduced_jacobian)
+                println(row)
+            end
             eigen_vals, R_eigen_vect =
                 PSID._get_eigenvalues(reduced_jacobian, sim.multimachine)
             println("eigvals:")
-            @error(eigen_vals)
+            for eig in eigen_vals
+                println(eig)
+            end
             println("eigvecs")
-            @error(R_eigen_vect)
+            for row in eachrow(R_eigen_vect)
+                println(R_eigen_vect)
+            end
         end
         eigs = small_sig.eigenvalues
         @test small_sig.stable
