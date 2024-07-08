@@ -267,7 +267,15 @@ function mdl_inner_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, PSY.InstantaneousOutputCurrentLimiter},
+        PSY.DynamicInverter{
+            C,
+            O,
+            PSY.VoltageModeControl,
+            DC,
+            P,
+            F,
+            PSY.InstantaneousOutputCurrentLimiter,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -381,7 +389,15 @@ function mdl_inner_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, PSY.MagnitudeOutputCurrentLimiter},
+        PSY.DynamicInverter{
+            C,
+            O,
+            PSY.VoltageModeControl,
+            DC,
+            P,
+            F,
+            PSY.MagnitudeOutputCurrentLimiter,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -495,7 +511,15 @@ function mdl_inner_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, PSY.SaturationOutputCurrentLimiter},
+        PSY.DynamicInverter{
+            C,
+            O,
+            PSY.VoltageModeControl,
+            DC,
+            P,
+            F,
+            PSY.SaturationOutputCurrentLimiter,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -569,12 +593,15 @@ function mdl_inner_ode!(
     Integral_q = ξ_q
 
     #Compensate output Control Signal - Links to SRF Current Controller
-    Id_cnv_ref = Prop_d + (kiv * Integral_d) - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
-    Iq_cnv_ref = Prop_q + (kiv * Integral_q) + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
+    Id_cnv_ref =
+        Prop_d + (kiv * Integral_d) - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
+    Iq_cnv_ref =
+        Prop_q + (kiv * Integral_q) + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
 
     #Get limiter and apply output current limiting
     limiter = PSY.get_limiter(dynamic_device)
-    Id_cnv_ref2, Iq_cnv_ref2, Del_Vv_d, Del_Vv_q = limit_output_current(limiter, Id_cnv_ref, Iq_cnv_ref)
+    Id_cnv_ref2, Iq_cnv_ref2, Del_Vv_d, Del_Vv_q =
+        limit_output_current(limiter, Id_cnv_ref, Iq_cnv_ref)
 
     # Limiter anti- windup 
     dξd_dt = (Vd_filter_ref - V_dq_filter[d]) - Del_Vv_d
@@ -616,7 +643,15 @@ function mdl_inner_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, PSY.HybridOutputCurrentLimiter},
+        PSY.DynamicInverter{
+            C,
+            O,
+            PSY.VoltageModeControl,
+            DC,
+            P,
+            F,
+            PSY.HybridOutputCurrentLimiter,
+        },
     },
 ) where {
     C <: PSY.Converter,
@@ -690,12 +725,15 @@ function mdl_inner_ode!(
     Integral_q = ξ_q
 
     #Compensate output Control Signal - Links to SRF Current Controller
-    Id_cnv_ref = Prop_d + (kiv  * Integral_d) - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
-    Iq_cnv_ref = Prop_q + (kiv * Integral_q) + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
+    Id_cnv_ref =
+        Prop_d + (kiv * Integral_d) - cf * ω_oc * V_dq_filter[q] + kffi * I_dq_filter[d]
+    Iq_cnv_ref =
+        Prop_q + (kiv * Integral_q) + cf * ω_oc * V_dq_filter[d] + kffi * I_dq_filter[q]
 
     #Get limiter and apply output current limiting
     limiter = PSY.get_limiter(dynamic_device)
-    Id_cnv_ref2, Iq_cnv_ref2, Del_Vv_d, Del_Vv_q = limit_output_current(limiter, Id_cnv_ref, Iq_cnv_ref, ω_oc)
+    Id_cnv_ref2, Iq_cnv_ref2, Del_Vv_d, Del_Vv_q =
+        limit_output_current(limiter, Id_cnv_ref, Iq_cnv_ref, ω_oc)
 
     # Limiter anti- windup 
     dξd_dt = (Vd_filter_ref - V_dq_filter[d]) - Del_Vv_d
