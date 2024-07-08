@@ -50,7 +50,8 @@ Ybus_change = NetworkSwitch(
             T = ResidualModel
             inputs = PSID.get_simulation_inputs(sim)
             x_eval = PSID.get_initial_conditions(sim)
-            jacobian = PSID.get_jacobian(T, inputs, x_eval, 0)
+            jacwrapper = PSID.get_jacobian(T, inputs, x_eval, 0)
+            jacobian = jacwrapper.Jv
             println("jacobian:")
             println(jacobian)
             mass_matrix = PSID.get_mass_matrix(inputs)
