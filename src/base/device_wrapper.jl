@@ -231,8 +231,8 @@ function DynamicWrapper(
     sys_base_freq,
 ) where {D <: PSY.DynamicInjection}
     device_states = PSY.get_states(dynamic_device)
-    # IS.@assert_op PSY.get_X_th(dynamic_device) == PSY.get_X_th(device)
-    # IS.@assert_op PSY.get_R_th(dynamic_device) == PSY.get_R_th(device)
+    IS.@assert_op PSY.get_X_th(dynamic_device) == PSY.get_X_th(device)
+    IS.@assert_op PSY.get_R_th(dynamic_device) == PSY.get_R_th(device)
 
     return DynamicWrapper(
         dynamic_device,
