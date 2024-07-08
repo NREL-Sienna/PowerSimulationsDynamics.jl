@@ -691,6 +691,24 @@ end
     end
 end
 
+@testset "Jacobian with Delays" begin
+    for model_type in [MassMatrixModel]
+        model_type = MassMatrixModel
+        omib_sys_copy = deepcopy(omib_sys)
+        add_degov_to_omib!(omib_sys_copy)
+        @test_throws IS.ConflictingInputsError get_jacobian(model_type, omib_sys_copy, -1)
+
+        jac = get_jacobian(model_type, omib_sys_copy)
+        @test isa(jac, Function)
+        @test isa(jac.Jv, PSID.SparseArrays.SparseMatrixCSC{Float64, Int64})
+
+        jac_dense = get_jacobian(model_type, omib_sys_copy, 0)
+        @test isa(jac_dense, Function)
+        @test !isa(jac_dense.Jv, PSID.SparseArrays.SparseMatrixCSC{Float64, Int64})
+        @test isa(jac_dense.Jv, Matrix{Float64})
+    end
+end
+
 @testset "Test 01 OMIB ResidualModel" begin
     path = mktempdir()
     try

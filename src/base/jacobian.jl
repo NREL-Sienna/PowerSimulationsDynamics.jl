@@ -184,10 +184,11 @@ function JacobianFunctionWrapper(
         end
     jac = zeros(n, n)
     if sparse_retrieve_loop > 0
+        h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0
         for _ in 1:sparse_retrieve_loop
             temp = zeros(n, n)
             rng_state = copy(Random.default_rng())
-            Jf(temp, x0 + Random.randn(n))
+            Jf(temp, x0 + Random.randn(n), h, 0.0)
             copy!(Random.default_rng(), rng_state)
             jac .+= abs.(temp)
         end

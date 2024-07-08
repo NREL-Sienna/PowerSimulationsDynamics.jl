@@ -543,14 +543,14 @@ function _execute!(sim::Simulation, solver; kwargs...)
         initializealg = SciMLBase.NoInit(),
         _filter_kwargs(kwargs)...,
     )
+    sim.results = SimulationResults(
+        get_simulation_inputs(sim),
+        get_system(sim),
+        time_log,
+        solution,
+    )
     if SciMLBase.successful_retcode(solution)
         sim.status = SIMULATION_FINALIZED
-        sim.results = SimulationResults(
-            get_simulation_inputs(sim),
-            get_system(sim),
-            time_log,
-            solution,
-        )
     else
         @error("The simulation failed with return code $(solution.retcode)")
         sim.status = SIMULATION_FAILED
