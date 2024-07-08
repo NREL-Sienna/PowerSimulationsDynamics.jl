@@ -74,15 +74,14 @@ Ybus_change = NetworkSwitch(
             for row in eachrow(reduced_jacobian)
                 println(row)
             end
-            eigen_vals, R_eigen_vect =
-                PSID._get_eigenvalues(reduced_jacobian, sim.multimachine)
+            eigen_vals, R_eigen_vect = LinearAlgebra.eigen(Matrix(reduced_jacobian))
             println("eigvals:")
             for eig in eigen_vals
                 println(eig)
             end
             println("eigvecs")
             for row in eachrow(R_eigen_vect)
-                println(R_eigen_vect)
+                println(row)
             end
         end
         eigs = small_sig.eigenvalues
