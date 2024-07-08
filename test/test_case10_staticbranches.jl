@@ -47,6 +47,7 @@ Ybus_change = NetworkSwitch(
         try
             small_sig = small_signal_analysis(sim)
         catch e
+            T = ResidualModel
             inputs = PSID.get_simulation_inputs(sim)
             x_eval = PSID.get_initial_conditions(sim)
             jacobian = PSID.get_jacobian(T, inputs, x_eval, 0)
