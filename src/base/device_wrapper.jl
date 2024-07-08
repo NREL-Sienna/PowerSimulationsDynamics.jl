@@ -102,6 +102,9 @@ function state_port_mappings(
     component_state_mapping = Dict{Int, Vector{Int}}()
     input_port_mapping = Dict{Int, Vector{Int}}()
     for c in PSY.get_dynamic_components(dynamic_device)
+        if c isa PSY.OutputCurrentLimiter
+            continue
+        end
         ix = index(typeof(c))
         component_state_mapping[ix] = _index_local_states(c, device_states)
         input_port_mapping[ix] = _index_port_mapping!(c, device_states)
@@ -331,6 +334,8 @@ PSY.get_freq_estimator(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInvert
     wrapper.device.freq_estimator
 PSY.get_filter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
     wrapper.device.filter
+PSY.get_limiter(wrapper::DynamicWrapper{T}) where {T <: PSY.DynamicInverter} =
+    PSY.get_limiter(wrapper.device)
 
 # PSY overloads of specific Dynamic Injectors
 
@@ -487,9 +492,9 @@ function StaticLoadWrapper(
             dict_names[PSY.get_name(ld)] = ix
             exp_params[ix] = ExpLoadParams(
                 PSY.get_active_power(ld) * base_power_conversion,
-                PSY.get_active_power_coefficient(ld),
+                PSY.get_α(ld),
                 PSY.get_reactive_power(ld) * base_power_conversion,
-                PSY.get_reactive_power_coefficient(ld),
+                PSY.get_β(ld),
             )
         end
     end

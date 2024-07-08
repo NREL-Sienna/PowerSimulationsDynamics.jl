@@ -172,8 +172,8 @@ function compute_output_current(
     V_mag = sqrt.(V_R .^ 2 + V_I .^ 2)
     P = PSY.get_active_power(device)
     Q = PSY.get_reactive_power(device)
-    α = PSY.get_active_power_coefficient(device)
-    β = PSY.get_reactive_power_coefficient(device)
+    α = PSY.get_α(device)
+    β = PSY.get_β(device)
 
     I_R =
         P .* V_R .* (V_mag .^ (α - 2.0) ./ V0^α) + Q .* V_I .* (V_mag .^ (β - 2.0) ./ V0^β)
