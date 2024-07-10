@@ -367,7 +367,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SCRX, TG, P}},
     h,
@@ -375,7 +375,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = get_V_ref(dynamic_device)
+    V0_ref = p[:refs][:V_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.SCRX) #
@@ -392,14 +392,15 @@ function mdl_avr_ode!(
 
     #Get parameters << keep
     avr = PSY.get_avr(dynamic_device)
-    Ta_Tb = PSY.get_Ta_Tb(avr) # Ta/Tb
-    Tb = PSY.get_Tb(avr)
+    params = p[:params][:AVR]
+    Ta_Tb = params[:Ta_Tb]
+    Tb = params[:Tb]
     Ta = Tb * Ta_Tb
-    Te = PSY.get_Te(avr)
-    K = PSY.get_K(avr)
-    V_min, V_max = PSY.get_Efd_lim(avr) #Efd_lim (V_lim)
-    switch = PSY.get_switch(avr) # reads switch parameters
-    rc_rfd = PSY.get_rc_rfd(avr)
+    Te = params[:Te]
+    K = params[:K]
+    V_min, V_max = params[:Efd_lim]
+    switch = PSY.get_switch(avr)
+    rc_rfd = params[:rc_rfd]
 
     #Compute auxiliary parameters << keep
     V_in = V0_ref + Vs - V_th #sum of V
@@ -571,7 +572,7 @@ end
 function mdl_avr_ode!(
     device_states::AbstractArray,
     output_ode::AbstractArray,
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESST1A, TG, P}},
     h,
@@ -579,7 +580,7 @@ function mdl_avr_ode!(
 ) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
 
     #Obtain references
-    V0_ref = get_V_ref(dynamic_device)
+    V0_ref = p[:refs][:V_ref]
 
     #Obtain indices for component w/r to device
     local_ix = get_local_state_ix(dynamic_device, PSY.ESST1A)
@@ -599,23 +600,27 @@ function mdl_avr_ode!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
+    params = p[:params][:AVR]
     UEL = PSY.get_UEL_flags(avr)
     VOS = PSY.get_PSS_flags(avr)
-    Tr = PSY.get_Tr(avr)
-    Vi_min, Vi_max = PSY.get_Vi_lim(avr)
-    Tc = PSY.get_Tc(avr)
-    Tb = PSY.get_Tb(avr)
-    Tc1 = PSY.get_Tc1(avr)
-    Tb1 = PSY.get_Tb1(avr)
-    Ka = PSY.get_Ka(avr)
-    Ta = PSY.get_Ta(avr)
-    Va_min, Va_max = PSY.get_Va_lim(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
-    Kc = PSY.get_Kc(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    K_lr = PSY.get_K_lr(avr)
-    I_lr = PSY.get_I_lr(avr)
+    Tr = params[:Tr]
+    Vi_min = params[:Vi_lim][:min]
+    Vi_max = params[:Vi_lim][:max]
+    Tc = params[:Tc]
+    Tb = params[:Tb]
+    Tc1 = params[:Tc1]
+    Tb1 = params[:Tb1]
+    Ka = params[:Ka]
+    Ta = params[:Ta]
+    Va_min = params[:Va_lim][:min]
+    Va_max = params[:Va_lim][:max]
+    Vr_min = params[:Vr_lim][:min]
+    Vr_max = params[:Vr_lim][:max]
+    Kc = params[:Kc]
+    Kf = params[:Kf]
+    Tf = params[:Tf]
+    K_lr = params[:K_lr]
+    I_lr = params[:I_lr]
 
     #Compute auxiliary parameters
     Itemp = K_lr * (Ifd - I_lr)

@@ -950,7 +950,7 @@ Model of Static Shunt Compensator: CSVGN1.
 function device!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -962,7 +962,7 @@ function device!(
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
-    V_ref = get_V_ref(dynamic_wrapper)
+    V_ref = p[:refs][:V_ref]
     # TODO: V_abs is the voltage magnitude on the high side of generator step-up transformer, if present.
     V_abs = sqrt(voltage_r^2 + voltage_i^2)
 
@@ -978,19 +978,18 @@ function device!(
     vr2 = device_states[3]
 
     #Get parameters
-    K,
-    T1,
-    T2,
-    T3,
-    T4,
-    T5,
-    Rmin,
-    Vmax,
-    Vmin,
-    Cbase,
-    Mbase,
-    R_th,
-    X_th = device_parameters
+    params = p[:params]
+    K = params[:K]
+    T1 = params[:T1]
+    T2 = params[:T2]
+    T3 = params[:T3]
+    T4 = params[:T4]
+    T5 = params[:T5]
+    Rmin = params[:Rmin]
+    Vmax = params[:Vmax]
+    Vmin = params[:Vmin]
+    Cbase = params[:CBase]
+    Mbase = params[:base_power]
 
     # FIXME: base_power is changed to system's base_power when a CSVGN1 is attached to a Source using add_component!()
     # Temporarily, to avoid that, set_dynamic_injector!() could be used
@@ -1063,7 +1062,7 @@ by C. Roberts, U. Markovic, D. Arnold and D. Callaway.
 function device!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -1076,7 +1075,7 @@ function device!(
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
     f0 = get_system_base_frequency(dynamic_wrapper)
-    V_ref = get_V_ref(dynamic_wrapper)
+    V_ref = p[:refs][:V_ref]
     if get_connection_status(dynamic_wrapper) < 1.0
         output_ode .= zero(T)
         return
@@ -1107,20 +1106,21 @@ function device!(
     I_dq_cnv = ri_dq(θ_pll + pi / 2) * [Ir_cnv; Ii_cnv]
 
     #Get parameters
-    r_load,
-    c_dc,
-    rf,
-    lf,
-    cf,
-    rg,
-    lg,
-    kp_pll,
-    ki_pll,
-    kpv,
-    kiv,
-    kpc,
-    kic,
-    base_power = device_parameters
+    params = p[:params]
+    r_load = params[:r_load]
+    c_dc = params[:c_dc]
+    rf = params[:rf]
+    lf = params[:lf]
+    cf = params[:cf]
+    rg = params[:rg]
+    lg = params[:lg]
+    kp_pll = params[:kp_pll]
+    ki_pll = params[:ki_pll]
+    kpv = params[:kpv]
+    kiv = params[:kiv]
+    kpc = params[:kpc]
+    kic = params[:kic]
+    base_power = params[:base_power]
 
     # Compute PLL expressions
     V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
@@ -1129,7 +1129,7 @@ function device!(
 
     # Compute DC side output
     Id_ref, dη_dt = pi_block(V_ref - v_dc, η, kpv, kiv)
-    Iq_ref = get_Q_ref(dynamic_wrapper)
+    Iq_ref = p[:refs][:Q_ref]
     # Compute AC controller expressions
     Vd_ref_uncomp, dγd_dt = pi_block(-Id_ref + I_dq_cnv[d], γd, kpc, kic)
     Vq_ref_uncomp, dγq_dt = pi_block(-Iq_ref + I_dq_cnv[q], γq, kpc, kic)

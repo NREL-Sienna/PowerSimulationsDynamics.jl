@@ -1,6 +1,6 @@
 function initialize_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
     inner_vars::AbstractVector,
@@ -8,7 +8,7 @@ function initialize_shaft!(
 
 function initialize_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
     inner_vars::AbstractVector,
@@ -25,37 +25,31 @@ function initialize_shaft!(
     ω_sys = ω
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.FiveMassShaft)
-    internal_params = @view device_parameters[local_ix_params]
-    _,
-    _,
-    _,
-    _,
-    _,
-    D,
-    D_hp,
-    D_ip,
-    D_lp,
-    D_ex,
-    D_12,
-    D_23,
-    D_34,
-    D_45,
-    K_hp,
-    K_ip,
-    K_lp,
-    K_ex = internal_params
+    params = p[:params][:Shaft]
 
     #Obtain inner vars
     τe = inner_vars[τe_var]
     τm0 = inner_vars[τm_var]
 
-    function f!(out, x)
+    function f!(out, x, params)
         τm = x[1]
         δ_hp = x[2]
         δ_ip = x[3]
         δ_lp = x[4]
         δ_ex = x[5]
+        D = params[:D]
+        D_hp = params[:D_hp]
+        D_ip = params[:D_ip]
+        D_lp = params[:D_lp]
+        D_ex = params[:D_ex]
+        D_12 = params[:D_12]
+        D_23 = params[:D_23]
+        D_34 = params[:D_34]
+        D_45 = params[:D_45]
+        K_hp = params[:K_hp]
+        K_ip = params[:K_ip]
+        K_lp = params[:K_lp]
+        K_ex = params[:K_ex]
 
         out[1] = (
             -τe - D * (ω - ω_sys) - D_34 * (ω - ω_lp) - D_45 * (ω - ω_ex) +
@@ -80,11 +74,19 @@ function initialize_shaft!(
     end
 
     x0 = [τm0, δ0, δ0, δ0, δ0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @warn("Initialization in Shaft failed")
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn(
+            "Initialization in Shaft failed"
+        )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         inner_vars[τm_var] = sol_x0[1] #τm
         shaft_states[3] = sol_x0[2] #δ_hp
         shaft_states[4] = ω #ω_hp

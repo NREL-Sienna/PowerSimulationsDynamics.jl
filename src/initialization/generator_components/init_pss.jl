@@ -274,7 +274,7 @@ end
 
 function initialize_pss!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2B}},
     inner_vars::AbstractVector,
@@ -321,11 +321,12 @@ function initialize_pss!(
     pss_states = @view device_states[pss_ix]
 
     # Get Required Parameters
+    params = p[:params][:PSS]
     M_rtf = PSY.get_M_rtf(pss)
     N_rtf = PSY.get_N_rtf(pss)
-    Tw1 = PSY.get_Tw1(pss)
-    Tw3 = PSY.get_Tw3(pss)
-    T9 = PSY.get_T9(pss)
+    Tw1 = params[:Tw1]
+    Tw3 = params[:Tw3]
+    T9 = params[:T9]
     Vs1_min, Vs1_max = PSY.get_Vs1_lim(pss)
     Vs2_min, Vs2_max = PSY.get_Vs2_lim(pss)
 

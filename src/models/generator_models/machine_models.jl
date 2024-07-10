@@ -408,7 +408,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_machine_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -444,19 +444,18 @@ function mdl_machine_ode!(
     Vf = inner_vars[Vf_var]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AndersonFouadMachine)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    Xd,
-    Xq,
-    Xd_p,
-    Xq_p,
-    Xd_pp,
-    Xq_pp,
-    Td0_p,
-    Tq0_p,
-    Td0_pp,
-    Tq0_pp = internal_params
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xd = params[:Xd]
+    Xq = params[:Xq]
+    Xd_p = params[:Xd_p]
+    Xq_p = params[:Xq_p]
+    Xd_pp = params[:Xd_pp]
+    Xq_pp = params[:Xq_pp]
+    Td0_p = params[:Td0_p]
+    Tq0_p = params[:Tq0_p]
+    Td0_pp = params[:Td0_pp]
+    Tq0_pp = params[:Tq0_pp]
     basepower = PSY.get_base_power(dynamic_device)
 
     #RI to dq transformation
@@ -495,7 +494,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 function mdl_machine_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_r::AbstractArray{<:ACCEPTED_REAL_TYPES},
     current_i::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -527,18 +526,18 @@ function mdl_machine_ode!(
     Vf = inner_vars[Vf_var]
 
     #Get parameters
-    machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xq_p = PSY.get_Xq_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
-    Xq_pp = PSY.get_Xq_pp(machine)
-    Td0_p = PSY.get_Td0_p(machine)
-    Tq0_p = PSY.get_Tq0_p(machine)
-    Td0_pp = PSY.get_Td0_pp(machine)
-    Tq0_pp = PSY.get_Tq0_pp(machine)
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xd = params[:Xd]
+    Xq = params[:Xq]
+    Xd_p = params[:Xd_p]
+    Xq_p = params[:Xq_p]
+    Xd_pp = params[:Xd_pp]
+    Xq_pp = params[:Xq_pp]
+    Td0_p = params[:Td0_p]
+    Tq0_p = params[:Tq0_p]
+    Td0_pp = params[:Td0_pp]
+    Tq0_pp = params[:Tq0_pp]
     basepower = PSY.get_base_power(dynamic_device)
 
     #RI to dq transformation

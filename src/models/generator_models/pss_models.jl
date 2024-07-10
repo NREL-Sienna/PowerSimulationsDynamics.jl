@@ -460,7 +460,7 @@ end
 function mdl_pss_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, PSY.PSS2B}},
@@ -531,26 +531,27 @@ function mdl_pss_ode!(
     # Get Parameters
     M_rtf = PSY.get_M_rtf(pss)
     N_rtf = PSY.get_N_rtf(pss)
-    Tw1 = PSY.get_Tw1(pss)
-    Tw2 = PSY.get_Tw2(pss)
-    T6 = PSY.get_T6(pss)
-    Tw3 = PSY.get_Tw3(pss)
-    Tw4 = PSY.get_Tw4(pss)
-    T7 = PSY.get_T7(pss)
-    Ks2 = PSY.get_Ks2(pss)
-    Ks3 = PSY.get_Ks3(pss)
-    T8 = PSY.get_T8(pss)
-    T9 = PSY.get_T9(pss)
-    Ks1 = PSY.get_Ks1(pss)
-    T1 = PSY.get_T1(pss)
-    T2 = PSY.get_T2(pss)
-    T3 = PSY.get_T3(pss)
-    T4 = PSY.get_T4(pss)
-    T10 = PSY.get_T10(pss)
-    T11 = PSY.get_T11(pss)
     Vs1_min, Vs1_max = PSY.get_Vs1_lim(pss)
     Vs2_min, Vs2_max = PSY.get_Vs2_lim(pss)
     Vst_min, Vst_max = PSY.get_Vst_lim(pss)
+    params = p[:params][:PSS]
+    Tw1 = params[:Tw1]
+    Tw2 = params[:Tw2]
+    T6 = params[:T6]
+    Tw3 = params[:Tw3]
+    Tw4 = params[:Tw4]
+    T7 = params[:T7]
+    Ks2 = params[:Ks2]
+    Ks3 = params[:Ks3]
+    T8 = params[:T8]
+    T9 = params[:T9]
+    Ks1 = params[:Ks1]
+    T1 = params[:T1]
+    T2 = params[:T2]
+    T3 = params[:T3]
+    T4 = params[:T4]
+    T10 = params[:T10]
+    T11 = params[:T11]
 
     # Clamp inputs
     u_1 = clamp(u_1, Vs1_min, Vs1_max)

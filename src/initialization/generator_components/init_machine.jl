@@ -516,7 +516,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicGenerator{PSY.AndersonFouadMachine, S, A, TG, P},
@@ -536,19 +536,9 @@ function initialize_mach_shaft!(
     I = conj(S0 / V)
 
     #Machine Data
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.AndersonFouadMachine)
-    internal_params = @view device_parameters[local_ix_params]
-    R,
-    Xd,
-    Xq,
-    Xd_p,
-    Xq_p,
-    Xd_pp,
-    Xq_pp,
-    _,
-    _,
-    _,
-    _ = internal_params
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xq = params[:Xq]
 
     #States of Anderson-Fouad are [1] ψq, [2] ψd, [3] eq_p, [4] ed_p, [5] eq_pp and [6] ed_pp
     δ0 = angle(V + (R + Xq * 1im) * I)
@@ -557,7 +547,7 @@ function initialize_mach_shaft!(
 
     @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
-    function f!(out, x)
+    function f!(out, x, params)
         δ = x[1]
         τm = x[2]
         Vf0 = x[3]
@@ -567,6 +557,13 @@ function initialize_mach_shaft!(
         ed_p = x[7]
         eq_pp = x[8]
         ed_pp = x[9]
+        R = params[:R]
+        Xd = params[:Xd]
+        Xq = params[:Xq]
+        Xd_p = params[:Xd_p]
+        Xq_p = params[:Xq_p]
+        Xd_pp = params[:Xd_pp]
+        Xq_pp = params[:Xq_pp]
 
         V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / Xd_pp) * (eq_pp - ψd)      #15.18
@@ -585,13 +582,19 @@ function initialize_mach_shaft!(
 
     V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[1], V_dq0[2], V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
             "Initialization in Machine $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I
@@ -627,7 +630,7 @@ Refer to Power System Modelling and Scripting by F. Milano for the equations
 """
 function initialize_mach_shaft!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{PSY.SimpleAFMachine, S, A, TG, P}},
     inner_vars::AbstractVector,
@@ -645,14 +648,9 @@ function initialize_mach_shaft!(
     I = conj(S0 / V)
 
     #Get parameters
-    machine = PSY.get_machine(dynamic_device)
-    R = PSY.get_R(machine)
-    Xd = PSY.get_Xd(machine)
-    Xq = PSY.get_Xq(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xq_p = PSY.get_Xq_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
-    Xq_pp = PSY.get_Xq_pp(machine)
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xq = params[:Xq]
 
     #States of SimpleAndersonFouad are [1] eq_p, [2] ed_p, [3] eq_pp and [4] ed_pp
     δ0 = angle(V + (R + Xq * 1im) * I)
@@ -660,7 +658,7 @@ function initialize_mach_shaft!(
     τm0 = real(V * conj(I))
     @assert isapprox(τm0, P0; atol = STRICT_NLSOLVE_F_TOLERANCE)
     #To solve: δ, τm, Vf0, eq_p, ed_p
-    function f!(out, x)
+    function f!(out, x, params)
         δ = x[1]
         τm = x[2]
         Vf0 = x[3]
@@ -668,6 +666,13 @@ function initialize_mach_shaft!(
         ed_p = x[5]
         eq_pp = x[6]
         ed_pp = x[7]
+        R = params[:R]
+        Xd = params[:Xd]
+        Xq = params[:Xq]
+        Xd_p = params[:Xd_p]
+        Xq_p = params[:Xq_p]
+        Xd_pp = params[:Xd_pp]
+        Xq_pp = params[:Xq_pp]
 
         V_dq = ri_dq(δ) * [V_R; V_I]
         i_d =
@@ -687,13 +692,19 @@ function initialize_mach_shaft!(
     end
     V_dq0 = ri_dq(δ0) * [V_R; V_I]
     x0 = [δ0, τm0, 1.0, V_dq0[2], V_dq0[1], V_dq0[2], V_dq0[1]]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
             "Initialization in Machine $(PSY.get_name(static)) failed"
         )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[VR_gen_var] = V_R
         inner_vars[VI_gen_var] = V_I

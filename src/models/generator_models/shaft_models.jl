@@ -42,7 +42,7 @@ end
 function mdl_shaft_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
-    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
@@ -72,26 +72,25 @@ function mdl_shaft_ode!(
     τm = inner_vars[τm_var]
 
     #Get parameters
-    local_ix_params = get_local_parameter_ix(dynamic_device, PSY.SingleMass)
-    internal_params = @view device_parameters[local_ix_params]
-    H,
-    H_hp,
-    H_ip,
-    H_lp,
-    H_ex,
-    D,
-    D_hp,
-    D_ip,
-    D_lp,
-    D_ex,
-    D_12,
-    D_23,
-    D_34,
-    D_45,
-    K_hp,
-    K_ip,
-    K_lp,
-    K_ex = internal_params
+    params = p[:params][:Shaft]
+    H = params[:H]
+    H_hp = params[:H_hp]
+    H_ip = params[:H_ip]
+    H_lp = params[:H_lp]
+    H_ex = params[:H_ex]
+    D = params[:D]
+    D_hp = params[:D_hp]
+    D_ip = params[:D_ip]
+    D_lp = params[:D_lp]
+    D_ex = params[:D_ex]
+    D_12 = params[:D_12]
+    D_23 = params[:D_23]
+    D_34 = params[:D_34]
+    D_45 = params[:D_45]
+    K_hp = params[:K_hp]
+    K_ip = params[:K_ip]
+    K_lp = params[:K_lp]
+    K_ex = params[:K_ex]
 
     #Compute 10 states ODEs #15.51
     output_ode[local_ix[1]] = 2.0 * π * f0 * (ω - ω_sys)

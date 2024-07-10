@@ -379,7 +379,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.SCRX, TG, P}},
     inner_vars::AbstractVector,
@@ -392,22 +392,25 @@ function initialize_avr!(
     Vm = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
 
     #Get parameters
+    params = p[:params][:AVR]
     avr = PSY.get_avr(dynamic_device)
-    Ta_Tb = PSY.get_Ta_Tb(avr)
-    Tb = PSY.get_Tb(avr)
-    Ta = Tb * Ta_Tb
-    # dont need Te >> no derivative so block is 0 (multiply by K in steady state)
-    K = PSY.get_K(avr)
-    V_min, V_max = PSY.get_Efd_lim(avr) #Efd_lim (V_lim) **n
-    switch = PSY.get_switch(avr) # reads switch parameters **n
-    rc_rfd = PSY.get_rc_rfd(avr)
+    V_min, V_max = params[:Efd_lim]
+    Ta_Tb = params[:Ta_Tb]
+    K = params[:K]
 
     # do the negative current and switch? or is that alr counted in? 
     #States of AVRTypeI are Vf, Vr1, Vr2, Vm
     #To solve V_ref, Vr
-    function f!(out, x)
+    function f!(out, x, params)
         V_ref = x[1]
         Vr1 = x[2]
+
+        Ta_Tb = params[:Ta_Tb]
+        Tb = params[:Tb]
+        Ta = Tb * Ta_Tb
+        switch = PSY.get_switch(avr)
+        K = params[:K]
+        rc_rfd = params[:rc_rfd]
 
         V_in = V_ref - Vm # assume Vs is 0 when init
         #lead lag block
@@ -437,13 +440,19 @@ function initialize_avr!(
     end # solve for Vref
 
     x0 = [1.0, Vf0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn(
             "Initialization of AVR in $(PSY.get_name(static)) failed"
         )
-    else # if converge
-        sol_x0 = sol.zero
+    else
+        sol_x0 = sol.u
         Vr2_0 = (sol_x0[2] + Ta_Tb * (sol_x0[1] - Vm)) * K # K * V_LL
         #check the limits
         if (Vr2_0 >= V_max + BOUNDS_TOLERANCE) || (Vr2_0 <= V_min - BOUNDS_TOLERANCE)
@@ -453,7 +462,7 @@ function initialize_avr!(
         end
         #Update V_ref
         PSY.set_V_ref!(avr, sol_x0[1])
-        set_V_ref(dynamic_device, sol_x0[1])
+        set_V_ref!(p, sol_x0[1])
         #Update AVR states
         avr_ix = get_local_state_ix(dynamic_device, PSY.SCRX)
         avr_states = @view device_states[avr_ix]
@@ -598,7 +607,7 @@ end
 
 function initialize_avr!(
     device_states,
-    device_parameters,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ESST1A, TG, P}},
     inner_vars::AbstractVector,
@@ -612,17 +621,19 @@ function initialize_avr!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    Tc = PSY.get_Tc(avr)
-    Tb = PSY.get_Tb(avr)
-    Tc1 = PSY.get_Tc1(avr)
-    Tb1 = PSY.get_Tb1(avr)
-    Ka = PSY.get_Ka(avr)
-    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
-    Kc = PSY.get_Kc(avr)
-    Kf = PSY.get_Kf(avr)
-    Tf = PSY.get_Tf(avr)
-    K_lr = PSY.get_K_lr(avr)
-    I_lr = PSY.get_I_lr(avr)
+    params = p[:params][:AVR]
+    Tc = params[:Tc]
+    Tb = params[:Tb]
+    Tc1 = params[:Tc1]
+    Tb1 = params[:Tb1]
+    Ka = params[:Ka]
+    Vr_min = params[:Vr_lim][:min]
+    Vr_max = params[:Vr_lim][:max]
+    Kc = params[:Kc]
+    Kf = params[:Kf]
+    Tf = params[:Tf]
+    K_lr = params[:K_lr]
+    I_lr = params[:I_lr]
 
     # Check limits to field voltage 
     if (Vt * Vr_min > Vf0) || (Vf0 > Vt * Vr_max - Kc * Ifd)
@@ -641,7 +652,7 @@ function initialize_avr!(
     Vref0 = Vt + Va / Ka
 
     PSY.set_V_ref!(avr, Vref0)
-    set_V_ref(dynamic_device, Vref0)
+    set_V_ref!(p, Vref0)
 
     #States of ESST1A_PTI are Vm, Vr1, Vr2, Va, Vr3
 

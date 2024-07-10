@@ -434,25 +434,18 @@ function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.CSVGN1},
     device::PSY.StaticInjection,
     ::AbstractVector,
-    device_parameters::AbstractVector,
+    p::AbstractVector,
     device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
     # Get parameters
-    dynamic_device = get_device(dynamic_wrapper)
-    K,
-    T1,
-    T2,
-    T3,
-    T4,
-    T5,
-    Rmin,
-    Vmax,
-    Vmin,
-    Cbase,
-    Mbase,
-    R_th,
-    X_th = device_parameters
+    params = p[:params]
+    K = params[:K]
+    Rmin = params[:Rmin]
+    Vmax = params[:Vmax]
+    Vmin = params[:Vmin]
+    Cbase = params[:CBase]
+    Mbase = params[:base_power]
     # FIXME: base_power is changed to system's base_power when a CSVGN1 is attached to a Source using add_component!()
     # Temporarily, to avoid that, set_dynamic_injector!() could be used
     Rbase = Mbase
@@ -466,7 +459,7 @@ function initialize_dynamic_device!(
     V_ref0 = V_abs - (Cbase / Sbase - Y) * 1 / K * Sbase / Mbase
 
     # update V_ref
-    set_V_ref(dynamic_wrapper, V_ref0)
+    set_V_ref!(p, V_ref0)
 
     thy = K * (V_abs - V_ref0)
     vr2 = thy
@@ -489,7 +482,7 @@ function initialize_dynamic_device!(
     dynamic_wrapper::DynamicWrapper{PSY.ActiveConstantPowerLoad},
     device::PSY.StaticInjection,
     ::AbstractVector,
-    device_parameters::AbstractVector,
+    p::AbstractVector,
     device_states::AbstractVector,
 )
     Sbase = get_system_base_power(dynamic_wrapper)
@@ -497,20 +490,14 @@ function initialize_dynamic_device!(
     dynamic_device = get_device(dynamic_wrapper)
 
     #Get parameters
-    r_load,
-    _,
-    rf,
-    lf,
-    cf,
-    rg,
-    lg,
-    _,
-    _,
-    _,
-    kiv,
-    _,
-    kic,
-    base_power = device_parameters
+    params = p[:params]
+    r_load = params[:r_load]
+    rf = params[:rf]
+    lf = params[:lf]
+    cf = params[:cf]
+    rg = params[:rg]
+    lg = params[:lg]
+    base_power = params[:base_power]
 
     #PowerFlow Data
     if isa(device, PSY.StandardLoad)
@@ -547,12 +534,15 @@ function initialize_dynamic_device!(
     V_ref0 = sqrt(P_cnv0 * r_load)
     x0 = [θ_pll0, 0.0, 0.0, 0.0, 0.0]
 
-    function f!(out, x)
+    function f!(out, x, params)
         θ_pll = x[1]
         η = x[2]
         γd = x[3]
         γq = x[4]
         Iq_ref = x[5]
+        lf = params[:lf]
+        kiv = params[:kiv]
+        kic = params[:kic]
 
         V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter0; Vi_filter0]
         I_dq_cnv = ri_dq(θ_pll + pi / 2) * [Ir_cnv0; Ii_cnv0]
@@ -570,13 +560,17 @@ function initialize_dynamic_device!(
         out[4] = V_dq_cnv0[q] - Vq_cnv
         out[5] = V_dq_cnv0[d] - Vd_cnv
     end
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @warn(
-            "Initialization in Active Load $(PSY.get_name(device)) failed"
-        )
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn("Initialization in Active Load $(PSY.get_name(device)) failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         device_states[1] = sol_x0[1] # θ_pll
         device_states[2] = 0.0 # ϵ
         device_states[3] = sol_x0[2] # η
@@ -592,8 +586,8 @@ function initialize_dynamic_device!(
 
         # update V_ref
         PSY.set_V_ref!(dynamic_device, V_ref0)
-        set_V_ref(dynamic_wrapper, V_ref0)
-        set_Q_ref(dynamic_wrapper, sol_x0[5])
+        set_V_ref!(p, V_ref0)
+        set_Q_ref!(p, sol_x0[5])
     end
     return device_states
 end
