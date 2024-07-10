@@ -28,6 +28,7 @@ function compute_output_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 ) where {G <: PSY.DynamicGenerator}
 
     #Obtain Data
@@ -46,6 +47,7 @@ function compute_output_current(
         base_power_ratio,
         res,
         dt,
+        unique_timestamps,
     )
 end
 
@@ -60,6 +62,7 @@ function compute_output_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
 
     #Obtain Data
@@ -70,18 +73,18 @@ function compute_output_current(
     Freq_Flag = PSY.get_Freq_Flag(dynamic_device)
     name = PSY.get_name(dynamic_device)
     if Freq_Flag == 1
-        _, Pord = post_proc_state_series(res, (name, :Pord), dt)
-        _, dPord = post_proc_state_series(res, (name, :dPord), dt)
+        _, Pord = post_proc_state_series(res, (name, :Pord), dt, unique_timestamps)
+        _, dPord = post_proc_state_series(res, (name, :dPord), dt, unique_timestamps)
         Tpord = PSY.get_Tpord(dynamic_device)
         P_lim = PSY.get_P_lim(dynamic_device)
     end
 
     # Get states
     θ = atan.(V_I ./ V_R)
-    ts, Ip = post_proc_state_series(res, (name, :Ip), dt)
-    ts, Iq = post_proc_state_series(res, (name, :Iq), dt)
-    _, Mult = post_proc_state_series(res, (name, :Mult), dt)
-    _, Vmeas = post_proc_state_series(res, (name, :Vmeas), dt)
+    ts, Ip = post_proc_state_series(res, (name, :Ip), dt, unique_timestamps)
+    ts, Iq = post_proc_state_series(res, (name, :Iq), dt, unique_timestamps)
+    _, Mult = post_proc_state_series(res, (name, :Mult), dt, unique_timestamps)
+    _, Vmeas = post_proc_state_series(res, (name, :Vmeas), dt, unique_timestamps)
     Iq_neg = -Iq
     Ip_cmd = Ip
     Iq_cmd = Iq
@@ -153,6 +156,7 @@ function compute_field_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 ) where {G <: PSY.DynamicGenerator}
 
     #Obtain Data
@@ -160,7 +164,15 @@ function compute_field_current(
 
     #Get machine
     machine = PSY.get_machine(dynamic_device)
-    return _field_current(machine, PSY.get_name(dynamic_device), V_R, V_I, res, dt)
+    return _field_current(
+        machine,
+        PSY.get_name(dynamic_device),
+        V_R,
+        V_I,
+        res,
+        dt,
+        unique_timestamps,
+    )
 end
 
 """
@@ -172,11 +184,12 @@ function compute_field_voltage(
     res::SimulationResults,
     dynamic_device::G,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 ) where {G <: PSY.DynamicGenerator}
 
     #Get AVR
     avr = PSY.get_avr(dynamic_device)
-    return _field_voltage(avr, PSY.get_name(dynamic_device), res, dt)
+    return _field_voltage(avr, PSY.get_name(dynamic_device), res, dt, unique_timestamps)
 end
 
 """
@@ -188,11 +201,12 @@ function compute_pss_output(
     res::SimulationResults,
     dynamic_device::G,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 ) where {G <: PSY.DynamicGenerator}
 
     #Get PSS
     pss = PSY.get_pss(dynamic_device)
-    return _pss_output(pss, PSY.get_name(dynamic_device), res, dt)
+    return _pss_output(pss, PSY.get_name(dynamic_device), res, dt, unique_timestamps)
 end
 
 """
@@ -204,11 +218,12 @@ function compute_mechanical_torque(
     res::SimulationResults,
     dynamic_device::G,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 ) where {G <: PSY.DynamicGenerator}
 
     #Get TG
     tg = PSY.get_prime_mover(dynamic_device)
-    return _mechanical_torque(tg, PSY.get_name(dynamic_device), res, dt)
+    return _mechanical_torque(tg, PSY.get_name(dynamic_device), res, dt, unique_timestamps)
 end
 
 """
@@ -219,9 +234,10 @@ function compute_frequency(
     res::SimulationResults,
     dyn_device::G,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 ) where {G <: PSY.DynamicGenerator}
     name = PSY.get_name(dyn_device)
-    ts, ω = post_proc_state_series(res, (name, :ω), dt)
+    ts, ω = post_proc_state_series(res, (name, :ω), dt, unique_timestamps)
     return ts, ω
 end
 
@@ -237,8 +253,9 @@ function _machine_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
 
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
@@ -271,10 +288,11 @@ function _machine_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
-    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
-    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt, unique_timestamps)
+    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt, unique_timestamps)
 
     R = PSY.get_R(machine)
     Xd_p = PSY.get_Xd_p(machine)
@@ -309,10 +327,11 @@ function _machine_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
-    _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt)
-    _, ed_pp = post_proc_state_series(res, (name, :ed_pp), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
+    _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt, unique_timestamps)
+    _, ed_pp = post_proc_state_series(res, (name, :ed_pp), dt, unique_timestamps)
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -350,12 +369,13 @@ function _machine_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
-    _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt)
-    _, ed_pp = post_proc_state_series(res, (name, :ed_pp), dt)
-    _, ψd = post_proc_state_series(res, (name, :ψd), dt)
-    _, ψq = post_proc_state_series(res, (name, :ψq), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
+    _, eq_pp = post_proc_state_series(res, (name, :eq_pp), dt, unique_timestamps)
+    _, ed_pp = post_proc_state_series(res, (name, :ed_pp), dt, unique_timestamps)
+    _, ψd = post_proc_state_series(res, (name, :ψd), dt, unique_timestamps)
+    _, ψq = post_proc_state_series(res, (name, :ψq), dt, unique_timestamps)
 
     #Get parameters
     Xd_pp = PSY.get_Xd_pp(machine)
@@ -388,14 +408,15 @@ function _machine_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
-    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
-    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt)
-    _, ψd = post_proc_state_series(res, (name, :ψd), dt)
-    _, ψq = post_proc_state_series(res, (name, :ψq), dt)
-    _, ψd_pp = post_proc_state_series(res, (name, :ψd_pp), dt)
-    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt, unique_timestamps)
+    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt, unique_timestamps)
+    _, ψd = post_proc_state_series(res, (name, :ψd), dt, unique_timestamps)
+    _, ψq = post_proc_state_series(res, (name, :ψq), dt, unique_timestamps)
+    _, ψd_pp = post_proc_state_series(res, (name, :ψd_pp), dt, unique_timestamps)
+    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt, unique_timestamps)
 
     #Get parameters
     Xd_pp = PSY.get_Xd_pp(machine)
@@ -430,12 +451,13 @@ function _machine_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
-    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
-    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt)
-    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
-    _, ψ_kq = post_proc_state_series(res, (name, :ψ_kq), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt, unique_timestamps)
+    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt, unique_timestamps)
+    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt, unique_timestamps)
+    _, ψ_kq = post_proc_state_series(res, (name, :ψ_kq), dt, unique_timestamps)
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -482,11 +504,12 @@ function _machine_current(
     base_power_ratio::Float64,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
-    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
-    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
-    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt, unique_timestamps)
+    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt, unique_timestamps)
+    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt, unique_timestamps)
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -527,9 +550,10 @@ function _field_current(
     V_I::Vector{Float64},
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 ) where {M <: PSY.Machine}
     @warn("Field current is not supported in the machine type $(M). Returning zeros.")
-    ts, _ = post_proc_state_series(res, (name, :δ), dt)
+    ts, _ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
     I_fd = zeros(length(ts))
     return ts, I_fd
 end
@@ -545,12 +569,13 @@ function _field_current(
     V_I::Vector{Float64},
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 ) where {M <: Union{PSY.RoundRotorQuadratic, PSY.RoundRotorExponential}}
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
-    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
-    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt)
-    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
-    _, ψ_kq = post_proc_state_series(res, (name, :ψ_kd), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt, unique_timestamps)
+    _, ed_p = post_proc_state_series(res, (name, :ed_p), dt, unique_timestamps)
+    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt, unique_timestamps)
+    _, ψ_kq = post_proc_state_series(res, (name, :ψ_kd), dt, unique_timestamps)
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -599,11 +624,12 @@ function _field_current(
     V_I::Vector{Float64},
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
-    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
-    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
-    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt, unique_timestamps)
+    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt, unique_timestamps)
+    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt, unique_timestamps)
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -646,11 +672,12 @@ function _field_current(
     V_I::Vector{Float64},
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, δ = post_proc_state_series(res, (name, :δ), dt)
-    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt)
-    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt)
-    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt)
+    ts, δ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
+    _, eq_p = post_proc_state_series(res, (name, :eq_p), dt, unique_timestamps)
+    _, ψ_kd = post_proc_state_series(res, (name, :ψ_kd), dt, unique_timestamps)
+    _, ψq_pp = post_proc_state_series(res, (name, :ψq_pp), dt, unique_timestamps)
 
     #Get parameters
     R = PSY.get_R(machine)
@@ -695,8 +722,9 @@ function _field_voltage(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 ) where {A <: PSY.AVR}
-    return post_proc_state_series(res, (name, :Vf), dt)
+    return post_proc_state_series(res, (name, :Vf), dt, unique_timestamps)
 end
 
 """
@@ -708,9 +736,10 @@ function _field_voltage(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     Vf0 = PSY.get_Vf(avr)
-    ts, _ = post_proc_state_series(res, (name, :δ), dt)
+    ts, _ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
     Vf = Vf0 * ones(length(ts))
     return ts, Vf
 end
@@ -724,9 +753,10 @@ function _field_voltage(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, Ve = post_proc_state_series(res, (name, :Ve), dt)
-    _, Xad_Ifd = post_proc_field_current_series(res, name, dt)
+    ts, Ve = post_proc_state_series(res, (name, :Ve), dt, unique_timestamps)
+    _, Xad_Ifd = post_proc_field_current_series(res, name, dt, unique_timestamps)
     Kc = PSY.get_Kc(avr)
     I_N = Kc * Xad_Ifd ./ Ve
     Vf = Ve .* rectifier_function.(I_N)
@@ -742,9 +772,10 @@ function _field_voltage(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, Vr2 = post_proc_state_series(res, (name, :Vr2), dt)
-    _, Ifd = post_proc_field_current_series(res, name, dt)
+    ts, Vr2 = post_proc_state_series(res, (name, :Vr2), dt, unique_timestamps)
+    _, Ifd = post_proc_field_current_series(res, name, dt, unique_timestamps)
     V_min, V_max = PSY.get_Efd_lim(avr)
     bus_str = split(name, "-")[2]
     bus_num = parse(Int, bus_str)
@@ -778,15 +809,16 @@ function _field_voltage(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Obtain state Va
-    ts, Va = post_proc_state_series(res, (name, :Va), dt)
+    ts, Va = post_proc_state_series(res, (name, :Va), dt, unique_timestamps)
 
     # Obtain field current
-    _, Ifd = post_proc_field_current_series(res, name, dt)
+    _, Ifd = post_proc_field_current_series(res, name, dt, unique_timestamps)
 
     # Obtain PSS output
-    _, Vs = post_proc_pss_output_series(res, name, dt)
+    _, Vs = post_proc_pss_output_series(res, name, dt, unique_timestamps)
 
     # Get parameters
     VOS = PSY.get_PSS_flags(avr)
@@ -840,8 +872,9 @@ function _pss_output(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, _ = post_proc_state_series(res, (name, :δ), dt)
+    ts, _ = post_proc_state_series(res, (name, :δ), dt, unique_timestamps)
     return ts, zeros(length(ts))
 end
 
@@ -854,14 +887,15 @@ function _pss_output(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Obtain states
-    ts, x_p2 = post_proc_state_series(res, (name, :x_p2), dt)
-    _, x_p3 = post_proc_state_series(res, (name, :x_p3), dt)
-    _, x_p4 = post_proc_state_series(res, (name, :x_p4), dt)
-    _, x_p5 = post_proc_state_series(res, (name, :x_p5), dt)
-    _, x_p6 = post_proc_state_series(res, (name, :x_p6), dt)
-    _, x_p7 = post_proc_state_series(res, (name, :x_p7), dt)
+    ts, x_p2 = post_proc_state_series(res, (name, :x_p2), dt, unique_timestamps)
+    _, x_p3 = post_proc_state_series(res, (name, :x_p3), dt, unique_timestamps)
+    _, x_p4 = post_proc_state_series(res, (name, :x_p4), dt, unique_timestamps)
+    _, x_p5 = post_proc_state_series(res, (name, :x_p5), dt, unique_timestamps)
+    _, x_p6 = post_proc_state_series(res, (name, :x_p6), dt, unique_timestamps)
+    _, x_p7 = post_proc_state_series(res, (name, :x_p7), dt, unique_timestamps)
 
     # Get Parameters
     A1 = PSY.get_A1(pss)
@@ -921,9 +955,10 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # TODO: This will not plot correctly when changing P_ref in a callback
-    ts, _ = _post_proc_state_series(res.solution, 1, dt)
+    ts, _ = _post_proc_state_series(res.solution, 1, dt, unique_timestamps)
     setpoints = get_setpoints(res)
     P_ref = setpoints[name]["P_ref"]
     efficiency = PSY.get_efficiency(tg)
@@ -940,6 +975,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Get params
     Tc = PSY.get_Tc(tg)
@@ -947,9 +983,9 @@ function _mechanical_torque(
     T4 = PSY.get_T4(tg)
     T5 = PSY.get_T5(tg)
     # Get state results
-    ts, x_g1 = post_proc_state_series(res, (name, :x_g1), dt)
-    _, x_g2 = post_proc_state_series(res, (name, :x_g2), dt)
-    _, x_g3 = post_proc_state_series(res, (name, :x_g3), dt)
+    ts, x_g1 = post_proc_state_series(res, (name, :x_g1), dt, unique_timestamps)
+    _, x_g2 = post_proc_state_series(res, (name, :x_g2), dt, unique_timestamps)
+    _, x_g3 = post_proc_state_series(res, (name, :x_g3), dt, unique_timestamps)
     τm = zeros(length(ts))
     for ix in 1:length(ts)
         y_ll, _ = lead_lag(x_g1[ix], x_g2[ix], 1.0, T3, Tc)
@@ -968,6 +1004,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # TODO: This will not plot correctly when changing P_ref in a callback
     # Get params
@@ -978,8 +1015,8 @@ function _mechanical_torque(
     T1 = PSY.get_T1(tg)
     T2 = PSY.get_T2(tg)
     # Get state results
-    ts, xg = post_proc_state_series(res, (name, :xg), dt)
-    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    ts, xg = post_proc_state_series(res, (name, :xg), dt, unique_timestamps)
+    _, ω = post_proc_state_series(res, (name, :ω), dt, unique_timestamps)
     τm = zeros(length(ts))
     for ix in 1:length(ts)
         y_ll, _ = lead_lag(inv_R * (ω_ref - ω[ix]), xg[ix], 1.0, T1, T2)
@@ -997,6 +1034,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # TODO: This will not plot correctly when changing P_ref in a callback
     # Get params
@@ -1009,9 +1047,9 @@ function _mechanical_torque(
     T3 = PSY.get_T3(tg)
     D_T = PSY.get_D_T(tg)
     # Get state results
-    ts, x_g1 = post_proc_state_series(res, (name, :x_g1), dt)
-    _, x_g2 = post_proc_state_series(res, (name, :x_g2), dt)
-    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    ts, x_g1 = post_proc_state_series(res, (name, :x_g1), dt, unique_timestamps)
+    _, x_g2 = post_proc_state_series(res, (name, :x_g2), dt, unique_timestamps)
+    _, ω = post_proc_state_series(res, (name, :ω), dt, unique_timestamps)
     ref_in = inv_R * (P_ref .- (ω .- 1.0))
     τm = zeros(length(ts))
     for ix in 1:length(ts)
@@ -1032,12 +1070,13 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Get params
     D_turb = PSY.get_D_turb(tg)
     # Get state results
-    ts, x_g2 = post_proc_state_series(res, (name, :x_g2), dt)
-    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    ts, x_g2 = post_proc_state_series(res, (name, :x_g2), dt, unique_timestamps)
+    _, ω = post_proc_state_series(res, (name, :ω), dt, unique_timestamps)
     P_m = x_g2 - D_turb * (ω .- 1.0)
     τm = P_m ./ ω
     return ts, τm
@@ -1053,7 +1092,7 @@ function _mechanical_torque(
     res::SimulationResults,
     dt::Union{Nothing, Float64},
 )
-    ts, x_a3 = post_proc_state_series(res, (name, :x_a3), dt)
+    ts, x_a3 = post_proc_state_series(res, (name, :x_a3), dt, unique_timestamps)
     return ts, x_a3
 end
 """
@@ -1065,6 +1104,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Get params
     q_nl = PSY.get_q_nl(tg)
@@ -1073,9 +1113,9 @@ function _mechanical_torque(
     setpoints = get_setpoints(res)
     ω_ref = setpoints[name]["ω_ref"]
     # Get state results
-    ts, x_g3 = post_proc_state_series(res, (name, :x_g3), dt)
-    _, x_g4 = post_proc_state_series(res, (name, :x_g4), dt)
-    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    ts, x_g3 = post_proc_state_series(res, (name, :x_g3), dt, unique_timestamps)
+    _, x_g4 = post_proc_state_series(res, (name, :x_g4), dt, unique_timestamps)
+    _, ω = post_proc_state_series(res, (name, :ω), dt, unique_timestamps)
     Δω = ω .- ω_ref
     h = (x_g4 ./ x_g3) .^ 2
     τm = ((x_g4 .- q_nl) .* h * At - D_T * Δω .* x_g3) ./ ω
