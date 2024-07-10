@@ -11,22 +11,22 @@ u -> │ ────────────│ -> y
      └─────────────┘
 """
 function low_pass_modified_mass_matrix(
-    u::Z,
-    y::V,
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
     K::ACCEPTED_REAL_TYPES,
-    K_den::W,
+    K_den::ACCEPTED_REAL_TYPES,
     ::ACCEPTED_REAL_TYPES,
-) where {V <: ACCEPTED_REAL_TYPES, W <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
+)
     return y, K * u - K_den * y
 end
 
 function low_pass_modified(
-    u::Z,
-    y::V,
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
     K::ACCEPTED_REAL_TYPES,
-    K_den::W,
+    K_den::ACCEPTED_REAL_TYPES,
     T::ACCEPTED_REAL_TYPES,
-) where {V <: ACCEPTED_REAL_TYPES, W <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
+)
     return y, (1.0 / T) * low_pass_modified_mass_matrix(u, y, K, K_den, T)[2]
 end
 
@@ -41,20 +41,20 @@ u -> │ ────── │ -> y
 
 # Use this one if T = 0 is allowed, and let the mass matrix take care of it.
 function low_pass_mass_matrix(
-    u::Z,
-    y::V,
-    K::Float64,
-    T::Float64,
-) where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    T::ACCEPTED_REAL_TYPES,
+)
     return low_pass_modified_mass_matrix(u, y, K, 1.0, T)
 end
 
 function low_pass(
-    u::Z,
-    y::V,
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
     K::ACCEPTED_REAL_TYPES,
     T::ACCEPTED_REAL_TYPES,
-) where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
+)
     return low_pass_modified(u, y, K, 1.0, T)
 end
 
@@ -72,13 +72,13 @@ u -> │ ────── │ -> y
 """
 
 function low_pass_nonwindup_mass_matrix(
-    u::Z,
-    y::V,
-    K::Float64,
-    ::Float64,
-    y_min::Float64,
-    y_max::Float64,
-) where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    ::ACCEPTED_REAL_TYPES,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
+)
     dydt = K * u - y
     y_sat = clamp(y, y_min, y_max)
     # Non Windup logic from IEEE Std 421.5
@@ -88,28 +88,28 @@ end
 
 # Does not accept T = 0
 function low_pass_nonwindup(
-    u::Z,
-    y::V,
-    K::Float64,
-    T::Float64,
-    y_min::Float64,
-    y_max::Float64,
-) where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    T::ACCEPTED_REAL_TYPES,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
+)
     y_sat, dydt_scaled = low_pass_nonwindup_mass_matrix(u, y, K, T, y_min, y_max)
     return y_sat, (1.0 / T) * dydt_scaled
 end
 
 # Does not accept T = 0
 function low_pass_nonwindup_ramp_limits(
-    u::Z,
-    y::V,
-    K::Float64,
-    T::Float64,
-    y_min::Float64,
-    y_max::Float64,
-    dy_min::Float64,
-    dy_max::Float64,
-) where {V <: ACCEPTED_REAL_TYPES, Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    T::ACCEPTED_REAL_TYPES,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
+    dy_min::ACCEPTED_REAL_TYPES,
+    dy_max::ACCEPTED_REAL_TYPES,
+)
     y, dydt = low_pass(u, y, K, T)
     y_sat = clamp(y, y_min, y_max)
     dydt_sat = clamp(dydt, dy_min, dy_max)
@@ -131,21 +131,21 @@ Internal State: x
 """
 
 function high_pass_mass_matrix(
-    u::Z,
-    x::Z,
+    u::ACCEPTED_REAL_TYPES,
+    x::ACCEPTED_REAL_TYPES,
     K::ACCEPTED_REAL_TYPES,
     T::ACCEPTED_REAL_TYPES,
-) where {Z <: ACCEPTED_REAL_TYPES}
+)
     K_T = T < eps() ? 0.0 : (K / T)
     return x + K_T * u, -(K_T * u + x)
 end
 
 function high_pass(
-    u::Z,
-    x::Z,
+    u::ACCEPTED_REAL_TYPES,
+    x::ACCEPTED_REAL_TYPES,
     K::ACCEPTED_REAL_TYPES,
     T::ACCEPTED_REAL_TYPES,
-) where {Z <: ACCEPTED_REAL_TYPES}
+)
     y, dxdt_scaled = high_pass_mass_matrix(u, x, K, T)
     return y, (1.0 / T) * dxdt_scaled
 end
@@ -162,23 +162,23 @@ Internal State: x
 """
 
 function lead_lag_mass_matrix(
-    u::Z,
-    x::Z,
-    K::Float64,
-    T1::Float64,
-    T2::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+)
     T1_T2 = T2 < eps() ? 0.0 : (T1 / T2)
     return x + (K * T1_T2) * u, K * (1 - T1_T2) * u - x
 end
 
 function lead_lag(
-    u::Z,
-    x::Z,
-    K::Float64,
-    T1::Float64,
-    T2::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+)
     y, dxdt_scaled = lead_lag_mass_matrix(u, x, K, T1, T2)
     return y, (1.0 / T2) * dxdt_scaled
 end
@@ -195,26 +195,26 @@ Internal state: x
 """
 
 function low_pass_2nd(
-    u::Z,
-    x::Z,
-    y::Z,
-    K::Float64,
-    T1::Float64,
-    T2::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+)
     dxdt = (1.0 / T2) * (K * u - T1 * x - y)
     dydt = x
     return y, dxdt, dydt
 end
 
 function low_pass_2nd_mass_matrix(
-    u::Z,
-    x::Z,
-    y::Z,
-    K::Float64,
-    T1::Float64,
-    T2::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+)
     dxdt = K * u - T1 * x - y
     dydt = x
     return y, dxdt, dydt
@@ -232,14 +232,14 @@ Internal States: x1, x2
 """
 
 function lead_lag_2nd_mass_matrix(
-    u::Z,
-    x1::Z,
-    x2::Z,
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
     T1::ACCEPTED_REAL_TYPES,
     T2::ACCEPTED_REAL_TYPES,
     T3::ACCEPTED_REAL_TYPES,
     T4::ACCEPTED_REAL_TYPES,
-) where {Z <: ACCEPTED_REAL_TYPES}
+)
     dx1dt = u - T1 * x1 - x2
     dx2dt = x1
     T4_T2 = T2 < eps() ? 0.0 : (T4 / T2)
@@ -248,14 +248,14 @@ function lead_lag_2nd_mass_matrix(
 end
 
 function lead_lag_2nd(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+)
     y, dx1dt_scaled, dx2dt = lead_lag_2nd_mass_matrix(u, x1, x2, T1, T2, T3, T4)
     return y, (1.0 / T2) * dx1dt_scaled, dx2dt
 end
@@ -276,16 +276,16 @@ Internal States: x1, x2
 """
 
 function lead_lag_2nd_mass_matrix_nonwindup(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    y_min::Float64,
-    y_max::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
+)
     dx1dt_scaled = u - T1 * x1 - x2
     dx2dt = x1
     T4_T2 = T2 < eps() ? 0.0 : (T4 / T2)
@@ -296,16 +296,16 @@ function lead_lag_2nd_mass_matrix_nonwindup(
 end
 
 function lead_lag_2nd_nonwindup(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    y_min::Float64,
-    y_max::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
+)
     y, dx1dt_scaled, dx2dt =
         lead_lag_2nd_mass_matrix_nonwindup(u, x1, x2, T1, T2, T3, T4, y_min, y_max)
     return y, (1.0 / T2) * dx1dt_scaled, dx2dt
@@ -323,17 +323,17 @@ Internal States: x1, x2, x3
 """
 
 function lead_lag_3rd_mass_matrix(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+)
     dx1dt = u - T2 * x1 - T1 * x2 - x3
     dx2dt = x1
     dx3dt = x2
@@ -343,17 +343,17 @@ function lead_lag_3rd_mass_matrix(
 end
 
 function lead_lag_3rd(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+)
     y, dx1dt_scaled, dx2dt, dx3dt =
         lead_lag_3rd_mass_matrix(u, x1, x2, x3, T1, T2, T3, T4, T5, T6)
     return y, (1.0 / T3) * dx1dt_scaled, dx2dt, dx3dt
@@ -371,20 +371,20 @@ Internal States: x1, x2, x3, x4
 """
 
 function lead_lag_4th_mass_matrix(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+)
     dx1dt = u - T3 * x1 - T2 * x2 - T1 * x3 - x4
     dx2dt = x1
     dx3dt = x2
@@ -400,20 +400,20 @@ function lead_lag_4th_mass_matrix(
 end
 
 function lead_lag_4th(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+)
     y, dx1dt_scaled, dx2dt, dx3dt, dx4dt =
         lead_lag_4th_mass_matrix(u, x1, x2, x3, x4, T1, T2, T3, T4, T5, T6, T7, T8)
     return y, (1.0 / T4) * dx1dt_scaled, dx2dt, dx3dt, dx4dt
@@ -431,23 +431,23 @@ Internal States: x1, x2, x3, x4, x5
 """
 
 function lead_lag_5th_mass_matrix(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    x5::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-    T9::Float64,
-    T10::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    x5::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+    T9::ACCEPTED_REAL_TYPES,
+    T10::ACCEPTED_REAL_TYPES,
+)
     dx1dt = u - T4 * x1 - T3 * x2 - T2 * x3 - T1 * x4 - x5
     dx2dt = x1
     dx3dt = x2
@@ -465,23 +465,23 @@ function lead_lag_5th_mass_matrix(
 end
 
 function lead_lag_5th(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    x5::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-    T9::Float64,
-    T10::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    x5::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+    T9::ACCEPTED_REAL_TYPES,
+    T10::ACCEPTED_REAL_TYPES,
+)
     y, dx1dt_scaled, dx2dt, dx3dt, dx4dt, dx5dt = lead_lag_5th_mass_matrix(
         u,
         x1,
@@ -515,26 +515,26 @@ Internal States: x1, x2, x3, x4, x5, x6
 """
 
 function lead_lag_6th_mass_matrix(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    x5::Z,
-    x6::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-    T9::Float64,
-    T10::Float64,
-    T11::Float64,
-    T12::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    x5::ACCEPTED_REAL_TYPES,
+    x6::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+    T9::ACCEPTED_REAL_TYPES,
+    T10::ACCEPTED_REAL_TYPES,
+    T11::ACCEPTED_REAL_TYPES,
+    T12::ACCEPTED_REAL_TYPES,
+)
     dx1dt = u - T5 * x1 - T4 * x2 - T3 * x3 - T2 * x4 - T1 * x5 - x6
     dx2dt = x1
     dx3dt = x2
@@ -554,26 +554,26 @@ function lead_lag_6th_mass_matrix(
 end
 
 function lead_lag_6th(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    x5::Z,
-    x6::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-    T9::Float64,
-    T10::Float64,
-    T11::Float64,
-    T12::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    x5::ACCEPTED_REAL_TYPES,
+    x6::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+    T9::ACCEPTED_REAL_TYPES,
+    T10::ACCEPTED_REAL_TYPES,
+    T11::ACCEPTED_REAL_TYPES,
+    T12::ACCEPTED_REAL_TYPES,
+)
     y, dx1dt_scaled, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt = lead_lag_6th_mass_matrix(
         u,
         x1,
@@ -610,29 +610,29 @@ Internal States: x1, x2, x3, x4, x5, x6, x7
 """
 
 function lead_lag_7th_mass_matrix(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    x5::Z,
-    x6::Z,
-    x7::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-    T9::Float64,
-    T10::Float64,
-    T11::Float64,
-    T12::Float64,
-    T13::Float64,
-    T14::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    x5::ACCEPTED_REAL_TYPES,
+    x6::ACCEPTED_REAL_TYPES,
+    x7::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+    T9::ACCEPTED_REAL_TYPES,
+    T10::ACCEPTED_REAL_TYPES,
+    T11::ACCEPTED_REAL_TYPES,
+    T12::ACCEPTED_REAL_TYPES,
+    T13::ACCEPTED_REAL_TYPES,
+    T14::ACCEPTED_REAL_TYPES,
+)
     dx1dt = u - T6 * x1 - T5 * x2 - T4 * x3 - T3 * x4 - T2 * x5 - T1 * x6 - x7
     dx2dt = x1
     dx3dt = x2
@@ -654,29 +654,29 @@ function lead_lag_7th_mass_matrix(
 end
 
 function lead_lag_7th(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    x5::Z,
-    x6::Z,
-    x7::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-    T9::Float64,
-    T10::Float64,
-    T11::Float64,
-    T12::Float64,
-    T13::Float64,
-    T14::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    x5::ACCEPTED_REAL_TYPES,
+    x6::ACCEPTED_REAL_TYPES,
+    x7::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+    T9::ACCEPTED_REAL_TYPES,
+    T10::ACCEPTED_REAL_TYPES,
+    T11::ACCEPTED_REAL_TYPES,
+    T12::ACCEPTED_REAL_TYPES,
+    T13::ACCEPTED_REAL_TYPES,
+    T14::ACCEPTED_REAL_TYPES,
+)
     y, dx1dt_scaled, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt = lead_lag_7th_mass_matrix(
         u,
         x1,
@@ -716,32 +716,32 @@ Internal States: x1, x2, x3, x4, x5, x6, x7, x8
 """
 
 function lead_lag_8th_mass_matrix(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    x5::Z,
-    x6::Z,
-    x7::Z,
-    x8::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-    T9::Float64,
-    T10::Float64,
-    T11::Float64,
-    T12::Float64,
-    T13::Float64,
-    T14::Float64,
-    T15::Float64,
-    T16::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    x5::ACCEPTED_REAL_TYPES,
+    x6::ACCEPTED_REAL_TYPES,
+    x7::ACCEPTED_REAL_TYPES,
+    x8::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+    T9::ACCEPTED_REAL_TYPES,
+    T10::ACCEPTED_REAL_TYPES,
+    T11::ACCEPTED_REAL_TYPES,
+    T12::ACCEPTED_REAL_TYPES,
+    T13::ACCEPTED_REAL_TYPES,
+    T14::ACCEPTED_REAL_TYPES,
+    T15::ACCEPTED_REAL_TYPES,
+    T16::ACCEPTED_REAL_TYPES,
+)
     dx1dt = u - T7 * x1 - T6 * x2 - T5 * x3 - T4 * x4 - T3 * x5 - T2 * x6 - T1 * x7 - x8
     dx2dt = x1
     dx3dt = x2
@@ -765,32 +765,32 @@ function lead_lag_8th_mass_matrix(
 end
 
 function lead_lag_8th(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    x5::Z,
-    x6::Z,
-    x7::Z,
-    x8::Z,
-    T1::Float64,
-    T2::Float64,
-    T3::Float64,
-    T4::Float64,
-    T5::Float64,
-    T6::Float64,
-    T7::Float64,
-    T8::Float64,
-    T9::Float64,
-    T10::Float64,
-    T11::Float64,
-    T12::Float64,
-    T13::Float64,
-    T14::Float64,
-    T15::Float64,
-    T16::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    x5::ACCEPTED_REAL_TYPES,
+    x6::ACCEPTED_REAL_TYPES,
+    x7::ACCEPTED_REAL_TYPES,
+    x8::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
+    T3::ACCEPTED_REAL_TYPES,
+    T4::ACCEPTED_REAL_TYPES,
+    T5::ACCEPTED_REAL_TYPES,
+    T6::ACCEPTED_REAL_TYPES,
+    T7::ACCEPTED_REAL_TYPES,
+    T8::ACCEPTED_REAL_TYPES,
+    T9::ACCEPTED_REAL_TYPES,
+    T10::ACCEPTED_REAL_TYPES,
+    T11::ACCEPTED_REAL_TYPES,
+    T12::ACCEPTED_REAL_TYPES,
+    T13::ACCEPTED_REAL_TYPES,
+    T14::ACCEPTED_REAL_TYPES,
+    T15::ACCEPTED_REAL_TYPES,
+    T16::ACCEPTED_REAL_TYPES,
+)
     y, dx1dt_scaled, dx2dt, dx3dt, dx4dt, dx5dt, dx6dt, dx7dt, dx8dt =
         lead_lag_8th_mass_matrix(
             u,
@@ -847,20 +847,20 @@ Internal States: x1, x2, x3, x4, x5, x6, x7, x8
 """
 
 function ramp_tracking_filter(
-    u::Z,
-    x1::Z,
-    x2::Z,
-    x3::Z,
-    x4::Z,
-    x5::Z,
-    x6::Z,
-    x7::Z,
-    x8::Z,
-    T1::Float64,
-    T2::Float64,
+    u::ACCEPTED_REAL_TYPES,
+    x1::ACCEPTED_REAL_TYPES,
+    x2::ACCEPTED_REAL_TYPES,
+    x3::ACCEPTED_REAL_TYPES,
+    x4::ACCEPTED_REAL_TYPES,
+    x5::ACCEPTED_REAL_TYPES,
+    x6::ACCEPTED_REAL_TYPES,
+    x7::ACCEPTED_REAL_TYPES,
+    x8::ACCEPTED_REAL_TYPES,
+    T1::ACCEPTED_REAL_TYPES,
+    T2::ACCEPTED_REAL_TYPES,
     M::Int64,
     N::Int64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+)
     dx1dt = 0.0
     dx2dt = 0.0
     dx3dt = 0.0
@@ -1499,18 +1499,23 @@ u -> │kp + ───  │ -> y
 Internal State: x
 """
 
-function pi_block(u::Z, x::Z, kp::Float64, ki::Float64) where {Z <: ACCEPTED_REAL_TYPES}
+function pi_block(
+    u::ACCEPTED_REAL_TYPES,
+    x::ACCEPTED_REAL_TYPES,
+    kp::ACCEPTED_REAL_TYPES,
+    ki::ACCEPTED_REAL_TYPES,
+)
     return kp * u + ki * x, u
 end
 
 function pi_block_nonwindup(
-    u::Z,
-    x::Z,
-    kp::Float64,
-    ki::Float64,
-    y_min::Float64,
-    y_max::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    x::ACCEPTED_REAL_TYPES,
+    kp::ACCEPTED_REAL_TYPES,
+    ki::ACCEPTED_REAL_TYPES,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
+)
     y, _ = pi_block(u, x, kp, ki)
     y_sat = clamp(y, y_min, y_max)
     binary_logic = y_min < y < y_max ? 1.0 : 0.0
@@ -1530,13 +1535,13 @@ Integrator with windup limits
  """
 
 function integrator_windup_mass_matrix(
-    u::Z,
-    y::Z,
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
     K::ACCEPTED_REAL_TYPES,
-    ::Float64,
+    ::ACCEPTED_REAL_TYPES,
     y_min::ACCEPTED_REAL_TYPES,
     y_max::ACCEPTED_REAL_TYPES,
-) where {Z <: ACCEPTED_REAL_TYPES}
+)
     dydt_scaled = K * u
     y_sat = clamp(y, y_min, y_max)
     return y_sat, dydt_scaled
@@ -1544,13 +1549,13 @@ end
 
 # Does not accept T = 0
 function integrator_windup(
-    u::Z,
-    y::Z,
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
     K::ACCEPTED_REAL_TYPES,
     T::ACCEPTED_REAL_TYPES,
     y_min::ACCEPTED_REAL_TYPES,
     y_max::ACCEPTED_REAL_TYPES,
-) where {Z <: ACCEPTED_REAL_TYPES}
+)
     y_sat = clamp(y, y_min, y_max)
     return y_sat, (1.0 / T) * integrator_windup_mass_matrix(u, y, K, T, y_min, y_max)[2]
 end
@@ -1569,13 +1574,13 @@ u -> │ ────── │ -> y
 """
 
 function integrator_nonwindup_mass_matrix(
-    u::Z,
-    y::Z,
-    K::Float64,
-    ::Float64,
-    y_min::Float64,
-    y_max::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    ::ACCEPTED_REAL_TYPES,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
+)
     dydt_scaled = K * u
     y_sat = clamp(y, y_min, y_max)
     upper_lim = (y >= y_max) && (dydt_scaled > 0)
@@ -1586,13 +1591,13 @@ end
 
 # Does not accept T = 0
 function integrator_nonwindup(
-    u::Z,
-    y::Z,
-    K::Float64,
-    T::Float64,
-    y_min::Float64,
-    y_max::Float64,
-) where {Z <: ACCEPTED_REAL_TYPES}
+    u::ACCEPTED_REAL_TYPES,
+    y::ACCEPTED_REAL_TYPES,
+    K::ACCEPTED_REAL_TYPES,
+    T::ACCEPTED_REAL_TYPES,
+    y_min::ACCEPTED_REAL_TYPES,
+    y_max::ACCEPTED_REAL_TYPES,
+)
     y_sat, dydt_scaled = integrator_nonwindup_mass_matrix(u, y, K, T, y_min, y_max)
     return y_sat, (1.0 / T) * dydt_scaled
 end
