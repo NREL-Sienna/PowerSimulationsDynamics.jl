@@ -212,7 +212,7 @@ Vr3 -0.0986
 │ Time Span                  │ (0.0, 20.0) │
 │ Total Time Steps           │ 342         │
 │ Number of States           │ 86          │
-│ Total solve time           │ 2.229141163 │
+│ Total solve time           │ 2.164100272 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(ACBus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
            plot!(
