@@ -10,7 +10,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        julia-version: ['1.10.2', '1.10.3', '1']
+        julia-version: ['1.10.2', '1.10.3', '1', 'nightly']
         julia-arch: [x64]
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
