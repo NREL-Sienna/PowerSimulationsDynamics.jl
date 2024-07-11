@@ -98,6 +98,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
         f_new = SciMLBase.ODEFunction{true}(
             f_old.f;
             mass_matrix = f_old.mass_matrix,
+            tgrad = (dT, u, p, t) -> dT .= false,
         )
     elseif typeof(prob_old) <: SciMLBase.DDEProblem
         f_new = SciMLBase.DDEFunction{true}(
@@ -134,17 +135,58 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             elseif init_level == INITIALIZED
                 @info "I.C.s not impacted by parameter change"
             end
-            h(p, t; idxs = nothing) = begin
-                typeof(idxs) <: Number ? x0[idxs] : x0
+            if typeof(prob) <: SciMLBase.AbstractODEProblem
+                prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0)
+            elseif typeof(prob) <: SciMLBase.AbstractDDEProblem
+                h(p, t; idxs = nothing) = begin
+                    typeof(idxs) <: Number ? x0[idxs] : x0
+                end
+                prob_new = SciMLBase.remake(prob; h = h, p = p_new, u0 = x0)
             end
-            prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0)   # TODO - Need to add h here for delays
-            sol = SciMLBase.solve(prob_new, solver)                 # TODO - wrap = Val(false) gets a different enzyme error, but ruins ODE
-
+            sol = SciMLBase.solve(prob_new, solver)
             @assert length(state_ixs) == 1  #Hardcode for single state for now 
             ix = state_ixs[1]
             ix_t = unique(i -> sol.t[i], eachindex(sol.t))
             state = sol[ix, ix_t]
+            return f_loss(state, data)
+        end
+        function f_Zygote(p, x0, sys, sim_inputs, prob, data, init_level)   #Make separate f_enzymes depending on init_level? 
+            p_new = sim_inputs.parameters
+            p_new_buff = Zygote.Buffer(p_new)
+            for ix in eachindex(p_new)
+                p_new_buff[ix] = p_new[ix]
+            end
+            for (i, ix) in enumerate(param_ixs)
+                p_new_buff[ix] = p[i]
+            end
+            p_new = copy(p_new_buff)
+            if init_level == POWERFLOW_AND_DEVICES
+                @error "POWERFLOW AND DEVICES -- not yet supported"
+                #_initialize_powerflow_and_devices!(x0, inputs, sys)
+            elseif init_level == DEVICES_ONLY
+                @error "Reinitializing not supported with Zygote"
+                #_initialize_devices_only!(x0, sim_inputs)     #Mutation 
+                #_refine_initial_condition!(x0, p_new, prob)   #Mutation 
+            elseif init_level == INITIALIZED
+                @info "I.C.s not impacted by parameter change"
+            end
+            if typeof(prob) <: SciMLBase.AbstractODEProblem
+                prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0)
+            elseif typeof(prob) <: SciMLBase.AbstractDDEProblem
+                h(p, t; idxs = nothing) = begin
+                    typeof(idxs) <: Number ? x0[idxs] : x0
+                end
+                prob_new = SciMLBase.remake(prob; h = h, p = p_new, u0 = x0)
+            end
+            sol = SciMLBase.solve(prob_new, solver)
+            @assert length(state_ixs) == 1  #Hardcode for single state for now 
+            #Hack to avoid unique(i -> sol.t[i], eachindex(sol.t)) which mutates and is incompatible with Zygote: 
+            ix_first = findfirst(x -> x == 1.0, sol.t)
+            ix_last = findlast(x -> x == 1.0, sol.t)
+            ix_t = vcat(1:ix_first, (ix_last + 1):(length(sol.t)))
 
+            ix = state_ixs[1]
+            state = sol[ix, ix_t]
             return f_loss(state, data)
         end
         function f_forward(p, data)
@@ -180,7 +222,18 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             )
             return dp
         end
-        f_forward, f_grad
+        function f_forward_zygote(p, data)
+            f_Zygote(
+                p,
+                x0,
+                sys,
+                deepcopy(sim.inputs_init),
+                prob_new,
+                data,
+                init_level,
+            )
+        end
+        f_forward, f_grad, f_forward_zygote
     end
 end
 

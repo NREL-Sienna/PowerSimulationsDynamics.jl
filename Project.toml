@@ -25,6 +25,7 @@ Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 ChainRulesCore = "1.23"
@@ -48,4 +49,5 @@ Random = "1"
 SciMLBase = "2"
 SparseArrays = "1"
 TimerOutputs = "~0.5"
+Zygote = "0.6"
 julia = "^1.6"

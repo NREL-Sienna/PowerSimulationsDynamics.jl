@@ -90,6 +90,7 @@ Enzyme.API.runtimeActivity!(true)  #Needed for "activity unstable" code: https:/
 Enzyme.API.looseTypeAnalysis!(true)  #Required for using component arrays with Enzyme
 import ChainRulesCore
 import ComponentArrays
+import Zygote
 
 const PSY = PowerSystems
 const IS = InfrastructureSystems
