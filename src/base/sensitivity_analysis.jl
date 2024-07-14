@@ -144,11 +144,9 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 prob_new = SciMLBase.remake(prob; h = h, p = p_new, u0 = x0)
             end
             sol = SciMLBase.solve(prob_new, solver)
-            @assert length(state_ixs) == 1  #Hardcode for single state for now 
-            ix = state_ixs[1]
             ix_t = unique(i -> sol.t[i], eachindex(sol.t))
-            state = sol[ix, ix_t]
-            return f_loss(state, data)
+            states = [sol[ix, ix_t] for ix in state_ixs]
+            return f_loss(states, data)
         end
         function f_Zygote(p, x0, sys, sim_inputs, prob, data, init_level)   #Make separate f_enzymes depending on init_level? 
             p_new = sim_inputs.parameters
@@ -179,15 +177,12 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 prob_new = SciMLBase.remake(prob; h = h, p = p_new, u0 = x0)
             end
             sol = SciMLBase.solve(prob_new, solver)
-            @assert length(state_ixs) == 1  #Hardcode for single state for now 
             #Hack to avoid unique(i -> sol.t[i], eachindex(sol.t)) which mutates and is incompatible with Zygote: 
             ix_first = findfirst(x -> x == 1.0, sol.t)
             ix_last = findlast(x -> x == 1.0, sol.t)
             ix_t = vcat(1:ix_first, (ix_last + 1):(length(sol.t)))
-
-            ix = state_ixs[1]
-            state = sol[ix, ix_t]
-            return f_loss(state, data)
+            states = [sol[ix, ix_t] for ix in state_ixs]
+            return f_loss(states, data)
         end
         function f_forward(p, data)
             f_enzyme(
