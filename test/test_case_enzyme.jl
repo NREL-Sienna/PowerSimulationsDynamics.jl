@@ -45,9 +45,9 @@ using PlotlyJS
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(δ, δ_gt)
-            #plot_traces(δ, δ_gt)
-            return sum(abs.(δ - δ_gt))
+        function f_loss(states, δ_gt)
+            #plot_traces(states[1], δ_gt)
+            return sum(abs.(states[1] - δ_gt))
         end
 
         #GET SENSITIVITY FUNCTIONS 
@@ -107,9 +107,9 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(δ, δ_gt)
-            #plot_traces(δ, δ_gt)
-            return sum(abs.(δ - δ_gt))
+        function f_loss(states, δ_gt)
+            #plot_traces(states[1], δ_gt)
+            return sum(abs.(states[1] - δ_gt))
         end
 
         f_forward, f_grad, f_zygote_forward = get_sensitivity_functions(
@@ -188,9 +188,9 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(δ, δ_gt)
-            #plot_traces(δ, δ_gt)
-            return sum(abs.(δ - δ_gt))
+        function f_loss(states, δ_gt)
+            #plot_traces(states[1], δ_gt)
+            return sum(abs.(states[1] - δ_gt))
         end
 
         #GET SENSITIVITY FUNCTIONS 
@@ -257,9 +257,9 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(δ, δ_gt)
-            #plot_traces(δ, δ_gt)
-            return sum(abs.(δ - δ_gt))
+        function f_loss(states, δ_gt)
+            #plot_traces(states[1], δ_gt)
+            return sum(abs.(states[1] - δ_gt))
         end
 
         #GET SENSITIVITY FUNCTIONS 
