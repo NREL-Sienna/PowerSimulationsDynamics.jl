@@ -23,7 +23,7 @@ function get_required_initialization_level(p_metadata, param_ixs)
             @error "The parameter given is unsupported because it is a device setpoint."
             return nothing
         end
-        if metadata_entry.in_mass_matrix === DEVICE_SETPOINT
+        if metadata_entry.in_mass_matrix === true
             @error "The parameter given is not yet supported because it appears in the mass matrix"
             return nothing
         end
@@ -55,21 +55,21 @@ function get_indices_in_state_vector(sim, state_data)
             bus_ix = get_lookup(get_simulation_inputs(sim))[ref[1]]
             if ref[2] == :Vr
                 state_ixs[ix] = bus_ix
-            else 
+            else
                 state_ixs[ix] = bus_ix + length(get_lookup(get_simulation_inputs(sim)))
-            end 
-        else 
+            end
+        else
             @error "Available devices: $(keys(global_state_index))"
             error("State $(ref[2]) device $(ref[1]) not found in the system. ")
         end
-
     end
     return state_ixs
 end
 
 function get_parameter_values(sim, device_param_pairs)
     p = sim.inputs.parameters
-    ixs = get_indices_in_parameter_vector(p, device_param_pairs)
+    p_metadata = sim.inputs.parameters_metadata
+    ixs, _ = get_ix_and_level(p, p_metadata, device_param_pairs)
     if ixs === nothing
         return nothing
     else
@@ -77,12 +77,35 @@ function get_parameter_values(sim, device_param_pairs)
     end
 end
 
-function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; kwargs...)
-    p_metadata = sim.inputs.parameters_metadata
-    p = sim.inputs.parameters
+function get_ix_and_level(p, p_metadata, param_data)
     param_ixs = get_indices_in_parameter_vector(p, param_data)
     metadata_ixs = get_indices_in_parameter_vector(p_metadata, param_data)
     init_level = get_required_initialization_level(p_metadata, metadata_ixs)
+    return param_ixs, init_level
+end
+
+function get_ix_and_level(p, p_metadata, param_data::Symbol)
+    @assert param_data == :All
+    @warn "Device setpoints and network parameters not yet supported; returning all supported parameters."
+    param_ixs = Int64[]
+    @assert ComponentArrays.labels(p) == ComponentArrays.labels(p_metadata)
+    for label in ComponentArrays.labels(p)
+        ix_metadata = ComponentArrays.label2index(p_metadata, label)
+        ix_param = ComponentArrays.label2index(p_metadata, label)[1]
+        metadata_entry = p_metadata[ix_metadata][1]
+
+        if (metadata_entry.type === DEVICE_PARAM) &&
+           (metadata_entry.in_mass_matrix === false)
+            push!(param_ixs, ix_param)
+        end
+    end
+    return param_ixs, DEVICES_ONLY
+end
+
+function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; kwargs...)
+    p_metadata = sim.inputs.parameters_metadata
+    p = sim.inputs.parameters
+    param_ixs, init_level = get_ix_and_level(p, p_metadata, param_data)
     if init_level === nothing
         return nothing
     end
