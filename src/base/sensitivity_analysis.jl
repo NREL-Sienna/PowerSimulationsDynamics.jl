@@ -49,11 +49,20 @@ function get_indices_in_state_vector(sim, state_data)
     global_state_index = get_global_index(res)
     state_ixs = Vector{Int64}(undef, length(state_data))
     for (ix, ref) in enumerate(state_data)
-        if !haskey(global_state_index, ref[1])
-            @error "$(keys(global_state_index))"
+        if haskey(global_state_index, ref[1])
+            state_ixs[ix] = get(global_state_index[ref[1]], ref[2], 0)
+        elseif ref[2] ∈ [:Vr, :Vi]
+            bus_ix = get_lookup(get_simulation_inputs(sim))[ref[1]]
+            if ref[2] == :Vr
+                state_ixs[ix] = bus_ix
+            else 
+                state_ixs[ix] = bus_ix + length(get_lookup(get_simulation_inputs(sim)))
+            end 
+        else 
+            @error "Available devices: $(keys(global_state_index))"
             error("State $(ref[2]) device $(ref[1]) not found in the system. ")
         end
-        state_ixs[ix] = get(global_state_index[ref[1]], ref[2], 0)
+
     end
     return state_ixs
 end
