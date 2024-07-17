@@ -68,6 +68,7 @@ export get_sensitivity_functions
 import Logging
 import InfrastructureSystems
 import SciMLBase
+import SciMLSensitivity
 import DataStructures: OrderedDict
 import DataFrames: DataFrame
 import Random

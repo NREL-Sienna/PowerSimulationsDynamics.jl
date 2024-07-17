@@ -47,6 +47,7 @@ function initialize_frequency_estimator!(
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
         reltol = STRICT_NLSOLVE_F_TOLERANCE,
         abstol = STRICT_NLSOLVE_F_TOLERANCE,
     )
@@ -117,6 +118,7 @@ function initialize_frequency_estimator!(
     sol = NonlinearSolve.solve(
         prob,
         NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
         reltol = STRICT_NLSOLVE_F_TOLERANCE,
         abstol = STRICT_NLSOLVE_F_TOLERANCE,
     )

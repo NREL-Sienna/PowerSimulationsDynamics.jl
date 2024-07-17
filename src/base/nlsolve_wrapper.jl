@@ -48,6 +48,7 @@ function _nlsolve_call(
     sol = NonlinearSolve.solve(
         prob,
         solver;
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
         abstol = f_tolerance,
         reltol = f_tolerance,
         maxiters = MAX_NLSOLVE_INTERATIONS,
@@ -147,6 +148,7 @@ function _refine_initial_condition!(x0, p, prob)
         sol = NonlinearSolve.solve(
             probnl,
             solver;
+            sensealg = SciMLSensitivity.SteadyStateAdjoint(),
             reltol = STRICT_NLSOLVE_F_TOLERANCE,
             abstol = STRICT_NLSOLVE_F_TOLERANCE,
             maxiters = MAX_NLSOLVE_INTERATIONS,
