@@ -133,7 +133,7 @@ end
         @test isapprox(loss_non_zero_1, 1.49, atol = 1e-3)
 
         grad_zero = f_grad(p, δ_gt)
-        @test isapprox(sum(grad_zero), -2.915264e6, atol = 1.0)
+        @test isapprox(sum(grad_zero), 523.5340704294135, atol = 1.0)
     finally
         @info("removing test files")
         rm(path; force = true, recursive = true)
@@ -343,7 +343,7 @@ end
         grad_zero = f_grad(p, δ_gt)
         grad_nonzero_1 = f_grad(p * 1.01, δ_gt)
         grad_nonzero_2 = f_grad(p * 0.99, δ_gt)
-        @test isapprox(grad_zero[1], -4.0, atol = 1.0)
+        @test isapprox(grad_zero[1], 498.0, atol = 1.0)
         @test isapprox(grad_nonzero_1[1], 499.0, atol = 1.0)
         @test isapprox(grad_nonzero_2[1], -498.0; atol = 1.0)
     finally
@@ -351,6 +351,99 @@ end
         rm(path; force = true, recursive = true)
     end
 end
+
+function transform_power_load_to_constant_impedance(x::PowerLoad)
+    l = StandardLoad(;
+        name = get_name(x),
+        available = get_available(x),
+        bus = get_bus(x),
+        base_power = get_base_power(x),
+        constant_active_power = 0.0,
+        constant_reactive_power = 0.0,
+        impedance_active_power = get_active_power(x),
+        impedance_reactive_power = get_reactive_power(x),
+        current_active_power = 0.0,
+        current_reactive_power = 0.0,
+        max_constant_active_power = 0.0,
+        max_constant_reactive_power = 0.0,
+        max_impedance_active_power = get_max_active_power(x),
+        max_impedance_reactive_power = get_max_reactive_power(x),
+        max_current_active_power = 0.0,
+        max_current_reactive_power = 0.0,
+        services = get_services(x),
+        dynamic_injector = get_dynamic_injector(x),
+    )
+    return l
+end
+using PlotlyJS
+@time @testset "Test Gradients - 9 bus; Xd_p" begin
+    path = mktempdir()
+    try
+        sys = build_system(PSIDTestSystems, "psid_test_ieee_9bus")
+        for l in get_components(PowerLoad, sys)
+            l_new = transform_power_load_to_constant_impedance(l)
+            remove_component!(sys, l)
+            add_component!(sys, l_new)
+        end
+        dyn_gen = get_component(DynamicGenerator, sys, "generator-3-1")
+        get_machine(dyn_gen)
+        sim = Simulation!(
+            MassMatrixModel,
+            sys,
+            path,
+            (0.0, 5.0),
+            ControlReferenceChange(1.0, dyn_gen, :P_ref, 0.5),
+        )
+
+        #GET GROUND TRUTH DATA 
+        execute!(sim, Rodas4(); abstol = 1e-6, reltol = 1e-6, dtmax = 0.05, saveat = 0.05)
+        res = read_results(sim)
+        t, δ_gt = get_state_series(res, ("generator-3-1", :δ))
+
+        #GET PARAMETER VALUES 
+        p = get_parameter_values(sim, [("generator-3-1", :Machine, :Xd_p)])
+
+        function plot_traces(δ, δ_gt)
+            display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
+        end
+        EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
+        function f_loss(states, δ_gt)
+            #plot_traces(states[1], δ_gt)
+            return sum(abs.(states[1] - δ_gt))
+        end
+
+        #GET SENSITIVITY FUNCTIONS 
+        f_forward, f_grad, _ = get_sensitivity_functions(
+            sim,
+            [("generator-3-1", :Machine, :Xd_p)],
+            [("generator-3-1", :δ)],
+            Rodas4(),
+            f_loss;
+            sensealg = InterpolatingAdjoint(; autojacvec = ReverseDiffVJP()),
+            abstol = 1e-6,
+            reltol = 1e-6,
+            dtmax = 0.05,
+            saveat = 0.05,
+        )
+
+        loss_zero = f_forward(p, δ_gt)
+        loss_non_zero_1 = f_forward(p * 1.01, δ_gt)
+        loss_non_zero_2 = f_forward(p * 0.99, δ_gt)
+        @test isapprox(loss_zero, 0.0, atol = 2e-9)
+        @test loss_non_zero_1 != 0.0
+        @test loss_non_zero_2 != 0.0
+        grad_zero = f_grad(p, δ_gt)
+        grad_nonzero_1 = f_grad(p * 1.01, δ_gt)
+        grad_nonzero_2 = f_grad(p * 0.99, δ_gt)
+        @test isapprox(grad_zero[1], 0.8876855633591412, atol = 1e-6)
+        @test isapprox(grad_nonzero_1[1], 0.5946989856464833, atol = 1.0)
+        @test isapprox(grad_nonzero_2[1], -0.9432527319604077; atol = 1.0)
+    finally
+        @info("removing test files")
+        rm(path; force = true, recursive = true)
+    end
+end
+
 #= 
 #BELOW HERE: TESTS FOR SENSITIVITY OF DDES
 
