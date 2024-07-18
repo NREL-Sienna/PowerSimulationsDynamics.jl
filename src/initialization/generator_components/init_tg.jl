@@ -52,6 +52,7 @@ function initialize_tg!(
         T3 = params[:T3]
         T4 = params[:T4]
         T5 = params[:T5]
+        ω0 = 1.0
         #Compute auxiliary parameters
         inv_R = R < eps() ? 0.0 : (1.0 / R)
         P_in = P_ref + inv_R * (ω_ref - ω0)

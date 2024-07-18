@@ -231,6 +231,7 @@ function initialize_mach_shaft!(
         γ_q1 = params[:γ_q1]
         γ_d2 = params[:γ_d2]
         γ_q2 = params[:γ_q2]
+        ω0 = 1.0
 
         V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / Xd_pp) * (γ_d1 * eq_p - ψd + (1 - γ_d1) * ψd_pp)      #15.15
@@ -350,7 +351,7 @@ function initialize_mach_shaft!(
         T_AA = params[:T_AA]
         γd = params[:γd]
         γq = params[:γq]
-
+        ω0 = 1.0
         V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / Xd_pp) * (eq_pp - ψd)      #15.18
         i_q = (1.0 / Xq_pp) * (-ed_pp - ψq)     #15.18
@@ -568,6 +569,7 @@ function initialize_mach_shaft!(
         Xq_p = params[:Xq_p]
         Xd_pp = params[:Xd_pp]
         Xq_pp = params[:Xq_pp]
+        ω0 = 1.0
 
         V_dq = ri_dq(δ) * [V_R; V_I]
         i_d = (1.0 / Xd_pp) * (eq_pp - ψd)      #15.18
