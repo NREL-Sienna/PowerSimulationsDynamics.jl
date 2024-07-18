@@ -130,8 +130,8 @@ end
         loss_non_zero_1 = f_forward([3.2], δ_gt)
         loss_non_zero_2 = f_forward(p, δ_gt .* 2)
         @test loss_zero == 0.0
-        @test loss_non_zero_1 != 0.0
-        @test loss_non_zero_2 != 0.0
+        @test loss_non_zero_1 == 0.36199910927656687
+        @test loss_non_zero_2 == 172.66293171283323
         grad_zero = f_grad(p, δ_gt)
         grad_nonzero_1 = f_grad([3.14], δ_gt)
         grad_nonzero_2 = f_grad([3.15], δ_gt)
