@@ -163,7 +163,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             elseif init_level == DEVICES_ONLY
                 @info "Reinitializing devices only"
                 _initialize_devices_only!(x0, sim_inputs)
-                _refine_initial_condition!(x0, p_new, prob)
+                #_refine_initial_condition!(x0, p_new, prob) #Only re-initialize devices; not full system refinement
             elseif init_level == INITIALIZED
                 @info "I.C.s not impacted by parameter change"
             end
@@ -195,8 +195,8 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 #_initialize_powerflow_and_devices!(x0, inputs, sys)
             elseif init_level == DEVICES_ONLY
                 @error "Reinitializing not supported with Zygote"
-                #_initialize_devices_only!(x0, sim_inputs)     #Mutation 
-                #_refine_initial_condition!(x0, p_new, prob)   #Mutation 
+                _initialize_devices_only!(x0, sim_inputs)     #Mutation 
+            #_refine_initial_condition!(x0, p_new, prob) #Only re-initialize devices; not full system refinement
             elseif init_level == INITIALIZED
                 @info "I.C.s not impacted by parameter change"
             end
@@ -264,6 +264,6 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     end
 end
 
-#Inactive Rules
+#Inactive Rules; potential path to improving API
 #Enzyme.EnzymeRules.inactive(::typeof(SimulationResults), args...) = nothing
 #Enzyme.EnzymeRules.inactive(::typeof(get_activepower_branch_flow), args...) = nothing
