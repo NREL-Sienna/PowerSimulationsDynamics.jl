@@ -82,6 +82,68 @@ using PlotlyJS
     end
 end
 
+@testset "Test Gradients - OMIB; H; SourceBusVoltageChange; InterpolatingAdjoint" begin
+    path = mktempdir()
+    try
+        omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
+        s_device = get_component(Source, omib_sys, "InfBus")
+        s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
+        sim = Simulation!(
+            MassMatrixModel,
+            omib_sys,
+            path,
+            (0.0, 5.0),
+            s_change,
+        )
+
+        #GET GROUND TRUTH DATA 
+        execute!(sim, Rodas4(); abstol = 1e-9, reltol = 1e-9, dtmax = 0.005, saveat = 0.005)
+        res = read_results(sim)
+        t, δ_gt = get_state_series(res, ("generator-102-1", :δ))
+        #GET PARAMETER VALUES 
+        p = get_parameter_values(sim, [("generator-102-1", :Shaft, :H)])
+
+        function plot_traces(δ, δ_gt)
+            display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
+        end
+        EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
+        function f_loss(states, δ_gt)
+            #plot_traces(states[1], δ_gt)
+            return sum(abs.(states[1] - δ_gt))
+        end
+
+        #GET SENSITIVITY FUNCTIONS 
+        f_forward, f_grad, _ = get_sensitivity_functions(
+            sim,
+            [("generator-102-1", :Shaft, :H)],
+            [("generator-102-1", :δ)],
+            Rodas4(),
+            f_loss;
+            sensealg = InterpolatingAdjoint(; autojacvec = ReverseDiffVJP()),
+            abstol = 1e-9,
+            reltol = 1e-9,
+            dtmax = 0.005,
+            saveat = 0.005,
+        )
+
+        loss_zero = f_forward(p, δ_gt)
+        loss_non_zero_1 = f_forward([3.2], δ_gt)
+        loss_non_zero_2 = f_forward(p, δ_gt .* 2)
+        @test loss_zero == 0.0
+        @test loss_non_zero_1 != 0.0
+        @test loss_non_zero_2 != 0.0
+        grad_zero = f_grad(p, δ_gt)
+        grad_nonzero_1 = f_grad([3.14], δ_gt)
+        grad_nonzero_2 = f_grad([3.15], δ_gt)
+        @test isapprox(grad_zero[1], -1.0, atol = 1.0)
+        @test isapprox(grad_nonzero_1[1], -8.0, atol = 1.0)
+        @test isapprox(grad_nonzero_2[1], 8.0; atol = 1.0)
+    finally
+        @info("removing test files")
+        rm(path; force = true, recursive = true)
+    end
+end
+
 @testset "Test Gradients - OMIB; All; SourceBusVoltageChange" begin
     path = mktempdir()
     try
