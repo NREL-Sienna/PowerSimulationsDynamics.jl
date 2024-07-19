@@ -102,6 +102,20 @@ function get_ix_and_level(p, p_metadata, param_data::Symbol)
     return param_ixs, DEVICES_ONLY
 end
 
+function convert_perturbations_to_callbacks(sys, sim_inputs, perturbations)
+    perturbations_count = length(perturbations)
+    cb = Vector{SciMLBase.DiscreteCallback}(undef, perturbations_count)
+    tstops = Float64[]
+    for (ix, pert) in enumerate(perturbations)
+        condition = (x, t, integrator) -> t in [pert.time]
+        affect = get_affect(sim_inputs, sys, pert)
+        cb[ix] = SciMLBase.DiscreteCallback(condition, affect)
+        push!(tstops, pert.time)
+    end
+    callbacks = SciMLBase.CallbackSet((), tuple(cb...))
+    return callbacks, tstops
+end
+
 function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; kwargs...)
     p_metadata = sim.inputs.parameters_metadata
     p = sim.inputs.parameters
@@ -111,18 +125,6 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     end
     state_ixs = get_indices_in_state_vector(sim, state_data)
     sim_inputs = deepcopy(sim.inputs_init)
-    if get(kwargs, :auto_abstol, false)
-        cb = AutoAbstol(true, get(kwargs, :abstol, 1e-9))
-        callbacks =
-            SciMLBase.CallbackSet((), tuple(push!(sim.callbacks, cb)...))
-    else
-        callbacks = SciMLBase.CallbackSet((), tuple(sim.callbacks...))
-    end
-    tstops = if !isempty(sim.tstops)
-        [sim.tstops[1] ÷ 2, sim.tstops...]  #Note: Don't need to make a tuple because it is in ODEproblem. not a kwarg
-    else
-        []
-    end
 
     prob_old = sim.problem
     f_old = prob_old.f
@@ -143,10 +145,8 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     prob_new = SciMLBase.remake(
         prob_old;
         f = f_new,
-        tstops = tstops,
-        advance_to_tstop = !isempty(tstops),
+        advance_to_tstop = true,
         initializealg = SciMLBase.NoInit(),
-        callback = callbacks,
         kwargs...,
     )
     if param_ixs === nothing
@@ -154,9 +154,10 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     else
         x0 = deepcopy(sim.x0_init)
         sys = deepcopy(sim.sys)
-        function f_enzyme(p, x0, sys, sim_inputs, prob, data, init_level)   #Make separate f_enzymes depending on init_level? 
+        function f_enzyme(p, x0, sys, sim_inputs, prob, data, init_level, callbacks, tstops)
             p_new = sim_inputs.parameters
             p_new[param_ixs] .= p
+            #callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts)        #Restore after: https://github.com/EnzymeAD/Enzyme.jl/issues/1650    
             if init_level == POWERFLOW_AND_DEVICES
                 @error "POWERFLOW AND DEVICES -- not yet supported"
                 #_initialize_powerflow_and_devices!(x0, inputs, sys)
@@ -168,19 +169,20 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 @info "I.C.s not impacted by parameter change"
             end
             if typeof(prob) <: SciMLBase.AbstractODEProblem
-                prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0)
+                prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0, tstops = tstops)
             elseif typeof(prob) <: SciMLBase.AbstractDDEProblem
                 h(p, t; idxs = nothing) = begin
                     typeof(idxs) <: Number ? x0[idxs] : x0
                 end
-                prob_new = SciMLBase.remake(prob; h = h, p = p_new, u0 = x0)
+                prob_new =
+                    SciMLBase.remake(prob; h = h, p = p_new, u0 = x0, tstops = tstops)
             end
-            sol = SciMLBase.solve(prob_new, solver)
+            sol = solve_with_callback(prob_new, callbacks, solver)
             ix_t = unique(i -> sol.t[i], eachindex(sol.t))
             states = [sol[ix, ix_t] for ix in state_ixs]
             return f_loss(states, data)
         end
-        function f_Zygote(p, x0, sys, sim_inputs, prob, data, init_level)   #Make separate f_enzymes depending on init_level? 
+        function f_Zygote(p, x0, sys, sim_inputs, prob, data, init_level, callbacks, tstops)
             p_new = sim_inputs.parameters
             p_new_buff = Zygote.Buffer(p_new)
             for ix in eachindex(p_new)
@@ -190,6 +192,16 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 p_new_buff[ix] = p[i]
             end
             p_new = copy(p_new_buff)
+            #Converting perturbations to callbacks, restore after : https://github.com/EnzymeAD/Enzyme.jl/issues/1650
+            #@error "Zygote assumes single perturbation"
+            #cb = Vector{SciMLBase.DiscreteCallback}(undef, 1)
+            #pert = perts[1]
+            #condition = (x, t, integrator) -> t in [pert.time]
+            #affect = get_affect(sim_inputs, sys, pert) 
+            #cb = [SciMLBase.DiscreteCallback(condition, affect)]
+            #callbacks = SciMLBase.CallbackSet((), tuple(cb...))    
+            #tstops = [pert.time]
+
             if init_level == POWERFLOW_AND_DEVICES
                 @error "POWERFLOW AND DEVICES -- not yet supported"
                 #_initialize_powerflow_and_devices!(x0, inputs, sys)
@@ -201,14 +213,15 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 @info "I.C.s not impacted by parameter change"
             end
             if typeof(prob) <: SciMLBase.AbstractODEProblem
-                prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0)
+                prob_new = SciMLBase.remake(prob; p = p_new, u0 = x0, tstops = tstops)
             elseif typeof(prob) <: SciMLBase.AbstractDDEProblem
                 h(p, t; idxs = nothing) = begin
                     typeof(idxs) <: Number ? x0[idxs] : x0
                 end
-                prob_new = SciMLBase.remake(prob; h = h, p = p_new, u0 = x0)
+                prob_new =
+                    SciMLBase.remake(prob; h = h, p = p_new, u0 = x0, tstops = tstops)
             end
-            sol = SciMLBase.solve(prob_new, solver)
+            sol = SciMLBase.solve(prob_new, solver; callback = callbacks)
             #Hack to avoid unique(i -> sol.t[i], eachindex(sol.t)) which mutates and is incompatible with Zygote: 
             ix_first = findfirst(x -> x == 1.0, sol.t)
             ix_last = findlast(x -> x == 1.0, sol.t)
@@ -216,7 +229,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             states = [sol[ix, ix_t] for ix in state_ixs]
             return f_loss(states, data)
         end
-        function f_forward(p, data)
+        function f_forward(p, callbacks, tstops, data)
             f_enzyme(
                 p,
                 x0,
@@ -225,9 +238,11 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 prob_new,
                 data,
                 init_level,
+                callbacks,
+                tstops,
             )
         end
-        function f_grad(p, data)
+        function f_grad(p, callbacks, tstops, data)
             dp = Enzyme.make_zero(p)
             dx0 = Enzyme.make_zero(x0)
             dsys = Enzyme.make_zero(sys)
@@ -235,6 +250,8 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             dsim_inputs = Enzyme.make_zero(sim_inputs)
             dprob_new = Enzyme.make_zero(prob_new)
             ddata = Enzyme.make_zero(data)
+            dcallbacks = Enzyme.make_zero(callbacks)
+            dtstops = Enzyme.make_zero(tstops)
             Enzyme.autodiff(
                 Enzyme.Reverse,
                 f_enzyme,
@@ -246,10 +263,12 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 Enzyme.Duplicated(prob_new, dprob_new),
                 Enzyme.Duplicated(data, ddata),
                 Enzyme.Const(init_level),
+                Enzyme.Duplicated(callbacks, dcallbacks),
+                Enzyme.Duplicated(tstops, dtstops),
             )
             return dp
         end
-        function f_forward_zygote(p, data)
+        function f_forward_zygote(p, callbacks, tstops, data)
             f_Zygote(
                 p,
                 x0,
@@ -258,6 +277,8 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 prob_new,
                 data,
                 init_level,
+                callbacks,
+                tstops,
             )
         end
         f_forward, f_grad, f_forward_zygote

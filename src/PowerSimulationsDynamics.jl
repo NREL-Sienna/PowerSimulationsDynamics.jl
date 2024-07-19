@@ -71,6 +71,7 @@ import SciMLBase
 import SciMLSensitivity
 import DataStructures: OrderedDict
 import DataFrames: DataFrame
+import DiffEqBase
 import Random
 import ForwardDiff
 import SparseArrays
@@ -192,6 +193,7 @@ include("post_processing/post_proc_loads.jl")
 include("post_processing/post_proc_source.jl")
 
 #Sensitivity Analysis
+include("base/sensitivity_rule.jl") #Custom rule to support duplicated kwargs for callbacks. See: https://github.com/EnzymeAD/Enzyme.jl/issues/1491
 include("base/sensitivity_analysis.jl")
 
 #Utils
