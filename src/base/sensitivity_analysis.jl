@@ -116,7 +116,15 @@ function convert_perturbations_to_callbacks(sys, sim_inputs, perturbations)
     return callbacks, tstops
 end
 
-function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; kwargs...)
+function get_sensitivity_functions(
+    sim,
+    param_data,
+    state_data,
+    solver,
+    f_loss,
+    sys_reinit = false;
+    kwargs...,
+)
     p_metadata = sim.inputs.parameters_metadata
     p = sim.inputs.parameters
     param_ixs, init_level = get_ix_and_level(p, p_metadata, param_data)
@@ -154,7 +162,18 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
     else
         x0 = deepcopy(sim.x0_init)
         sys = deepcopy(sim.sys)
-        function f_enzyme(p, x0, sys, sim_inputs, prob, data, init_level, callbacks, tstops)
+        function f_enzyme(
+            p,
+            x0,
+            sys,
+            sim_inputs,
+            prob,
+            data,
+            init_level,
+            sys_reinit,
+            callbacks,
+            tstops,
+        )
             p_new = sim_inputs.parameters
             p_new[param_ixs] .= p
             #callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts)        #Restore after: https://github.com/EnzymeAD/Enzyme.jl/issues/1650    
@@ -162,9 +181,14 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 @error "POWERFLOW AND DEVICES -- not yet supported"
                 #_initialize_powerflow_and_devices!(x0, inputs, sys)
             elseif init_level == DEVICES_ONLY
-                @info "Reinitializing devices only"
-                _initialize_devices_only!(x0, sim_inputs)
-                #_refine_initial_condition!(x0, p_new, prob) #Only re-initialize devices; not full system refinement
+                if sys_reinit
+                    @info "Reinitializing inividual devices and full system"
+                    _initialize_devices_only!(x0, sim_inputs)
+                    _refine_initial_condition!(x0, p_new, prob)
+                else
+                    @info "Reinitializing devices only"
+                    _initialize_devices_only!(x0, sim_inputs)
+                end
             elseif init_level == INITIALIZED
                 @info "I.C.s not impacted by parameter change"
             end
@@ -182,7 +206,18 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             states = [sol[ix, ix_t] for ix in state_ixs]
             return f_loss(states, data)
         end
-        function f_Zygote(p, x0, sys, sim_inputs, prob, data, init_level, callbacks, tstops)
+        function f_Zygote(
+            p,
+            x0,
+            sys,
+            sim_inputs,
+            prob,
+            data,
+            init_level,
+            sys_reinit,
+            callbacks,
+            tstops,
+        )
             p_new = sim_inputs.parameters
             p_new_buff = Zygote.Buffer(p_new)
             for ix in eachindex(p_new)
@@ -208,7 +243,6 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
             elseif init_level == DEVICES_ONLY
                 @error "Reinitializing not supported with Zygote"
                 _initialize_devices_only!(x0, sim_inputs)     #Mutation 
-            #_refine_initial_condition!(x0, p_new, prob) #Only re-initialize devices; not full system refinement
             elseif init_level == INITIALIZED
                 @info "I.C.s not impacted by parameter change"
             end
@@ -238,6 +272,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 prob_new,
                 data,
                 init_level,
+                sys_reinit,
                 callbacks,
                 tstops,
             )
@@ -263,6 +298,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 Enzyme.Duplicated(prob_new, dprob_new),
                 Enzyme.Duplicated(data, ddata),
                 Enzyme.Const(init_level),
+                Enzyme.Const(sys_reinit),
                 Enzyme.Duplicated(callbacks, dcallbacks),
                 Enzyme.Duplicated(tstops, dtstops),
             )
@@ -277,6 +313,7 @@ function get_sensitivity_functions(sim, param_data, state_data, solver, f_loss; 
                 prob_new,
                 data,
                 init_level,
+                sys_reinit,
                 callbacks,
                 tstops,
             )
