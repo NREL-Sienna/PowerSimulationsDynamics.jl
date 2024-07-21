@@ -50,7 +50,8 @@ function solve_with_callback(prob::DiffEqBase.AbstractDEProblem, cb, args...;
 end
 
 function Enzyme.EnzymeRules.augmented_primal(config::Enzyme.EnzymeRules.ConfigWidth{1},
-    func::Enzyme.Const{typeof(solve_up_with_callback)}, ::Type{Enzyme.Duplicated{RT}}, prob,
+    func::Enzyme.Const{typeof(solve_up_with_callback)},
+    ::Type{<:Union{Enzyme.Duplicated{RT}, Enzyme.DuplicatedNoNeed{RT}}}, prob,
     sensealg::Union{
         Enzyme.Const{Nothing},
         Enzyme.Const{<:DiffEqBase.AbstractSensitivityAlgorithm},
@@ -81,7 +82,8 @@ function Enzyme.EnzymeRules.augmented_primal(config::Enzyme.EnzymeRules.ConfigWi
 end
 
 function Enzyme.EnzymeRules.reverse(config::Enzyme.EnzymeRules.ConfigWidth{1},
-    func::Enzyme.Const{typeof(solve_up_with_callback)}, ::Type{Enzyme.Duplicated{RT}}, tape,
+    func::Enzyme.Const{typeof(solve_up_with_callback)},
+    ::Type{<:Union{Enzyme.Duplicated{RT}, Enzyme.DuplicatedNoNeed{RT}}}, tape,
     prob,
     sensealg::Union{
         Enzyme.Const{Nothing},
