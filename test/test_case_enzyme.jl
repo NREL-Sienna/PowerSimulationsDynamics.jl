@@ -491,8 +491,8 @@ end
         dyn_gen = get_component(DynamicGenerator, sys, "generator-3-1")
         get_machine(dyn_gen)
 
-        #p_ctrl = ControlReferenceChange(1.0, dyn_gen, :P_ref, 0.5)
-        p_ctrl = PerturbState(1.0, 25, 0.4789)
+        p_ctrl = ControlReferenceChange(1.0, dyn_gen, :P_ref, 0.5)
+
         sim = Simulation!(
             MassMatrixModel,
             sys,
@@ -505,7 +505,7 @@ end
         execute!(sim, Rodas4(); abstol = 1e-6, reltol = 1e-6, dtmax = 0.05, saveat = 0.05)
         res = read_results(sim)
         t, δ_gt = get_state_series(res, ("generator-3-1", :δ))
-        @error PSID.get_global_state_map(sim.inputs)
+
         #GET PARAMETER VALUES 
         p = get_parameter_values(sim, [("generator-3-1", :Machine, :Xd_p)])
 
@@ -524,7 +524,6 @@ end
             (0.0, 5.0),
         )
         execute!(sim, Rodas4())
-        @error PSID.get_global_state_map(sim.inputs)
 
         #GET SENSITIVITY FUNCTIONS 
         f_forward, f_grad, _ = get_sensitivity_functions(
@@ -546,11 +545,11 @@ end
         @test loss_non_zero_1 != 0.0
         @test loss_non_zero_2 != 0.0
         grad_zero = f_grad(p, [p_ctrl], δ_gt)
-        #grad_nonzero_1 = f_grad(p * 1.01, [p_ctrl], δ_gt)
-        #grad_nonzero_2 = f_grad(p * 0.99, [p_ctrl], δ_gt)
-        #@test isapprox(grad_zero[1], 0.8876855633591412, atol = 1e-6)   #should pass --> once we convert outside of the test. 
-        #@test isapprox(grad_nonzero_1[1], 0.5946989856464833, atol = 1.0)
-        #@test isapprox(grad_nonzero_2[1], -0.9432527319604077; atol = 1.0)
+        grad_nonzero_1 = f_grad(p * 1.01, [p_ctrl], δ_gt)
+        grad_nonzero_2 = f_grad(p * 0.99, [p_ctrl], δ_gt)
+        @test isapprox(grad_zero[1], 0.8876855633591412, atol = 1e-6)   #should pass --> once we convert outside of the test. 
+        @test isapprox(grad_nonzero_1[1], 0.5946989856464833, atol = 1.0)
+        @test isapprox(grad_nonzero_2[1], -0.9432527319604077; atol = 1.0)
     finally
         @info("removing test files")
         rm(path; force = true, recursive = true)
