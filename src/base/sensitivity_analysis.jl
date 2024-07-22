@@ -77,6 +77,18 @@ function get_parameter_values(sim, device_param_pairs)
     end
 end
 
+function get_parameter_labels(sim, device_param_pairs)
+    p = sim.inputs.parameters
+    p_metadata = sim.inputs.parameters_metadata
+    labels = ComponentArrays.labels(p)
+    ixs, _ = get_ix_and_level(p, p_metadata, device_param_pairs)
+    if ixs === nothing
+        return nothing
+    else
+        return labels[ixs]
+    end
+end
+
 function get_ix_and_level(p, p_metadata, param_data)
     param_ixs = get_indices_in_parameter_vector(p, param_data)
     metadata_ixs = get_indices_in_parameter_vector(p_metadata, param_data)

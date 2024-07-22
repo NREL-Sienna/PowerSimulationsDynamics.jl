@@ -81,6 +81,8 @@ using PlotlyJS
         @test loss_zero == 0.0
         @test loss_non_zero_1 != 0.0
         @test loss_non_zero_2 != 0.0
+        @test get_parameter_labels(sim, [("generator-102-1", :Shaft, :H)]) ==
+              ["generator-102-1.params.Shaft.H"]
         grad_zero = f_grad(p, callbacks, tstops, δ_gt)
         grad_nonzero_1 = f_grad([3.14], callbacks, tstops, δ_gt)
         grad_nonzero_2 = f_grad([3.15], callbacks, tstops, δ_gt)
