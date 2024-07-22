@@ -188,7 +188,6 @@ function get_sensitivity_functions(
         )
             p_new = sim_inputs.parameters
             p_new[param_ixs] .= p
-            #callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts)        #Restore after: https://github.com/EnzymeAD/Enzyme.jl/issues/1650    
             if init_level == POWERFLOW_AND_DEVICES
                 @error "POWERFLOW AND DEVICES -- not yet supported"
                 #_initialize_powerflow_and_devices!(x0, inputs, sys)
@@ -227,8 +226,7 @@ function get_sensitivity_functions(
             data,
             init_level,
             sys_reinit,
-            callbacks,
-            tstops,
+            perts, 
         )
             p_new = sim_inputs.parameters
             p_new_buff = Zygote.Buffer(p_new)
@@ -240,14 +238,14 @@ function get_sensitivity_functions(
             end
             p_new = copy(p_new_buff)
             #Converting perturbations to callbacks, restore after : https://github.com/EnzymeAD/Enzyme.jl/issues/1650
-            #@error "Zygote assumes single perturbation"
-            #cb = Vector{SciMLBase.DiscreteCallback}(undef, 1)
-            #pert = perts[1]
-            #condition = (x, t, integrator) -> t in [pert.time]
-            #affect = get_affect(sim_inputs, sys, pert) 
-            #cb = [SciMLBase.DiscreteCallback(condition, affect)]
-            #callbacks = SciMLBase.CallbackSet((), tuple(cb...))    
-            #tstops = [pert.time]
+            @error "Zygote assumes single perturbation"
+            cb = Vector{SciMLBase.DiscreteCallback}(undef, 1)
+            pert = perts[1]
+            condition = (x, t, integrator) -> t in [pert.time]
+            affect = get_affect(sim_inputs, sys, pert)
+            cb = [SciMLBase.DiscreteCallback(condition, affect)]
+            callbacks = SciMLBase.CallbackSet((), tuple(cb...))
+            tstops = [pert.time]
 
             if init_level == POWERFLOW_AND_DEVICES
                 @error "POWERFLOW AND DEVICES -- not yet supported"
@@ -275,7 +273,8 @@ function get_sensitivity_functions(
             states = [sol[ix, ix_t] for ix in state_ixs]
             return f_loss(states, data)
         end
-        function f_forward(p, callbacks, tstops, data)
+        function f_forward(p, perts, data)
+            callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts) 
             f_enzyme(
                 p,
                 x0,
@@ -289,7 +288,8 @@ function get_sensitivity_functions(
                 tstops,
             )
         end
-        function f_grad(p, callbacks, tstops, data)
+        function f_grad(p, perts, data)
+            callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts)       
             dp = Enzyme.make_zero(p)
             dx0 = Enzyme.make_zero(x0)
             dsys = Enzyme.make_zero(sys)
@@ -316,7 +316,7 @@ function get_sensitivity_functions(
             )
             return dp
         end
-        function f_forward_zygote(p, callbacks, tstops, data)
+        function f_forward_zygote(p, perts, data)
             f_Zygote(
                 p,
                 x0,
@@ -326,8 +326,7 @@ function get_sensitivity_functions(
                 data,
                 init_level,
                 sys_reinit,
-                callbacks,
-                tstops,
+                perts,
             )
         end
         f_forward, f_grad, f_forward_zygote
