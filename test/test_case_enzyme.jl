@@ -45,7 +45,7 @@ using PlotlyJS
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(states, δ_gt)
+        function f_loss(p, states, δ_gt)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -78,12 +78,27 @@ using PlotlyJS
         @test loss_non_zero_2 != 0.0
         @test get_parameter_labels(sim, [("generator-102-1", :Shaft, :H)]) ==
               ["generator-102-1.params.Shaft.H"]
-        grad_zero = f_grad(p, [s_change], δ_gt)
-        grad_nonzero_1 = f_grad([3.14], [s_change], δ_gt)
-        grad_nonzero_2 = f_grad([3.15], [s_change], δ_gt)
-        @test isapprox(grad_zero[1], 0.0, atol = 1.0)
-        @test isapprox(grad_nonzero_1[1], -8.0, atol = 1.0)
-        @test isapprox(grad_nonzero_2[1], 8.0; atol = 1.0)
+        @test isapprox(f_grad(p, [s_change], δ_gt)[1], -0.299332838697076, atol = 1e-3)
+        @test isapprox(f_grad([3.14], [s_change], δ_gt)[1], -8.174549313199039, atol = 1e-3)
+        @test isapprox(f_grad([3.15], [s_change], δ_gt)[1], 8.044840967274856; atol = 1e-3)
+
+        #Add in parameter regularization to loss 
+        function f_loss(p, states, δ_gt)
+            return sum(abs.(states[1] - δ_gt)) + sum(abs.(p))
+        end
+        f_forward, f_grad, _ = get_sensitivity_functions(
+            sim,
+            [("generator-102-1", :Shaft, :H)],
+            [("generator-102-1", :δ)],
+            Rodas4(),
+            f_loss;
+            sensealg = ForwardDiffSensitivity(),
+            abstol = 1e-9,
+            reltol = 1e-9,
+            dtmax = 0.005,
+            saveat = 0.005,
+        )
+        @test isapprox(f_grad(p, [s_change], δ_gt)[1], 0.7006671613029241, atol = 1e-3)
     finally
         @info("removing test files")
         rm(path; force = true, recursive = true)
@@ -115,7 +130,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(states, δ_gt)
+        function f_loss(p, states, δ_gt)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -183,7 +198,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(states, δ_gt)
+        function f_loss(p, states, δ_gt)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -246,7 +261,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(states, δ_gt)
+        function f_loss(p, states, δ_gt)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -336,7 +351,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(states, δ_gt)
+        function f_loss(p, states, δ_gt)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -412,7 +427,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(states, δ_gt)
+        function f_loss(p, states, δ_gt)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -500,7 +515,7 @@ end
             (0.0, 5.0),
             p_ctrl,
         )
-        
+
         #GET GROUND TRUTH DATA 
         execute!(sim, Rodas4(); abstol = 1e-6, reltol = 1e-6, dtmax = 0.05, saveat = 0.05)
         res = read_results(sim)
@@ -513,7 +528,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(states, δ_gt)
+        function f_loss(p, states, δ_gt)
             plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -555,7 +570,7 @@ end
         rm(path; force = true, recursive = true)
     end
 end
-2+2
+
 #= 
 #BELOW HERE: TESTS FOR SENSITIVITY OF DDES
 #NOTE: "Only the discretize-then-optimize methods are applicable to delay differential equations."
@@ -622,7 +637,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(states, δ_gt)
+        function f_loss(p, states, δ_gt)
             plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -699,7 +714,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(states, δ_gt)
+        function f_loss(p, states, δ_gt)
             #plot_traces(δ, δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end

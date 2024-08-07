@@ -215,7 +215,7 @@ function get_sensitivity_functions(
             sol = solve_with_callback(prob_new, callbacks, solver)
             ix_t = unique(i -> sol.t[i], eachindex(sol.t))
             states = [sol[ix, ix_t] for ix in state_ixs]
-            return f_loss(states, data)
+            return f_loss(p, states, data)
         end
         function f_Zygote(
             p,
@@ -226,7 +226,7 @@ function get_sensitivity_functions(
             data,
             init_level,
             sys_reinit,
-            perts, 
+            perts,
         )
             p_new = sim_inputs.parameters
             p_new_buff = Zygote.Buffer(p_new)
@@ -267,14 +267,14 @@ function get_sensitivity_functions(
             end
             sol = SciMLBase.solve(prob_new, solver; callback = callbacks)
             #Hack to avoid unique(i -> sol.t[i], eachindex(sol.t)) which mutates and is incompatible with Zygote: 
-            ix_first = findfirst(x -> x == 1.0, sol.t)
-            ix_last = findlast(x -> x == 1.0, sol.t)
+            ix_first = findfirst(x -> x == pert.time, sol.t)
+            ix_last = findlast(x -> x == pert.time, sol.t)
             ix_t = vcat(1:ix_first, (ix_last + 1):(length(sol.t)))
             states = [sol[ix, ix_t] for ix in state_ixs]
-            return f_loss(states, data)
+            return f_loss(p, states, data)
         end
         function f_forward(p, perts, data)
-            callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts) 
+            callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts)
             f_enzyme(
                 p,
                 x0,
@@ -289,7 +289,7 @@ function get_sensitivity_functions(
             )
         end
         function f_grad(p, perts, data)
-            callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts)       
+            callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts)
             dp = Enzyme.make_zero(p)
             dx0 = Enzyme.make_zero(x0)
             dsys = Enzyme.make_zero(sys)
