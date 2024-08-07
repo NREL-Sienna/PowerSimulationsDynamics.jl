@@ -461,9 +461,80 @@ end
         grad_zero = f_grad(p, [s_change], δ_gt)
         grad_nonzero_1 = f_grad(p * 1.01, [s_change], δ_gt)
         grad_nonzero_2 = f_grad(p * 0.99, [s_change], δ_gt)
-        @test isapprox(grad_zero[1], 499.0, atol = 1.0)
-        @test isapprox(grad_nonzero_1[1], 500.0, atol = 1.0)
-        @test isapprox(grad_nonzero_2[1], -498.0; atol = 1.0)
+        @test isapprox(grad_zero[1], 499.3490613579809, atol = 1e-3)
+        @test isapprox(grad_nonzero_1[1], 500.17141744869343, atol = 1e-3)
+        @test isapprox(grad_nonzero_2[1], -498.73349996053315; atol = 1e-3)
+    finally
+        @info("removing test files")
+        rm(path; force = true, recursive = true)
+    end
+end
+
+@testset "Test Gradients - OMIB; Xd_p - force no init" begin
+    path = mktempdir()
+    try
+        omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
+        s_device = get_component(Source, omib_sys, "InfBus")
+        s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
+        sim = Simulation!(
+            MassMatrixModel,
+            omib_sys,
+            path,
+            (0.0, 5.0),
+            s_change,
+        )
+
+        #GET GROUND TRUTH DATA 
+        execute!(sim, Rodas4(); abstol = 1e-9, reltol = 1e-9, dtmax = 0.005, saveat = 0.005)
+        res = read_results(sim)
+        t, δ_gt = get_state_series(res, ("generator-102-1", :δ))
+
+        #GET PARAMETER VALUES 
+        p = get_parameter_values(sim, [("generator-102-1", :Machine, :Xd_p)])
+
+        function plot_traces(δ, δ_gt)
+            display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
+        end
+        EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
+        function f_loss(p, states, δ_gt)
+            #plot_traces(states[1], δ_gt)
+            return sum(abs.(states[1] - δ_gt))
+        end
+        sim = Simulation!(
+            MassMatrixModel,
+            omib_sys,
+            path,
+            (0.0, 5.0),
+        )
+        execute!(sim, Rodas4())
+
+        #GET SENSITIVITY FUNCTIONS 
+        f_forward, f_grad, _ = get_sensitivity_functions(
+            sim,
+            [("generator-102-1", :Machine, :Xd_p)],
+            [("generator-102-1", :δ)],
+            Rodas4(),
+            f_loss,
+            false,
+            PSID.INITIALIZED;
+            sensealg = ForwardDiffSensitivity(),
+            abstol = 1e-9,
+            reltol = 1e-9,
+            dtmax = 0.005,
+            saveat = 0.005,
+        )
+        loss_zero = f_forward(p, [s_change], δ_gt)
+        loss_non_zero_1 = f_forward(p * 1.01, [s_change], δ_gt)
+        loss_non_zero_2 = f_forward(p * 0.99, [s_change], δ_gt)
+        @test isapprox(loss_zero, 0.0, atol = 1e-9)
+        @test loss_non_zero_1 != 0.0
+        @test loss_non_zero_2 != 0.0
+        grad_zero = f_grad(p, [s_change], δ_gt)
+        grad_nonzero_1 = f_grad(p * 1.01, [s_change], δ_gt)
+        grad_nonzero_2 = f_grad(p * 0.99, [s_change], δ_gt)
+        @test isapprox(grad_zero[1], 496.9588401248536, atol = 1e-3)
+        @test isapprox(grad_nonzero_1[1], 496.450046454591, atol = 1e-3)
+        @test isapprox(grad_nonzero_2[1], -498.19053389100594; atol = 1e-3)
     finally
         @info("removing test files")
         rm(path; force = true, recursive = true)

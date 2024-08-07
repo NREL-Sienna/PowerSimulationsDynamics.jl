@@ -134,12 +134,17 @@ function get_sensitivity_functions(
     state_data,
     solver,
     f_loss,
-    sys_reinit = false;
+    sys_reinit = false,
+    force_device_level = nothing;
     kwargs...,
 )
     p_metadata = sim.inputs.parameters_metadata
     p = sim.inputs.parameters
     param_ixs, init_level = get_ix_and_level(p, p_metadata, param_data)
+    if force_device_level !== nothing
+        init_level = force_device_level
+        @warn "Forcing initialization level of $init_level regardless of parameters."
+    end
     if init_level === nothing
         return nothing
     end
