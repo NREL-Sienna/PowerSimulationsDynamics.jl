@@ -642,15 +642,13 @@ end
     end
 end
 
-#= 
-#BELOW HERE: TESTS FOR SENSITIVITY OF DDES
 #NOTE: "Only the discretize-then-optimize methods are applicable to delay differential equations."
 function add_degov_to_omib!(omib_sys)
     gen = get_component(ThermalStandard, omib_sys, "generator-102-1")
     dyn_gen = get_component(DynamicGenerator, omib_sys, "generator-102-1")
     new_gov = PSY.DEGOV(;
-        T1 = 0.0,
-        T2 = 0.0,
+        T1 = 1.0,
+        T2 = 0.5,
         T3 = 0.0,
         K = 18.0,
         T4 = 12.0,
@@ -673,10 +671,9 @@ function add_degov_to_omib!(omib_sys)
     add_component!(omib_sys, dyn_gen_new, gen)
 end
 
- #@testset "Test Gradients - OMIB; H; Delays" begin
+@testset "Test Gradients - OMIB; H; Delays" begin
     path = mktempdir()
-    #try
-        #EnzymeRules.inactive(::typeof(Base.hasproperty), args...) = nothing # To allow wrap_sol to work?  --> causes gradient to b zero; bad idea to go marking functions invalid without clear reason. 
+    try
         omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
         s_device = get_component(Source, omib_sys, "InfBus")
         s_change = SourceBusVoltageChange(1.0, s_device, :V_ref, 1.02)
@@ -685,18 +682,17 @@ end
             MassMatrixModel,
             omib_sys,
             pwd(),
-            (0.0, 5.0), #Inside of the delay time... 
+            (0.0, 5.0),
             s_change,
         )
 
         #GET GROUND TRUTH DATA 
         execute!(
             sim,
-            MethodOfSteps(Rodas5(; autodiff = false));
-            abstol = 1e-9,
-            reltol = 1e-9,
-            dtmax = 0.005,
-            saveat = 0.005,
+            MethodOfSteps(Rodas5());
+            abstol = 1e-6,
+            reltol = 1e-6,
+            saveat = 0.05,
         )
         res = read_results(sim)
         t, δ_gt = get_state_series(res, ("generator-102-1", :δ))
@@ -716,41 +712,35 @@ end
             MassMatrixModel,
             omib_sys,
             pwd(),
-            (0.0, 5.0), #Inside of the delay time... 
+            (0.0, 5.0),
         )
-        execute!(sim, MethodOfSteps(Rodas4()),)
+        execute!(sim, MethodOfSteps(Rodas4()))
         #GET SENSITIVITY FUNCTIONS 
         f_forward, f_grad, _ = get_sensitivity_functions(
             sim,
             [("generator-102-1", :Shaft, :H)],
             [("generator-102-1", :δ)],
-            MethodOfSteps(Rodas4()), #; autodiff = false
-            #MethodOfSteps(QNDF(;autodiff=true)),
+            MethodOfSteps(Rodas5()),
             f_loss;
             sensealg = ForwardDiffSensitivity(),
-            abstol = 1e-6, # 1e-6
-            reltol = 1e-6, # 1e-6 
-            # dtmax = 0.005,
-             saveat = 0.005,
-        );
-
-       # @error length(δ_gt)
-        loss_zero = f_forward(p, [s_change],  δ_gt)
+            abstol = 1e-6,
+            reltol = 1e-6,
+            saveat = 0.05,
+        )
+        loss_zero = f_forward(p, [s_change], δ_gt)
         loss_non_zero_1 = f_forward([5.2], [s_change], δ_gt)
         loss_non_zero_2 = f_forward(p, [s_change], δ_gt .* 2)
-        @test isapprox(loss_zero, 0.0, atol = 3e-3)
-        @test loss_non_zero_1 != 0.0
-        @test loss_non_zero_2 != 0.0
-        grad_zero = f_grad(p, [s_change],δ_gt)
-        @error grad_zero
-        @test isapprox(grad_zero[1], 0.0, atol = 1e-12)
-    #finally
-    #    @info("removing test files")
-    #    rm(path; force = true, recursive = true)
-    #end
-#end
+        @test isapprox(loss_zero, 0.0, atol = 1e-6)
+        @test isapprox(loss_non_zero_1, 0.266806977990823, atol = 1e-6)
+        @test isapprox(loss_non_zero_2, 17.41277928345796, atol = 1e-6)
+        grad_zero = f_grad(p, [s_change], δ_gt)
+        @test isapprox(grad_zero[1], -0.034893046793070925, atol = 1e-9)
+    finally
+        @info("removing test files")
+        rm(path; force = true, recursive = true)
+    end
+end
 
-#Potential Rank Deficient Matrix Detected: Erorrs... 
 @testset "Test Gradients - OMIB; Xd_p; delays" begin
     path = mktempdir()
     try
@@ -762,17 +752,16 @@ end
             MassMatrixModel,
             omib_sys,
             path,
-            (0.0, 0.05),
-            #s_change,
+            (0.0, 5.0),
+            s_change,
         )
 
         #GET GROUND TRUTH DATA 
         execute!(
             sim,
-            MethodOfSteps(Rodas4());
+            MethodOfSteps(Rodas5());
             abstol = 1e-9,
             reltol = 1e-9,
-            #dtmax = 0.005,
             saveat = 0.005,
         )
         res = read_results(sim)
@@ -786,7 +775,7 @@ end
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
         function f_loss(p, states, δ_gt)
-            #plot_traces(δ, δ_gt)
+            #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
 
@@ -795,31 +784,28 @@ end
             sim,
             [("generator-102-1", :Machine, :Xd_p)],
             [("generator-102-1", :δ)],
-            MethodOfSteps(Rodas4()),
+            MethodOfSteps(Rodas5()),
             f_loss;
             sensealg = ForwardDiffSensitivity(),
             abstol = 1e-6,
             reltol = 1e-6,
-           # dtmax = 0.005,
             saveat = 0.005,
         )
 
-        loss_zero = f_forward(p, δ_gt)
-        #loss_non_zero_1 = f_forward(p * 1.01, δ_gt)
-        #loss_non_zero_2 = f_forward(p * 0.99, δ_gt)
-        #@test isapprox(loss_zero, 0.0, atol = 1e-9)
-        #@test loss_non_zero_1 != 0.0
-        #@test loss_non_zero_2 != 0.0
-        #grad_zero = f_grad(p, δ_gt)
-        #grad_nonzero_1 = f_grad(p * 1.01, δ_gt)
-        #grad_nonzero_2 = f_grad(p * 0.99, δ_gt)
-        #@test isapprox(grad_zero[1], 497, atol = 1.0)
-        #@test isapprox(grad_nonzero_1[1], 499.0, atol = 1.0)
-        #@test isapprox(grad_nonzero_2[1], -498.0; atol = 1.0)
+        loss_zero = f_forward(p, [s_change], δ_gt)
+        loss_non_zero_1 = f_forward(p * 1.01, [s_change], δ_gt)
+        loss_non_zero_2 = f_forward(p * 0.99, [s_change], δ_gt)
+        @test isapprox(loss_zero, 0.0, atol = 0.02)
+        @test isapprox(loss_non_zero_1, 1.4914986021363859, atol = 1e-6)
+        @test isapprox(loss_non_zero_2, 1.489669782933298, atol = 1e-6)
+        grad_zero = f_grad(p, [s_change], δ_gt)
+        grad_nonzero_1 = f_grad(p * 1.01, [s_change], δ_gt)
+        grad_nonzero_2 = f_grad(p * 0.99, [s_change], δ_gt)
+        @test isapprox(grad_zero[1], -5.337145710251008, atol = 1e-6)
+        @test isapprox(grad_nonzero_1[1], 500.0118950662703, atol = 1e-6)
+        @test isapprox(grad_nonzero_2[1], -498.56135720277706; atol = 1e-6)
     finally
         @info("removing test files")
         rm(path; force = true, recursive = true)
     end
 end
-
- =#
