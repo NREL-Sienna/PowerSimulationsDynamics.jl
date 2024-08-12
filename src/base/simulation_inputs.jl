@@ -218,46 +218,46 @@ end
     return initial_parameters 
 end  =#
 
+function _get_refs_metadata(x)
+    return (;)
+end
+
+function _get_refs_metadata(wrapped_device::DynamicWrapper)
+    return (
+        V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        ω_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+    )
+end
+
+function _get_refs_metadata(wrapped_device::StaticLoadWrapper)
+    return (
+        V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_power = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_current = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_impedance = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_power = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_current = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_impedance = ParamsMetadata(DEVICE_SETPOINT, false, true),
+    )
+end
+
+function _get_refs_metadata(wrapped_device::StaticWrapper)
+    return (
+        V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+    )
+end
+
 function _add_parameters_metadata(parameter_metadata, wrapped_devices)
     for wrapped_device in wrapped_devices
         p_metadata = get_params_metadata(wrapped_device)
         name = _get_wrapper_name(wrapped_device)
-        if isa(wrapped_device, DynamicWrapper)
-            # Consider the special case when the static device is StandardLoad
-            static_device = get_static_device(wrapped_device)
-            if isa(static_device, PSY.StandardLoad)
-                reactive_power = PF.get_total_q(static_device)
-            else
-                reactive_power = PSY.get_reactive_power(static_device)
-            end
-            refs_metadata = (
-                V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                ω_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                P_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                Q_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-            )
-        elseif isa(wrapped_device, StaticWrapper)
-            refs_metadata = (
-                V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                P_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                Q_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-            )
-
-        elseif isa(wrapped_device, StaticLoadWrapper)
-            refs_metadata = (
-                V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                P_power = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                P_current = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                P_impedance = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                Q_power = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                Q_current = ParamsMetadata(DEVICE_SETPOINT, false, true),
-                Q_impedance = ParamsMetadata(DEVICE_SETPOINT, false, true),
-            )
-        else
-            refs_metadata = (;)
-        end
+        refs_metadata = _get_refs_metadata(wrapped_device)
         parameter_metadata = ComponentArrays.ComponentVector(
             parameter_metadata;
             name => (
@@ -269,56 +269,68 @@ function _add_parameters_metadata(parameter_metadata, wrapped_devices)
     return parameter_metadata
 end
 
+function _get_refs(x)
+    return (;)
+end
+
+function _get_refs(wrapped_device::DynamicWrapper)
+    static_device = get_static_device(wrapped_device)
+    if isa(static_device, PSY.StandardLoad)
+        reactive_power = PF.get_total_q(static_device)
+    else
+        reactive_power = PSY.get_reactive_power(static_device)
+    end
+    refs = (
+        V_ref = PSY.get_V_ref(get_device(wrapped_device)),
+        ω_ref = PSY.get_ω_ref(get_device(wrapped_device)),
+        P_ref = PSY.get_P_ref(get_device(wrapped_device)),
+        Q_ref = reactive_power,
+    )
+    return refs
+end
+
+function _get_refs(wrapped_device::StaticLoadWrapper)
+    refs = (
+        V_ref = get_V_ref(wrapped_device),
+        θ_ref = get_θ_ref(wrapped_device),
+        P_power = get_P_power(wrapped_device),
+        P_current = get_P_current(wrapped_device),
+        P_impedance = get_P_impedance(wrapped_device),
+        Q_power = get_Q_power(wrapped_device),
+        Q_current = get_Q_current(wrapped_device),
+        Q_impedance = get_Q_impedance(wrapped_device),
+    )
+    return refs
+end
+
+function _get_refs(wrapped_device::StaticWrapper)
+    device = get_device(wrapped_device)
+    bus = PSY.get_bus(device)
+    refs = (
+        V_ref = PSY.get_magnitude(bus),
+        θ_ref = PSY.get_angle(bus),
+        P_ref = PSY.get_active_power(device),
+        Q_ref = PSY.get_reactive_power(device),
+    )
+    return refs
+end
+
+function _get_refs(wrapped_device::StaticWrapper{PSY.Source})
+    device = get_device(wrapped_device)
+    refs = (
+        V_ref = PSY.get_internal_voltage(device),
+        θ_ref = PSY.get_internal_angle(device),
+        P_ref = PSY.get_active_power(device),
+        Q_ref = PSY.get_reactive_power(device),
+    )
+    return refs
+end
+
 function _add_parameters(initial_parameters, wrapped_devices)
     for wrapped_device in wrapped_devices
         p = get_params(wrapped_device)
         name = _get_wrapper_name(wrapped_device)
-        if isa(wrapped_device, DynamicWrapper)
-            # Consider the special case when the static device is StandardLoad
-            static_device = get_static_device(wrapped_device)
-            if isa(static_device, PSY.StandardLoad)
-                reactive_power = PF.get_total_q(static_device)
-            else
-                reactive_power = PSY.get_reactive_power(static_device)
-            end
-            refs = (
-                V_ref = PSY.get_V_ref(get_device(wrapped_device)),
-                ω_ref = PSY.get_ω_ref(get_device(wrapped_device)),
-                P_ref = PSY.get_P_ref(get_device(wrapped_device)),
-                Q_ref = reactive_power,
-            )
-        elseif isa(wrapped_device, StaticWrapper)
-            device = get_device(wrapped_device)
-            if typeof(device) <: PSY.Source
-                refs = (
-                    V_ref = PSY.get_internal_voltage(device),
-                    θ_ref = PSY.get_internal_angle(device),
-                    P_ref = PSY.get_active_power(device),
-                    Q_ref = PSY.get_reactive_power(device),
-                )
-            else
-                bus = PSY.get_bus(device)
-                refs = (
-                    V_ref = PSY.get_magnitude(bus),
-                    θ_ref = PSY.get_angle(bus),
-                    P_ref = PSY.get_active_power(device),
-                    Q_ref = PSY.get_reactive_power(device),
-                )
-            end
-        elseif isa(wrapped_device, StaticLoadWrapper)
-            refs = (
-                V_ref = get_V_ref(wrapped_device),
-                θ_ref = get_θ_ref(wrapped_device),
-                P_power = get_P_power(wrapped_device),
-                P_current = get_P_current(wrapped_device),
-                P_impedance = get_P_impedance(wrapped_device),
-                Q_power = get_Q_power(wrapped_device),
-                Q_current = get_Q_current(wrapped_device),
-                Q_impedance = get_Q_impedance(wrapped_device),
-            )
-        else
-            refs = (;)
-        end
+        refs = _get_refs(wrapped_device)
         initial_parameters = ComponentArrays.ComponentVector(
             initial_parameters;
             name => (

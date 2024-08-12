@@ -272,9 +272,13 @@ function get_sensitivity_functions(
             end
             sol = SciMLBase.solve(prob_new, solver; callback = callbacks)
             #Hack to avoid unique(i -> sol.t[i], eachindex(sol.t)) which mutates and is incompatible with Zygote: 
-            ix_first = findfirst(x -> x == pert.time, sol.t)
-            ix_last = findlast(x -> x == pert.time, sol.t)
-            ix_t = vcat(1:ix_first, (ix_last + 1):(length(sol.t)))
+            if sol.t[end] > pert.time
+                ix_first = findfirst(x -> x == pert.time, sol.t)
+                ix_last = findlast(x -> x == pert.time, sol.t)
+                ix_t = vcat(1:ix_first, (ix_last + 1):(length(sol.t)))
+            else
+                ix_t = vact(1:length(sol.t))
+            end
             states = [sol[ix, ix_t] for ix in state_ixs]
             return f_loss(p, states, data)
         end
