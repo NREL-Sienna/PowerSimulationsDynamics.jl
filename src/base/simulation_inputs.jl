@@ -621,10 +621,9 @@ function get_setpoints(inputs::SimulationInputs)
     for w in get_dynamic_injectors(inputs)
         wrapped_device_name = _get_wrapper_name(w)
         dic_w = Dict{String, Float64}()
-        dic_w["P_ref"] = p[wrapped_device_name][:refs][:P_ref]
-        dic_w["Q_ref"] = p[wrapped_device_name][:refs][:Q_ref]
-        dic_w["ω_ref"] = p[wrapped_device_name][:refs][:ω_ref]
-        dic_w["V_ref"] = p[wrapped_device_name][:refs][:V_ref]
+        for ref_name in ComponentArrays.labels( p[wrapped_device_name][:refs])
+            dic_w[ref_name] = p[wrapped_device_name][:refs][ref_name]
+        end 
         dic[PSY.get_name(w)] = dic_w
     end
     return dic
