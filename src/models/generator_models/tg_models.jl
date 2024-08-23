@@ -469,7 +469,7 @@ function mdl_tg_ode!(
 
     #Compute block derivatives
     _, dxg1_dt = low_pass_mass_matrix(x_in, x_g1, Rperm, T_reg)
-    pid_input = x_g1 - ω[1]
+    pid_input = x_g1 - (ω[1] - ω_sys)
     pi_out, dxg2_dt = pi_block(pid_input, x_g2, Kp, Ki)
     _, dxg3_dt = low_pass_mass_matrix(pi_out, x_g3, 1.0, Ta)
     pd_out, dxg4_dt = high_pass_mass_matrix(pid_input, x_g4, Kd, Ta)
