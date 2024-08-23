@@ -1615,3 +1615,27 @@ function three_level_gate_to_power_map(
         return ((p3 - p2) / (g3 - g2)) * (input - g2) + p2
     end
 end
+
+"""
+Inverse Three level gate to power transformation for PIDGOV    
+(G0, 0), (G1, P1), (G2, P2), (1, P3) are (x,y) coordinates of Power vs Gate functions
+"""
+function three_level_power_to_gate_map(
+    power_input::Z,
+    gates::Tuple{Float64, Float64, Float64},
+    powers::Tuple{Float64, Float64, Float64},
+) where {Z <: ACCEPTED_REAL_TYPES}
+    g0, g1, g2 = gates
+    p1, p2, p3 = powers
+    p0 = 0.0
+    g3 = 1.0
+    if power_input <= p0
+        return g0
+    elseif p0 < power_input <= p1
+        return ((g1 - g0) / (p1 - p0)) * (power_input - p0) + g0
+    elseif p1 < power_input <= p2
+        return ((g2 - g1) / (p2 - p1)) * (power_input - p1) + g1
+    elseif p2 < power_input
+        return ((g3 - g2) / (p3 - p2)) * (power_input - p2) + g2
+    end
+end
