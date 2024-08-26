@@ -1081,3 +1081,38 @@ function _mechanical_torque(
     τm = ((x_g4 .- q_nl) .* h * At - D_T * Δω .* x_g3) ./ ω
     return ts, τm
 end
+
+"""
+Function to obtain the mechanical torque time series of a Dynamic Generator with HydroTurbineGov (HYGOV) Turbine Governor.
+
+"""
+function _mechanical_torque(
+    tg::PSY.PIDGOV,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64, Vector{Float64}},
+)
+    # Get params
+    D_turb = PSY.get_D_turb(tg)
+    gate_openings = PSY.get_gate_openings(tg)
+    power_gate_openings = PSY.get_power_gate_openings(tg)
+    A_tw = PSY.get_A_tw(tg)
+    Tw = PSY.get_Tw(tg)
+    setpoints = get_setpoints(res)
+    ω_ref = setpoints[name]["ω_ref"]
+    # Get state results
+    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt)
+    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt)
+    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    Pe = similar(x_g7)
+    for (ix, x7) in enumerate(x_g7)
+        x6 = x_g6[ix]
+        power_at_gate =
+            three_level_gate_to_power_map(x6, gate_openings, power_gate_openings)
+        Tz = A_tw * Tw
+        ll_out, _ = lead_lag(power_at_gate, x7, 1.0, -Tz, Tz / 2.0)
+        Pe[ix] = ll_out - D_turb * (ω[ix] - ω_ref)
+    end
+    τm = Pe ./ ω
+    return ts, τm
+end
