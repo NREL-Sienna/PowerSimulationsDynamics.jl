@@ -741,6 +741,101 @@ end
     end
 end
 
+#Test delays + reversediffAdjoint. 
+@testset "Test Gradients - OMIB; H; PerturbState" begin
+    path = mktempdir()
+    try
+        omib_sys = build_system(PSIDTestSystems, "psid_test_omib")
+        s_device = get_component(Source, omib_sys, "InfBus")
+        p_state = PerturbState(1.0, 5, 0.18)
+        add_degov_to_omib!(omib_sys)
+
+        sim = Simulation!(
+            MassMatrixModel,
+            omib_sys,
+            path,
+            (0.0, 5.0),
+            p_state,
+        )
+        #GET GROUND TRUTH DATA 
+        execute!(sim,  MethodOfSteps(Rodas5()); abstol = 1e-6, reltol = 1e-6, dtmax = 0.05, saveat = 0.05)
+        res = read_results(sim)
+        t, δ_gt = get_state_series(res, ("generator-102-1", :δ); unique_timestamps = true)   #Avoid filtering of repeated timesteps 
+        #GET PARAMETER VALUES 
+        p = get_parameter_values(sim, [("generator-102-1", :Shaft, :H)])
+
+        function plot_traces(δ, δ_gt)
+            display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
+        end
+        EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
+        function f_loss(p, states, δ_gt)
+            #plot_traces(states[1], δ_gt)
+            return sum(abs.(states[1] - δ_gt))
+        end
+        sim = Simulation!(
+            MassMatrixModel,
+            omib_sys,
+            path,
+            (0.0, 5.0),
+        )
+        execute!(sim, MethodOfSteps(Rodas5()))
+        f_forward, f_grad, f_zygote_forward = get_sensitivity_functions(
+            sim,
+            [("generator-102-1", :Shaft, :H)],
+            [("generator-102-1", :δ)],
+            MethodOfSteps(Rodas5(autodiff=false)),
+            f_loss;
+            sensealg = ForwardDiffSensitivity(),
+            abstol = 1e-6,
+            reltol = 1e-6,
+            dtmax = 0.05,
+            saveat = 0.05,
+        )
+        @test f_forward(p, [p_state], δ_gt) ==
+              f_zygote_forward(p, [p_state], δ_gt)
+        @test f_forward([3.14], [p_state], δ_gt) ==
+              f_zygote_forward([3.14], [p_state], δ_gt)
+        @test f_forward([3.15], [p_state], δ_gt) ==
+              f_zygote_forward([3.15], [p_state], δ_gt)
+        #@test f_grad(p, [p_state], δ_gt) ==
+        #      Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), p)[1]
+        @test Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), p)[1][1] == -10.336102683050685
+
+        _, _, f_zygote_forward = get_sensitivity_functions(
+            sim,
+            [("generator-102-1", :Shaft, :H)],
+            [("generator-102-1", :δ)],
+            MethodOfSteps(Rodas5(autodiff=false)),
+            f_loss;
+            sensealg = ReverseDiffAdjoint(),
+            abstol = 1e-6,
+            reltol = 1e-6,
+            dtmax = 0.05,
+            saveat = 0.05,
+        )
+
+
+        @test isapprox(
+            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), p)[1][1],
+            -15.973318599159727,
+            atol = 1e-6,
+        )
+        @test isapprox(
+            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), [3.14])[1][1],
+            -25.735942518785052,
+            atol = 1e-6,
+        )
+        @test isapprox(
+            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), [3.15])[1][1],
+            25.684384617470563,
+            atol = 1e-6,
+        )
+    finally
+        @info("removing test files")
+        rm(path; force = true, recursive = true)
+    end
+end
+
 @testset "Test Gradients - OMIB; Xd_p; delays" begin
     path = mktempdir()
     try

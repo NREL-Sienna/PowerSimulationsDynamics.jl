@@ -128,6 +128,12 @@ function convert_perturbations_to_callbacks(sys, sim_inputs, perturbations)
     return callbacks, tstops
 end
 
+#Dummy function that is overloaded in PowerSimulationsDynamicsSurrogates.
+#Eventually transition to EnzymeAdjoint() and remove Zygote altogether: https://github.com/SciML/OrdinaryDiffEq.jl/pull/2282 
+function _non_mutating_initialization_of_ml_surrogates(x0, p_new, sim_inputs) 
+    return x0, p_new
+end 
+
 function get_sensitivity_functions(
     sim,
     param_data,
@@ -256,8 +262,8 @@ function get_sensitivity_functions(
                 @error "POWERFLOW AND DEVICES -- not yet supported"
                 #_initialize_powerflow_and_devices!(x0, inputs, sys)
             elseif init_level == DEVICES_ONLY
-                @error "Reinitializing not supported with Zygote"
-                _initialize_devices_only!(x0, sim_inputs)     #Mutation 
+                @error "Reinitializing of most devices not supported with Zygote"
+                x0, p_new = _non_mutating_initialization_of_ml_surrogates(x0, p_new, sim_inputs) 
             elseif init_level == INITIALIZED
                 @info "I.C.s not impacted by parameter change"
             end
