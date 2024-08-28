@@ -1,3 +1,7 @@
+##################################
+###### Mass Matrix Entries #######
+##################################
+
 function mass_matrix_avr_entries!(
     mass_matrix,
     avr::T,
@@ -69,6 +73,10 @@ function mass_matrix_avr_entries!(
     mass_matrix[global_index[:Va], global_index[:Va]] = PSY.get_Ta(avr)
     return
 end
+
+##################################
+##### Differential Equations #####
+##################################
 
 function mdl_avr_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
