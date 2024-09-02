@@ -196,6 +196,7 @@ function get_sensitivity_functions(
             sys_reinit,
             callbacks,
             tstops,
+            aux,
         )
             p_new = sim_inputs.parameters
             p_new[param_ixs] .= p
@@ -226,7 +227,7 @@ function get_sensitivity_functions(
             sol = solve_with_callback(prob_new, callbacks, solver)
             ix_t = unique(i -> sol.t[i], eachindex(sol.t))
             states = [sol[ix, ix_t] for ix in state_ixs]
-            return f_loss(p, states, data)
+            return f_loss(p, states, data, aux)
         end
         function f_Zygote(
             p,
@@ -238,6 +239,7 @@ function get_sensitivity_functions(
             init_level,
             sys_reinit,
             perts,
+            aux,
         )
             p_new = sim_inputs.parameters
             p_new_buff = Zygote.Buffer(p_new)
@@ -286,9 +288,9 @@ function get_sensitivity_functions(
                 ix_t = vact(1:length(sol.t))
             end
             states = [sol[ix, ix_t] for ix in state_ixs]
-            return f_loss(p, states, data)
+            return f_loss(p, states, data, aux)
         end
-        function f_forward(p, perts, data)
+        function f_forward(p, perts, data, aux)
             callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts)
             f_enzyme(
                 p,
@@ -301,9 +303,10 @@ function get_sensitivity_functions(
                 sys_reinit,
                 callbacks,
                 tstops,
+                aux,
             )
         end
-        function f_grad(p, perts, data)
+        function f_grad(p, perts, data, aux)
             callbacks, tstops = convert_perturbations_to_callbacks(sys, sim_inputs, perts)
             dp = Enzyme.make_zero(p)
             dx0 = Enzyme.make_zero(x0)
@@ -328,10 +331,11 @@ function get_sensitivity_functions(
                 Enzyme.Const(sys_reinit),
                 Enzyme.Duplicated(callbacks, dcallbacks),
                 Enzyme.Duplicated(tstops, dtstops),
+                Enzyme.Const(aux),
             )
             return dp
         end
-        function f_forward_zygote(p, perts, data)
+        function f_forward_zygote(p, perts, data, aux)
             f_Zygote(
                 p,
                 x0,
@@ -342,6 +346,7 @@ function get_sensitivity_functions(
                 init_level,
                 sys_reinit,
                 perts,
+                aux,
             )
         end
         f_forward, f_grad, f_forward_zygote

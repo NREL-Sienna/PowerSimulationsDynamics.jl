@@ -45,7 +45,7 @@ using PlotlyJS
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -70,20 +70,20 @@ using PlotlyJS
             dtmax = 0.005,
             saveat = 0.005,
         )
-        loss_zero = f_forward(p, [s_change], δ_gt)
-        loss_non_zero_1 = f_forward([3.2], [s_change], δ_gt)
-        loss_non_zero_2 = f_forward(p, [s_change], δ_gt .* 2)
+        loss_zero = f_forward(p, [s_change], δ_gt, [])
+        loss_non_zero_1 = f_forward([3.2], [s_change], δ_gt, [])
+        loss_non_zero_2 = f_forward(p, [s_change], δ_gt .* 2, [])
         @test loss_zero == 0.0
         @test loss_non_zero_1 != 0.0
         @test loss_non_zero_2 != 0.0
         @test get_parameter_labels(sim, [("generator-102-1", :Shaft, :H)]) ==
               ["generator-102-1.params.Shaft.H"]
-        @test isapprox(f_grad(p, [s_change], δ_gt)[1], -0.299332838697076, atol = 1e-3)
-        @test isapprox(f_grad([3.14], [s_change], δ_gt)[1], -8.174549313199039, atol = 1e-3)
-        @test isapprox(f_grad([3.15], [s_change], δ_gt)[1], 8.044840967274856; atol = 1e-3)
+        @test isapprox(f_grad(p, [s_change], δ_gt, [])[1], -0.299332838697076, atol = 1e-3)
+        @test isapprox(f_grad([3.14], [s_change], δ_gt, [])[1], -8.174549313199039, atol = 1e-3)
+        @test isapprox(f_grad([3.15], [s_change], δ_gt, [])[1], 8.044840967274856; atol = 1e-3)
 
         #Add in parameter regularization to loss 
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             return sum(abs.(states[1] - δ_gt)) + sum(abs.(p))
         end
         f_forward, f_grad, _ = get_sensitivity_functions(
@@ -98,7 +98,7 @@ using PlotlyJS
             dtmax = 0.005,
             saveat = 0.005,
         )
-        @test isapprox(f_grad(p, [s_change], δ_gt)[1], 0.7006671613029241, atol = 1e-3)
+        @test isapprox(f_grad(p, [s_change], δ_gt, [])[1], 0.7006671613029241, atol = 1e-3)
     finally
         @info("removing test files")
         rm(path; force = true, recursive = true)
@@ -130,7 +130,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -155,15 +155,15 @@ end
             dtmax = 0.005,
             saveat = 0.005,
         )
-        loss_zero = f_forward(p, [s_change], δ_gt)
-        loss_non_zero_1 = f_forward([3.2], [s_change], δ_gt)
-        loss_non_zero_2 = f_forward(p, [s_change], δ_gt .* 2)
+        loss_zero = f_forward(p, [s_change], δ_gt, [])
+        loss_non_zero_1 = f_forward([3.2], [s_change], δ_gt, [])
+        loss_non_zero_2 = f_forward(p, [s_change], δ_gt .* 2, [])
         @test loss_zero == 0.0
         @test loss_non_zero_1 == 0.36199910927656687
         @test loss_non_zero_2 == 172.66293171283323
-        grad_zero = f_grad(p, [s_change], δ_gt)
-        grad_nonzero_1 = f_grad([3.14], [s_change], δ_gt)
-        grad_nonzero_2 = f_grad([3.15], [s_change], δ_gt)
+        grad_zero = f_grad(p, [s_change], δ_gt, [])
+        grad_nonzero_1 = f_grad([3.14], [s_change], δ_gt, [])
+        grad_nonzero_2 = f_grad([3.15], [s_change], δ_gt, [])
         @test isapprox(grad_zero[1], -1.0, atol = 1.0)
         @test isapprox(grad_nonzero_1[1], -8.0, atol = 1.0)
         @test isapprox(grad_nonzero_2[1], 8.0; atol = 1.0)
@@ -198,7 +198,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -222,13 +222,13 @@ end
             dtmax = 0.005,
             saveat = 0.005,
         )
-        loss_zero = f_forward(p, [s_change], δ_gt)
-        loss_non_zero_1 = f_forward(p .* 1.01, [s_change], δ_gt)
+        loss_zero = f_forward(p, [s_change], δ_gt, [])
+        loss_non_zero_1 = f_forward(p .* 1.01, [s_change], δ_gt, [])
 
         @test isapprox(loss_zero, 0.0, atol = 1e-9)
         @test isapprox(loss_non_zero_1, 1.49, atol = 1e-3)
 
-        grad_zero = f_grad(p, [s_change], δ_gt)
+        grad_zero = f_grad(p, [s_change], δ_gt, [])
         @test isapprox(sum(grad_zero), 524.5865384550988, atol = 1e-3)
     finally
         @info("removing test files")
@@ -261,7 +261,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -284,14 +284,14 @@ end
             dtmax = 0.005,
             saveat = 0.005,
         )
-        @test f_forward(p, [p_state], δ_gt) ==
-              f_zygote_forward(p, [p_state], δ_gt)
-        @test f_forward([3.14], [p_state], δ_gt) ==
-              f_zygote_forward([3.14], [p_state], δ_gt)
-        @test f_forward([3.15], [p_state], δ_gt) ==
-              f_zygote_forward([3.15], [p_state], δ_gt)
-        @test f_grad(p, [p_state], δ_gt) ==
-              Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), p)[1]
+        @test f_forward(p, [p_state], δ_gt, []) ==
+              f_zygote_forward(p, [p_state], δ_gt, [])
+        @test f_forward([3.14], [p_state], δ_gt, []) ==
+              f_zygote_forward([3.14], [p_state], δ_gt, [])
+        @test f_forward([3.15], [p_state], δ_gt, []) ==
+              f_zygote_forward([3.15], [p_state], δ_gt, [])
+        @test f_grad(p, [p_state], δ_gt, []) ==
+              Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt, []), p)[1]
 
         _, _, f_zygote_forward = get_sensitivity_functions(
             sim,
@@ -306,17 +306,17 @@ end
             saveat = 0.005,
         )
         @test isapprox(
-            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), p)[1][1],
+            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt, []), p)[1][1],
             -223.7406308892161,
             atol = 1e-6,
         )
         @test isapprox(
-            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), [3.14])[1][1],
+            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt, []), [3.14])[1][1],
             -256.88284936919246,
             atol = 1e-6,
         )
         @test isapprox(
-            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), [3.15])[1][1],
+            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt, []), [3.15])[1][1],
             256.36101155595964,
             atol = 1e-6,
         )
@@ -351,7 +351,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -384,8 +384,8 @@ end
             return false
         end
         optfun = OptimizationFunction{false}(
-            (u, p) -> f_forward(u, [s_change], δ_gt);
-            grad = (res, u, p) -> res .= f_grad(u, [s_change], δ_gt),
+            (u, p) -> f_forward(u, [s_change], δ_gt, []);
+            grad = (res, u, p) -> res .= f_grad(u, [s_change], δ_gt, []),
         )
         optprob = OptimizationProblem{false}(optfun, [3.14])
         sol = Optimization.solve(
@@ -427,7 +427,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -452,15 +452,15 @@ end
             dtmax = 0.005,
             saveat = 0.005,
         )
-        loss_zero = f_forward(p, [s_change], δ_gt)
-        loss_non_zero_1 = f_forward(p * 1.01, [s_change], δ_gt)
-        loss_non_zero_2 = f_forward(p * 0.99, [s_change], δ_gt)
+        loss_zero = f_forward(p, [s_change], δ_gt, [])
+        loss_non_zero_1 = f_forward(p * 1.01, [s_change], δ_gt, [])
+        loss_non_zero_2 = f_forward(p * 0.99, [s_change], δ_gt, [])
         @test isapprox(loss_zero, 0.0, atol = 1e-9)
         @test loss_non_zero_1 != 0.0
         @test loss_non_zero_2 != 0.0
-        grad_zero = f_grad(p, [s_change], δ_gt)
-        grad_nonzero_1 = f_grad(p * 1.01, [s_change], δ_gt)
-        grad_nonzero_2 = f_grad(p * 0.99, [s_change], δ_gt)
+        grad_zero = f_grad(p, [s_change], δ_gt, [])
+        grad_nonzero_1 = f_grad(p * 1.01, [s_change], δ_gt, [])
+        grad_nonzero_2 = f_grad(p * 0.99, [s_change], δ_gt, [])
         @test isapprox(grad_zero[1], 499.3490613579809, atol = 1e-3)
         @test isapprox(grad_nonzero_1[1], 500.17141744869343, atol = 1e-3)
         @test isapprox(grad_nonzero_2[1], -498.73349996053315; atol = 1e-3)
@@ -496,7 +496,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -523,15 +523,15 @@ end
             dtmax = 0.005,
             saveat = 0.005,
         )
-        loss_zero = f_forward(p, [s_change], δ_gt)
-        loss_non_zero_1 = f_forward(p * 1.01, [s_change], δ_gt)
-        loss_non_zero_2 = f_forward(p * 0.99, [s_change], δ_gt)
+        loss_zero = f_forward(p, [s_change], δ_gt, [])
+        loss_non_zero_1 = f_forward(p * 1.01, [s_change], δ_gt, [])
+        loss_non_zero_2 = f_forward(p * 0.99, [s_change], δ_gt, [])
         @test isapprox(loss_zero, 0.0, atol = 1e-9)
         @test loss_non_zero_1 != 0.0
         @test loss_non_zero_2 != 0.0
-        grad_zero = f_grad(p, [s_change], δ_gt)
-        grad_nonzero_1 = f_grad(p * 1.01, [s_change], δ_gt)
-        grad_nonzero_2 = f_grad(p * 0.99, [s_change], δ_gt)
+        grad_zero = f_grad(p, [s_change], δ_gt, [])
+        grad_nonzero_1 = f_grad(p * 1.01, [s_change], δ_gt, [])
+        grad_nonzero_2 = f_grad(p * 0.99, [s_change], δ_gt, [])
         @test isapprox(grad_zero[1], 496.9588401248536, atol = 1e-3)
         @test isapprox(grad_nonzero_1[1], 496.450046454591, atol = 1e-3)
         @test isapprox(grad_nonzero_2[1], -498.19053389100594; atol = 1e-3)
@@ -599,7 +599,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -624,15 +624,15 @@ end
             dtmax = 0.05,
             saveat = 0.05,
         )
-        loss_zero = f_forward(p, [p_ctrl], δ_gt)
-        loss_non_zero_1 = f_forward(p * 1.01, [p_ctrl], δ_gt)
-        loss_non_zero_2 = f_forward(p * 0.99, [p_ctrl], δ_gt)
+        loss_zero = f_forward(p, [p_ctrl], δ_gt, [])
+        loss_non_zero_1 = f_forward(p * 1.01, [p_ctrl], δ_gt, [])
+        loss_non_zero_2 = f_forward(p * 0.99, [p_ctrl], δ_gt, [])
         @test isapprox(loss_zero, 0.0, atol = 2e-9)
         @test loss_non_zero_1 != 0.0
         @test loss_non_zero_2 != 0.0
-        grad_zero = f_grad(p, [p_ctrl], δ_gt)
-        grad_nonzero_1 = f_grad(p * 1.01, [p_ctrl], δ_gt)
-        grad_nonzero_2 = f_grad(p * 0.99, [p_ctrl], δ_gt)
+        grad_zero = f_grad(p, [p_ctrl], δ_gt, [])
+        grad_nonzero_1 = f_grad(p * 1.01, [p_ctrl], δ_gt, [])
+        grad_nonzero_2 = f_grad(p * 0.99, [p_ctrl], δ_gt, [])
         @test isapprox(grad_zero[1], 0.8876855633591412, atol = 1e-6)   #should pass --> once we convert outside of the test. 
         @test isapprox(grad_nonzero_1[1], 0.5946989856464833, atol = 1.0)
         @test isapprox(grad_nonzero_2[1], -0.9432527319604077; atol = 1.0)
@@ -704,7 +704,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -727,13 +727,13 @@ end
             reltol = 1e-6,
             saveat = 0.05,
         )
-        loss_zero = f_forward(p, [s_change], δ_gt)
-        loss_non_zero_1 = f_forward([5.2], [s_change], δ_gt)
-        loss_non_zero_2 = f_forward(p, [s_change], δ_gt .* 2)
+        loss_zero = f_forward(p, [s_change], δ_gt, [])
+        loss_non_zero_1 = f_forward([5.2], [s_change], δ_gt, [])
+        loss_non_zero_2 = f_forward(p, [s_change], δ_gt .* 2, [])
         @test isapprox(loss_zero, 0.0, atol = 1e-6)
         @test isapprox(loss_non_zero_1, 0.266806977990823, atol = 1e-6)
         @test isapprox(loss_non_zero_2, 17.41277928345796, atol = 1e-6)
-        grad_zero = f_grad(p, [s_change], δ_gt)
+        grad_zero = f_grad(p, [s_change], δ_gt, [])
         @test isapprox(grad_zero[1], -0.034893046793070925, atol = 1e-9)
     finally
         @info("removing test files")
@@ -768,7 +768,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -791,15 +791,15 @@ end
             dtmax = 0.05,
             saveat = 0.05,
         )
-        @test f_forward(p, [p_state], δ_gt) ==
-              f_zygote_forward(p, [p_state], δ_gt)
-        @test f_forward([3.14], [p_state], δ_gt) ==
-              f_zygote_forward([3.14], [p_state], δ_gt)
-        @test f_forward([3.15], [p_state], δ_gt) ==
-              f_zygote_forward([3.15], [p_state], δ_gt)
+        @test f_forward(p, [p_state], δ_gt, []) ==
+              f_zygote_forward(p, [p_state], δ_gt, [])
+        @test f_forward([3.14], [p_state], δ_gt, []) ==
+              f_zygote_forward([3.14], [p_state], δ_gt, [])
+        @test f_forward([3.15], [p_state], δ_gt, []) ==
+              f_zygote_forward([3.15], [p_state], δ_gt, [])
         #@test f_grad(p, [p_state], δ_gt) ==
         #      Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), p)[1]
-        @test Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), p)[1][1] == -10.336102683050685
+        @test Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt, []), p)[1][1] == -10.336102683050685
 
         _, _, f_zygote_forward = get_sensitivity_functions(
             sim,
@@ -816,17 +816,17 @@ end
 
 
         @test isapprox(
-            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), p)[1][1],
+            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt, []), p)[1][1],
             -15.973318599159727,
             atol = 1e-6,
         )
         @test isapprox(
-            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), [3.14])[1][1],
+            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt, []), [3.14])[1][1],
             -25.735942518785052,
             atol = 1e-6,
         )
         @test isapprox(
-            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt), [3.15])[1][1],
+            Zygote.gradient(p -> f_zygote_forward(p, [p_state], δ_gt, []), [3.15])[1][1],
             25.684384617470563,
             atol = 1e-6,
         )
@@ -869,7 +869,7 @@ end
             display(plot([scatter(; y = δ_gt), scatter(; y = δ)]))
         end
         EnzymeRules.inactive(::typeof(plot_traces), args...) = nothing
-        function f_loss(p, states, δ_gt)
+        function f_loss(p, states, δ_gt, aux)
             #plot_traces(states[1], δ_gt)
             return sum(abs.(states[1] - δ_gt))
         end
@@ -887,15 +887,15 @@ end
             saveat = 0.005,
         )
 
-        loss_zero = f_forward(p, [s_change], δ_gt)
-        loss_non_zero_1 = f_forward(p * 1.01, [s_change], δ_gt)
-        loss_non_zero_2 = f_forward(p * 0.99, [s_change], δ_gt)
+        loss_zero = f_forward(p, [s_change], δ_gt, [])
+        loss_non_zero_1 = f_forward(p * 1.01, [s_change], δ_gt, [])
+        loss_non_zero_2 = f_forward(p * 0.99, [s_change], δ_gt, [])
         @test isapprox(loss_zero, 0.0, atol = 0.02)
         @test isapprox(loss_non_zero_1, 1.4914986021363859, atol = 1e-6)
         @test isapprox(loss_non_zero_2, 1.489669782933298, atol = 1e-6)
-        grad_zero = f_grad(p, [s_change], δ_gt)
-        grad_nonzero_1 = f_grad(p * 1.01, [s_change], δ_gt)
-        grad_nonzero_2 = f_grad(p * 0.99, [s_change], δ_gt)
+        grad_zero = f_grad(p, [s_change], δ_gt, [])
+        grad_nonzero_1 = f_grad(p * 1.01, [s_change], δ_gt, [])
+        grad_nonzero_2 = f_grad(p * 0.99, [s_change], δ_gt, [])
         @test isapprox(grad_zero[1], -5.337145710251008, atol = 1e-6)
         @test isapprox(grad_nonzero_1[1], 500.0118950662703, atol = 1e-6)
         @test isapprox(grad_nonzero_2[1], -498.56135720277706; atol = 1e-6)
