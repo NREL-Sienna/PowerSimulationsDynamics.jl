@@ -671,26 +671,25 @@ function mdl_avr_ode!(
 
     #Define inner states for component
     internal_states = @view device_states[local_ix]
-    Vm  = internal_states[1]
+    Vm = internal_states[1]
     x_i = internal_states[2]
     x_d = internal_states[3]
-    Vg  = internal_states[4]
-   
+    Vg = internal_states[4]
 
     #Define external states for device
     V_th = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2) # machine's terminal voltage
-    Vs   = inner_vars[V_pss_var] # PSS output 
+    Vs = inner_vars[V_pss_var] # PSS output 
     Xad_Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base
 
     #Get parameters
-    Tr   = PSY.get_Tr(avr)
+    Tr = PSY.get_Tr(avr)
     K_pa = PSY.get_K_pa(avr) #k_pa>0
-    K_ia = PSY.get_K_ia(avr) 
+    K_ia = PSY.get_K_ia(avr)
     K_da = PSY.get_K_da(avr)
-    T_da = PSY.get_T_da(avr) 
+    T_da = PSY.get_T_da(avr)
     Va_min, Va_max = PSY.get_Va_lim(avr)
-    K_ff = PSY.get_K_ff(avr) 
-    K_m  = PSY.get_K_m(avr)
+    K_ff = PSY.get_K_ff(avr)
+    K_m = PSY.get_K_m(avr)
     K_ci = PSY.get_K_ci(avr) #K_cl in pss
     K_lr = PSY.get_K_lr(avr)
     I_lr = PSY.get_I_lr(avr)
@@ -705,14 +704,13 @@ function mdl_avr_ode!(
     pd_out, dx_d = high_pass_mass_matrix(pid_input, x_d, K_da, T_da)
     Va = pi_out + pd_out
 
-    ff_out = ( (Va - Vg) * K_m ) + ( K_ff * Va )
-    V_r1 = max(((I_lr*K_ci) - Xad_Ifd) * K_lr, Vr_min)
-    V_r2 = clamp( ff_out, Vr_min, Vr_max )
-    V_r  = min( V_r1, V_r2 )
-    E_fd = V_r * Vm 
+    ff_out = ((Va - Vg) * K_m) + (K_ff * Va)
+    V_r1 = max(((I_lr * K_ci) - Xad_Ifd) * K_lr, Vr_min)
+    V_r2 = clamp(ff_out, Vr_min, Vr_max)
+    V_r = min(V_r1, V_r2)
+    E_fd = V_r * Vm
     _, dVg = low_pass(E_fd, Vg, Kg, Tg)
 
-    
     #Compute 4 States AVR ODE:
     output_ode[local_ix[1]] = dVm_dt
     output_ode[local_ix[2]] = dx_i
@@ -723,5 +721,3 @@ function mdl_avr_ode!(
     inner_vars[Vf_var] = E_fd
     return
 end
-
-

@@ -586,15 +586,15 @@ function initialize_avr!(
     Ifd0 = inner_vars[Xad_Ifd_var]
 
     #Get parameters
-    avr  = PSY.get_avr(dynamic_device)
-    Tr   = PSY.get_Tr(avr)
+    avr = PSY.get_avr(dynamic_device)
+    Tr = PSY.get_Tr(avr)
     K_pa = PSY.get_K_pa(avr) #k_pa>0
-    K_ia = PSY.get_K_ia(avr) 
+    K_ia = PSY.get_K_ia(avr)
     K_da = PSY.get_K_da(avr)
-    T_da = PSY.get_T_da(avr) 
+    T_da = PSY.get_T_da(avr)
     Va_min, Va_max = PSY.get_Va_lim(avr)
-    K_ff = PSY.get_K_ff(avr) 
-    K_m  = PSY.get_K_m(avr)
+    K_ff = PSY.get_K_ff(avr)
+    K_m = PSY.get_K_m(avr)
     K_ci = PSY.get_K_ci(avr) #K_cl in pss
     K_lr = PSY.get_K_lr(avr)
     I_lr = PSY.get_I_lr(avr)
@@ -603,39 +603,43 @@ function initialize_avr!(
     Tg = PSY.get_Tg(avr) #T_g>0
 
     #Compute auxiliary parameters
-    Vr  = Vf0 / Vt0 
-    Vg  = Kg * Vf0
+    Vr = Vf0 / Vt0
+    Vg = Kg * Vf0
 
-    Vr2 = max( Vr_min, ((I_lr * K_ci) - Ifd0) * K_lr )
-    if ( vr - Vr2 > eps() ) # or using STRICT_NLSOLVE_F_TOLERANCE?
-        
+    Vr2 = max(Vr_min, ((I_lr * K_ci) - Ifd0) * K_lr)
+    if (Vr - Vr2 > eps()) # or using STRICT_NLSOLVE_F_TOLERANCE?
+
         #Check saturation
 
-        Va = ( Vr + K_m*Vg ) / ( K_ff + K_m )
+        Va = (Vr + K_m * Vg) / (K_ff + K_m)
 
         #Check ss error according to control parameters
         if K_ia < eps()
-            Vref0 = Va/K_pa + Vt0
+            Vref0 = Va / K_pa + Vt0
             error(
-            "AVR in $(PSY.get_name(dynamic_device)) has non positive integrator gain. Please update it."
+                "AVR in $(PSY.get_name(dynamic_device)) has non positive integrator gain. Please update it.",
             )
         else
             Vref0 = Vt0
         end
 
-        if !(( Vr < Vr_max ) && ( Vr > Vr_min ))
+        if !((Vr < Vr_max) && (Vr > Vr_min))
             @error(
-            "AVR controller in $(PSY.get_name(dynamic_device)) is saturated. Consider updating the operating point."
-            )  
+                "AVR controller in $(PSY.get_name(dynamic_device)) is saturated. Consider updating the operating point."
+            )
         end
     else
         error(
-            "Current limiter of AVR in $(PSY.get_name(dynamic_device)) is activated. Consider updating the operating point."
-            )
+            "Current limiter of AVR in $(PSY.get_name(dynamic_device)) is activated. Consider updating the operating point.",
+        )
     end
 
     PSY.set_V_ref!(avr, Vref0)
     set_V_ref(dynamic_device, Vref0)
+    @warn(
+        "I_LR parameter was updated from $(I_lr) to $(Ifd0) of $(PSY.get_name(dynamic_device)) to have zero current field error."
+    )
+    PSY.set_I_lr!(avr, Ifd0 * 10.0)
 
     #States of ST6B [:Vm, :x_i, :x_d, :Vg]
     #Update AVR states
@@ -648,4 +652,3 @@ function initialize_avr!(
 
     return
 end
-

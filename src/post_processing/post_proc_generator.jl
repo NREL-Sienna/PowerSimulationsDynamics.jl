@@ -832,6 +832,69 @@ function _field_voltage(
 end
 
 """
+Function to obtain the field voltage time series of a Dynamic Generator with avr ESST1A.
+
+"""
+function _field_voltage(
+    avr::PSY.ST6B,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64, Vector{Float64}},
+)
+    #ASSUMPTION THAT PSS IS NOT ACTIVATE
+    # Obtain state Vm
+    ts, Vm = post_proc_state_series(res, (name, :Vm), dt)
+
+    # Obtain state x_i
+    ts, x_i = post_proc_state_series(res, (name, :x_i), dt)
+
+    # Obtain state x_d
+    ts, x_d = post_proc_state_series(res, (name, :x_d), dt)
+
+    # Obtain state x_d
+    ts, Vg = post_proc_state_series(res, (name, :Vg), dt)
+
+    # Obtain state Xad_Ifd
+    ts, Xad_Ifd = post_proc_field_current_series(res, name, dt)
+
+    # Obtain PSS output
+    _, Vs = post_proc_pss_output_series(res, name, dt)
+
+    V_ref = PSY.get_V_ref(avr)
+
+    #Get parameters
+    Tr = PSY.get_Tr(avr)
+    K_pa = PSY.get_K_pa(avr) #k_pa>0
+    K_ia = PSY.get_K_ia(avr)
+    K_da = PSY.get_K_da(avr)
+    T_da = PSY.get_T_da(avr)
+    Va_min, Va_max = PSY.get_Va_lim(avr)
+    K_ff = PSY.get_K_ff(avr)
+    K_m = PSY.get_K_m(avr)
+    K_ci = PSY.get_K_ci(avr) #K_cl in pss
+    K_lr = PSY.get_K_lr(avr)
+    I_lr = PSY.get_I_lr(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    Kg = PSY.get_Kg(avr)
+    Tg = PSY.get_Tg(avr) #T_g>0
+
+    Efd = zeros(length(ts))
+    for (ix, t) in enumerate(ts)
+        pid_input = V_ref + Vs[ix] - Vm[ix]
+        pi_out, dx_i = pi_block_nonwindup(pid_input, x_i[ix], K_pa, K_ia, Va_min, Va_max)
+        pd_out, dx_d = high_pass_mass_matrix(pid_input, x_d[ix], K_da, T_da)
+        Va = pi_out + pd_out
+        ff_out = ((Va - Vg[ix]) * K_m) + (K_ff * Va)
+        V_r1 = max(((I_lr * K_ci) - Xad_Ifd[ix]) * K_lr, Vr_min)
+        V_r2 = clamp(ff_out, Vr_min, Vr_max)
+        V_r = min(V_r1, V_r2)
+        Efd[ix] = V_r * Vm[ix]
+    end
+
+    return ts, Efd
+end
+
+"""
 Function to obtain the pss output time series of a Dynamic Generator with pss PSSFixed.
 
 """
