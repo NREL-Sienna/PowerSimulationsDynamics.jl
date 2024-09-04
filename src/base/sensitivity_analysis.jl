@@ -251,7 +251,7 @@ function get_sensitivity_functions(
             end
             p_new = copy(p_new_buff)
             #Converting perturbations to callbacks, restore after : https://github.com/EnzymeAD/Enzyme.jl/issues/1650
-            @error "Zygote assumes single perturbation"
+            @warn "Zygote assumes single perturbation"
             cb = Vector{SciMLBase.DiscreteCallback}(undef, 1)
             pert = perts[1]
             condition = (x, t, integrator) -> t in [pert.time]
@@ -264,7 +264,7 @@ function get_sensitivity_functions(
                 @error "POWERFLOW AND DEVICES -- not yet supported"
                 #_initialize_powerflow_and_devices!(x0, inputs, sys)
             elseif init_level == DEVICES_ONLY
-                @error "Reinitializing of most devices not supported with Zygote"
+                @warn "Reinitializing of most devices not supported with Zygote"
                 x0, p_new = _non_mutating_initialization_of_ml_surrogates(x0, p_new, sim_inputs) 
             elseif init_level == INITIALIZED
                 @info "I.C.s not impacted by parameter change"
