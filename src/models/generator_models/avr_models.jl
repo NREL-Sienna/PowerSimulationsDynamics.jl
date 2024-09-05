@@ -59,6 +59,9 @@ function mass_matrix_avr_entries!(
     global_index::Base.ImmutableDict{Symbol, Int64},
 )
     mass_matrix[global_index[:Vm], global_index[:Vm]] = PSY.get_Tr(avr)
+    mass_matrix[global_index[:Vr1], global_index[:Vr1]] = PSY.get_Tb(avr)
+    mass_matrix[global_index[:Vr2], global_index[:Vr2]] = PSY.get_Tb1(avr)
+    mass_matrix[global_index[:Va], global_index[:Va]] = PSY.get_Ta(avr)
     return
 end
 
