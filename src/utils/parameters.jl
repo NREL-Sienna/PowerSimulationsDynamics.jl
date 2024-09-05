@@ -985,7 +985,7 @@ get_params(x::PSY.SteamTurbineGov1) = (
 get_params_metadata(::PSY.SteamTurbineGov1) = (
     R = ParamsMetadata(DEVICE_PARAM, false, true),
     T1 = ParamsMetadata(DEVICE_PARAM, false, true),
-    valve_position = (
+    valve_position_limits = (
         min = ParamsMetadata(DEVICE_PARAM, false, true),
         max = ParamsMetadata(DEVICE_PARAM, false, true),
     ),
