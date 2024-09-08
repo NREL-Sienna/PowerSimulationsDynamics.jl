@@ -1,10 +1,14 @@
 function get_indices_in_parameter_vector(p, device_param_pairs)
     indices = Int[]
-    for tuple in device_param_pairs
-        label = join((tuple[1], "params", tuple[2:end]...), ".")
+    for entry in device_param_pairs
+        if isa(entry, Tuple)
+            label = join((entry[1], "params", entry[2:end]...), ".")
+        else 
+            label = entry
+        end 
         ix = ComponentArrays.label2index(p, label)
         if ix === nothing
-            @error "Index not found for entry $tuple"
+            @error "Index not found for entry $entry"
             return nothing
         end
         if isa(ix, AbstractArray)
