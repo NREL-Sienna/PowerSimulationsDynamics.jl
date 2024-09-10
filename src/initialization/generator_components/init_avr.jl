@@ -672,7 +672,6 @@ function initialize_avr!(
     if SW1_Flag == 1
         error("Source from generator terminal voltage not supported.")
     end
-    Tr = PSY.get_Tr(avr)
     K_pr = PSY.get_K_pr(avr)
     K_ir = PSY.get_K_ir(avr)
     Vpi_min, Vpi_max = PSY.get_Vpi_lim(avr)
@@ -687,7 +686,6 @@ function initialize_avr!(
     K_c1 = PSY.get_K_c1(avr)
     K_p = PSY.get_K_p(avr)
     K_i2 = PSY.get_K_i2(avr)
-    VB1_max = PSY.get_VB1_max(avr)
 
     if K_i2 != 0.0
         error("Feedforward Current for AVR ST8C not implemented yet.")
