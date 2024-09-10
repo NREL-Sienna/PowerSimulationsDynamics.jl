@@ -832,7 +832,7 @@ function _field_voltage(
 end
 
 """
-Function to obtain the field voltage time series of a Dynamic Generator with avr ESST1A.
+Function to obtain the field voltage time series of a Dynamic Generator with avr ST6B.
 
 """
 function _field_voltage(
@@ -889,6 +889,42 @@ function _field_voltage(
         V_r2 = clamp(ff_out, Vr_min, Vr_max)
         V_r = min(V_r1, V_r2)
         Efd[ix] = V_r * Vm[ix]
+    end
+
+    return ts, Efd
+end
+
+"""
+Function to obtain the field voltage time series of a Dynamic Generator with avr ST8C.
+
+"""
+function _field_voltage(
+    avr::PSY.ST8C,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64, Vector{Float64}},
+)
+    # Obtain state Vm
+    ts, x_a3 = post_proc_state_series(res, (name, :x_a3), dt)
+
+    # Obtain state Xad_Ifd
+    ts, Xad_Ifd = post_proc_field_current_series(res, name, dt)
+
+    #Get parameters
+    K_c1 = PSY.get_K_c1(avr)
+    K_p = PSY.get_K_p(avr)
+    VB1_max = PSY.get_VB1_max(avr)
+
+    Efd = zeros(length(ts))
+    for (ix, t) in enumerate(ts)
+        #TODO: Get proper V_e and V_b2
+        V_e = K_p
+        V_b2 = 0.0
+        Ifd = Xad_Ifd[ix]
+        I_N1 = K_c1 * Ifd / V_e
+        F_ex = rectifier_function(I_N1)
+        V_b1 = min(F_ex * V_e, VB1_max)
+        Efd[ix] = V_b1 * x_a3[ix] + V_b2
     end
 
     return ts, Efd
