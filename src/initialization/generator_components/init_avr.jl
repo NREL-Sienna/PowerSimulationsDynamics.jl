@@ -652,3 +652,118 @@ function initialize_avr!(
 
     return
 end
+
+function initialize_avr!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ST8C, TG, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain Vf0 solved from Machine
+    Vf0 = inner_vars[Vf_var]
+    #Obtain Ifd limiter
+    Ifd = inner_vars[Xad_Ifd_var] # read Lad Ifd (field current times Lad)
+    #Obtain measured terminal voltage
+    Vt0 = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    SW1_Flag = PSY.get_SW1_Flag(avr)
+    if SW1_Flag == 1
+        error("Source from generator terminal voltage not supported.")
+    end
+    Tr = PSY.get_Tr(avr)
+    K_pr = PSY.get_K_pr(avr)
+    K_ir = PSY.get_K_ir(avr)
+    Vpi_min, Vpi_max = PSY.get_Vpi_lim(avr)
+    K_pa = PSY.get_K_pa(avr)
+    K_ia = PSY.get_K_ia(avr)
+    Va_min, Va_max = PSY.get_Va_lim(avr)
+    K_a = PSY.get_K_a(avr)
+    T_a = PSY.get_T_a(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    K_f = PSY.get_K_f(avr)
+    T_f = PSY.get_T_f(avr)
+    K_c1 = PSY.get_K_c1(avr)
+    K_p = PSY.get_K_p(avr)
+    K_i2 = PSY.get_K_i2(avr)
+    VB1_max = PSY.get_VB1_max(avr)
+
+    if K_i2 != 0.0
+        error("Feedforward Current for AVR ST8C not implemented yet.")
+    end
+    if K_ia == 0.0
+        error(
+            "Integrator gain cannot be zero for AVR ST8C of $(PSY.get_name(dynamic_device))",
+        )
+    end
+    #To solve V_ref, Vr
+    function f!(out, x)
+        V_ref = x[1]
+        Vm = x[2] # Sensed Voltage
+        x_a1 = x[3] # Regulator Integrator
+        x_a2 = x[4] # Field Regulator
+        x_a3 = x[5] # Controller Integrator
+        x_a4 = x[6] # Regulator Feedback
+
+        #TODO: Implement Terminal Current FF for AVR
+        V_b2 = 0.0
+        #TODO: Implement Voltage Compensation if needed
+        V_e = K_p
+
+        # Compute block derivatives
+        Vs = 0.0
+        V_pi_in = V_ref + Vs - Vm
+        Ifd_ref, dxa1_dt = pi_block_nonwindup(V_pi_in, x_a1, K_pr, K_ir, Vpi_min, Vpi_max)
+        Ifd_diff = Ifd_ref - x_a4
+        pi_out, dxa2_dt = pi_block_nonwindup(Ifd_diff, x_a2, K_pa, K_ia, Va_min, Va_max)
+        _, dxa3_dt = low_pass_nonwindup_mass_matrix(pi_out, x_a3, K_a, T_a, Vr_min, Vr_max)
+        _, dxa4_dt = low_pass_mass_matrix(Ifd, x_a4, K_f, T_f)
+
+        # Compute V_b1
+        I_n1 = K_c1 * Ifd / V_e
+        F_ex = rectifier_function(I_n1)
+        V_b1 = F_ex * V_e
+
+        Efd = V_b1 * x_a3 + V_b2
+
+        #V_ll output first block 
+        out[1] = Efd - Vf0 # we are asking for Vf0 
+        out[2] = Vm - Vt0 # Low Pass Sensor
+        out[3] = dxa1_dt
+        out[4] = dxa2_dt
+        out[5] = dxa3_dt
+        out[6] = dxa4_dt
+    end
+    # Initial Guess
+    V_e0 = K_p
+    I_n10 = K_c1 * Ifd / V_e0
+    F_ex0 = rectifier_function(I_n10)
+    V_b10 = F_ex0 * V_e0
+    x_a30 = Vf0 / V_b10
+    x_a20 = x_a30 / (K_a * K_ia)
+    x0 = [Vt0, Vt0, K_f * Ifd / K_ir, x_a20, x_a30, Ifd * K_f]
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    if !NLsolve.converged(sol)
+        @warn("Initialization of AVR in $(PSY.get_name(static)) failed")
+    else # if converge
+        sol_x0 = sol.zero
+        Vreg = sol_x0[6]
+        if (Vreg > Vr_max) || (Vreg < Vr_min)
+            @error(
+                "Regulator Voltage V_R = $(Vreg) outside the limits for AVR of $(PSY.get_name(dynamic_device)). Consider updating its limits."
+            )
+        end
+        #Update V_ref
+        PSY.set_V_ref!(avr, sol_x0[1])
+        set_V_ref(dynamic_device, sol_x0[1])
+        #Update AVR states
+        avr_ix = get_local_state_ix(dynamic_device, PSY.ST8C)
+        avr_states = @view device_states[avr_ix]
+        avr_states[1] = sol_x0[2]
+        avr_states[2] = sol_x0[3]
+        avr_states[3] = sol_x0[4]
+        avr_states[4] = sol_x0[5]
+        avr_states[5] = sol_x0[6]
+    end
+end

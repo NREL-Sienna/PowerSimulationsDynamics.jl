@@ -766,7 +766,7 @@ function mdl_avr_ode!(
 
     #Get parameters
     avr = PSY.get_avr(dynamic_device)
-    SW1_Flag = PSY.get_SW1_flags(avr)
+    SW1_Flag = PSY.get_SW1_Flag(avr)
     if SW1_Flag == 1
         error("Source from generator terminal voltage not supported.")
     end
