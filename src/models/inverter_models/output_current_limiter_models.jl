@@ -84,7 +84,7 @@ function limit_output_current(
     else
         ε = 0.01
         Idq = sqrt(Id_cnv_ref^2 + Iq_cnv_ref^2)
-        ρ = -ε*log(exp(-1/ε)+exp(-limit_value/(ε*Idq)))
+        ρ = -ε * log(exp(-1 / ε) + exp(-limit_value / (ε * Idq)))
         Id_cnv_ref2 = ρ * Id_cnv_ref
         Iq_cnv_ref2 = ρ * Iq_cnv_ref
         Del_Vv_d =
