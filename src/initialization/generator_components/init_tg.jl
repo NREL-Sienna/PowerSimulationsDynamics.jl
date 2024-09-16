@@ -406,3 +406,99 @@ function initialize_tg!(
     end
     return
 end
+
+
+function initialize_tg!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.WPIDHY, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+
+    #Get mechanical torque to SyncMach
+    τm0 = inner_vars[τm_var]
+    τe0 = inner_vars[τe_var]
+    P0 = PSY.get_active_power(static)
+    
+    #Get parameters
+    tg = PSY.get_prime_mover(dynamic_device)
+    reg = PSY.get_reg(tg)
+    Kp = PSY.get_Kp(tg)
+    Ki = PSY.get_Ki(tg)
+    Kd = PSY.get_Kd(tg)
+    Ta = PSY.get_Ta(tg)
+    gate_openings = PSY.get_gate_openings(tg)
+    power_gate_openings = PSY.get_power_gate_openings(tg)
+    G_min, G_max = PSY.get_G_lim(tg)
+    P_min, P_max = PSY.get_P_lim(tg)
+    Tw = PSY.get_Tw(tg)
+
+    #Compute controller parameters for equivalent TF
+    Kp_prime = (-Ta * Ki) + Kp
+    Kd_prime = (Ta^2 * Ki) - (Ta * Kp) + Kd
+    Ki_prime = Ki
+
+    function f!(out, x)
+        P_ref = x[1]
+        x_g1 = x[2]
+        x_g2 = x[3]
+        x_g3 = x[4]
+        x_g4 = x[5]
+        x_g5 = x[6]
+        x_g6 = x[7]
+        x_g7 = x[8]
+
+        pid_input = x_g1
+        pi_out, dxg2_dt = pi_block(pid_input, x_g2, Kp_prime, Ki_prime)
+        pd_out, dxg4_dt = high_pass(pid_input, x_g4, Kd_prime, Ta)
+
+        power_at_gate = three_level_gate_to_power_map(x_g6, gate_openings, power_gate_openings)
+        
+        y_LL_out, dxg7_dt = lead_lag(power_at_gate, x_g7, 1.0, -Tw, Tw / 2.0)
+
+        out[1] = y_LL_out - τm0
+        out[2] = (P0 - P_ref) * reg - x_g1
+        out[3] = dxg2_dt
+        out[4] = pi_out + pd_out - x_g3
+        out[5] = dxg4_dt
+        out[6] = x_g3 - x_g5
+        out[7] = x_g5
+        out[8] = dxg7_dt
+    end
+    gate0 = three_level_power_to_gate_map(τm0, gate_openings, power_gate_openings)
+    P_ref_guess = P0
+    xg1_guess = τe0 - P_ref_guess
+
+    x0 = [P_ref_guess, xg1_guess, 0.0, 0.0, 0.0, 0.0, gate0, 3.0 * τm0]
+    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
+    if !NLsolve.converged(sol)
+        @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
+    else
+        sol_x0 = sol.zero
+        #Error if x_g3 is outside PI limits
+        if sol_x0[7] > G_max || sol_x0[7] < G_min
+            @error(
+                "WPIDHY Turbine Governor $(PSY.get_name(static)) $(sol_x0[7]) outside its gate limits $G_min, $G_max. Consider updating the operating point.",
+            )
+        elseif y_LL_out > P_max || y_LL_out < P_min
+            @error(
+                "WPIDHY Turbine Governor $(PSY.get_name(static)) $(sol_x0[8]) outside its power limits $P_min, $P_max. Consider updating the operating point.",
+            )
+        end
+
+        #Update Control Refs
+        PSY.set_P_ref!(tg, sol_x0[1])
+        set_P_ref(dynamic_device, sol_x0[1])
+        #Update states
+        tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
+        tg_states = @view device_states[tg_ix]
+        tg_states[1] = sol_x0[2]
+        tg_states[2] = sol_x0[3]
+        tg_states[3] = sol_x0[4]
+        tg_states[4] = sol_x0[5]
+        tg_states[5] = sol_x0[6]
+        tg_states[6] = sol_x0[7]
+        tg_states[7] = sol_x0[8]
+    end
+    return
+end
