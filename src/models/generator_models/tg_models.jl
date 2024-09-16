@@ -474,8 +474,7 @@ function mdl_tg_ode!(
     Kd_prime = (Ta^2 * Ki) - (Ta * Kp) + Kd
     Ki_prime = Ki
     
-    x_in = P_ref - τ_e
-
+    x_in = τ_e - P_ref
     #Compute block derivatives
     _, dxg1_dt = low_pass_mass_matrix(x_in, x_g1, reg, T_reg)
     pid_input = x_g1 - (ω[1] - ω_sys)
