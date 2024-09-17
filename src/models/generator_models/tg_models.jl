@@ -43,7 +43,6 @@ function mass_matrix_tg_entries!(
     return
 end
 
-
 function mass_matrix_tg_entries!(
     mass_matrix,
     tg::PSY.WPIDHY,
@@ -473,13 +472,13 @@ function mdl_tg_ode!(
     Kp_prime = (-Ta * Ki) + Kp
     Kd_prime = (Ta^2 * Ki) - (Ta * Kp) + Kd
     Ki_prime = Ki
-    
+
     x_in = τ_e - P_ref
     #Compute block derivatives
     _, dxg1_dt = low_pass_mass_matrix(x_in, x_g1, reg, T_reg)
     pid_input = x_g1 - (ω[1] - ω_sys)
     pi_out, dxg2_dt = pi_block(pid_input, x_g2, Kp_prime, Ki_prime)
-    pd_out, dxg4_dt = high_pass(pid_input, x_g4, Kd_prime, Ta)  
+    pd_out, dxg4_dt = high_pass(pid_input, x_g4, Kd_prime, Ta)
     pid_out = pi_out + pd_out
     _, dxg3_dt = low_pass(pid_out, x_g3, 1.0, Ta)
     _, dxg5_dt = low_pass(x_g3, x_g5, 1.0, Tb)
@@ -490,14 +489,15 @@ function mdl_tg_ode!(
     # Compute integrator
     xg6_sat, dxg6_dt = integrator_windup(G_vel_sat, x_g6, 1.0, 1.0, G_min, G_max)
 
-    power_at_gate = three_level_gate_to_power_map(xg6_sat, gate_openings, power_gate_openings)
+    power_at_gate =
+        three_level_gate_to_power_map(xg6_sat, gate_openings, power_gate_openings)
 
     # Compute Lead-Lag Block
     ll_out, dxg7_dt = lead_lag(power_at_gate, x_g7, 1.0, -Tw, Tw / 2.0)
     Power_sat = clamp(ll_out, P_min, P_max)
-    
+
     #Compute output torque
-    P_m = Power_sat - ( D * (ω[1] - ω_sys) )
+    P_m = Power_sat - (D * (ω[1] - ω_sys))
 
     #Compute 1 State TG ODE:
     output_ode[local_ix[1]] = dxg1_dt
@@ -513,9 +513,6 @@ function mdl_tg_ode!(
 
     return
 end
-
-
-
 
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},

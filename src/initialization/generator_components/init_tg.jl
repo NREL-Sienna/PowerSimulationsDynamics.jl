@@ -407,7 +407,6 @@ function initialize_tg!(
     return
 end
 
-
 function initialize_tg!(
     device_states,
     static::PSY.StaticInjection,
@@ -419,7 +418,7 @@ function initialize_tg!(
     τm0 = inner_vars[τm_var]
     τe0 = inner_vars[τe_var]
     P0 = PSY.get_active_power(static)
-    
+
     #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
     reg = PSY.get_reg(tg)
@@ -452,8 +451,9 @@ function initialize_tg!(
         pi_out, dxg2_dt = pi_block(pid_input, x_g2, Kp_prime, Ki_prime)
         pd_out, dxg4_dt = high_pass(pid_input, x_g4, Kd_prime, Ta)
 
-        power_at_gate = three_level_gate_to_power_map(x_g6, gate_openings, power_gate_openings)
-        
+        power_at_gate =
+            three_level_gate_to_power_map(x_g6, gate_openings, power_gate_openings)
+
         y_LL_out, dxg7_dt = lead_lag(power_at_gate, x_g7, 1.0, -Tw, Tw / 2.0)
 
         out[1] = y_LL_out - τm0
@@ -470,7 +470,7 @@ function initialize_tg!(
     xg1_guess = τe0 - P_ref_guess
 
     #x0 = [P_ref_guess, xg1_guess, 0.0, 0.0, 0.0, 0.0, gate0, 3.0 * τm0]
-    x0 = [P_ref_guess,0.0, gate0, gate0, 0.0, gate0, gate0, 3.0 * τm0]
+    x0 = [P_ref_guess, 0.0, gate0, gate0, 0.0, gate0, gate0, 3.0 * τm0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
