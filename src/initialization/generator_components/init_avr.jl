@@ -571,3 +571,84 @@ function initialize_avr!(
     avr_states[5] = -Kf / Tf * Vf0
     return
 end
+
+function initialize_avr!(
+    device_states,
+    static::PSY.StaticInjection,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ST6B, TG, P}},
+    inner_vars::AbstractVector,
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+    #Obtain Vf0 solved from Machine
+    Vf0 = inner_vars[Vf_var]
+    #Obtain measured terminal voltage
+    Vt0 = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2)
+    #Obtain field winding current
+    Ifd0 = inner_vars[Xad_Ifd_var]
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    Tr = PSY.get_Tr(avr)
+    K_pa = PSY.get_K_pa(avr) #k_pa>0
+    K_ia = PSY.get_K_ia(avr)
+    K_da = PSY.get_K_da(avr)
+    T_da = PSY.get_T_da(avr)
+    Va_min, Va_max = PSY.get_Va_lim(avr)
+    K_ff = PSY.get_K_ff(avr)
+    K_m = PSY.get_K_m(avr)
+    K_ci = PSY.get_K_ci(avr) #K_cl in pss
+    K_lr = PSY.get_K_lr(avr)
+    I_lr = PSY.get_I_lr(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    Kg = PSY.get_Kg(avr)
+    Tg = PSY.get_Tg(avr) #T_g>0
+
+    #Compute auxiliary parameters
+    Vr = Vf0 / Vt0
+    Vg = Kg * Vf0
+
+    Vr2 = max(Vr_min, ((I_lr * K_ci) - Ifd0) * K_lr)
+    if (Vr - Vr2 > eps()) # or using STRICT_NLSOLVE_F_TOLERANCE?
+
+        #Check saturation
+
+        Va = (Vr + K_m * Vg) / (K_ff + K_m)
+
+        #Check ss error according to control parameters
+        if K_ia < eps()
+            Vref0 = Va / K_pa + Vt0
+            error(
+                "AVR in $(PSY.get_name(dynamic_device)) has non positive integrator gain. Please update it.",
+            )
+        else
+            Vref0 = Vt0
+        end
+
+        if !((Vr < Vr_max) && (Vr > Vr_min))
+            @error(
+                "AVR controller in $(PSY.get_name(dynamic_device)) is saturated. Consider updating the operating point."
+            )
+        end
+    else
+        error(
+            "Current limiter of AVR in $(PSY.get_name(dynamic_device)) is activated. Consider updating the operating point.",
+        )
+    end
+
+    PSY.set_V_ref!(avr, Vref0)
+    set_V_ref(dynamic_device, Vref0)
+    @warn(
+        "I_LR parameter was updated from $(I_lr) to $(Ifd0) of $(PSY.get_name(dynamic_device)) to have zero current field error."
+    )
+    PSY.set_I_lr!(avr, Ifd0 * 10.0)
+
+    #States of ST6B [:Vm, :x_i, :x_d, :Vg]
+    #Update AVR states
+    avr_ix = get_local_state_ix(dynamic_device, PSY.ST6B)
+    avr_states = @view device_states[avr_ix]
+    avr_states[1] = Vt0
+    avr_states[2] = Va / K_ia
+    avr_states[3] = 0
+    avr_states[4] = Vg
+
+    return
+end
