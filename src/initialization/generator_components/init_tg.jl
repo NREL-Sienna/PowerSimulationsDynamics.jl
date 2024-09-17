@@ -469,7 +469,8 @@ function initialize_tg!(
     P_ref_guess = P0
     xg1_guess = τe0 - P_ref_guess
 
-    x0 = [P_ref_guess, xg1_guess, 0.0, 0.0, 0.0, 0.0, gate0, 3.0 * τm0]
+    #x0 = [P_ref_guess, xg1_guess, 0.0, 0.0, 0.0, 0.0, gate0, 3.0 * τm0]
+    x0 = [P_ref_guess,0.0, gate0, gate0, 0.0, gate0, gate0, 3.0 * τm0]
     sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
     if !NLsolve.converged(sol)
         @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
@@ -480,7 +481,7 @@ function initialize_tg!(
             @error(
                 "WPIDHY Turbine Governor $(PSY.get_name(static)) $(sol_x0[7]) outside its gate limits $G_min, $G_max. Consider updating the operating point.",
             )
-        elseif y_LL_out > P_max || y_LL_out < P_min
+        elseif τm0 > P_max || τm0 < P_min
             @error(
                 "WPIDHY Turbine Governor $(PSY.get_name(static)) $(sol_x0[8]) outside its power limits $P_min, $P_max. Consider updating the operating point.",
             )
