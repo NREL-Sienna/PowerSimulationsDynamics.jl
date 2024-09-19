@@ -1606,7 +1606,7 @@ function three_level_gate_to_power_map(
     p0 = 0.0
     g3 = 1.0
     if input <= g0
-        return zero(T)
+        return zero(Z)
     elseif g0 < input <= g1
         return ((p1 - p0) / (g1 - g0)) * (input - g0) + p0
     elseif g1 < input <= g2
