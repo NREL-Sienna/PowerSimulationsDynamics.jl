@@ -12,7 +12,7 @@ raw_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/ST8C/ThreeBusMulti.raw")
 dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/ST8C/ThreeBus_ST8C.dyr")
 #csv_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/ST8C/results_PSSe.csv")
 
-@testset "Test 60 ST8C ResidualModel" begin
+@testset "Test 61 ST8C ResidualModel" begin
     path = joinpath(pwd(), "test-psse-ST8C")
     !isdir(path) && mkdir(path)
     try
@@ -34,7 +34,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/ST8C/ThreeBus_ST8C.dyr")
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test60_x0_init
+        for (k, v) in test61_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
@@ -46,7 +46,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/ST8C/ThreeBus_ST8C.dyr")
         @test small_sig.stable
 
         # Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test60_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test61_eigvals) < 1e-3
 
         # Solve problem
         @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
@@ -84,7 +84,7 @@ dyr_file = joinpath(TEST_FILES_DIR, "benchmarks/psse/ST8C/ThreeBus_ST8C.dyr")
     end
 end
 
-@testset "Test 60 ST8C MassMatrixModel" begin
+@testset "Test 61 ST8C MassMatrixModel" begin
     path = joinpath(pwd(), "test-psse-ST6B")
     !isdir(path) && mkdir(path)
     try
@@ -106,7 +106,7 @@ end
         # Test Initial Condition
         diff_val = [0.0]
         res = get_init_values_for_comparison(sim)
-        for (k, v) in test60_x0_init
+        for (k, v) in test61_x0_init
             diff_val[1] += LinearAlgebra.norm(res[k] - v)
         end
 
@@ -118,7 +118,7 @@ end
         @test small_sig.stable
 
         # Test Eigenvalues
-        @test LinearAlgebra.norm(eigs - test60_eigvals) < 1e-3
+        @test LinearAlgebra.norm(eigs - test61_eigvals) < 1e-3
 
         # Solve problem
         @test execute!(sim, Rodas4(); dtmax = 0.005, saveat = 0.005) ==

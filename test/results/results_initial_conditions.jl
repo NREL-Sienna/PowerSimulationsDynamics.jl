@@ -1837,7 +1837,7 @@ test60_x0_init = Dict(
     ],
 )
 
-test60_x0_init = Dict(
+test61_x0_init = Dict(
     "V_R" => [
         1.05
         1.0197944718502572
