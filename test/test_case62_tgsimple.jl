@@ -23,7 +23,7 @@ Ybus_change = NetworkSwitch(
     Ybus_fault,
 ) #New YBus
 
-@testset "Test 13 AVR ResidualModel" begin
+@testset "Test 62 TGSimple ResidualModel" begin
     path = mktempdir()
     try
         # Define Simulation Problem
@@ -65,7 +65,7 @@ Ybus_change = NetworkSwitch(
     end
 end
 
-@testset "Test 13 AVR MassMarixcModel" begin
+@testset "Test 62 TGSimple MassMarixcModel" begin
     path = mktempdir()
     try
         # Define Simulation Problem
