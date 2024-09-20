@@ -1155,6 +1155,21 @@ function _mechanical_torque(
     ts, x_a3 = post_proc_state_series(res, (name, :x_a3), dt)
     return ts, x_a3
 end
+
+"""
+Function to obtain the mechanical torque time series of a Dynamic Generator with DEGOV1 Turbine Governor.
+
+"""
+function _mechanical_torque(
+    ::PSY.DEGOV1,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, x_g5 = post_proc_state_series(res, (name, :x_g5), dt)
+    return ts, x_g5
+end
+
 """
 Function to obtain the mechanical torque time series of a Dynamic Generator with HydroTurbineGov (HYGOV) Turbine Governor.
 
