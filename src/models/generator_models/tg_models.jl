@@ -116,7 +116,7 @@ function mdl_tg_ode!(
     Tm = PSY.get_Tm(tg)
 
     # Compute differential equation
-    droop_τ = P_ref + d_t * (ω_ref = get_ω_ref(device) - ω[1])
+    droop_τ = P_ref + d_t * (ω_ref - ω[1])
     output_ode[local_ix[1]] = (1.0 / Tm) * (droop_τ - τm)
 
     # Update Inner Vars
