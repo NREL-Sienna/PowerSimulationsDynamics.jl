@@ -1246,3 +1246,17 @@ function _mechanical_torque(
     τm = Pm ./ ω
     return ts, τm
 end
+
+"""
+Function to obtain the mechanical torque time series of a Dynamic Generator with TGSimple Turbine Governor.
+
+"""
+function _mechanical_torque(
+    ::PSY.TGSimple,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64},
+)
+    ts, τm = post_proc_state_series(res, (name, :τm), dt)
+    return ts, τm
+end

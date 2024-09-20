@@ -78,6 +78,42 @@ function mdl_tg_ode!(
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
+    device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGSimple, P}},
+    h,
+    t,
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+
+    #Update inner vars
+    P_ref = get_P_ref(device)
+    ω_ref = get_ω_ref(device)
+
+    local_ix = get_local_state_ix(device, PSY.TGSimple)
+
+    internal_states = @view device_states[local_ix]
+    τm = internal_states[1]
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(device, PSY.TGSimple)
+    ω = @view device_states[external_ix]
+
+    tg = PSY.get_prime_mover(device)
+    d_t = PSY.get_d_t(tg)
+    Tm = PSY.get_Tm(tg)
+
+    # Compute differential equation
+    droop_τ = P_ref + d_t * (ω_ref = get_ω_ref(device) - ω[1])
+    output_ode[local_ix[1]] = (1.0 / Tm) * (droop_τ - τm)
+
+    # Update Inner Vars
+    inner_vars[τm_var] = τm
+    return
+end
+
+function mdl_tg_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
     device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
     h,
     t,
