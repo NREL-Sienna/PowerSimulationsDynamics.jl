@@ -11,7 +11,7 @@ function ResidualModel(
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    if isempty(inputs.delays)
+    if isempty(get_constant_lags(inputs))
         return SystemModel{ResidualModel, NoDelays}(
             inputs,
             Ctype{U}(system_residual!, inputs),
@@ -27,7 +27,7 @@ end
 Instantiate an ResidualModel for ODE inputs.
 """
 function ResidualModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
-    if isempty(inputs.delays)
+    if isempty(get_constant_lags(inputs))
         return SystemModel{ResidualModel, NoDelays}(inputs, Ctype(system_residual!, inputs))
     else
         error(
@@ -40,15 +40,16 @@ function (m::SystemModel{ResidualModel, NoDelays, C})(
     out::AbstractArray{T},
     du::AbstractArray{U},
     u::AbstractArray{V},
-    p,
+    p::AbstractArray{W},
     t,
 ) where {
     C <: Cache,
     T <: ACCEPTED_REAL_TYPES,
     U <: ACCEPTED_REAL_TYPES,
     V <: ACCEPTED_REAL_TYPES,
+    W <: ACCEPTED_REAL_TYPES,
 }
-    system_residual!(out, du, u, m.inputs, m.cache, t)
+    system_residual!(out, du, u, p, m.inputs, m.cache, t)
     return
 end
 
@@ -56,10 +57,16 @@ function system_residual!(
     out::AbstractVector{T},
     dx::AbstractVector{U},
     x::AbstractVector{V},
+    p::AbstractVector{W},
     inputs::SimulationInputs,
     cache::Cache,
     t::Float64,
-) where {T <: ACCEPTED_REAL_TYPES, U <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
+) where {
+    T <: ACCEPTED_REAL_TYPES,
+    U <: ACCEPTED_REAL_TYPES,
+    V <: ACCEPTED_REAL_TYPES,
+    W <: ACCEPTED_REAL_TYPES,
+}
     update_global_vars!(cache, inputs, x)
     M = get_mass_matrix(inputs)
 
@@ -82,10 +89,12 @@ function system_residual!(
         device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
-
+        device_name = _get_wrapper_name(dynamic_device)
+        device_parameters = p[device_name]
         device!(
             device_states,
             device_ode_output,
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -102,7 +111,10 @@ function system_residual!(
 
     for static_load in get_static_loads(inputs)
         bus_ix = get_bus_ix(static_load)
+        device_name = _get_wrapper_name(static_load)
+        device_parameters = p[device_name]
         device!(
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -116,7 +128,10 @@ function system_residual!(
 
     for static_device in get_static_injectors(inputs)
         bus_ix = get_bus_ix(static_device)
+        device_name = _get_wrapper_name(static_device)
+        device_parameters = p[device_name]
         device!(
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -134,6 +149,8 @@ function system_residual!(
             dyn_branch = get_branch(dynamic_branch) # DynamicBranch
             branch = PSY.get_branch(dyn_branch) # Line or Transformer2W
             ix_range = get_ix_range(dynamic_branch)
+            branch_name = _get_wrapper_name(dynamic_branch)
+            branch_parameters = @view p[branch_name]
             branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
             branch_states = @view x[ix_range]
             bus_ix_from = get_bus_ix_from(dynamic_branch)
@@ -141,6 +158,7 @@ function system_residual!(
             branch!(
                 branch_states,
                 branch_output_ode,
+                branch_parameters,
                 #Get Voltage data
                 voltage_r[bus_ix_from],
                 voltage_i[bus_ix_from],
@@ -168,7 +186,7 @@ end
 Instantiate a MassMatrixModel for ODE inputs.
 """
 function MassMatrixModel(inputs, ::Vector{Float64}, ::Type{Ctype}) where {Ctype <: SimCache}
-    if isempty(inputs.delays)
+    if isempty(get_constant_lags(inputs))
         return SystemModel{MassMatrixModel, NoDelays}(
             inputs,
             Ctype(system_mass_matrix!, inputs),
@@ -194,7 +212,7 @@ function MassMatrixModel(
         T,
         ForwardDiff.pickchunksize(length(x0_init)),
     }
-    if isempty(inputs.delays)
+    if isempty(get_constant_lags(inputs))
         return SystemModel{MassMatrixModel, NoDelays}(
             inputs,
             Ctype{U}(system_mass_matrix!, inputs),
@@ -213,27 +231,33 @@ function (m::SystemModel{MassMatrixModel, NoDelays, C})(
     p,
     t,
 ) where {C <: Cache, U <: ACCEPTED_REAL_TYPES, T <: ACCEPTED_REAL_TYPES}
-    system_mass_matrix!(du, u, nothing, m.inputs, m.cache, t)
+    system_mass_matrix!(du, u, nothing, p, m.inputs, m.cache, t)
 end
 
 function (m::SystemModel{MassMatrixModel, HasDelays, C})(
     du::AbstractArray{T},
     u::AbstractArray{U},
     h,
-    p,
+    p::AbstractArray{V},
     t,
-) where {C <: Cache, U <: ACCEPTED_REAL_TYPES, T <: ACCEPTED_REAL_TYPES}
-    system_mass_matrix!(du, u, h, m.inputs, m.cache, t)
+) where {
+    C <: Cache,
+    U <: ACCEPTED_REAL_TYPES,
+    T <: ACCEPTED_REAL_TYPES,
+    V <: ACCEPTED_REAL_TYPES,
+}
+    system_mass_matrix!(du, u, h, p, m.inputs, m.cache, t)
 end
 
 function system_mass_matrix!(
-    dx::Vector{T},
-    x::Vector{V},
+    dx::AbstractArray{T},
+    x::AbstractArray{V},
     h,
+    p::AbstractArray{U},
     inputs::SimulationInputs,
     cache::Cache,
     t,
-) where {T <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
+) where {T <: ACCEPTED_REAL_TYPES, U <: ACCEPTED_REAL_TYPES, V <: ACCEPTED_REAL_TYPES}
     update_global_vars!(cache, inputs, x)
 
     # Global quantities
@@ -255,10 +279,12 @@ function system_mass_matrix!(
         device_inner_vars = @view inner_vars[get_inner_vars_index(dynamic_device)]
         device_states = @view x[ix_range]
         bus_ix = get_bus_ix(dynamic_device)
-
+        device_name = _get_wrapper_name(dynamic_device)
+        device_parameters = p[device_name]  #TODO should be a view... 
         device!(
             device_states,
             device_ode_output,
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -274,7 +300,10 @@ function system_mass_matrix!(
 
     for static_load in get_static_loads(inputs)
         bus_ix = get_bus_ix(static_load)
+        device_name = _get_wrapper_name(static_load)
+        device_parameters = p[device_name]
         device!(
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -288,7 +317,10 @@ function system_mass_matrix!(
 
     for static_device in get_static_injectors(inputs)
         bus_ix = get_bus_ix(static_device)
+        device_name = _get_wrapper_name(static_device)
+        device_parameters = p[device_name]
         device!(
+            device_parameters,
             voltage_r[bus_ix],
             voltage_i[bus_ix],
             view(current_r, bus_ix),
@@ -306,6 +338,8 @@ function system_mass_matrix!(
             dyn_branch = get_branch(dynamic_branch) # DynamicBranch
             branch = PSY.get_branch(dyn_branch) # Line or Transformer2W
             ix_range = get_ix_range(dynamic_branch)
+            branch_name = _get_wrapper_name(dynamic_branch)
+            branch_parameters = @view p[branch_name]
             branch_output_ode = @view branches_ode[get_ode_ouput_range(dynamic_branch)]
             branch_states = @view x[ix_range]
             bus_ix_from = get_bus_ix_from(dynamic_branch)
@@ -313,6 +347,7 @@ function system_mass_matrix!(
             branch!(
                 branch_states,
                 branch_output_ode,
+                branch_parameters,
                 #Get Voltage data
                 voltage_r[bus_ix_from],
                 voltage_i[bus_ix_from],

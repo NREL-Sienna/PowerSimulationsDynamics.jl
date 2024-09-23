@@ -1,5 +1,6 @@
 function initialize_shaft!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
     inner_vars::AbstractVector,
@@ -7,6 +8,7 @@ function initialize_shaft!(
 
 function initialize_shaft!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
     inner_vars::AbstractVector,
@@ -22,32 +24,32 @@ function initialize_shaft!(
     ω_ex = ω
     ω_sys = ω
 
-    #Obtain parameters
-    shaft = PSY.get_shaft(dynamic_device)
-    D = PSY.get_D(shaft)
-    D_hp = PSY.get_D_hp(shaft)
-    D_ip = PSY.get_D_ip(shaft)
-    D_lp = PSY.get_D_lp(shaft)
-    D_ex = PSY.get_D_ex(shaft)
-    D_12 = PSY.get_D_12(shaft)
-    D_23 = PSY.get_D_23(shaft)
-    D_34 = PSY.get_D_34(shaft)
-    D_45 = PSY.get_D_45(shaft)
-    K_hp = PSY.get_K_hp(shaft)
-    K_ip = PSY.get_K_ip(shaft)
-    K_lp = PSY.get_K_lp(shaft)
-    K_ex = PSY.get_K_ex(shaft)
+    #Get parameters
+    params = p[:params][:Shaft]
 
     #Obtain inner vars
     τe = inner_vars[τe_var]
     τm0 = inner_vars[τm_var]
 
-    function f!(out, x)
+    function f!(out, x, params)
         τm = x[1]
         δ_hp = x[2]
         δ_ip = x[3]
         δ_lp = x[4]
         δ_ex = x[5]
+        D = params[:D]
+        D_hp = params[:D_hp]
+        D_ip = params[:D_ip]
+        D_lp = params[:D_lp]
+        D_ex = params[:D_ex]
+        D_12 = params[:D_12]
+        D_23 = params[:D_23]
+        D_34 = params[:D_34]
+        D_45 = params[:D_45]
+        K_hp = params[:K_hp]
+        K_ip = params[:K_ip]
+        K_lp = params[:K_lp]
+        K_ex = params[:K_ex]
 
         out[1] = (
             -τe - D * (ω - ω_sys) - D_34 * (ω - ω_lp) - D_45 * (ω - ω_ex) +
@@ -72,11 +74,20 @@ function initialize_shaft!(
     end
 
     x0 = [τm0, δ0, δ0, δ0, δ0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @warn("Initialization in Shaft failed")
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn(
+            "Initialization in Shaft failed"
+        )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         inner_vars[τm_var] = sol_x0[1] #τm
         shaft_states[3] = sol_x0[2] #δ_hp
         shaft_states[4] = ω #ω_hp

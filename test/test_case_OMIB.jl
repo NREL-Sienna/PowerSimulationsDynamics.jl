@@ -87,6 +87,10 @@ Ybus_change = NetworkSwitch(
         @test isa(power, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(rpower, Tuple{Vector{Float64}, Vector{Float64}})
 
+        series_repeat_timestamps =
+            get_state_series(results, ("generator-102-1", :δ); unique_timestamps = false)
+        @test length(δ) + 1 == length(series_repeat_timestamps[2])
+
     finally
         @info("removing test files")
         rm(path; force = true, recursive = true)

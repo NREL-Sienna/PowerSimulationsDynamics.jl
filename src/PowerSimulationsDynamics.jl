@@ -61,19 +61,26 @@ export is_valid
 export transform_load_to_constant_impedance
 export transform_load_to_constant_current
 export transform_load_to_constant_power
+export get_parameter_values
+export get_parameter_labels
+export get_sensitivity_functions
 
 ####################################### Package Imports ####################################
 import Logging
 import InfrastructureSystems
 import SciMLBase
+import SciMLSensitivity
 import DataStructures: OrderedDict
 import DataFrames: DataFrame
+import DiffEqBase
 import Random
 import ForwardDiff
 import SparseArrays
 import LinearAlgebra
 import Base.to_index
-import NLsolve
+import Base.length
+import NLsolve  #Using Nlsovle wrapped using NonlinearSolve interfaace
+import NonlinearSolve
 import PrettyTables
 import Base.ImmutableDict
 import PowerSystems
@@ -81,12 +88,19 @@ import PowerFlows
 import PowerNetworkMatrices
 import TimerOutputs
 import FastClosures: @closure
+import Enzyme
+Enzyme.API.runtimeActivity!(true)  #Needed for "activity unstable" code: https://enzymead.github.io/Enzyme.jl/stable/faq/
+Enzyme.API.looseTypeAnalysis!(true)  #Required for using component arrays with Enzyme
+import ChainRulesCore
+import ComponentArrays
+import Zygote
 
 const PSY = PowerSystems
 const IS = InfrastructureSystems
 const PSID = PowerSimulationsDynamics
 const PF = PowerFlows
 const PNM = PowerNetworkMatrices
+const CRC = ChainRulesCore
 
 using DocStringExtensions
 
@@ -104,6 +118,7 @@ include("base/device_wrapper.jl")
 include("base/branch_wrapper.jl")
 include("base/frequency_reference.jl")
 include("base/simulation_model.jl")
+include("utils/parameters.jl")
 include("base/simulation_inputs.jl")
 include("base/perturbations.jl")
 include("base/caches.jl")
@@ -178,6 +193,10 @@ include("post_processing/post_proc_inverter.jl")
 include("post_processing/post_proc_results.jl")
 include("post_processing/post_proc_loads.jl")
 include("post_processing/post_proc_source.jl")
+
+#Sensitivity Analysis
+include("base/sensitivity_rule.jl") #Custom rule to support duplicated kwargs for callbacks. See: https://github.com/EnzymeAD/Enzyme.jl/issues/1491
+include("base/sensitivity_analysis.jl")
 
 #Utils
 include("utils/psy_utils.jl")

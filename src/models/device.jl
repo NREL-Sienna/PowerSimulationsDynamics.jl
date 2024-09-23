@@ -16,8 +16,9 @@ function device_mass_matrix_entries!(
 end
 
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -39,21 +40,55 @@ function device!(
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
 
     #Update Inner Vars
-    _update_inner_vars!(device_states, output_ode, sys_ω, inner_vars, dynamic_device)
+    _update_inner_vars!(
+        device_states,
+        output_ode,
+        device_parameters,
+        sys_ω,
+        inner_vars,
+        dynamic_device,
+    )
 
     #Obtain ODEs and Mechanical Power for Turbine Governor
-    mdl_tg_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device, h, t)
+    mdl_tg_ode!(
+        device_states,
+        output_ode,
+        device_parameters,
+        inner_vars,
+        sys_ω,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain ODEs for PSS
-    mdl_pss_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device, h, t)
+    mdl_pss_ode!(
+        device_states,
+        output_ode,
+        device_parameters,
+        inner_vars,
+        sys_ω,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain ODEs for AVR
-    mdl_avr_ode!(device_states, output_ode, inner_vars, dynamic_device, h, t)
+    mdl_avr_ode!(
+        device_states,
+        output_ode,
+        device_parameters,
+        inner_vars,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain ODEs for Machine
     mdl_machine_ode!(
         device_states,
         output_ode,
+        device_parameters,
         inner_vars,
         current_r,
         current_i,
@@ -63,11 +98,21 @@ function device!(
     )
 
     #Obtain ODEs for PSY.Shaft
-    mdl_shaft_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device, h, t)
+    mdl_shaft_ode!(
+        device_states,
+        output_ode,
+        device_parameters,
+        inner_vars,
+        sys_ω,
+        dynamic_device,
+        h,
+        t,
+    )
     return
 end
 
 function device!(
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -77,11 +122,12 @@ function device!(
     device::StaticWrapper{PSY.Source, U},
     t,
 ) where {T <: ACCEPTED_REAL_TYPES, U <: BusCategory}
-    mdl_source!(voltage_r, voltage_i, current_r, current_i, device)
+    mdl_source!(device_parameters, voltage_r, voltage_i, current_r, current_i, device)
     return
 end
 
 function device!(
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -91,7 +137,7 @@ function device!(
     device::StaticLoadWrapper,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    mdl_zip_load!(voltage_r, voltage_i, current_r, current_i, device)
+    mdl_zip_load!(device_parameters, voltage_r, voltage_i, current_r, current_i, device)
     return
 end
 
@@ -136,8 +182,9 @@ function device_mass_matrix_entries!(
 end
 
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -161,19 +208,36 @@ function device!(
     inner_vars[Vi_inv_var] = voltage_i
 
     #Update V_ref
-    V_ref = get_V_ref(dynamic_device)
+    V_ref = p[:refs][:V_ref]
     inner_vars[V_oc_var] = V_ref
 
     #Update current inner_vars
-    _update_inner_vars!(device_states, output_ode, sys_ω, inner_vars, dynamic_device)
+    _update_inner_vars!(
+        device_states,
+        output_ode,
+        p,
+        sys_ω,
+        inner_vars,
+        dynamic_device,
+    )
 
     #Obtain ODES for DC side
-    mdl_DCside_ode!(device_states, output_ode, sys_ω, inner_vars, dynamic_device, h, t)
+    mdl_DCside_ode!(
+        device_states,
+        output_ode,
+        p,
+        sys_ω,
+        inner_vars,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain ODEs for PLL
     mdl_freq_estimator_ode!(
         device_states,
         output_ode,
+        p,
         inner_vars,
         sys_ω,
         dynamic_device,
@@ -182,18 +246,44 @@ function device!(
     )
 
     #Obtain ODEs for OuterLoop
-    mdl_outer_ode!(device_states, output_ode, inner_vars, sys_ω, dynamic_device, h, t)
+    mdl_outer_ode!(
+        device_states,
+        output_ode,
+        p,
+        inner_vars,
+        sys_ω,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain inner controller ODEs and modulation commands
-    mdl_inner_ode!(device_states, output_ode, inner_vars, dynamic_device, h, t)
+    mdl_inner_ode!(
+        device_states,
+        output_ode,
+        p,
+        inner_vars,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain converter relations
-    mdl_converter_ode!(device_states, output_ode, inner_vars, dynamic_device, h, t)
+    mdl_converter_ode!(
+        device_states,
+        output_ode,
+        p,
+        inner_vars,
+        dynamic_device,
+        h,
+        t,
+    )
 
     #Obtain ODEs for output filter
     mdl_filter_ode!(
         device_states,
         output_ode,
+        p,
         current_r,
         current_i,
         inner_vars,
@@ -224,8 +314,9 @@ function mass_matrix_pvs_entries!(
 end
 
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -272,6 +363,7 @@ end
 function _update_inner_vars!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
@@ -282,6 +374,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, TG, P}},
@@ -312,16 +405,16 @@ function _update_inner_vars!(
     V_tI = inner_vars[VI_gen_var]
 
     #Get parameters
-    R = PSY.get_R(machine)
-    Xd = PSY.get_Xd(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xd = params[:Xd]
+    Xd_p = params[:Xd_p]
+    Xd_pp = params[:Xd_pp]
+    Xl = params[:Xl]
+    γ_d1 = params[:γ_d1]
+    γ_q1 = params[:γ_q1]
+    γ_d2 = params[:γ_d2]
     Xq_pp = Xd_pp
-    Xl = PSY.get_Xl(machine)
-    γ_d1 = PSY.get_γ_d1(machine)
-    γ_q1 = PSY.get_γ_q1(machine)
-    γ_d2 = PSY.get_γ_d2(machine)
-
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
 
@@ -348,6 +441,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
@@ -373,14 +467,15 @@ function _update_inner_vars!(
     V_tI = inner_vars[VI_gen_var]
 
     #Get parameters
-    R = PSY.get_R(machine)
-    Xd = PSY.get_Xd(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
-    Xl = PSY.get_Xl(machine)
-    γ_d1 = PSY.get_γ_d1(machine)
-    γ_q1 = PSY.get_γ_q1(machine)
-    γ_d2 = PSY.get_γ_d2(machine)
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xd = params[:Xd]
+    Xd_p = params[:Xd_p]
+    Xd_pp = params[:Xd_pp]
+    Xl = params[:Xl]
+    γ_d1 = params[:γ_d1]
+    γ_q1 = params[:γ_q1]
+    γ_d2 = params[:γ_d2]
 
     #RI to dq transformation
     V_d, V_q = ri_dq(δ) * [V_tR; V_tI]
@@ -405,6 +500,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
@@ -430,15 +526,16 @@ function _update_inner_vars!(
     V_tI = inner_vars[VI_gen_var]
 
     #Get parameters
-    R = PSY.get_R(machine)
-    Xd = PSY.get_Xd(machine)
-    Xd_p = PSY.get_Xd_p(machine)
-    Xd_pp = PSY.get_Xd_pp(machine)
+    params = p[:params][:Machine]
+    R = params[:R]
+    Xd = params[:Xd]
+    Xd_p = params[:Xd_p]
+    Xd_pp = params[:Xd_pp]
+    Xl = params[:Xl]
+    γ_d1 = params[:γ_d1]
+    γ_q1 = params[:γ_q1]
+    γ_d2 = params[:γ_d2]
     Xq_pp = Xd_pp
-    Xl = PSY.get_Xl(machine)
-    γ_d1 = PSY.get_γ_d1(machine)
-    γ_q1 = PSY.get_γ_q1(machine)
-    γ_d2 = PSY.get_γ_d2(machine)
 
     #RI to dq transformation
     V_d, V_q = ri_dq(δ) * [V_tR; V_tI]
@@ -464,6 +561,7 @@ end
 function _update_inner_vars!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, F, L}},
@@ -482,6 +580,7 @@ end
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
@@ -509,16 +608,23 @@ function _update_inner_vars!(
 
     #Get Converter parameters
     converter = PSY.get_converter(dynamic_device)
-    Brkpt = PSY.get_Brkpt(converter)
-    Zerox = PSY.get_Zerox(converter)
-    Lvpl1 = PSY.get_Lvpl1(converter)
-    Vo_lim = PSY.get_Vo_lim(converter)
-    Lv_pnt0, Lv_pnt1 = PSY.get_Lv_pnts(converter)
-    K_hv = PSY.get_K_hv(converter)
+    params = p[:params][:Converter]
+    Brkpt = params[:Brkpt]
+    Zerox = params[:Zerox]
+    Lvpl1 = params[:Lvpl1]
+    Vo_lim = params[:Vo_lim]
+    Lv_pnt0 = params[:Lv_pnts][:min]
+    Lv_pnt1 = params[:Lv_pnts][:max]
+    K_hv = params[:K_hv]
+    R_source = params[:R_source]
+    X_source = params[:X_source]
+
     Lvpl_sw = PSY.get_Lvpl_sw(converter)
-    R_source = PSY.get_R_source(converter)
-    X_source = PSY.get_X_source(converter)
     Z_source_sq = R_source^2 + X_source^2
+
+    #Obtain filter parameters
+    rf = p[:params][:Filter][:rf]
+    lf = p[:params][:Filter][:lf]
 
     #Define internal states for Converter
     converter_ix = get_local_state_ix(dynamic_device, PSY.RenewableEnergyConverterTypeA)
@@ -540,11 +646,6 @@ function _update_inner_vars!(
     #Reference Transformation
     Ir_cnv = Id_cnv * cos(θ) - Iq_cnv * sin(θ)
     Ii_cnv = Id_cnv * sin(θ) + Iq_cnv * cos(θ)
-
-    #Obtain parameters
-    filt = PSY.get_filter(dynamic_device)
-    rf = PSY.get_rf(filt)
-    lf = PSY.get_lf(filt)
 
     function V_cnv_calc(Ir_cnv, Ii_cnv, Vr_inv, Vi_inv)
         if lf != 0.0 || rf != 0.0
@@ -602,6 +703,7 @@ end
 
 function _update_inner_vars!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -671,8 +773,9 @@ Refer to "Analysis of Electric Machinery and Drive Systems" by Paul Krause,
 Oleg Wasynczuk and Scott Sudhoff for the equations
 """
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -701,20 +804,20 @@ function device!(
     ωr = device_states[5]
 
     #Get parameters
-    dynamic_device = get_device(dynamic_wrapper)
-    R_s = PSY.get_R_s(dynamic_device)
-    X_ls = PSY.get_X_ls(dynamic_device)
-    R_r = PSY.get_R_r(dynamic_device)
-    X_lr = PSY.get_X_lr(dynamic_device)
-    A = PSY.get_A(dynamic_device)
-    B = PSY.get_B(dynamic_device)
-    C = PSY.get_C(dynamic_device)
-    H = PSY.get_H(dynamic_device)
-    base_power = PSY.get_base_power(dynamic_device)
-    B_sh = PSY.get_B_shunt(dynamic_device)
-    τ_m0 = PSY.get_τ_ref(dynamic_device)
-    X_ad = PSY.get_X_ad(dynamic_device)
-    X_aq = PSY.get_X_aq(dynamic_device)
+    params = p[:params]
+    R_s = params[:R_s]
+    R_r = params[:R_r]
+    X_ls = params[:X_ls]
+    X_lr = params[:X_lr]
+    H = params[:H]
+    A = params[:A]
+    B = params[:B]
+    base_power = params[:base_power]
+    C = params[:C]
+    τ_m0 = params[:τ_ref]
+    B_sh = params[:B_shunt]
+    X_ad = params[:X_ad]
+    X_aq = params[:X_aq]
 
     # voltages in QD
     v_qs = voltage_i
@@ -755,8 +858,9 @@ equations in "Analysis of Electric Machinery and Drive Systems" by Paul Krause,
 Oleg Wasynczuk and Scott Sudhoff.
 """
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -783,19 +887,21 @@ function device!(
     ωr = device_states[3]
 
     #Get parameters
-    dynamic_device = get_device(dynamic_wrapper)
-    R_s = PSY.get_R_s(dynamic_device)
-    X_m = PSY.get_X_m(dynamic_device)
-    R_r = PSY.get_R_r(dynamic_device)
-    A = PSY.get_A(dynamic_device)
-    B = PSY.get_B(dynamic_device)
-    C = PSY.get_C(dynamic_device)
-    H = PSY.get_H(dynamic_device)
-    base_power = PSY.get_base_power(dynamic_device)
-    B_sh = PSY.get_B_shunt(dynamic_device)
-    τ_m0 = PSY.get_τ_ref(dynamic_device)
-    X_rr = PSY.get_X_rr(dynamic_device)
-    X_p = PSY.get_X_p(dynamic_device)
+    params = p[:params]
+    R_s = params[:R_s]
+    R_r = params[:R_r]
+    X_ls = params[:X_ls]
+    X_lr = params[:X_lr]
+    X_m = params[:X_m]
+    H = params[:H]
+    A = params[:A]
+    B = params[:B]
+    base_power = params[:base_power]
+    C = params[:C]
+    τ_m0 = params[:τ_ref]
+    B_sh = params[:B_shunt]
+    X_rr = params[:X_rr]
+    X_p = params[:X_p]
 
     # voltages in QD
     v_qs = voltage_i
@@ -852,8 +958,9 @@ end
 Model of Static Shunt Compensator: CSVGN1.
 """
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -865,11 +972,12 @@ function device!(
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
-    V_ref = get_V_ref(dynamic_wrapper)
+    V_ref = p[:refs][:V_ref]
     # TODO: V_abs is the voltage magnitude on the high side of generator step-up transformer, if present.
     V_abs = sqrt(voltage_r^2 + voltage_i^2)
 
     if get_connection_status(dynamic_wrapper) < 1.0
+        @error "NOT CONNECTED? "
         output_ode .= zero(T)
         return
     end
@@ -880,20 +988,21 @@ function device!(
     vr2 = device_states[3]
 
     #Get parameters
-    dynamic_device = get_device(dynamic_wrapper)
-    K = PSY.get_K(dynamic_device)
-    T1 = PSY.get_T1(dynamic_device)
-    T2 = PSY.get_T2(dynamic_device)
-    T3 = PSY.get_T3(dynamic_device)
-    T4 = PSY.get_T4(dynamic_device)
-    T5 = PSY.get_T5(dynamic_device)
-    Rmin = PSY.get_Rmin(dynamic_device)
-    Vmax = PSY.get_Vmax(dynamic_device)
-    Vmin = PSY.get_Vmin(dynamic_device)
-    Cbase = PSY.get_CBase(dynamic_device)
+    params = p[:params]
+    K = params[:K]
+    T1 = params[:T1]
+    T2 = params[:T2]
+    T3 = params[:T3]
+    T4 = params[:T4]
+    T5 = params[:T5]
+    Rmin = params[:Rmin]
+    Vmax = params[:Vmax]
+    Vmin = params[:Vmin]
+    Cbase = params[:CBase]
+    Mbase = params[:base_power]
+
     # FIXME: base_power is changed to system's base_power when a CSVGN1 is attached to a Source using add_component!()
     # Temporarily, to avoid that, set_dynamic_injector!() could be used
-    Mbase = PSY.get_base_power(dynamic_device)
     Rbase = Mbase
 
     # Regulator
@@ -961,8 +1070,9 @@ Based on the paper `Malicious Control of an Active Load in an Islanded Mixed-Sou
 by C. Roberts, U. Markovic, D. Arnold and D. Callaway.
 """
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
@@ -975,7 +1085,7 @@ function device!(
 ) where {T <: ACCEPTED_REAL_TYPES}
     Sbase = get_system_base_power(dynamic_wrapper)
     f0 = get_system_base_frequency(dynamic_wrapper)
-    V_ref = get_V_ref(dynamic_wrapper)
+    V_ref = p[:refs][:V_ref]
     if get_connection_status(dynamic_wrapper) < 1.0
         output_ode .= zero(T)
         return
@@ -1006,21 +1116,21 @@ function device!(
     I_dq_cnv = ri_dq(θ_pll + pi / 2) * [Ir_cnv; Ii_cnv]
 
     #Get parameters
-    dynamic_device = get_device(dynamic_wrapper)
-    r_load = PSY.get_r_load(dynamic_device)
-    c_dc = PSY.get_c_dc(dynamic_device)
-    rf = PSY.get_rf(dynamic_device)
-    lf = PSY.get_lf(dynamic_device)
-    cf = PSY.get_cf(dynamic_device)
-    rg = PSY.get_rg(dynamic_device)
-    lg = PSY.get_lg(dynamic_device)
-    kp_pll = PSY.get_kp_pll(dynamic_device)
-    ki_pll = PSY.get_ki_pll(dynamic_device)
-    kpv = PSY.get_kpv(dynamic_device)
-    kiv = PSY.get_kiv(dynamic_device)
-    kpc = PSY.get_kpc(dynamic_device)
-    kic = PSY.get_kic(dynamic_device)
-    base_power = PSY.get_base_power(dynamic_device)
+    params = p[:params]
+    r_load = params[:r_load]
+    c_dc = params[:c_dc]
+    rf = params[:rf]
+    lf = params[:lf]
+    cf = params[:cf]
+    rg = params[:rg]
+    lg = params[:lg]
+    kp_pll = params[:kp_pll]
+    ki_pll = params[:ki_pll]
+    kpv = params[:kpv]
+    kiv = params[:kiv]
+    kpc = params[:kpc]
+    kic = params[:kic]
+    base_power = params[:base_power]
 
     # Compute PLL expressions
     V_dq_pll = ri_dq(θ_pll + pi / 2) * [Vr_filter; Vi_filter]
@@ -1029,8 +1139,7 @@ function device!(
 
     # Compute DC side output
     Id_ref, dη_dt = pi_block(V_ref - v_dc, η, kpv, kiv)
-    Iq_ref = get_Q_ref(dynamic_wrapper)
-
+    Iq_ref = p[:refs][:Q_ref]
     # Compute AC controller expressions
     Vd_ref_uncomp, dγd_dt = pi_block(-Id_ref + I_dq_cnv[d], γd, kpc, kic)
     Vq_ref_uncomp, dγq_dt = pi_block(-Iq_ref + I_dq_cnv[q], γq, kpc, kic)
@@ -1108,22 +1217,24 @@ function mass_matrix_dera_entries!(
 end
 
 function device!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    device_parameters::AbstractArray{<:ACCEPTED_REAL_TYPES},
     voltage_r::T,
     voltage_i::T,
     current_r::AbstractArray{T},
     current_i::AbstractArray{T},
     global_vars::AbstractArray{T},
     inner_vars::AbstractArray{T},
-    dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    dynamic_wrapper::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     h,
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
-    Freq_Flag = PSY.get_Freq_Flag(get_device(dynamic_device))
+    Freq_Flag = PSY.get_Freq_Flag(get_device(dynamic_wrapper))
     _mdl_ode_AggregateDistributedGenerationA!(
         device_states,
         output_ode,
+        device_parameters,
         Val(Freq_Flag),
         voltage_r,
         voltage_i,
@@ -1131,7 +1242,7 @@ function device!(
         current_i,
         global_vars,
         inner_vars,
-        dynamic_device,
+        dynamic_wrapper,
         t,
     )
     return
@@ -1143,8 +1254,9 @@ end
 
 #Freq_Flag = 0
 function _mdl_ode_AggregateDistributedGenerationA!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::Val{0},
     voltage_r::T,
     voltage_i::T,
@@ -1152,21 +1264,21 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     current_i::AbstractArray{T},
     global_vars::AbstractArray{T},
     inner_vars::AbstractArray{T},
-    dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    dynamic_wrapper::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
-    Sbase = get_system_base_power(dynamic_device)
+    Sbase = get_system_base_power(dynamic_wrapper)
     Vt = sqrt(voltage_r^2 + voltage_i^2)
-
+    dynamic_device = get_device(dynamic_wrapper)
     #Obtain References (from wrapper and device)
-    Pfa_ref = PSY.get_Pfa_ref(get_device(dynamic_device))
-    P_ref = get_P_ref(dynamic_device)
-    Q_ref = get_Q_ref(dynamic_device)
-    V_ref = get_V_ref(dynamic_device)
+    Pfa_ref = PSY.get_Pfa_ref(dynamic_device)
+    P_ref = p[:refs][:P_ref]
+    Q_ref = p[:refs][:Q_ref]
+    V_ref = p[:refs][:V_ref]
 
     #Get flags
-    Pf_Flag = PSY.get_Pf_Flag(get_device(dynamic_device))
+    Pf_Flag = PSY.get_Pf_Flag(dynamic_device)
 
     #Get device states
     Vmeas = device_states[1]
@@ -1181,18 +1293,26 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_cmd = Iq
 
     #Get parameters
-    T_rv = PSY.get_T_rv(get_device(dynamic_device))
-    Trf = PSY.get_Trf(get_device(dynamic_device))
-    (dbd1, dbd2) = PSY.get_dbd_pnts(get_device(dynamic_device))
-    K_qv = PSY.get_K_qv(get_device(dynamic_device))
-    Tp = PSY.get_Tp(get_device(dynamic_device))
-    T_iq = PSY.get_T_iq(get_device(dynamic_device))
+    params = p[:params]
+    T_rv = params[:T_rv]
+    Trf = params[:Trf]
+    dbd1 = params[:dbd_pnts1]
+    dbd2 = params[:dbd_pnts2]
+    K_qv = params[:K_qv]
+    Tp = params[:Tp]
+    T_iq = params[:T_iq]
+    D_dn = params[:D_dn]
+    D_up = params[:D_up]
+    fdbd_pnts1 = params[:fdbd_pnts1]
+    fdbd_pnts2 = params[:fdbd_pnts2]
+    Tg = params[:Tg]
+    rrpwr = params[:rrpwr]
+    Tv = params[:Tv]
+    Iq_min = params[:Iq_lim][:min]
+    Iq_max = params[:Iq_lim][:max]
+    basepower = params[:base_power]
+    Pfa_ref = params[:Pfa_ref]
 
-    Tg = PSY.get_Tg(get_device(dynamic_device))
-    rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
-    Tv = PSY.get_Tv(get_device(dynamic_device))
-    Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
-    basepower = PSY.get_base_power(get_device(dynamic_device))
     base_power_ratio = basepower / Sbase
 
     #STATE Vmeas
@@ -1204,21 +1324,21 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     elseif Pf_Flag == 0
         _, dQ_V_dt = low_pass_mass_matrix(Q_ref / max(Vmeas, 0.01), Q_V, 1.0, T_iq)
     else
-        @error @error "Unsupported value of PQ_Flag"
+        @error "Unsupported value of PQ_Flag"
     end
 
     #STATE Iq
-    Ip_min, Ip_max, Iq_min, Iq_max =
-        current_limit_logic(get_device(dynamic_device), Ip_cmd, Iq_cmd)
+    Ip_min, Ip_max, _Iq_min, _Iq_max =
+        current_limit_logic(dynamic_device, Ip_cmd, Iq_cmd)
     Iq_input =
         clamp(
             clamp(
                 deadband_function(V_ref - Vmeas, dbd1, dbd2) * K_qv,
-                Iq_lim[:min],
-                Iq_lim[:max],
+                Iq_min,
+                Iq_max,
             ) + Q_V,
-            Iq_min,
-            Iq_max,
+            _Iq_min,
+            _Iq_max,
         ) * Mult
     _, dIq_dt = low_pass(Iq_input, Iq, 1.0, Tg)
 
@@ -1265,8 +1385,9 @@ end
 
 #Freq_Flag = 1
 function _mdl_ode_AggregateDistributedGenerationA!(
-    device_states::AbstractArray{T},
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{T},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::Val{1},
     voltage_r::T,
     voltage_i::T,
@@ -1274,22 +1395,22 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     current_i::AbstractArray{T},
     global_vars::AbstractArray{T},
     inner_vars::AbstractArray{T},
-    dynamic_device::DynamicWrapper{PSY.AggregateDistributedGenerationA},
+    dynamic_wrapper::DynamicWrapper{PSY.AggregateDistributedGenerationA},
     t,
 ) where {T <: ACCEPTED_REAL_TYPES}
     sys_ω = global_vars[GLOBAL_VAR_SYS_FREQ_INDEX]
-    Sbase = get_system_base_power(dynamic_device)
+    Sbase = get_system_base_power(dynamic_wrapper)
     Vt = sqrt(voltage_r^2 + voltage_i^2)
-
+    dynamic_device = get_device(dynamic_wrapper)
     #Obtain References (from wrapper and device)
-    Pfa_ref = PSY.get_Pfa_ref(get_device(dynamic_device))
-    P_ref = get_P_ref(dynamic_device)
-    Q_ref = get_Q_ref(dynamic_device)
-    V_ref = get_V_ref(dynamic_device)
-    ω_ref = get_ω_ref(dynamic_device)
+    Pfa_ref = PSY.get_Pfa_ref(dynamic_device)
+    P_ref = p[:refs][:P_ref]
+    Q_ref = p[:refs][:Q_ref]
+    V_ref = p[:refs][:V_ref]
+    ω_ref = p[:refs][:ω_ref]
 
     #Get flags
-    Pf_Flag = PSY.get_Pf_Flag(get_device(dynamic_device))
+    Pf_Flag = PSY.get_Pf_Flag(dynamic_device)
 
     #Get device states
     Vmeas = device_states[1]
@@ -1307,27 +1428,35 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     Iq_cmd = Iq
 
     #Get parameters
-    T_rv = PSY.get_T_rv(get_device(dynamic_device))
-    Trf = PSY.get_Trf(get_device(dynamic_device))
-    (dbd1, dbd2) = PSY.get_dbd_pnts(get_device(dynamic_device))
-    K_qv = PSY.get_K_qv(get_device(dynamic_device))
-    Tp = PSY.get_Tp(get_device(dynamic_device))
-    T_iq = PSY.get_T_iq(get_device(dynamic_device))
-    D_dn = PSY.get_D_dn(get_device(dynamic_device))
-    D_up = PSY.get_D_up(get_device(dynamic_device))
-    (fdbd1, fdbd2) = PSY.get_fdbd_pnts(get_device(dynamic_device))
-    fe_lim = PSY.get_fe_lim(get_device(dynamic_device))
-    P_lim = PSY.get_P_lim(get_device(dynamic_device))
-    dP_lim = PSY.get_dP_lim(get_device(dynamic_device))
-    Tpord = PSY.get_Tpord(get_device(dynamic_device))
-    Kpg = PSY.get_Kpg(get_device(dynamic_device))
-    Kig = PSY.get_Kig(get_device(dynamic_device))
+    params = p[:params]
+    T_rv = params[:T_rv]
+    Trf = params[:Trf]
+    dbd1 = params[:dbd_pnts1]
+    dbd2 = params[:dbd_pnts2]
+    K_qv = params[:K_qv]
+    Tp = params[:Tp]
+    T_iq = params[:T_iq]
+    D_dn = params[:D_dn]
+    D_up = params[:D_up]
+    fdbd1 = params[:fdbd_pnts1]
+    fdbd2 = params[:fdbd_pnts2]
+    fe_min = params[:fe_lim][:min]
+    fe_max = params[:fe_lim][:max]
+    P_min = params[:P_lim][:min]
+    P_max = params[:P_lim][:max]
+    dP_min = params[:dP_lim][:min]
+    dP_max = params[:dP_lim][:max]
+    Tpord = params[:Tpord]
+    Kpg = params[:Kpg]
+    Kig = params[:Kig]
+    Tg = params[:Tg]
+    rrpwr = params[:rrpwr]
+    Tv = params[:Tv]
+    Iq_min = params[:Iq_lim][:min]
+    Iq_max = params[:Iq_lim][:max]
+    basepower = params[:base_power]
+    Pfa_ref = params[:Pfa_ref]
 
-    Tg = PSY.get_Tg(get_device(dynamic_device))
-    rrpwr = PSY.get_rrpwr(get_device(dynamic_device))
-    Tv = PSY.get_Tv(get_device(dynamic_device))
-    Iq_lim = PSY.get_Iq_lim(get_device(dynamic_device))
-    basepower = PSY.get_base_power(get_device(dynamic_device))
     base_power_ratio = basepower / Sbase
 
     #STATE Vmeas
@@ -1343,17 +1472,17 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     end
 
     #STATE Iq
-    Ip_min, Ip_max, Iq_min, Iq_max =
-        current_limit_logic(get_device(dynamic_device), Ip_cmd, Iq_cmd)
+    Ip_min, Ip_max, _Iq_min, _Iq_max =
+        current_limit_logic(dynamic_device, Ip_cmd, Iq_cmd)
     Iq_input =
         clamp(
             clamp(
                 deadband_function(V_ref - Vmeas, dbd1, dbd2) * K_qv,
-                Iq_lim[:min],
-                Iq_lim[:max],
+                Iq_min,
+                Iq_max,
             ) + Q_V,
-            Iq_min,
-            Iq_max,
+            _Iq_min,
+            _Iq_max,
         ) * Mult
     _, dIq_dt = low_pass(Iq_input, Iq, 1.0, Tg)
 
@@ -1379,24 +1508,24 @@ function _mdl_ode_AggregateDistributedGenerationA!(
     PowerPI_input = clamp(
         min(deadband_function(ω_ref - Fmeas, fdbd1, fdbd2) * D_dn, 0.0) +
         max(deadband_function(ω_ref - Fmeas, fdbd1, fdbd2) * D_up, 0.0) - Pmeas + P_ref,
-        fe_lim[:min],
-        fe_lim[:max],
+        fe_min,
+        fe_max,
     )
     _, dPowerPI_dt =
-        pi_block_nonwindup(PowerPI_input, PowerPI, Kpg, Kig, P_lim[:min], P_lim[:max])
+        pi_block_nonwindup(PowerPI_input, PowerPI, Kpg, Kig, P_min, P_max)
 
     #STATE dPord
-    if dPowerPI_dt > dP_lim[:max]
-        ddPord_dt = dP_lim[:max]
-    elseif dPowerPI_dt < dP_lim[:min]
-        ddPord_dt = dP_lim[:min]
+    if dPowerPI_dt > dP_max
+        ddPord_dt = dP_max
+    elseif dPowerPI_dt < dP_min
+        ddPord_dt = dP_min
     else
         ddPord_dt = dPowerPI_dt
     end
 
     #State Pord
     Pord_limited, dPord_dt =
-        low_pass_nonwindup_mass_matrix(dPord, Pord, 1.0, Tpord, P_lim[:min], P_lim[:max])
+        low_pass_nonwindup_mass_matrix(dPord, Pord, 1.0, Tpord, P_min, P_max)
 
     #STATE Ip
     Ip_input = clamp(Pord_limited / max(Vmeas, 0.01), Ip_min, Ip_max) * Mult

@@ -1,5 +1,6 @@
 function initialize_converter!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.AverageConverter, O, IC, DC, P, F, L},
@@ -16,6 +17,7 @@ function initialize_converter!(
 
 function initialize_converter!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.RenewableEnergyConverterTypeA, O, IC, DC, P, F, L},
@@ -42,12 +44,12 @@ function initialize_converter!(
     #Reference Transformation
     Ip = Ip_external * cos(-θ) - Iq_external * sin(-θ)
     Iq = Ip_external * sin(-θ) + Iq_external * cos(-θ)
-    converter = PSY.get_converter(dynamic_device)
-    Io_lim = PSY.get_Io_lim(converter)
-    Vo_lim = PSY.get_Vo_lim(converter)
 
-    # Lv_pnt0 is unused in the initialization
-    _, Lv_pnt1 = PSY.get_Lv_pnts(converter)
+    #Get Converter parameters
+    params = p[:params][:Converter]
+    Vo_lim = params[:Vo_lim]
+    Lv_pnt1 = params[:Lv_pnts][:max]
+    Io_lim = params[:Io_lim]
 
     if (Iq < Io_lim) || (V_t > Vo_lim) || (V_t < Lv_pnt1)
         @error(
@@ -71,6 +73,7 @@ end
 
 function initialize_converter!(
     device_states,
+    device_parameters,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{PSY.RenewableEnergyVoltageConverterTypeA, O, IC, DC, P, F, L},

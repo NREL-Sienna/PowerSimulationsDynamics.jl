@@ -1,4 +1,4 @@
-struct SimulationInputs
+mutable struct SimulationInputs
     dynamic_injectors::Vector{DynamicWrapper{<:PSY.DynamicInjection}}
     static_injectors::Vector
     static_loads::Vector
@@ -9,113 +9,123 @@ struct SimulationInputs
     inner_vars_count::Int
     bus_count::Int
     ode_range::UnitRange{Int}
-    ybus_rectangular::SparseArrays.SparseMatrixCSC{Float64, Int}
     dyn_lines::Bool
-    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int}
     lookup::Dict{Int, Int}
-    DAE_vector::Vector{Bool}
-    mass_matrix::LinearAlgebra.Diagonal{Float64}
     global_vars_update_pointers::Dict{Int, Int}
     global_state_map::MAPPING_DICT
     global_inner_var_map::Dict{String, Dict}
-    delays::Vector
-
-    function SimulationInputs(
-        sys::PSY.System,
-        ::T,
-    ) where {T <: Union{ConstantFrequency, ReferenceBus}}
-        n_buses = get_n_buses(sys)
-        Ybus, lookup = _get_ybus(sys)
-
-        TimerOutputs.@timeit BUILD_TIMER "Wrap Branches" begin
-            wrapped_branches = _wrap_dynamic_branches(sys, lookup)
-            has_dyn_lines = !isempty(wrapped_branches)
-            aux_states = 0
-            for br in wrapped_branches
-                aux_states += PSY.get_n_states(br)
-            end
-            branch_state_counts = aux_states
-            injection_start = 2 * n_buses + branch_state_counts + 1
-        end
-
-        TimerOutputs.@timeit BUILD_TIMER "Wrap Dynamic Injectors" begin
-            wrapped_injectors = _wrap_dynamic_injector_data(sys, lookup, injection_start)
-            delays = get_system_delays(sys)
-            var_count = wrapped_injectors[end].ix_range[end]
-        end
-
-        TimerOutputs.@timeit BUILD_TIMER "Calculate MM, DAE_vector, Total Shunts" begin
-            mass_matrix = _make_mass_matrix(wrapped_injectors, var_count, n_buses)
-            DAE_vector = _make_DAE_vector(mass_matrix, var_count, n_buses)
-            total_shunts = _make_total_shunts(wrapped_branches, n_buses)
-        end
-
-        TimerOutputs.@timeit BUILD_TIMER "Wrap Static Injectors" begin
-            wrapped_loads = _wrap_loads(sys, lookup)
-            wrapped_static_injectors = _wrap_static_injectors(sys, lookup)
-        end
-
-        _adjust_states!(
-            DAE_vector,
-            mass_matrix,
-            total_shunts,
-            n_buses,
-            PSY.get_frequency(sys),
-        )
-
-        global_vars =
-            _make_global_variable_index(wrapped_injectors, wrapped_static_injectors, T)
-
-        inner_vars_count = 0
-        for i in length(wrapped_injectors):-1:1
-            if length(wrapped_injectors[i].inner_vars_index) > 0
-                inner_vars_count = wrapped_injectors[i].inner_vars_index[end]
-                break
-            end
-        end
-
-        if !isempty(delays)
-            @info "System has delays. Use the correct solver for delay differential equations."
-        end
-
-        new(
-            wrapped_injectors,
-            wrapped_static_injectors,
-            wrapped_loads,
-            wrapped_branches,
-            var_count - 2 * n_buses - branch_state_counts,
-            branch_state_counts,
-            var_count,
-            inner_vars_count,
-            n_buses,
-            injection_start:var_count,
-            Ybus,
-            has_dyn_lines,
-            total_shunts,
-            lookup,
-            DAE_vector,
-            mass_matrix,
-            global_vars,
-            MAPPING_DICT(),
-            Dict{String, Dict}(),
-            delays,
-        )
-    end
+    ybus_rectangular::SparseArrays.SparseMatrixCSC{Float64, Int}
+    total_shunts::SparseArrays.SparseMatrixCSC{Float64, Int}
+    DAE_vector::Vector{Bool}
+    mass_matrix::LinearAlgebra.Diagonal{Float64}
+    parameters::ComponentArrays.ComponentVector{Float64}
+    parameters_metadata::ComponentArrays.ComponentVector{ParamsMetadata}
+    constant_lags::Vector
 end
 
+function SimulationInputs(
+    sys::PSY.System,
+    ::T,
+) where {T <: Union{ConstantFrequency, ReferenceBus}}
+    n_buses = get_n_buses(sys)
+    _, lookup = _get_ybus(sys)
+    state_count = 2 * n_buses + 1
+    TimerOutputs.@timeit BUILD_TIMER "Wrap Branches" begin
+        wrapped_branches, state_count =
+            _wrap_dynamic_branches(sys, lookup, state_count)
+        has_dyn_lines = !isempty(wrapped_branches)
+    end
+    n_branch_states = state_count - (2 * n_buses + 1)
+    injection_start = state_count
+
+    TimerOutputs.@timeit BUILD_TIMER "Wrap Dynamic Injectors" begin
+        wrapped_injectors, state_count =
+            _wrap_dynamic_injector_data(sys, lookup, state_count)
+        n_vars = state_count - 1
+    end
+
+    TimerOutputs.@timeit BUILD_TIMER "Wrap Static Injectors" begin
+        wrapped_loads = _wrap_loads(sys, lookup)
+        wrapped_static_injectors =
+            _wrap_static_injectors(sys, lookup)
+    end
+    global_vars =
+        _make_global_variable_index(wrapped_injectors, wrapped_static_injectors, T)
+
+    inner_vars_count = 0
+    for i in length(wrapped_injectors):-1:1
+        if length(wrapped_injectors[i].inner_vars_index) > 0
+            inner_vars_count = wrapped_injectors[i].inner_vars_index[end]
+            break
+        end
+    end
+    Ybus, _ = _get_ybus(sys)
+    total_shunts = _make_total_shunts(wrapped_branches, n_buses)
+    TimerOutputs.@timeit BUILD_TIMER "Build initial parameters" begin
+        initial_parameters = ComponentArrays.ComponentVector{Float64}()
+        initial_parameters = _add_parameters(initial_parameters, wrapped_branches)
+        initial_parameters = _add_parameters(initial_parameters, wrapped_injectors)
+        initial_parameters = _add_parameters(initial_parameters, wrapped_loads)
+        initial_parameters = _add_parameters(initial_parameters, wrapped_static_injectors)
+        #initial_parameters = _add_bus_parameters(initial_parameters, PSY.get_components(PSY.ACBus, sys)) #For extending sensitivity API to Power Flow
+        parameter_metadata = ComponentArrays.ComponentVector{ParamsMetadata}()
+        parameter_metadata = _add_parameters_metadata(parameter_metadata, wrapped_branches)
+        parameter_metadata = _add_parameters_metadata(parameter_metadata, wrapped_injectors)
+        parameter_metadata = _add_parameters_metadata(parameter_metadata, wrapped_loads)
+        parameter_metadata =
+            _add_parameters_metadata(parameter_metadata, wrapped_static_injectors)
+    end
+    #@assert length(initial_parameters) == length(parameter_metadata)   Can be different with parameters that are vectors (e.g. NN)
+    mass_matrix = _make_mass_matrix(wrapped_injectors, n_vars, n_buses)
+    DAE_vector = _make_DAE_vector(mass_matrix, n_vars, n_buses)
+    _adjust_states!(
+        DAE_vector,
+        mass_matrix,
+        total_shunts,
+        n_buses,
+        PSY.get_frequency(sys),
+    )
+
+    delays = get_constant_lags(sys)
+    if !isempty(delays)
+        @info "System has delays. Use the correct solver for delay differential equations."
+    end
+
+    return SimulationInputs(
+        wrapped_injectors,
+        wrapped_static_injectors,
+        wrapped_loads,
+        wrapped_branches,
+        n_vars - 2 * n_buses - n_branch_states,
+        n_branch_states,
+        n_vars,
+        inner_vars_count,
+        n_buses,
+        injection_start:n_vars,
+        has_dyn_lines,
+        lookup,
+        global_vars,
+        MAPPING_DICT(),
+        Dict{String, Dict}(),
+        Ybus,
+        total_shunts,
+        DAE_vector,
+        mass_matrix,
+        initial_parameters,
+        parameter_metadata,
+        delays,
+    )
+end
+#LEVEL ONE INPUTS
 get_dynamic_injectors(inputs::SimulationInputs) = inputs.dynamic_injectors
 get_dynamic_branches(inputs::SimulationInputs) = inputs.dynamic_branches
 get_static_injectors(inputs::SimulationInputs) = inputs.static_injectors
 get_static_loads(inputs::SimulationInputs) = inputs.static_loads
-get_ybus(inputs::SimulationInputs) = inputs.ybus_rectangular
-get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
 get_lookup(inputs::SimulationInputs) = inputs.lookup
-get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
-get_mass_matrix(inputs::SimulationInputs) = inputs.mass_matrix
 has_dyn_lines(inputs::SimulationInputs) = inputs.dyn_lines
 get_global_vars_update_pointers(inputs::SimulationInputs) =
     inputs.global_vars_update_pointers
-
+get_global_state_map(inputs::SimulationInputs) = inputs.global_state_map
 get_injection_n_states(inputs::SimulationInputs) = inputs.injection_n_states
 get_branches_n_states(inputs::SimulationInputs) = inputs.branches_n_states
 get_variable_count(inputs::SimulationInputs) = inputs.variable_count
@@ -123,6 +133,16 @@ get_inner_vars_count(inputs::SimulationInputs) = inputs.inner_vars_count
 get_ode_ouput_range(inputs::SimulationInputs) = inputs.ode_range
 get_bus_count(inputs::SimulationInputs) = inputs.bus_count
 get_bus_range(inputs::SimulationInputs) = 1:(2 * inputs.bus_count)
+
+#LEVEL TWO INPUTS
+get_ybus(inputs::SimulationInputs) = inputs.ybus_rectangular
+get_total_shunts(inputs::SimulationInputs) = inputs.total_shunts
+
+#LEVEL THREE INPUTS
+get_DAE_vector(inputs::SimulationInputs) = inputs.DAE_vector
+get_mass_matrix(inputs::SimulationInputs) = inputs.mass_matrix
+get_parameters(inputs::SimulationInputs) = inputs.parameters
+get_constant_lags(inputs::SimulationInputs) = inputs.constant_lags
 
 # Utility function not to be used for performance sensitive operations
 function get_voltage_buses_ix(inputs::SimulationInputs)
@@ -158,7 +178,175 @@ function SimulationInputs(
     return SimulationInputs(sys, frequency_reference)
 end
 
-function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::Int)
+function _get_wrapper_name(wrapped_device::Union{DynamicWrapper, StaticWrapper})
+    Symbol(PSY.get_name(get_device(wrapped_device)))
+end
+function _get_wrapper_name(wrapped_device::StaticLoadWrapper)
+    Symbol(PSY.get_name(PSY.get_bus(wrapped_device)))
+end
+function _get_wrapper_name(wrapped_device::BranchWrapper)
+    Symbol(PSY.get_name(get_branch(wrapped_device)))
+end
+
+# For Extending Sensitivity API to Power Flow
+#= function _add_bus_parameters(initial_parameters, buses)
+    for bus in buses
+        name = Symbol(PSY.get_name(bus))
+        bus_type = PSY.get_bustype(bus)
+        if bus_type === PSY.ACBusTypes.REF
+            refs = (
+                V_ref = PSY.get_magnitude(bus),  
+                θ_ref = PSY.get_angle(bus),  
+                P_ref = 0.0, 
+                Q_ref = 0.0,
+            )
+        else #TODO- set appropriate references for PV and PQ buses. 
+            refs = (
+                V_ref = 0.0, 
+                θ_ref = 0.0,
+                P_ref = 0.0, 
+                Q_ref = 0.0,
+            )
+        end 
+        initial_parameters = ComponentArrays.ComponentVector(
+            initial_parameters;
+            name => (
+                refs = refs,
+            ),
+        )
+    end 
+    return initial_parameters 
+end  =#
+
+function _get_refs_metadata(x)
+    return (;)
+end
+
+function _get_refs_metadata(wrapped_device::DynamicWrapper)
+    return (
+        V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        ω_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+    )
+end
+
+function _get_refs_metadata(wrapped_device::StaticLoadWrapper)
+    return (
+        V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_power = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_current = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_impedance = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_power = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_current = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_impedance = ParamsMetadata(DEVICE_SETPOINT, false, true),
+    )
+end
+
+function _get_refs_metadata(wrapped_device::StaticWrapper)
+    return (
+        V_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        θ_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        P_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+        Q_ref = ParamsMetadata(DEVICE_SETPOINT, false, true),
+    )
+end
+
+function _add_parameters_metadata(parameter_metadata, wrapped_devices)
+    for wrapped_device in wrapped_devices
+        p_metadata = get_params_metadata(wrapped_device)
+        name = _get_wrapper_name(wrapped_device)
+        refs_metadata = _get_refs_metadata(wrapped_device)
+        parameter_metadata = ComponentArrays.ComponentVector(
+            parameter_metadata;
+            name => (
+                params = p_metadata,
+                refs = refs_metadata,
+            ),
+        )
+    end
+    return parameter_metadata
+end
+
+function _get_refs(x)
+    return (;)
+end
+
+function _get_refs(wrapped_device::DynamicWrapper)
+    static_device = get_static_device(wrapped_device)
+    if isa(static_device, PSY.StandardLoad)
+        reactive_power = PF.get_total_q(static_device)
+    else
+        reactive_power = PSY.get_reactive_power(static_device)
+    end
+    refs = (
+        V_ref = PSY.get_V_ref(get_device(wrapped_device)),
+        ω_ref = PSY.get_ω_ref(get_device(wrapped_device)),
+        P_ref = PSY.get_P_ref(get_device(wrapped_device)),
+        Q_ref = reactive_power,
+    )
+    return refs
+end
+
+function _get_refs(wrapped_device::StaticLoadWrapper)
+    refs = (
+        V_ref = get_V_ref(wrapped_device),
+        θ_ref = get_θ_ref(wrapped_device),
+        P_power = get_P_power(wrapped_device),
+        P_current = get_P_current(wrapped_device),
+        P_impedance = get_P_impedance(wrapped_device),
+        Q_power = get_Q_power(wrapped_device),
+        Q_current = get_Q_current(wrapped_device),
+        Q_impedance = get_Q_impedance(wrapped_device),
+    )
+    return refs
+end
+
+function _get_refs(wrapped_device::StaticWrapper)
+    device = get_device(wrapped_device)
+    bus = PSY.get_bus(device)
+    refs = (
+        V_ref = PSY.get_magnitude(bus),
+        θ_ref = PSY.get_angle(bus),
+        P_ref = PSY.get_active_power(device),
+        Q_ref = PSY.get_reactive_power(device),
+    )
+    return refs
+end
+
+function _get_refs(wrapped_device::StaticWrapper{PSY.Source})
+    device = get_device(wrapped_device)
+    refs = (
+        V_ref = PSY.get_internal_voltage(device),
+        θ_ref = PSY.get_internal_angle(device),
+        P_ref = PSY.get_active_power(device),
+        Q_ref = PSY.get_reactive_power(device),
+    )
+    return refs
+end
+
+function _add_parameters(initial_parameters, wrapped_devices)
+    for wrapped_device in wrapped_devices
+        p = get_params(wrapped_device)
+        name = _get_wrapper_name(wrapped_device)
+        refs = _get_refs(wrapped_device)
+        initial_parameters = ComponentArrays.ComponentVector(
+            initial_parameters;
+            name => (
+                params = p,
+                refs = refs,
+            ),
+        )
+    end
+    return initial_parameters
+end
+
+function _wrap_dynamic_injector_data(
+    sys::PSY.System,
+    lookup,
+    state_count::Int,
+)   #injection_start
     injector_data = get_injectors_with_dynamics(sys)
     isempty(injector_data) && error("System doesn't contain any DynamicInjection devices")
     # TODO: Needs a better container that isn't parametrized on an abstract type
@@ -172,15 +360,16 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
         @debug "Wrapping $(PSY.get_name(device))"
         dynamic_device = PSY.get_dynamic_injector(device)
         n_states = PSY.get_n_states(dynamic_device)
-        ix_range = range(injection_start; length = n_states)
+        n_inner_vars = get_inner_vars_count(dynamic_device)
+        ix_range = range(state_count; length = n_states)
         ode_range = range(injection_count; length = n_states)
         bus_n = PSY.get_number(PSY.get_bus(device))
         bus_ix = lookup[bus_n]
-        inner_vars_range =
-            range(inner_vars_count; length = get_inner_vars_count(dynamic_device))
+        inner_vars_range = range(inner_vars_count; length = n_inner_vars)
         @debug "ix_range=$ix_range ode_range=$ode_range inner_vars_range= $inner_vars_range"
         dynamic_device = PSY.get_dynamic_injector(device)
         @assert dynamic_device !== nothing
+        #TODO - add check if name of device is unique? 
         wrapped_injector[ix] = DynamicWrapper(
             device,
             dynamic_device,
@@ -192,14 +381,13 @@ function _wrap_dynamic_injector_data(sys::PSY.System, lookup, injection_start::I
             sys_base_freq,
         )
         injection_count += n_states
-        injection_start += n_states
-        inner_vars_count =
-            length(inner_vars_range) > 0 ? (inner_vars_range[end] + 1) : inner_vars_count
+        state_count += n_states
+        inner_vars_count += n_inner_vars
     end
-    return wrapped_injector
+    return wrapped_injector, state_count
 end
 
-function get_system_delays(sys::PSY.System)
+function get_constant_lags(sys::PSY.System)
     delays = []
     for injector in get_injectors_with_dynamics(sys)
         device_delays = get_delays(PSY.get_dynamic_injector(injector))
@@ -207,11 +395,14 @@ function get_system_delays(sys::PSY.System)
             delays = vcat(delays, device_delays)
         end
     end
-    return delays
+    return unique(delays)
 end
 
-function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
-    branches_start = 2 * get_n_buses(sys) + 1
+function _wrap_dynamic_branches(
+    sys::PSY.System,
+    lookup::Dict{Int, Int},
+    state_count::Int,
+)
     sys_base_power = PSY.get_base_power(sys)
     sys_base_freq = PSY.get_frequency(sys)
     dynamic_branches = get_dynamic_branches(sys)
@@ -226,7 +417,7 @@ function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
             to_bus_number = PSY.get_number(arc.to)
             bus_ix_from = lookup[from_bus_number]
             bus_ix_to = lookup[to_bus_number]
-            ix_range = range(branches_start; length = n_states)
+            ix_range = range(state_count; length = n_states)
             ode_range = range(branches_count; length = n_states)
             @debug "ix_range=$ix_range ode_range=$ode_range"
             wrapped_branches[ix] = BranchWrapper(
@@ -239,15 +430,18 @@ function _wrap_dynamic_branches(sys::PSY.System, lookup::Dict{Int, Int})
                 sys_base_freq,
             )
             branches_count += n_states
-            branches_start += n_states
+            state_count += n_states
         end
     else
         @debug("System doesn't contain Dynamic Branches")
     end
-    return wrapped_branches
+    return wrapped_branches, state_count
 end
 
-function _wrap_static_injectors(sys::PSY.System, lookup::Dict{Int, Int})
+function _wrap_static_injectors(
+    sys::PSY.System,
+    lookup::Dict{Int, Int},
+)
     static_injection_data = get_injection_without_dynamics(sys)
     container = Vector{StaticWrapper}(undef, length(static_injection_data))
     for (ix, ld) in enumerate(static_injection_data)
@@ -423,12 +617,13 @@ end
 
 function get_setpoints(inputs::SimulationInputs)
     dic = Dict{String, Dict{String, Float64}}()
+    p = inputs.parameters
     for w in get_dynamic_injectors(inputs)
+        wrapped_device_name = _get_wrapper_name(w)
         dic_w = Dict{String, Float64}()
-        dic_w["P_ref"] = get_P_ref(w)
-        dic_w["Q_ref"] = get_Q_ref(w)
-        dic_w["ω_ref"] = get_ω_ref(w)
-        dic_w["V_ref"] = get_V_ref(w)
+        for ref_name in ComponentArrays.labels( p[wrapped_device_name][:refs])
+            dic_w[ref_name] = p[wrapped_device_name][:refs][ref_name]
+        end 
         dic[PSY.get_name(w)] = dic_w
     end
     return dic

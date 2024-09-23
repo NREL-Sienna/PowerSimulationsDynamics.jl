@@ -1,5 +1,6 @@
 function initialize_DCside!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, IC, PSY.FixedDCSource, P, F, L},
@@ -13,8 +14,7 @@ function initialize_DCside!(
     F <: PSY.Filter,
     L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
-
     #Update inner_vars
-    inner_vars[Vdc_var] = PSY.get_voltage(PSY.get_dc_source(dynamic_device))
+    inner_vars[Vdc_var] = p[:params][:DCSource][:voltage]
     return
 end

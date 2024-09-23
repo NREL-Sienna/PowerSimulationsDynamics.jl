@@ -1,3 +1,4 @@
+using Revise
 using PowerSimulationsDynamics
 using PowerSystems
 using Test
@@ -14,6 +15,13 @@ using PowerFlows
 using PowerNetworkMatrices
 import LinearAlgebra
 using Logging
+using SciMLSensitivity
+using Enzyme
+Enzyme.API.runtimeActivity!(true)  #Needed for "activity unstable" code: https://enzymead.github.io/Enzyme.jl/stable/faq/
+Enzyme.API.looseTypeAnalysis!(true)  #Required for using component arrays with Enzyme
+using Zygote
+using Optimization
+using OptimizationOptimisers
 
 import Aqua
 Aqua.test_unbound_args(PowerSimulationsDynamics)
@@ -97,7 +105,7 @@ function get_logging_level(env_name::String, default)
 end
 
 function run_tests()
-    console_level = get_logging_level("SYS_CONSOLE_LOG_LEVEL", "Error")
+    console_level = get_logging_level("SYS_CONSOLE_LOG_LEVEL", "Debug")
     console_logger = ConsoleLogger(stderr, console_level)
     file_level = get_logging_level("SYS_LOG_LEVEL", "Info")
 

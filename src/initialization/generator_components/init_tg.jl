@@ -1,21 +1,24 @@
 function initialize_tg!(
     device_states,
+    p,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGFixed, P}},
     inner_vars::AbstractVector,
 ) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
     tg = PSY.get_prime_mover(dynamic_device)
+    eff = p[:params][:TurbineGov][:efficiency]
     τm0 = inner_vars[τm_var]
-    eff = PSY.get_efficiency(tg)
+
     P_ref = τm0 / eff
-    PSY.set_P_ref!(tg, P_ref)
     #Update Control Refs
-    set_P_ref(dynamic_device, P_ref)
+    PSY.set_P_ref!(tg, P_ref)
+    set_P_ref!(p, P_ref)
     return
 end
 
 function initialize_tg!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeI, P}},
     inner_vars::AbstractVector,
@@ -23,25 +26,35 @@ function initialize_tg!(
 
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
-    #Get Parameters
+
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    Tc = PSY.get_Tc(tg)
-    T3 = PSY.get_T3(tg)
-    T4 = PSY.get_T4(tg)
-    T5 = PSY.get_T5(tg)
-    V_min, V_max = PSY.get_valve_position_limits(tg)
+    #Get Parameters
+    params = p[:params][:TurbineGov]
+    R = params[:R]
+    Tc = params[:Tc]
+    T3 = params[:T3]
+    T4 = params[:T4]
+    T5 = params[:T5]
+    V_min = params[:valve_position_limits][:min]
+    V_max = params[:valve_position_limits][:max]
 
     #Get References
-    ω_ref = get_ω_ref(dynamic_device)
+    ω_ref = p[:refs][:ω_ref]
     ω0 = 1.0
-    function f!(out, x)
+    function f!(out, x, params)
         P_ref = x[1]
         x_g1 = x[2]
         x_g2 = x[3]
         x_g3 = x[4]
 
+        R = params[:R]
+        Tc = params[:Tc]
+        T3 = params[:T3]
+        T4 = params[:T4]
+        T5 = params[:T5]
+        ω0 = 1.0
         #Compute auxiliary parameters
+        inv_R = R < eps() ? 0.0 : (1.0 / R)
         P_in = P_ref + inv_R * (ω_ref - ω0)
 
         out[1] = P_in - x_g1
@@ -55,14 +68,21 @@ function initialize_tg!(
         (1.0 - T3 / Tc) * τm0,
         (1.0 - T4 / T5) * ((1.0 - T3 / Tc) * τm0 + (T3 / Tc) * τm0),
     ]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        set_P_ref!(p, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeI)
         tg_states = @view device_states[tg_ix]
@@ -80,6 +100,7 @@ end
 
 function initialize_tg!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.TGTypeII, P}},
     inner_vars::AbstractVector,
@@ -87,29 +108,40 @@ function initialize_tg!(
 
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
-    #Get parameters
     tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
-    ω_ref = get_ω_ref(dynamic_device)
-    ω0 = ω_ref
 
-    function f!(out, x)
+    params = [
+        p[:params][:TurbineGov][:R],
+        p[:params][:TurbineGov][:T1],
+        p[:params][:TurbineGov][:T2],
+        p[:refs][:ω_ref],
+    ]
+
+    function f!(out, x, params)
         P_ref = x[1]
         xg = x[2]
+        R, T1, T2, ω_ref = params
+        ω0 = ω_ref
+        inv_R = R < eps() ? 0.0 : (1.0 / R)
         out[1] = inv_R * (T1 / T2) * (ω_ref - ω0) + P_ref / 1.0 + xg - τm0
         out[2] = (1.0 / T2) * (inv_R * (1 - T2 / T1) * (ω_ref - ω0) - xg)
     end
     x0 = [τm0, 0.0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        set_P_ref!(p, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, PSY.TGTypeII)
         tg_states = @view device_states[tg_ix]
@@ -120,6 +152,7 @@ end
 
 function initialize_tg!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.GasTG, P}},
     inner_vars::AbstractVector,
@@ -128,21 +161,26 @@ function initialize_tg!(
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
     Δω = 0.0
-    #Get parameters
-    tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    D_turb = PSY.get_D_turb(tg)
-    AT = PSY.get_AT(tg)
-    KT = PSY.get_Kt(tg)
-    V_min, V_max = PSY.get_V_lim(tg)
 
-    function f!(out, x)
+    tg = PSY.get_prime_mover(dynamic_device)
+    #Get parameters
+    params = p[:params][:TurbineGov]
+    R = params[:R]
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
+
+    function f!(out, x, params)
         P_ref = x[1]
         x_g1 = x[2]
         x_g2 = x[3]
         x_g3 = x[4]
 
-        x_in = min((P_ref - inv_R * Δω), (AT + KT * (AT - x_g3)))
+        AT = params[:AT]
+        Kt = params[:Kt]
+        V_min = params[:V_lim][:min]
+        V_max = params[:V_lim][:max]
+        D_turb = params[:D_turb]
+
+        x_in = min((P_ref - inv_R * Δω), (AT + Kt * (AT - x_g3)))
         out[1] = (x_in - x_g1) #dx_g1/dt
         x_g1_sat = V_min < x_g1 < V_max ? x_g1 : max(V_min, min(V_max, x_g1))
         out[2] = (x_g1_sat - x_g2)
@@ -150,14 +188,21 @@ function initialize_tg!(
         out[4] = (x_g2 - D_turb * Δω) - τm0
     end
     x0 = [1.0 / inv_R, τm0, τm0, τm0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @error("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn("Initialization in TG failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        set_P_ref!(p, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
@@ -170,6 +215,7 @@ end
 
 function initialize_tg!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.DEGOV, P}},
     inner_vars::AbstractVector,
@@ -178,7 +224,7 @@ function initialize_tg!(
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
     PSY.set_P_ref!(tg, τm0)
-    set_P_ref(dynamic_device, τm0)
+    set_P_ref!(p, τm0)
     #Update states
     tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
     tg_states = @view device_states[tg_ix]
@@ -192,6 +238,7 @@ end
 
 function initialize_tg!(
     device_states,
+    p,
     ::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.SteamTurbineGov1, P}},
     inner_vars::AbstractVector,
@@ -200,19 +247,28 @@ function initialize_tg!(
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
     Δω = 0.0
-    #Get parameters
-    tg = PSY.get_prime_mover(dynamic_device)
-    inv_R = PSY.get_R(tg) < eps() ? 0.0 : (1.0 / PSY.get_R(tg))
-    T1 = PSY.get_T1(tg)
-    T2 = PSY.get_T2(tg)
-    T3 = PSY.get_T3(tg)
-    V_min, V_max = PSY.get_valve_position_limits(tg)
-    D_T = PSY.get_D_T(tg)
 
-    function f!(out, x)
+    tg = PSY.get_prime_mover(dynamic_device)
+    #Get Parameters
+    params = p[:params][:TurbineGov]
+    R = params[:R]
+    V_min = params[:valve_position_limits][:min]
+    V_max = params[:valve_position_limits][:max]
+    inv_R = R < eps() ? 0.0 : (1.0 / R)
+
+    function f!(out, x, params)
         P_ref = x[1]
         x_g1 = x[2]
         x_g2 = x[3]
+
+        R = params[:R]
+        T1 = params[:T1]
+        V_min = params[:valve_position_limits][:min]
+        V_max = params[:valve_position_limits][:max]
+        T2 = params[:T2]
+        T3 = params[:T3]
+        D_T = params[:D_T]
+        inv_R = R < eps() ? 0.0 : (1.0 / R)
 
         ref_in = inv_R * (P_ref - Δω)
         Pm = x_g2 + (T2 / T3) * x_g1
@@ -223,11 +279,18 @@ function initialize_tg!(
         out[3] = (Pm - D_T * Δω) - τm0
     end
     x0 = [1.0 / inv_R, τm0, τm0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn("Initialization in TG failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         if (sol_x0[2] >= V_max + BOUNDS_TOLERANCE) ||
            (sol_x0[2] <= V_min - BOUNDS_TOLERANCE)
             @error(
@@ -236,7 +299,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        set_P_ref!(p, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]
@@ -248,6 +311,7 @@ end
 
 function initialize_tg!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.HydroTurbineGov, P}},
     inner_vars::AbstractVector,
@@ -256,25 +320,31 @@ function initialize_tg!(
     #Get mechanical torque to SyncMach
     τm0 = inner_vars[τm_var]
     Δω = 0.0
-    #Get parameters
-    tg = PSY.get_prime_mover(dynamic_device)
-    R = PSY.get_R(tg)
-    r = PSY.get_r(tg)
-    Tr = PSY.get_Tr(tg)
-    #Gate velocity limits not implemented
-    #VELM = PSY.get_VELM(tg)
-    G_min, G_max = PSY.get_gate_position_limits(tg)
-    At = PSY.get_At(tg)
-    D_T = PSY.get_D_T(tg)
-    q_nl = PSY.get_q_nl(tg)
 
-    function f!(out, x)
+    tg = PSY.get_prime_mover(dynamic_device)
+    #Get Parameters
+    params = p[:params][:TurbineGov]
+    R = params[:R]
+    r = params[:r]
+    Tr = params[:Tr]
+    G_min = params[:gate_position_limits][:min]
+    G_max = params[:gate_position_limits][:max]
+    At = params[:At]
+    q_nl = params[:q_nl]
+
+    function f!(out, x, params)
         P_ref = x[1]
         x_g1 = x[2]
         x_g2 = x[3]
         x_g3 = x[4]
         x_g4 = x[5]
 
+        R = params[:R]
+        r = params[:r]
+        Tr = params[:Tr]
+        At = params[:At]
+        D_T = params[:D_T]
+        q_nl = params[:q_nl]
         c = (1.0 / r) * x_g1 + (1.0 / (r * Tr)) * x_g2
         P_in = P_ref - Δω - R * c
         h = (x_g4 / x_g3)^2
@@ -287,11 +357,18 @@ function initialize_tg!(
     end
     P0 = R * (q_nl + τm0 / At) # mechanical power initial guess. It migth be different than electrical output power
     x0 = [P0, 0, (r * Tr) * P0 / R, P0 / R, P0 / R]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn("Initialization of Turbine Governor $(PSY.get_name(static)) failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Error if x_g3 is outside PI limits
         if sol_x0[4] > G_max || sol_x0[4] < G_min
             error(
@@ -300,7 +377,7 @@ function initialize_tg!(
         end
         #Update Control Refs
         PSY.set_P_ref!(tg, sol_x0[1])
-        set_P_ref(dynamic_device, sol_x0[1])
+        set_P_ref!(p, sol_x0[1])
         #Update states
         tg_ix = get_local_state_ix(dynamic_device, typeof(tg))
         tg_states = @view device_states[tg_ix]

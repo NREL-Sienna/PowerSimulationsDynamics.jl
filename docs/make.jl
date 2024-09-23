@@ -23,6 +23,7 @@ makedocs(;
         "Reference Frames" => "reference_frames.md",
         "Perturbations" => "perturbations.md",
         "Time Delays" => "time_delays.md",
+        "Sensitivity Analysis" => "sensitivity_analysis.md",
         "Industrial Renewable Models" => "generic.md",
         "Generator Component Library" => Any[
             "Machine" => "component_models/machines.md",

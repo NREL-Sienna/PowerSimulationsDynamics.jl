@@ -9,6 +9,7 @@ end
 function mdl_DCside_ode!(
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     dynamic_device::DynamicWrapper{
@@ -24,7 +25,6 @@ function mdl_DCside_ode!(
     F <: PSY.Filter,
     L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
-
     #Update inner_vars
-    inner_vars[Vdc_var] = PSY.get_voltage(PSY.get_dc_source(dynamic_device))
+    inner_vars[Vdc_var] = p[:params][:DCSource][:voltage]
 end

@@ -200,7 +200,7 @@ end
     sim_inputs = sim.inputs
     DAE_vector = PSID.get_DAE_vector(sim_inputs)
     @test all(DAE_vector)
-    @test all(LinearAlgebra.diag(sim_inputs.mass_matrix) .> 0)
+    @test all(LinearAlgebra.diag(PSID.PSID.get_mass_matrix(sim_inputs)) .> 0)
     total_shunts = PSID.get_total_shunts(sim_inputs)
     # Total shunts matrix follows same pattern as the rectangular Ybus
     for v in LinearAlgebra.diag(total_shunts[1:3, 4:end])
@@ -211,7 +211,7 @@ end
         @test v < 0
     end
 
-    for entry in LinearAlgebra.diag(sim_inputs.mass_matrix)
+    for entry in LinearAlgebra.diag(PSID.get_mass_matrix(sim_inputs))
         @test entry > 0
     end
     voltage_buses_ix = PSID.get_voltage_buses_ix(sim_inputs)
@@ -234,9 +234,9 @@ end
     @test sum(.!DAE_vector) == 6
     for (ix, entry) in enumerate(DAE_vector)
         if !entry
-            @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] == 0
+            @test LinearAlgebra.diag(PSID.get_mass_matrix(sim_inputs))[ix] == 0
         elseif entry
-            @test LinearAlgebra.diag(sim_inputs.mass_matrix)[ix] > 0
+            @test LinearAlgebra.diag(PSID.get_mass_matrix(sim_inputs))[ix] > 0
         else
             @test false
         end
@@ -271,7 +271,7 @@ end
         initial_conditions = x0_test,
         console_level = Logging.Error,
     )
-    @test LinearAlgebra.norm(sim.x0_init - x0_test) <= 1e-6
+    @test LinearAlgebra.norm(sim.x0 - x0_test) <= 1e-6
     #Initialize System normally
     sim_normal = Simulation(
         ResidualModel,
@@ -282,7 +282,7 @@ end
         console_level = Logging.Error,
     )
     #Save states without generator at bus 2
-    x0 = sim_normal.x0_init
+    x0 = sim_normal.x0
     x0_no_gen = vcat(x0[1:6], x0[13:end])
     #Make Generator 2 unavailable and transform bus into PQ bus
     gen = PSY.get_component(ThermalStandard, sys, "generator-102-1")
@@ -299,7 +299,7 @@ end
         initial_conditions = x0_no_gen,
         console_level = Logging.Error,
     )
-    @test LinearAlgebra.norm(sim_trip_gen.x0_init - x0_no_gen) <= 1e-6
+    @test LinearAlgebra.norm(sim_trip_gen.x0 - x0_no_gen) <= 1e-6
     #Create Simulation without Gen 2 at steady state
     sim_normal_no_gen = Simulation(
         ResidualModel,
@@ -309,7 +309,7 @@ end
         BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1");
         console_level = Logging.Error,
     )
-    @test length(sim_normal_no_gen.x0_init) == 17
+    @test length(sim_normal_no_gen.x0) == 17
     #Ignore Initial Conditions without passing initialize_simulation = false
     sim_ignore_init = Simulation(
         ResidualModel,
@@ -319,7 +319,7 @@ end
         initial_conditions = x0_no_gen,
         console_level = Logging.Error,
     )
-    @test LinearAlgebra.norm(sim_ignore_init.x0_init - sim_normal_no_gen.x0_init) <= 1e-6
+    @test LinearAlgebra.norm(sim_ignore_init.x0 - sim_normal_no_gen.x0) <= 1e-6
     #Pass wrong vector size
     x0_wrong = zeros(20)
     # @test_logs (:error, "Build failed") match_mode = :any Simulation(
@@ -342,7 +342,7 @@ end
     )
     x0_flat = zeros(17)
     x0_flat[1:3] .= 1.0
-    @test LinearAlgebra.norm(sim_flat.x0_init - x0_flat) <= 1e-6
+    @test LinearAlgebra.norm(sim_flat.x0 - x0_flat) <= 1e-6
 end
 
 @testset "Test Network Kirchoff Calculation" begin
@@ -356,7 +356,11 @@ end
     V_i = voltages[3:end]
     ybus_ = PNM.Ybus(omib_sys).data
     I_balance_ybus = -1 * ybus_ * (V_r + V_i .* 1im)
-    inputs = PSID.SimulationInputs(ResidualModel, omib_sys, ConstantFrequency())
+    inputs = PSID.SimulationInputs(
+        ResidualModel,
+        omib_sys,
+        ConstantFrequency(),
+    )
     I_balance_sim = zeros(4)
     PSID.network_model(inputs, I_balance_sim, voltages)
     for i in 1:2
@@ -384,15 +388,18 @@ end
     end
 
     ybus_original = PNM.Ybus(threebus_sys)
-
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
+    inputs = PSID.SimulationInputs(
+        ResidualModel,
+        threebus_sys,
+        ConstantFrequency(),
+    )
 
     for i in 1:3, j in 1:3
         complex_ybus = ybus_original.data[i, j]
-        @test inputs.ybus_rectangular[i, j] == real(complex_ybus)
-        @test inputs.ybus_rectangular[i + 3, j + 3] == real(complex_ybus)
-        @test inputs.ybus_rectangular[i + 3, j] == -imag(complex_ybus)
-        @test inputs.ybus_rectangular[i, j + 3] == imag(complex_ybus)
+        @test PSID.get_ybus(inputs)[i, j] == real(complex_ybus)
+        @test PSID.get_ybus(inputs)[i + 3, j + 3] == real(complex_ybus)
+        @test PSID.get_ybus(inputs)[i + 3, j] == -imag(complex_ybus)
+        @test PSID.get_ybus(inputs)[i, j + 3] == imag(complex_ybus)
     end
 
     br = get_component(Line, threebus_sys, "BUS 1-BUS 3-i_1")
@@ -405,14 +412,14 @@ end
     # floating point than the inversion of a single float
     for i in 1:3, j in 1:3
         complex_ybus = ybus_line_trip.data[i, j]
-        @test isapprox(inputs.ybus_rectangular[i, j], real(complex_ybus), atol = 1e-10)
+        @test isapprox(PSID.get_ybus(inputs)[i, j], real(complex_ybus), atol = 1e-10)
         @test isapprox(
-            inputs.ybus_rectangular[i + 3, j + 3],
+            PSID.get_ybus(inputs)[i + 3, j + 3],
             real(complex_ybus),
             atol = 1e-10,
         )
-        @test isapprox(inputs.ybus_rectangular[i + 3, j], -imag(complex_ybus), atol = 1e-10)
-        @test isapprox(inputs.ybus_rectangular[i, j + 3], imag(complex_ybus), atol = 1e-10)
+        @test isapprox(PSID.get_ybus(inputs)[i + 3, j], -imag(complex_ybus), atol = 1e-10)
+        @test isapprox(PSID.get_ybus(inputs)[i, j + 3], imag(complex_ybus), atol = 1e-10)
     end
 
     threebus_sys = System(three_bus_file_dir; runchecks = false)
@@ -455,20 +462,23 @@ end
 
     cref = ControlReferenceChange(1.0, mach, :P_ref, 10.0)
     ωref = ControlReferenceChange(1.0, inv, :ω_ref, 0.9)
-
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
+    inputs = PSID.SimulationInputs(
+        ResidualModel,
+        threebus_sys,
+        ConstantFrequency(),
+    )
     integrator_for_test = MockIntegrator(inputs)
-
     cref_affect_f = PSID.get_affect(inputs, threebus_sys, cref)
     ωref_affect_f = PSID.get_affect(inputs, threebus_sys, ωref)
-
     cref_affect_f(integrator_for_test)
     ωref_affect_f(integrator_for_test)
-
-    @test PSID.get_P_ref(inputs.dynamic_injectors[1]) == 10.0
-    @test PSID.get_ω_ref(inputs.dynamic_injectors[2]) == 0.9
-
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
+    @test inputs.parameters["generator-102-1"][:refs][:P_ref] == 10.0
+    @test inputs.parameters["generator-103-1"][:refs][:ω_ref] == 0.9
+    inputs = PSID.SimulationInputs(
+        ResidualModel,
+        threebus_sys,
+        ConstantFrequency(),
+    )
     integrator_for_test = MockIntegrator(inputs)
 
     mach_trip = PSID.GeneratorTrip(1.0, mach)
@@ -480,8 +490,8 @@ end
     mtrip_affect_f(integrator_for_test)
     itrip_affect_f(integrator_for_test)
 
-    @test PSID.get_connection_status(inputs.dynamic_injectors[1]) == 0.0
-    @test PSID.get_connection_status(inputs.dynamic_injectors[2]) == 0.0
+    @test PSID.get_connection_status(PSID.get_dynamic_injectors(inputs)[1]) == 0.0
+    @test PSID.get_connection_status(PSID.get_dynamic_injectors(inputs)[2]) == 0.0
 end
 
 @testset "Test Load perturbations callback affects" begin
@@ -507,20 +517,21 @@ end
 
     load_val = LoadChange(1.0, load_1, :P_ref, 10.0)
     load_trip = LoadTrip(1.0, load_2)
-
-    inputs = PSID.SimulationInputs(ResidualModel, threebus_sys, ConstantFrequency())
+    inputs = PSID.SimulationInputs(
+        ResidualModel,
+        threebus_sys,
+        ConstantFrequency(),
+    )
     integrator_for_test = MockIntegrator(inputs)
 
     lref_affect_f = PSID.get_affect(inputs, threebus_sys, load_val)
     ltrip_affect_f = PSID.get_affect(inputs, threebus_sys, load_trip)
 
     lref_affect_f(integrator_for_test)
-    zip_load1 = first(filter(x -> PSY.get_name(x) == "BUS 1", inputs.static_loads))
-    @test PSID.get_P_impedance(zip_load1) == 10.0
+    @test inputs.parameters["BUS 1"][:refs][:P_impedance] == 10.0
     ltrip_affect_f(integrator_for_test)
-    zip_load2 = first(filter(x -> PSY.get_name(x) == "BUS 2", inputs.static_loads))
-    @test PSID.get_P_impedance(zip_load2) == 0.0
-    @test PSID.get_Q_impedance(zip_load2) == 0.0
+    @test inputs.parameters["BUS 2"][:refs][:P_impedance] == 0.0
+    @test inputs.parameters["BUS 2"][:refs][:Q_impedance] == 0.0
 end
 
 @testset "Global Index" begin
@@ -614,7 +625,7 @@ end
     #     (0.0, 20.0),
     #     # Not initialized to speed up the test
     #     initialize_simulation = false,
-    #     frequency_reference = ConstantFrequency(), #time span
+    #     frequency_reference = ConstantFrequency()), #time span
     # )
 end
 
@@ -807,4 +818,53 @@ end
         100.0,
         60.0,
     )
+end
+
+@testset "Test Initialize Levels" begin
+    path = mktempdir()
+    try
+        #Compute Y_bus after fault
+        fault_branch = deepcopy(collect(get_components(Branch, omib_sys))[1])
+        fault_branch.r = 0.00
+        fault_branch.x = 0.1
+        Ybus_fault =
+            PNM.Ybus([fault_branch], collect(get_components(ACBus, omib_sys)))[:, :]
+
+        Ybus_change = NetworkSwitch(
+            1.0, #change at t = 1.0
+            Ybus_fault,
+        ) #New YBus
+        # Define Simulation Problem
+        sim = Simulation!(
+            ResidualModel,
+            omib_sys, #system
+            path,
+            (0.0, 20.0), #time span
+            Ybus_change;
+            console_level = Logging.Error,
+        )
+        @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
+              PSID.SIMULATION_FINALIZED
+        results_original = read_results(sim)
+        series_original =
+            get_state_series(results_original, ("generator-102-1", :δ); dt = 0.01)
+        for initialize_level in
+            [PSID.POWERFLOW_AND_DEVICES, PSID.INITIALIZED, PSID.DEVICES_ONLY]
+            sim.initialize_level = initialize_level
+            @test execute!(sim, IDA(); dtmax = 0.005, saveat = 0.005) ==
+                  PSID.SIMULATION_FINALIZED
+            results = read_results(sim)
+            series = get_state_series(results, ("generator-102-1", :δ); dt = 0.01)
+            #Will not be identical for PSID.DEVICES_ONLY, the other two should be
+            if initialize_level == PSID.DEVICES_ONLY
+                @test sum(abs.(series[2] .- series_original[2])) <
+                      PSID.STRICT_NLSOLVE_F_TOLERANCE
+            else
+                @test series == series_original
+            end
+        end
+    finally
+        @info("removing test files")
+        rm(path; force = true, recursive = true)
+    end
 end

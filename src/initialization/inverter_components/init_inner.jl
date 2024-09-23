@@ -1,5 +1,6 @@
 function initialize_inner!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, L},
@@ -24,7 +25,7 @@ function initialize_inner!(
     Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
-    ω_oc = get_ω_ref(dynamic_device)
+    ω_oc = p[:refs][:ω_ref]
     θ0_oc = inner_vars[θ_oc_var]
     Vdc = inner_vars[Vdc_var]
 
@@ -33,24 +34,10 @@ function initialize_inner!(
     Vi_cnv0 = inner_vars[Vi_cnv_var]
 
     #Get Voltage Controller parameters
-    inner_control = PSY.get_inner_control(dynamic_device)
-    filter = PSY.get_filter(dynamic_device)
-    kpv = PSY.get_kpv(inner_control)
-    kiv = PSY.get_kiv(inner_control)
-    kffi = PSY.get_kffi(inner_control)
-    cf = PSY.get_cf(filter)
-    rv = PSY.get_rv(inner_control)
-    lv = PSY.get_lv(inner_control)
-
-    #Get Current Controller parameters
-    kpc = PSY.get_kpc(inner_control)
-    kic = PSY.get_kic(inner_control)
-    kffv = PSY.get_kffv(inner_control)
-    lf = PSY.get_lf(filter)
-    ωad = PSY.get_ωad(inner_control)
-    kad = PSY.get_kad(inner_control)
-
-    function f!(out, x)
+    params = p[:params][:InnerControl]
+    cf = p[:params][:Filter][:cf]
+    lf = p[:params][:Filter][:lf]
+    function f!(out, x, params)
         θ_oc = x[1]
         v_refr = x[2]
         ξ_d = x[3]
@@ -59,6 +46,16 @@ function initialize_inner!(
         γ_q = x[6]
         ϕ_d = x[7]
         ϕ_q = x[8]
+
+        kpv = params[:kpv]
+        kiv = params[:kiv]
+        kffv = params[:kffv]
+        rv = params[:rv]
+        lv = params[:lv]
+        kpc = params[:kpc]
+        kic = params[:kic]
+        kffi = params[:kffi]
+        kad = params[:kad]
 
         #Reference Frame Transformations
         I_dq_filter = ri_dq(θ_oc + pi / 2) * [Ir_filter; Ii_filter]
@@ -104,11 +101,18 @@ function initialize_inner!(
         out[8] = Vq_cnv_ref - V_dq_cnv0[q]
     end
     x0 = [θ0_oc, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
         @warn("Initialization in Inner Control failed")
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update angle:
         inner_vars[θ_oc_var] = sol_x0[1]
         outer_ix = get_local_state_ix(dynamic_device, O)
@@ -116,7 +120,7 @@ function initialize_inner!(
         #Assumes that angle is in second position
         outer_states[1] = sol_x0[1]
         inner_vars[θ_oc_var] = sol_x0[1]
-        set_V_ref(dynamic_device, sol_x0[2])
+        set_V_ref!(p, sol_x0[2])
         PSY.set_V_ref!(
             PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
             sol_x0[2],
@@ -145,6 +149,7 @@ end
 
 function initialize_inner!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.CurrentModeControl, DC, P, F, L},
@@ -168,7 +173,7 @@ function initialize_inner!(
     Vi_filter = device_states[external_ix[6]]
 
     #Obtain inner variables for component
-    ω_oc = get_ω_ref(dynamic_device)
+    ω_oc = p[:refs][:ω_ref]
     θ0_oc = inner_vars[θ_freq_estimator_var]
     Vdc = inner_vars[Vdc_var]
     Id_cnv_ref = inner_vars[Id_oc_var]
@@ -179,17 +184,15 @@ function initialize_inner!(
     Vi_cnv0 = inner_vars[Vi_cnv_var]
 
     #Get Current Controller parameters
-    inner_control = PSY.get_inner_control(dynamic_device)
-    filter = PSY.get_filter(dynamic_device)
-    kpc = PSY.get_kpc(inner_control)
-    kic = PSY.get_kic(inner_control)
-    kffv = PSY.get_kffv(inner_control)
-    lf = PSY.get_lf(filter)
-
-    function f!(out, x)
+    kpc = p[:params][:InnerControl][:kpc]
+    kic = p[:params][:InnerControl][:kic]
+    kffv = p[:params][:InnerControl][:kffv]
+    lf = p[:params][:Filter][:lf]
+    params = [kpc, kic, kffv, lf]
+    function f!(out, x, params)
         γ_d = x[1]
         γ_q = x[2]
-
+        kpc, kic, kffv, lf = params
         #Reference Frame Transformations
         I_dq_cnv = ri_dq(θ0_oc + pi / 2) * [Ir_cnv; Ii_cnv]
         V_dq_filter = ri_dq(θ0_oc + pi / 2) * [Vr_filter; Vi_filter]
@@ -211,11 +214,20 @@ function initialize_inner!(
         out[2] = Vq_cnv_ref - V_dq_cnv0[q]
     end
     x0 = [0.0, 0.0]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @warn("Initialization in Inner Control failed")
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, params)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn(
+            "Initialization of AVR in $(PSY.get_name(static)) failed"
+        )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update Converter modulation
         m0_dq = (ri_dq(θ0_oc + pi / 2) * [Vr_cnv0; Vi_cnv0]) ./ Vdc
         inner_vars[md_var] = m0_dq[d]
@@ -231,6 +243,7 @@ end
 
 function initialize_inner!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{C, O, PSY.RECurrentControlB, DC, P, F, L},
@@ -256,6 +269,9 @@ function initialize_inner!(
     inner_control = PSY.get_inner_control(dynamic_device)
     Q_Flag = PSY.get_Q_Flag(inner_control)
     PQ_Flag = PSY.get_PQ_Flag(inner_control)
+    params = @view(@view(p[:params])[:InnerControl])
+    V_ref0 = params[:V_ref0]
+    K_vi = params[:K_vi]
 
     Ip_min, Ip_max, Iq_min, Iq_max =
         current_limit_logic(inner_control, Val(PQ_Flag), V_t, Ip_oc, Iq_cmd)
@@ -290,8 +306,8 @@ function initialize_inner!(
     #Update additional variables
     # Based on PSS/E manual, if user does not provide V_ref0, then
     # V_ref0 is considered to be the output voltage of the PF solution
-    if PSY.get_V_ref0(inner_control) == 0.0
-        PSY.set_V_ref0!(inner_control, V_t)
+    if V_ref0 == 0.0
+        params[:V_ref0] = V_t
     end
     return
 end

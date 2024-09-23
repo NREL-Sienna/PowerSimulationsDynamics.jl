@@ -1,15 +1,17 @@
 mutable struct Simulation{T <: SimulationModel}
-    status::BUILD_STATUS
+    status::STATUS
     problem::Union{Nothing, SciMLBase.DEProblem}
     tspan::NTuple{2, Float64}
     sys::PSY.System
     perturbations::Vector{<:Perturbation}
+    initialize_level::INITIALIZE_LEVEL
+    x0::Vector{Float64}
     x0_init::Vector{Float64}
-    initialized::Bool
     tstops::Vector{Float64}
     callbacks::Vector
     simulation_folder::String
     inputs::Union{Nothing, SimulationInputs}
+    inputs_init::Union{Nothing, SimulationInputs}
     results::Union{Nothing, SimulationResults}
     console_level::Base.CoreLogging.LogLevel
     file_level::Base.CoreLogging.LogLevel
@@ -19,7 +21,8 @@ end
 
 get_system(sim::Simulation) = sim.sys
 get_simulation_inputs(sim::Simulation) = sim.inputs
-get_initial_conditions(sim::Simulation) = sim.x0_init
+get_x0(sim::Simulation) = sim.x0
+get_x0_init(sim::Simulation) = sim.x0_init
 get_tspan(sim::Simulation) = sim.tspan
 
 function Simulation(
@@ -35,18 +38,29 @@ function Simulation(
     frequency_reference,
 ) where {T <: SimulationModel}
     PSY.set_units_base_system!(sys, "DEVICE_BASE")
-
+    if initialize_simulation && !isempty(initial_conditions)
+        @warn "initial_conditions were provided with initialize_simulation. User's initial_conditions will be overwritten."
+        init_level = POWERFLOW_AND_DEVICES
+    elseif initialize_simulation
+        init_level = POWERFLOW_AND_DEVICES
+    elseif !initialize_simulation && isempty(initial_conditions)
+        init_level = FLAT_START
+    else
+        init_level = INITIALIZED
+    end
     return Simulation{T}(
         BUILD_INCOMPLETE,
         nothing,
         tspan,
         sys,
         perturbations,
+        init_level,
         initial_conditions,
-        !initialize_simulation,
+        initial_conditions,
         Vector{Float64}(),
         Vector{SciMLBase.AbstractDiscreteCallback}(),
         simulation_folder,
+        nothing,
         nothing,
         nothing,
         console_level,
@@ -194,9 +208,7 @@ end
 
 function reset!(sim::Simulation{T}) where {T <: SimulationModel}
     @info "Rebuilding the simulation after reset"
-    sim.inputs = SimulationInputs(T, get_system(sim), sim.frequency_reference)
     sim.status = BUILD_INCOMPLETE
-    sim.initialized = false
     build!(sim)
     @info "Simulation reset to status $(sim.status)"
     return
@@ -219,7 +231,11 @@ end
 
 function _build_inputs!(sim::Simulation{T}) where {T <: SimulationModel}
     simulation_system = get_system(sim)
-    sim.inputs = SimulationInputs(T, simulation_system, sim.frequency_reference)
+    sim.inputs = SimulationInputs(
+        T,
+        simulation_system,
+        sim.frequency_reference,
+    )
     @debug "Simulation Inputs Created"
     return
 end
@@ -232,45 +248,30 @@ function _get_flat_start(inputs::SimulationInputs)
     return initial_conditions
 end
 
-function _initialize_state_space(sim::Simulation{T}) where {T <: SimulationModel}
-    simulation_inputs = get_simulation_inputs(sim)
-    x0_init = sim.x0_init
-    if isempty(x0_init) && sim.initialized
-        @warn "Initial Conditions set to flat start"
-        sim.x0_init = _get_flat_start(simulation_inputs)
-    elseif isempty(x0_init) && !sim.initialized
-        sim.x0_init = _get_flat_start(simulation_inputs)
-    elseif !isempty(x0_init) && sim.initialized
-        if length(sim.x0_init) != get_variable_count(simulation_inputs)
+function _pre_initialize_simulation!(sim::Simulation)
+    sys = get_system(sim)
+    inputs = get_simulation_inputs(sim)
+    @assert sim.status == BUILD_INCOMPLETE
+    if sim.initialize_level == POWERFLOW_AND_DEVICES
+        sim.x0 = _get_flat_start(inputs)
+        sim.status = _initialize_powerflow_and_devices!(sim.x0, inputs, sys)
+    elseif sim.initialize_level == DEVICES_ONLY
+        sim.x0 = deepcopy(sim.x0_init)
+        sim.status = _initialize_devices_only!(sim.x0, inputs)
+    elseif sim.initialize_level == FLAT_START
+        sim.x0 = _get_flat_start(inputs)
+    elseif sim.initialize_level == INITIALIZED
+        sim.x0 = deepcopy(sim.x0_init)
+        if length(sim.x0) != get_variable_count(inputs)
             throw(
                 IS.ConflictingInputsError(
                     "The size of the provided initial state space does not match the model's state space.",
                 ),
             )
         end
-    elseif !isempty(x0_init) && !sim.initialized
-        @warn "initial_conditions were provided with initialize_simulation. User's initial_conditions will be overwritten."
-        if length(sim.x0_init) != get_variable_count(simulation_inputs)
-            sim.x0_init = _get_flat_start(simulation_inputs)
-        end
-    else
-        @assert false
-    end
-    return
-end
-
-function _pre_initialize_simulation!(sim::Simulation)
-    _initialize_state_space(sim)
-    if sim.initialized != true
-        @info("Pre-Initializing Simulation States")
-        sim.initialized = precalculate_initial_conditions!(sim.x0_init, sim)
-        if !sim.initialized
-            error(
-                "The simulation failed to find an adequate initial guess for the initialization. Check the intialization routine.",
-            )
-        end
-    else
-        @warn("Using existing initial conditions value for simulation initialization")
+        @warn(
+            "Using existing initial conditions value for simulation initialization"
+        )
         sim.status = SIMULATION_INITIALIZED
     end
     return
@@ -278,20 +279,24 @@ end
 
 function _get_jacobian(sim::Simulation{ResidualModel})
     inputs = get_simulation_inputs(sim)
-    x0_init = get_initial_conditions(sim)
+    x0_init = get_x0(sim)
+    parameters = get_parameters(inputs)
     return JacobianFunctionWrapper(
         ResidualModel(inputs, x0_init, JacobianCache),
         x0_init,
+        parameters,
         # sparse_retrieve_loop = 0,
     )
 end
 
 function _get_jacobian(sim::Simulation{MassMatrixModel})
     inputs = get_simulation_inputs(sim)
-    x0_init = get_initial_conditions(sim)
+    x0_init = get_x0(sim)
+    parameters = get_parameters(inputs)
     return JacobianFunctionWrapper(
         MassMatrixModel(inputs, x0_init, JacobianCache),
         x0_init,
+        parameters,
     )
 end
 
@@ -335,9 +340,11 @@ function _get_diffeq_problem(
     model::SystemModel{ResidualModel, NoDelays},
     jacobian::JacobianFunctionWrapper,
 )
-    x0 = get_initial_conditions(sim)
+    x0 = get_x0(sim)
+    sim.x0_init = deepcopy(x0)
     dx0 = zeros(length(x0))
     simulation_inputs = get_simulation_inputs(sim)
+    p = get_parameters(simulation_inputs)
     sim.problem = SciMLBase.DAEProblem(
         SciMLBase.DAEFunction{true}(
             model;
@@ -348,7 +355,7 @@ function _get_diffeq_problem(
         dx0,
         x0,
         get_tspan(sim),
-        simulation_inputs;
+        p;
         differential_vars = get_DAE_vector(simulation_inputs),
     )
     sim.status = BUILT
@@ -360,7 +367,10 @@ function _get_diffeq_problem(
     model::SystemModel{MassMatrixModel, NoDelays},
     jacobian::JacobianFunctionWrapper,
 )
+    x0 = get_x0(sim)
+    sim.x0_init = deepcopy(x0)
     simulation_inputs = get_simulation_inputs(sim)
+    p = get_parameters(simulation_inputs)
     sim.problem = SciMLBase.ODEProblem(
         SciMLBase.ODEFunction{true}(
             model;
@@ -370,16 +380,16 @@ function _get_diffeq_problem(
             # Necessary to avoid unnecessary calculations in Rosenbrock methods
             tgrad = (dT, u, p, t) -> dT .= false,
         ),
-        sim.x0_init,
+        x0,
         get_tspan(sim),
-        simulation_inputs,
+        p;
     )
     sim.status = BUILT
     return
 end
 
 function get_history_function(simulation_inputs::Simulation{MassMatrixModel})
-    x0 = get_initial_conditions(simulation_inputs)
+    x0 = get_x0(simulation_inputs)
     h(p, t; idxs = nothing) = typeof(idxs) <: Number ? x0[idxs] : x0
     return h
 end
@@ -389,8 +399,11 @@ function _get_diffeq_problem(
     model::SystemModel{MassMatrixModel, HasDelays},
     jacobian::JacobianFunctionWrapper,
 )
+    x0 = get_x0(sim)
+    sim.x0_init = deepcopy(x0)
     simulation_inputs = get_simulation_inputs(sim)
     h = get_history_function(sim)
+    p = get_parameters(simulation_inputs)
     sim.problem = SciMLBase.DDEProblem(
         SciMLBase.DDEFunction{true}(
             model;
@@ -398,17 +411,19 @@ function _get_diffeq_problem(
             jac = jacobian,
             jac_prototype = jacobian.Jv,
         ),
-        sim.x0_init,
+        x0,
         h,
         get_tspan(sim),
-        simulation_inputs;
-        constant_lags = filter!(x -> x != 0, unique(simulation_inputs.delays)),
+        p;
+        constant_lags = filter(x -> x != 0, get_constant_lags(simulation_inputs)),
     )
     sim.status = BUILT
 
     return
 end
 
+#Timers on this level are fine; but not for initializing individual types of components. 
+#Seems like a reasonable tradeoff for reduced complexity; allows getting rid of "enable_sensitivity"
 function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     check_kwargs(kwargs, SIMULATION_ACCEPTED_KWARGS, "Simulation")
     # Branches are a super set of Lines. Passing both kwargs will
@@ -448,10 +463,17 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                     jacobian = _get_jacobian(sim)
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Make Model Function" begin
-                    model = T(simulation_inputs, get_initial_conditions(sim), SimCache)
+                    model = T(simulation_inputs, get_x0(sim), SimCache)
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Initial Condition NLsolve refinement" begin
-                    refine_initial_condition!(sim, model, jacobian)
+                    if (sim.initialize_level == POWERFLOW_AND_DEVICES) ||
+                       (sim.initialize_level == DEVICES_ONLY)
+                        refine_initial_condition!(
+                            sim,
+                            model,
+                            jacobian,
+                        )
+                    end
                 end
                 TimerOutputs.@timeit BUILD_TIMER "Build Perturbations" begin
                     _build_perturbations!(sim)
@@ -459,6 +481,7 @@ function _build!(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
                 TimerOutputs.@timeit BUILD_TIMER "Make DiffEq Problem" begin
                     _get_diffeq_problem(sim, model, jacobian)
                 end
+                sim.inputs_init = deepcopy(sim.inputs)
                 @info "Simulations status = $(sim.status)"
             else
                 @error "The simulation couldn't be initialized correctly. Simulations status = $(sim.status)"
@@ -514,7 +537,7 @@ function _prog_meter_enabled()
 end
 
 function _filter_kwargs(kwargs)
-    return Dict(k => v for (k, v) in kwargs if in(k, DIFFEQ_SOLVE_KWARGS))
+    return filter(x -> in(x[1], DIFFEQ_SOLVE_KWARGS), kwargs)
 end
 
 function _execute!(sim::Simulation, solver; kwargs...)
@@ -528,7 +551,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
     else
         callbacks = SciMLBase.CallbackSet((), tuple(sim.callbacks...))
     end
-
+    progress_enable = _prog_meter_enabled()
     solution,
     time_log[:timed_solve_time],
     time_log[:solve_bytes_alloc],
@@ -537,7 +560,7 @@ function _execute!(sim::Simulation, solver; kwargs...)
         solver;
         callback = callbacks,
         tstops = !isempty(sim.tstops) ? [sim.tstops[1] ÷ 2, sim.tstops...] : [],
-        progress = get(kwargs, :enable_progress_bar, _prog_meter_enabled()),
+        progress = get(kwargs, :enable_progress_bar, progress_enable),
         progress_steps = 1,
         advance_to_tstop = !isempty(sim.tstops),
         initializealg = SciMLBase.NoInit(),
@@ -552,7 +575,9 @@ function _execute!(sim::Simulation, solver; kwargs...)
     if SciMLBase.successful_retcode(solution)
         sim.status = SIMULATION_FINALIZED
     else
-        @error("The simulation failed with return code $(solution.retcode)")
+        @error(
+            "The simulation failed with return code $(solution.retcode)"
+        )
         sim.status = SIMULATION_FAILED
     end
 end
@@ -578,7 +603,8 @@ function execute!(sim::Simulation, solver; kwargs...)
         try
             _execute!(sim, solver; kwargs...)
         catch e
-            @error "Execution failed" exception = (e, catch_backtrace())
+            @error "Execution failed" exception =
+                (e, catch_backtrace())
             sim.status = SIMULATION_FAILED
         end
     end

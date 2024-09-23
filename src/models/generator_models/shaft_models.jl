@@ -9,6 +9,7 @@ end
 function mdl_shaft_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.SingleMass, A, TG, P}},
@@ -28,9 +29,8 @@ function mdl_shaft_ode!(
     τm = inner_vars[τm_var]
 
     #Get parameters
-    shaft = PSY.get_shaft(dynamic_device)
-    H = PSY.get_H(shaft)
-    D = PSY.get_D(shaft)
+    H = p[:params][:Shaft][:H]
+    D = p[:params][:Shaft][:D]
 
     #Compute 2 states ODEs
     output_ode[local_ix[1]] = 2 * π * f0 * (ω - ω_sys)                    #15.5
@@ -42,6 +42,7 @@ end
 function mdl_shaft_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
     output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    p::AbstractArray{<:ACCEPTED_REAL_TYPES},
     inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
     ω_sys::ACCEPTED_REAL_TYPES,
     dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, PSY.FiveMassShaft, A, TG, P}},
@@ -71,25 +72,25 @@ function mdl_shaft_ode!(
     τm = inner_vars[τm_var]
 
     #Get parameters
-    shaft = PSY.get_shaft(dynamic_device)
-    H = PSY.get_H(shaft)
-    H_hp = PSY.get_H_hp(shaft)
-    H_ip = PSY.get_H_ip(shaft)
-    H_lp = PSY.get_H_lp(shaft)
-    H_ex = PSY.get_H_ex(shaft)
-    D = PSY.get_D(shaft)
-    D_hp = PSY.get_D_hp(shaft)
-    D_ip = PSY.get_D_ip(shaft)
-    D_lp = PSY.get_D_lp(shaft)
-    D_ex = PSY.get_D_ex(shaft)
-    D_12 = PSY.get_D_12(shaft)
-    D_23 = PSY.get_D_23(shaft)
-    D_34 = PSY.get_D_34(shaft)
-    D_45 = PSY.get_D_45(shaft)
-    K_hp = PSY.get_K_hp(shaft)
-    K_ip = PSY.get_K_ip(shaft)
-    K_lp = PSY.get_K_lp(shaft)
-    K_ex = PSY.get_K_ex(shaft)
+    params = p[:params][:Shaft]
+    H = params[:H]
+    H_hp = params[:H_hp]
+    H_ip = params[:H_ip]
+    H_lp = params[:H_lp]
+    H_ex = params[:H_ex]
+    D = params[:D]
+    D_hp = params[:D_hp]
+    D_ip = params[:D_ip]
+    D_lp = params[:D_lp]
+    D_ex = params[:D_ex]
+    D_12 = params[:D_12]
+    D_23 = params[:D_23]
+    D_34 = params[:D_34]
+    D_45 = params[:D_45]
+    K_hp = params[:K_hp]
+    K_ip = params[:K_ip]
+    K_lp = params[:K_lp]
+    K_ex = params[:K_ex]
 
     #Compute 10 states ODEs #15.51
     output_ode[local_ix[1]] = 2.0 * π * f0 * (ω - ω_sys)

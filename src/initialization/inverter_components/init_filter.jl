@@ -1,5 +1,6 @@
 function initialize_filter!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.LCLFilter, L}},
     inner_vars::AbstractVector,
@@ -24,25 +25,24 @@ function initialize_filter!(
     Ir_filter = real(I)
     Ii_filter = imag(I)
 
-    #Get Parameters
-    filter = PSY.get_filter(dynamic_device)
-    lf = PSY.get_lf(filter)
-    rf = PSY.get_rf(filter)
-    cf = PSY.get_cf(filter)
-    lg = PSY.get_lg(filter)
-    rg = PSY.get_rg(filter)
-
-    #Set parameters
-    ω_sys = get_ω_ref(dynamic_device)
-
     #To solve Vr_cnv, Vi_cnv, Ir_cnv, Ii_cnv, Vr_filter, Vi_filter
-    function f!(out, x)
+    function f!(out, x, p)
         Vr_cnv = x[1]
         Vi_cnv = x[2]
         Ir_cnv = x[3]
         Ii_cnv = x[4]
         Vr_filter = x[5]
         Vi_filter = x[6]
+
+        #Get Parameters
+        params = p[:params][:Filter]
+        lf = params[:lf]
+        rf = params[:rf]
+        cf = params[:cf]
+        lg = params[:lg]
+        rg = params[:rg]
+        #Set parameters
+        ω_sys = p[:refs][:ω_ref]
 
         #𝜕Ir_cnv/𝜕t
         out[1] = Vr_cnv - Vr_filter - rf * Ir_cnv + ω_sys * lf * Ii_cnv
@@ -58,11 +58,20 @@ function initialize_filter!(
         out[6] = Vi_filter - V_I - rg * Ii_filter - ω_sys * lg * Ir_filter
     end
     x0 = [V_R, V_I, Ir_filter, Ii_filter, V_R, V_I]
-    sol = NLsolve.nlsolve(f!, x0; ftol = STRICT_NLSOLVE_F_TOLERANCE)
-    if !NLsolve.converged(sol)
-        @warn("Initialization in Filter failed $(PSY.get_name(static))")
+    prob = NonlinearSolve.NonlinearProblem{true}(f!, x0, p)
+    sol = NonlinearSolve.solve(
+        prob,
+        NonlinearSolve.TrustRegion();
+        sensealg = SciMLSensitivity.SteadyStateAdjoint(),
+        reltol = STRICT_NLSOLVE_F_TOLERANCE,
+        abstol = STRICT_NLSOLVE_F_TOLERANCE,
+    )
+    if !SciMLBase.successful_retcode(sol)
+        @warn(
+            "Initialization in Filter failed $(PSY.get_name(static))"
+        )
     else
-        sol_x0 = sol.zero
+        sol_x0 = sol.u
         #Update terminal voltages
         inner_vars[Vr_inv_var] = V_R
         inner_vars[Vi_inv_var] = V_I
@@ -92,11 +101,21 @@ end
 
 function initialize_filter!(
     device_states,
+    p,
     static::PSY.StaticInjection,
-    dynamic_device::DynamicWrapper{PSY.DynamicInverter{C, O, IC, DC, P, PSY.RLFilter, L}},
+    dynamic_device::DynamicWrapper{
+        PSY.DynamicInverter{
+            PSY.RenewableEnergyConverterTypeA,
+            O,
+            IC,
+            DC,
+            P,
+            PSY.RLFilter,
+            L,
+        },
+    },
     inner_vars::AbstractVector,
 ) where {
-    C <: PSY.Converter,
     O <: PSY.OuterControl,
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
@@ -120,12 +139,12 @@ function initialize_filter!(
     I_I = imag(I)
 
     #Get Parameters
-    filt = PSY.get_filter(dynamic_device)
-    rf = PSY.get_rf(filt)
-    lf = PSY.get_lf(filt)
-    converter = PSY.get_converter(dynamic_device)
-    R_source = PSY.get_R_source(converter)
-    X_source = PSY.get_X_source(converter)
+    params = p[:params][:Filter]
+    rf = params[:rf]
+    lf = params[:lf]
+
+    R_source = p[:params][:Converter][:R_source]
+    X_source = p[:params][:Converter][:X_source]
 
     #Update terminal voltages
     inner_vars[Vr_inv_var] = V_R

@@ -1,5 +1,6 @@
 function initialize_outer!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -36,6 +37,7 @@ function initialize_outer!(
     Vi_cnv = inner_vars[Vi_cnv_var]
     θ0_oc = atan(Vi_cnv, Vr_cnv)
 
+    ω_ref = p[:refs][:ω_ref]
     #Obtain additional expressions
     p_elec_out = Ir_filter * Vr_filter + Ii_filter * Vi_filter
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
@@ -49,24 +51,25 @@ function initialize_outer!(
     )
     outer_states = @view device_states[outer_ix]
     outer_states[1] = θ0_oc #θ_oc
-    outer_states[2] = get_ω_ref(dynamic_device) #ω
+    outer_states[2] = ω_ref
     outer_states[3] = q_elec_out #qm
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
-    #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    inner_vars[ω_oc_var] = ω_ref
+    set_P_ref!(p, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
+    set_Q_ref!(p, q_elec_out)
     return
 end
 
 function initialize_outer!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -121,18 +124,19 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = p[:refs][:ω_ref]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    set_P_ref!(p, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    set_Q_ref!(p, q_elec_out)
 end
 
 function initialize_outer!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -186,18 +190,19 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = p[:refs][:ω_ref]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out of PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    set_P_ref!(p, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    set_Q_ref!(p, q_elec_out)
 end
 
 function initialize_outer!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -239,12 +244,8 @@ function initialize_outer!(
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
 
     #Get Outer Controller parameters
-    outer_control = PSY.get_outer_control(dynamic_device)
-    active_power_control = PSY.get_active_power_control(outer_control)
-    Ki_p = PSY.get_Ki_p(active_power_control) #Integral Gain
-    reactive_power_control = PSY.get_reactive_power_control(outer_control)
-    Ki_q = PSY.get_Ki_q(reactive_power_control) #Integral Gain
-
+    Ki_p = p[:params][:OuterControl][:ActivePowerControl][:Ki_p]
+    Ki_q = p[:params][:OuterControl][:ReactivePowerControl][:Ki_q]
     #Update inner_vars
     inner_vars[P_ES_var] = p_elec_out
     #Update states
@@ -260,16 +261,16 @@ function initialize_outer!(
 
     #Update inner vars
     inner_vars[θ_oc_var] = θ0_oc
-    inner_vars[ω_oc_var] = get_ω_ref(dynamic_device)
+    inner_vars[ω_oc_var] = p[:refs][:ω_ref]
     inner_vars[Id_oc_var] = I_dq_cnv[d]
     inner_vars[Iq_oc_var] = I_dq_cnv[q]
     #Update Q_ref. Initialization assumes q_ref = q_elec_out from PF solution
-    set_P_ref(dynamic_device, p_elec_out)
+    set_P_ref!(p, p_elec_out)
     PSY.set_P_ref!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_Q_ref(dynamic_device, q_elec_out)
+    set_Q_ref!(p, q_elec_out)
     PSY.set_Q_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
@@ -279,6 +280,7 @@ end
 
 function initialize_outer!(
     device_states,
+    p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
         PSY.DynamicInverter{
@@ -322,7 +324,7 @@ function initialize_outer!(
     ## Set references
     Vm = V_t
     PSY.set_Q_ref!(PSY.get_converter(dynamic_device), q_elec_out)
-    set_Q_ref(dynamic_device, q_elec_out)
+    set_Q_ref!(p, q_elec_out)
     PSY.set_Q_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         q_elec_out,
@@ -331,17 +333,18 @@ function initialize_outer!(
         PSY.get_active_power_control(PSY.get_outer_control(dynamic_device)),
         p_elec_out,
     )
-    set_P_ref(dynamic_device, p_elec_out)
+    set_P_ref!(p, p_elec_out)
     PSY.set_V_ref!(
         PSY.get_reactive_power_control(PSY.get_outer_control(dynamic_device)),
         Vm,
     )
-    set_V_ref(dynamic_device, Vm)
+    set_V_ref!(p, Vm)
 
     #Get Outer Controller parameters
-    q_ref = get_Q_ref(dynamic_device)
+    q_ref = p[:refs][:Q_ref]
     outer_control = PSY.get_outer_control(dynamic_device)
     active_power_control = PSY.get_active_power_control(outer_control)
+    reactive_power_control = PSY.get_reactive_power_control(outer_control)
     Freq_Flag = PSY.get_Freq_Flag(active_power_control) #Frequency Flag
 
     #Set state counter for variable number of states due to flags
@@ -360,9 +363,17 @@ function initialize_outer!(
     )
     internal_states = @view device_states[local_ix]
 
+    #Get parameters OuterControl
+    K_ig = p[:params][:OuterControl][:ActivePowerControl][:K_ig]
+    T_p = p[:params][:OuterControl][:ActivePowerControl][:T_p]
+    K_i = p[:params][:OuterControl][:ReactivePowerControl][:K_i]
+    R_c = p[:params][:OuterControl][:ReactivePowerControl][:R_c]
+    X_c = p[:params][:OuterControl][:ReactivePowerControl][:X_c]
+    K_c = p[:params][:OuterControl][:ReactivePowerControl][:K_c]
+    T_p = p[:params][:OuterControl][:ReactivePowerControl][:T_p]
+    K_qi = p[:params][:OuterControl][:ReactivePowerControl][:K_qi]
+
     if Freq_Flag == 1
-        #Obtain Parameters
-        K_ig = PSY.get_K_ig(active_power_control)
         #Update States
         internal_states[state_ct] = p_elec_out
         internal_states[state_ct + 1] = p_elec_out / K_ig
@@ -387,9 +398,6 @@ function initialize_outer!(
     V_Flag = PSY.get_V_Flag(reactive_power_control)
     # Update references
     if Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 1
-        #Get Reactive Controller Parameters
-        K_i = PSY.get_K_i(reactive_power_control)
-        K_qi = PSY.get_K_qi(reactive_power_control)
         #Update states
         internal_states[state_ct] = q_elec_out
         internal_states[state_ct + 1] = q_elec_out / K_i
@@ -400,7 +408,6 @@ function initialize_outer!(
         inner_vars[V_oc_var] = 0.0
         inner_vars[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
     elseif Ref_Flag == 0 && PF_Flag == 0 && V_Flag == 0
-        K_i = PSY.get_K_i(reactive_power_control)
         #Update states
         internal_states[state_ct] = q_ref
         internal_states[state_ct + 1] = q_ref / K_i
@@ -438,11 +445,6 @@ function initialize_outer!(
         inner_vars[Iq_oc_var] = q_elec_out / max(V_t, 0.01)
     elseif Ref_Flag == 1 && PF_Flag == 0 && V_Flag == 0
         # TODO: Fix and debug this case when Q_Flag = 1
-        K_i = PSY.get_K_i(reactive_power_control)
-        K_qi = PSY.get_K_qi(reactive_power_control)
-        K_c = PSY.get_K_c(reactive_power_control)
-        R_c = PSY.get_R_c(reactive_power_control)
-        X_c = PSY.get_R_c(reactive_power_control)
         VC_Flag = PSY.get_VC_Flag(reactive_power_control)
         V_reg = sqrt(Vr_filter^2 + Vi_filter^2)
         # Compute input to the compensated voltage filter

@@ -17,40 +17,6 @@ function _determine_stability(vals::Vector{Complex{Float64}})
     return true
 end
 
-function _calculate_forwardiff_jacobian(
-    sim::Simulation{ResidualModel},
-    x_eval::Vector{Float64},
-)
-    var_count = get_variable_count(sim.inputs)
-    dx0 = zeros(var_count) #Define a vector of zeros for the derivative
-    sysf! = (out, x) -> system_implicit!(
-        out,            #output of the function
-        dx0,            #derivatives equal to zero
-        x,              #states
-        sim.inputs,     #Parameters
-        0.0,            #time equals to zero.
-    )
-    out = zeros(var_count) #Define a vector of zeros for the output
-    jacobian = ForwardDiff.jacobian(sysf!, out, x_eval)
-    return jacobian
-end
-
-function _calculate_forwardiff_jacobian(
-    sim::Simulation{MassMatrixModel},
-    x_eval::Vector{Float64},
-)
-    var_count = get_variable_count(sim.inputs)
-    sysf! = (dx, x) -> system_mass_matrix!(
-        dx,            #derivatives equal to zero
-        x,              #states
-        sim.inputs,     #Parameters
-        0.0,            #time equals to zero.
-    )
-    dx = zeros(var_count) #Define a vector of zeros for the output
-    jacobian = ForwardDiff.jacobian(sysf!, dx, x_eval)
-    return jacobian
-end
-
 """
 Finds the location of the differential states in the reduced Jacobian
 """
@@ -185,9 +151,10 @@ function _small_signal_analysis(
     ::Type{T},
     inputs::SimulationInputs,
     x_eval::Vector{Float64},
+    p::AbstractArray{Float64},
     multimachine = true,
 ) where {T <: SimulationModel}
-    jacwrapper = get_jacobian(T, inputs, x_eval, 0)
+    jacwrapper = get_jacobian(T, inputs, x_eval, p, 0)
     return _small_signal_analysis(jacwrapper.Jv, jacwrapper.x, inputs, multimachine)
 end
 
@@ -203,19 +170,21 @@ Returns the Small Signal Output object that contains the eigenvalues and partici
 """
 function small_signal_analysis(sim::Simulation{T}; kwargs...) where {T <: SimulationModel}
     inputs = get_simulation_inputs(sim)
-    if !(isempty(inputs.delays))
+    if !(isempty(get_constant_lags(inputs)))
         return error("Small signal analysis not compatible with system model with delays")
     end
-    x_eval = get(kwargs, :operating_point, get_initial_conditions(sim))
-    return _small_signal_analysis(T, inputs, x_eval, sim.multimachine)
+    x_eval = get(kwargs, :operating_point, get_x0(sim))
+    p = get_parameters(inputs)
+    return _small_signal_analysis(T, inputs, x_eval, p, sim.multimachine)
 end
 
 function small_signal_analysis(::Type{T}, system::PSY.System) where {T <: SimulationModel}
     simulation_system = deepcopy(system)
     inputs = SimulationInputs(T, simulation_system, ReferenceBus)
-    x0_init = get_flat_start(inputs)
+    p = get_parameters(inputs)
+    x0_init = _get_flat_start(inputs)
     set_operating_point!(x0_init, inputs, system)
-    return _small_signal_analysis(T, inputs, x0_init)
+    return _small_signal_analysis(T, inputs, x0_init, p)
 end
 
 function summary_participation_factors(

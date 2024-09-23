@@ -28,19 +28,15 @@ get_delays(
 
 """
 Wraps DynamicInjection devices from PowerSystems to handle changes in controls and connection
-status, and allocate the required indexes of the state space.
+status, and allocate the required indexes of the state space and parameter space. 
 """
-struct DynamicWrapper{T <: PSY.DynamicInjection}
+mutable struct DynamicWrapper{T <: PSY.DynamicInjection}
     device::T
     system_base_power::Float64
     system_base_frequency::Float64
-    static_type::Type{<:PSY.StaticInjection}
+    static_device::PSY.StaticInjection
     bus_category::Type{<:BusCategory}
-    connection_status::Base.RefValue{Float64}
-    V_ref::Base.RefValue{Float64}
-    ω_ref::Base.RefValue{Float64}
-    P_ref::Base.RefValue{Float64}
-    Q_ref::Base.RefValue{Float64}
+    connection_status::Float64
     inner_vars_index::Vector{Int}
     ix_range::Vector{Int}
     ode_range::Vector{Int}
@@ -54,13 +50,9 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
         device::T,
         system_base_power::Float64,
         system_base_frequency::Float64,
-        static_type::Type{<:PSY.StaticInjection},
+        static_device::PSY.StaticInjection,
         bus_category::Type{<:BusCategory},
-        connection_status::Base.RefValue{Float64},
-        V_ref::Base.RefValue{Float64},
-        ω_ref::Base.RefValue{Float64},
-        P_ref::Base.RefValue{Float64},
-        Q_ref::Base.RefValue{Float64},
+        connection_status::Float64,
         inner_vars_index,
         ix_range,
         ode_range,
@@ -76,13 +68,9 @@ struct DynamicWrapper{T <: PSY.DynamicInjection}
             device,
             system_base_power,
             system_base_frequency,
-            static_type,
+            static_device,
             bus_category,
             connection_status,
-            V_ref,
-            ω_ref,
-            P_ref,
-            Q_ref,
             Vector{Int}(inner_vars_index),
             Vector{Int}(ix_range),
             Vector{Int}(ode_range),
@@ -119,7 +107,7 @@ function state_port_mappings(dynamic_device::PSY.DynamicInjection, device_states
 end
 
 function DynamicWrapper(
-    device::T,
+    static_device::T,
     dynamic_device::D,
     bus_ix::Int,
     ix_range,
@@ -129,28 +117,15 @@ function DynamicWrapper(
     sys_base_freq,
 ) where {T <: PSY.StaticInjection, D <: PSY.DynamicInjection}
     device_states = PSY.get_states(dynamic_device)
-
     component_state_mapping, input_port_mapping =
         state_port_mappings(dynamic_device, device_states)
-
-    # Consider the special case when the static device is StandardLoad
-    if isa(device, PSY.StandardLoad)
-        reactive_power = PF.get_total_q(device)
-    else
-        reactive_power = PSY.get_reactive_power(device)
-    end
-
     return DynamicWrapper(
         dynamic_device,
         sys_base_power,
         sys_base_freq,
-        T,
-        BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
-        Base.Ref(1.0),
-        Base.Ref(PSY.get_V_ref(dynamic_device)),
-        Base.Ref(PSY.get_ω_ref(dynamic_device)),
-        Base.Ref(PSY.get_P_ref(dynamic_device)),
-        Base.Ref(reactive_power),
+        static_device,
+        BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
+        1.0,
         inner_var_range,
         ix_range,
         ode_range,
@@ -173,7 +148,7 @@ function DynamicWrapper(
 end
 
 function DynamicWrapper(
-    device::PSY.ThermalStandard,
+    static_device::PSY.ThermalStandard,
     dynamic_device::PSY.AggregateDistributedGenerationA,
     bus_ix::Int,
     ix_range,
@@ -192,13 +167,9 @@ function DynamicWrapper(
         dynamic_device,
         sys_base_power,
         sys_base_freq,
-        PSY.ThermalStandard,
-        BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
-        Base.Ref(1.0),
-        Base.Ref(PSY.get_V_ref(dynamic_device)),
-        Base.Ref(PSY.get_ω_ref(dynamic_device)),
-        Base.Ref(PSY.get_P_ref(dynamic_device)),
-        Base.Ref(PSY.get_reactive_power(device)),
+        static_device,
+        BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
+        1.0,
         inner_var_range,
         ix_range,
         ode_range,
@@ -221,7 +192,7 @@ function DynamicWrapper(
 end
 
 function DynamicWrapper(
-    device::PSY.Source,
+    static_device::PSY.Source,
     dynamic_device::D,
     bus_ix::Int,
     ix_range,
@@ -231,20 +202,16 @@ function DynamicWrapper(
     sys_base_freq,
 ) where {D <: PSY.DynamicInjection}
     device_states = PSY.get_states(dynamic_device)
-    IS.@assert_op PSY.get_X_th(dynamic_device) == PSY.get_X_th(device)
-    IS.@assert_op PSY.get_R_th(dynamic_device) == PSY.get_R_th(device)
+    IS.@assert_op PSY.get_X_th(dynamic_device) == PSY.get_X_th(static_device)
+    IS.@assert_op PSY.get_R_th(dynamic_device) == PSY.get_R_th(static_device)
 
     return DynamicWrapper(
         dynamic_device,
         sys_base_power,
         sys_base_freq,
-        PSY.Source,
-        BUS_MAP[PSY.get_bustype(PSY.get_bus(device))],
-        Base.Ref(1.0),
-        Base.Ref(0.0),
-        Base.Ref(0.0),
-        Base.Ref(0.0),
-        Base.Ref(0.0),
+        static_device,
+        BUS_MAP[PSY.get_bustype(PSY.get_bus(static_device))],
+        1.0,
         collect(inner_var_range),
         collect(ix_range),
         collect(ode_range),
@@ -280,6 +247,7 @@ function _index_port_mapping!(
 end
 
 get_device(wrapper::DynamicWrapper) = wrapper.device
+get_static_device(wrapper::DynamicWrapper) = wrapper.static_device
 get_device_type(::DynamicWrapper{T}) where {T <: PSY.DynamicInjection} = T
 get_bus_category(wrapper::DynamicWrapper) = wrapper.bus_category
 get_inner_vars_index(wrapper::DynamicWrapper) = wrapper.inner_vars_index
@@ -293,16 +261,6 @@ get_ext(wrapper::DynamicWrapper) = wrapper.ext
 
 get_system_base_power(wrapper::DynamicWrapper) = wrapper.system_base_power
 get_system_base_frequency(wrapper::DynamicWrapper) = wrapper.system_base_frequency
-
-get_P_ref(wrapper::DynamicWrapper) = wrapper.P_ref[]
-get_Q_ref(wrapper::DynamicWrapper) = wrapper.Q_ref[]
-get_V_ref(wrapper::DynamicWrapper) = wrapper.V_ref[]
-get_ω_ref(wrapper::DynamicWrapper) = wrapper.ω_ref[]
-
-set_P_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.P_ref[] = val
-set_Q_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.Q_ref[] = val
-set_V_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.V_ref[] = val
-set_ω_ref(wrapper::DynamicWrapper, val::Float64) = wrapper.ω_ref[] = val
 
 # PSY overloads for the wrapper
 PSY.get_name(wrapper::DynamicWrapper) = PSY.get_name(wrapper.device)
@@ -353,6 +311,13 @@ function get_local_state_ix(
     return wrapper.component_state_mapping[index(T)]
 end
 
+function get_local_parameter_ix(
+    wrapper::DynamicWrapper,
+    ::Type{T},
+) where {T <: PSY.DynamicComponent}
+    return wrapper.component_parameter_mapping[index(T)]
+end
+
 function get_input_port_ix(
     wrapper::DynamicWrapper,
     ::Type{T},
@@ -368,13 +333,9 @@ function get_input_port_ix(wrapper::DynamicWrapper, ::T) where {T <: PSY.Dynamic
     return get_input_port_ix(wrapper, T)
 end
 
-struct StaticWrapper{T <: PSY.StaticInjection, V}
+mutable struct StaticWrapper{T <: PSY.StaticInjection, V}
     device::T
-    connection_status::Base.RefValue{Float64}
-    V_ref::Base.RefValue{Float64}
-    θ_ref::Base.RefValue{Float64}
-    P_ref::Base.RefValue{Float64}
-    Q_ref::Base.RefValue{Float64}
+    connection_status::Float64
     bus_ix::Int
     ext::Dict{String, Any}
 end
@@ -383,11 +344,8 @@ function DynamicWrapper(device::T, bus_ix::Int) where {T <: PSY.Device}
     bus = PSY.get_bus(device)
     StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
-        Base.Ref(1.0),
-        Base.Ref(PSY.get_magnitude(bus)),
-        Base.Ref(PSY.get_angle(bus)),
-        Base.Ref(PSY.get_active_power(device)),
-        Base.Ref(PSY.get_reactive_power(device)),
+        1.0,
+        Vector{Int}(),
         bus_ix,
         Dict{String, Any}(),
     )
@@ -397,11 +355,7 @@ function StaticWrapper(device::T, bus_ix::Int) where {T <: PSY.Source}
     bus = PSY.get_bus(device)
     return StaticWrapper{T, BUS_MAP[PSY.get_bustype(bus)]}(
         device,
-        Base.Ref(1.0),
-        Base.Ref(PSY.get_internal_voltage(device)),
-        Base.Ref(PSY.get_internal_angle(device)),
-        Base.Ref(PSY.get_active_power(device)),
-        Base.Ref(PSY.get_reactive_power(device)),
+        1.0,
         bus_ix,
         Dict{String, Any}(),
     )
@@ -414,16 +368,6 @@ get_bus_category(::StaticWrapper{<:PSY.StaticInjection, U}) where {U} = U
 get_device(wrapper::StaticWrapper) = wrapper.device
 get_bus_ix(wrapper::StaticWrapper) = wrapper.bus_ix
 get_ext(wrapper::StaticWrapper) = wrapper.ext
-
-get_P_ref(wrapper::StaticWrapper) = wrapper.P_ref[]
-get_Q_ref(wrapper::StaticWrapper) = wrapper.Q_ref[]
-get_V_ref(wrapper::StaticWrapper) = wrapper.V_ref[]
-get_θ_ref(wrapper::StaticWrapper) = wrapper.θ_ref[]
-
-set_P_ref(wrapper::StaticWrapper, val::Float64) = wrapper.P_ref[] = val
-set_Q_ref(wrapper::StaticWrapper, val::Float64) = wrapper.Q_ref[] = val
-set_V_ref(wrapper::StaticWrapper, val::Float64) = wrapper.V_ref[] = val
-set_θ_ref(wrapper::StaticWrapper, val::Float64) = wrapper.θ_ref[] = val
 
 PSY.get_bus(wrapper::StaticWrapper) = PSY.get_bus(wrapper.device)
 PSY.get_active_power(wrapper::StaticWrapper) = PSY.get_active_power(wrapper.device)
@@ -438,6 +382,8 @@ mutable struct ExpLoadParams
     Q_coeff::Float64
 end
 
+#Note: References are left in StaticLoadWrapper but transfered to ComponentArray.
+#Can remove from the StaticLoadWrapper but would need access to the ElectricLoad components when calculating references. 
 mutable struct StaticLoadWrapper
     bus::PSY.Bus
     V_ref::Float64
@@ -526,18 +472,10 @@ get_P_impedance(wrapper::StaticLoadWrapper) = wrapper.P_impedance
 get_Q_power(wrapper::StaticLoadWrapper) = wrapper.Q_power
 get_Q_current(wrapper::StaticLoadWrapper) = wrapper.Q_current
 get_Q_impedance(wrapper::StaticLoadWrapper) = wrapper.Q_impedance
+
 get_exp_params(wrapper::StaticLoadWrapper) = wrapper.exp_params
 get_exp_names(wrapper::StaticLoadWrapper) = wrapper.exp_names
 get_bus_ix(wrapper::StaticLoadWrapper) = wrapper.bus_ix
-
-set_V_ref!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.V_ref = val
-set_θ_ref!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.θ_ref = val
-set_P_power!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.P_power = val
-set_P_current!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.P_current = val
-set_P_impedance!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.P_impedance = val
-set_Q_power!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_power = val
-set_Q_current!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_current = val
-set_Q_impedance!(wrapper::StaticLoadWrapper, val::Float64) = wrapper.Q_impedance = val
 
 function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, val::Int)
     if val == 0
@@ -547,8 +485,8 @@ function set_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}, va
     else
         error("Invalid status $val. It can only take values 1 or 0")
     end
-    wrapper.connection_status[] = Float64(val)
+    wrapper.connection_status = Float64(val)
 end
 
 get_connection_status(wrapper::Union{StaticWrapper, DynamicWrapper}) =
-    wrapper.connection_status[]
+    wrapper.connection_status

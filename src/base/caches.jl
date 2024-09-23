@@ -70,11 +70,11 @@ get_global_vars(jc::JacobianCache, ::Type{T}) where {T <: ForwardDiff.Dual} =
 struct SimCache{F} <: Cache
     f!::F
     bus_count::Int
-    ode_output::Vector{Float64}
-    branches_ode::Vector{Float64}
-    current_balance::Vector{Float64}
-    inner_vars::Vector{Float64}
-    global_vars::Vector{Float64}
+    ode_output::Vector{Real}
+    branches_ode::Vector{Real}
+    current_balance::Vector{Real}
+    inner_vars::Vector{Real}
+    global_vars::Vector{Real}
 end
 
 function SimCache(f!, inputs::SimulationInputs)
@@ -84,14 +84,19 @@ function SimCache(f!, inputs::SimulationInputs)
     bus_count = get_bus_count(inputs)
     inner_vars_count = get_inner_vars_count(inputs)
     n_global_vars = length(keys(get_global_vars_update_pointers(inputs)))
+    global_vars = setindex!(
+        zeros(Real, n_global_vars),
+        1.0,
+        GLOBAL_VAR_SYS_FREQ_INDEX,
+    )
     return SimCache{typeof(f!)}(
         f!,
         bus_count,
-        zeros(Float64, n_inj),
-        zeros(Float64, n_branches),
-        zeros(Float64, 2 * bus_count),
-        zeros(Float64, inner_vars_count),
-        setindex!(zeros(Float64, n_global_vars), 1.0, GLOBAL_VAR_SYS_FREQ_INDEX),
+        zeros(Real, n_inj),
+        zeros(Real, n_branches),
+        zeros(Real, 2 * bus_count),
+        zeros(Real, inner_vars_count),
+        global_vars,
     )
 end
 
@@ -103,11 +108,11 @@ function get_current_injections_i(sc::SimCache, ::Type{Float64})
     return view(sc.current_balance, ((sc.bus_count + 1):(sc.bus_count * 2)))
 end
 
-get_ode_output(sc::SimCache, ::Type{Float64}) = sc.ode_output
-get_branches_ode(sc::SimCache, ::Type{Float64}) = sc.branches_ode
-get_current_balance(sc::SimCache, ::Type{Float64}) = sc.current_balance
-get_inner_vars(sc::SimCache, ::Type{Float64}) = sc.inner_vars
-get_global_vars(sc::SimCache, ::Type{Float64}) = sc.global_vars
+get_ode_output(sc::SimCache, ::Type{T}) where {T <: Real} = sc.ode_output
+get_branches_ode(sc::SimCache, ::Type{T}) where {T <: Real} = sc.branches_ode
+get_current_balance(sc::SimCache, ::Type{T}) where {T <: Real} = sc.current_balance
+get_inner_vars(sc::SimCache, ::Type{T}) where {T <: Real} = sc.inner_vars
+get_global_vars(sc::SimCache, ::Type{T}) where {T <: Real} = sc.global_vars
 
 get_ω_sys(cache::Cache, T::Type{<:ACCEPTED_REAL_TYPES}) =
     get_global_vars(cache, T)[GLOBAL_VAR_SYS_FREQ_INDEX]

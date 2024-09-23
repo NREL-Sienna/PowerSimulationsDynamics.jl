@@ -1,11 +1,3 @@
-function get_flat_start(inputs::SimulationInputs)
-    bus_count = get_bus_count(inputs)
-    var_count = get_variable_count(inputs)
-    initial_conditions = zeros(var_count)
-    initial_conditions[1:bus_count] .= 1.0
-    return initial_conditions
-end
-
 function power_flow_solution!(
     initial_guess::Vector{Float64},
     sys::PSY.System,
@@ -31,69 +23,36 @@ end
 function initialize_static_injection!(inputs::SimulationInputs)
     @debug "Updating Source internal voltage magnitude and angle"
     static_injection_devices = get_static_injectors(inputs)
+    parameters = get_parameters(inputs)
     if !isempty(static_injection_devices)
-        try
-            for s in static_injection_devices
-                initialize_static_device!(s)
-            end
-        catch e
-            bt = catch_backtrace()
-            @error "Static Injection Failed to Initialize" exception = e, bt
-            return BUILD_FAILED
+        for s in static_injection_devices
+            local_parameters = @view parameters[_get_wrapper_name(s)]
+            initialize_static_device!(s, local_parameters)
         end
     end
     return BUILD_INCOMPLETE
 end
 
-function _initialization_debug(dynamic_device, static, x0_device::Vector{Float64})
-    residual = similar(x0_device)
-    Vm = PSY.get_magnitude(PSY.get_bus(static))
-    θ = PSY.get_angle(PSY.get_bus(static))
-    device!(
-        x0_device,
-        residual,
-        Vm * cos(θ),
-        Vm * sin(θ),
-        zeros(10),
-        zeros(10),
-        [1.0],
-        zeros(100),
-        dynamic_device,
-        0,
-    )
-    for (ix, state) in enumerate(PSY.get_states(dynamic_device))
-        @debug state residual[ix]
-    end
-    return
-end
-
 function initialize_dynamic_injection!(
-    initial_guess::Vector{Float64},
+    initial_guess::AbstractArray,
     inputs::SimulationInputs,
-    system::PSY.System,
 )
     @debug "Updating Dynamic Injection Component Initial Guess"
     initial_inner_vars = zeros(get_inner_vars_count(inputs))
-    try
-        for dynamic_device in get_dynamic_injectors(inputs)
-            static = PSY.get_component(
-                dynamic_device.static_type,
-                system,
-                PSY.get_name(dynamic_device),
-            )
-            @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
-            n_states = PSY.get_n_states(dynamic_device)
-            _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
-            x0_device = initialize_dynamic_device!(dynamic_device, static, _inner_vars)
-            @assert length(x0_device) == n_states
-            ix_range = get_ix_range(dynamic_device)
-            initial_guess[ix_range] = x0_device
-            @debug _initialization_debug(dynamic_device, static, x0_device)
-        end
-    catch e
-        bt = catch_backtrace()
-        @error "Dynamic Injection Failed to Initialize" exception = e, bt
-        return BUILD_FAILED
+    parameters = get_parameters(inputs)
+    for dynamic_device in get_dynamic_injectors(inputs)
+        static = get_static_device(dynamic_device)
+        @debug "Initializing $(PSY.get_name(dynamic_device)) - $(typeof(dynamic_device.device))"
+        _inner_vars = @view initial_inner_vars[get_inner_vars_index(dynamic_device)]
+        _parameters = @view parameters[_get_wrapper_name(dynamic_device)]
+        _states = @view initial_guess[get_ix_range(dynamic_device)]
+        initialize_dynamic_device!(
+            dynamic_device,
+            static,
+            _inner_vars,
+            _parameters,
+            _states,
+        )
     end
     return BUILD_INCOMPLETE
 end
@@ -102,20 +61,14 @@ function initialize_dynamic_branches!(
     initial_guess::Vector{Float64},
     inputs::SimulationInputs,
 )
-    try
-        @debug "Initializing Dynamic Branches"
-        for br in get_dynamic_branches(inputs)
-            @debug "$(PSY.get_name(br)) -  $(typeof(br))"
-            n_states = PSY.get_n_states(br)
-            x0_branch = initialize_dynamic_device!(br)
-            IS.@assert_op length(x0_branch) == n_states
-            ix_range = get_ix_range(br)
-            initial_guess[ix_range] = x0_branch
-        end
-    catch e
-        bt = catch_backtrace()
-        @error "Dynamic Branches Failed to Initialize" exception = e, bt
-        return BUILD_FAILED
+    parameters = get_parameters(inputs)
+    @debug "Initializing Dynamic Branches"
+    for br in get_dynamic_branches(inputs)
+        @debug "$(PSY.get_name(br)) -  $(typeof(br))"
+        wrapper_name = _get_wrapper_name(br)
+        _parameters = @view parameters[wrapper_name]
+        _states = @view initial_guess[get_ix_range(br)]
+        initialize_dynamic_device!(br, _parameters, _states)
     end
     return BUILD_INCOMPLETE
 end
@@ -145,44 +98,75 @@ function check_valid_values(initial_guess::Vector{Float64}, inputs::SimulationIn
     end
 
     if !isempty(invalid_initial_guess)
-        @error("Invalid initial condition values $invalid_initial_guess")
+        @error(
+            "Invalid initial condition values $invalid_initial_guess"
+        )
         return BUILD_FAILED
     end
 
     return BUILD_IN_PROGRESS
 end
 
+#Setter functions for CA
+function set_V_ref!(array, value)
+    @view(array["refs"])["V_ref"] = value
+end
+function set_ω_ref!(array, value)
+    @view(array["refs"])["ω_ref"] = value
+end
+function set_θ_ref!(array, value)
+    @view(array["refs"])["θ_ref"] = value
+end
+function set_P_ref!(array, value)
+    @view(array["refs"])["P_ref"] = value
+end
+function set_Q_ref!(array, value)
+    @view(array["refs"])["Q_ref"] = value
+end
+
 # Default implementation for both models. This implementation is to future proof if there is
 # a divergence between the required build methods
-function _calculate_initial_guess!(x0_init::Vector{Float64}, sim::Simulation)
-    inputs = get_simulation_inputs(sim)
-    @assert sim.status == BUILD_INCOMPLETE
-    while sim.status == BUILD_INCOMPLETE
+function _initialize_powerflow_and_devices!(
+    x0::AbstractArray,
+    inputs::SimulationInputs,
+    sys::PSY.System,
+)
+    #x0 = _get_flat_start(inputs)
+    @info("Pre-Initializing Simulation States")
+    status = BUILD_INCOMPLETE
+    while status == BUILD_INCOMPLETE
         @debug "Start state intialization routine"
-        TimerOutputs.@timeit BUILD_TIMER "Power Flow solution" begin
-            sim.status = power_flow_solution!(sim.x0_init, get_system(sim), inputs)
-        end
-        TimerOutputs.@timeit BUILD_TIMER "Initialize Static Injectors" begin
-            sim.status = initialize_static_injection!(inputs)
-        end
-        TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Injectors" begin
-            sim.status = initialize_dynamic_injection!(sim.x0_init, inputs, get_system(sim))
-        end
+        status = power_flow_solution!(x0, sys, inputs)
+        status = initialize_static_injection!(inputs)
+        status = initialize_dynamic_injection!(x0, inputs)
         if has_dyn_lines(inputs)
-            TimerOutputs.@timeit BUILD_TIMER "Initialize Dynamic Branches" begin
-                sim.status = initialize_dynamic_branches!(sim.x0_init, inputs)
-            end
+            status = initialize_dynamic_branches!(x0, inputs)
         else
             @debug "No Dynamic Branches in the system"
         end
-        sim.status = check_valid_values(sim.x0_init, inputs)
+        status = check_valid_values(x0, inputs)
     end
-    return
+    return status
 end
 
-function precalculate_initial_conditions!(x0_init::Vector{Float64}, sim::Simulation)
-    _calculate_initial_guess!(x0_init, sim)
-    return sim.status != BUILD_FAILED
+function _initialize_devices_only!(
+    x0::AbstractArray,
+    inputs::SimulationInputs,
+)
+    @info("Pre-Initializing Simulation States")
+    status = BUILD_INCOMPLETE
+    while status == BUILD_INCOMPLETE
+        @debug "Start state intialization routine"
+        status = initialize_static_injection!(inputs)
+        status = initialize_dynamic_injection!(x0, inputs)
+        if has_dyn_lines(inputs)
+            status = initialize_dynamic_branches!(x0, inputs)
+        else
+            @debug "No Dynamic Branches in the system"
+        end
+        status = check_valid_values(x0, inputs)
+    end
+    return status
 end
 
 """
@@ -199,15 +183,15 @@ function read_initial_conditions(sim::Simulation)
     for bus in PSY.get_components(PSY.Bus, system)
         bus_n = PSY.get_number(bus)
         bus_ix = get_lookup(simulation_inputs)[bus_n]
-        V_R[bus_n] = get_initial_conditions(sim)[bus_ix]
-        V_I[bus_n] = get_initial_conditions(sim)[bus_ix + bus_size]
+        V_R[bus_n] = get_x0(sim)[bus_ix]
+        V_I[bus_n] = get_x0(sim)[bus_ix + bus_size]
         Vm[bus_n] = sqrt(
-            get_initial_conditions(sim)[bus_ix]^2 +
-            get_initial_conditions(sim)[bus_ix + bus_size]^2,
+            get_x0(sim)[bus_ix]^2 +
+            get_x0(sim)[bus_ix + bus_size]^2,
         )
         θ[bus_n] = atan(
-            get_initial_conditions(sim)[bus_ix + bus_size],
-            get_initial_conditions(sim)[bus_ix],
+            get_x0(sim)[bus_ix + bus_size],
+            get_x0(sim)[bus_ix],
         )
     end
     results = Dict{String, Any}("V_R" => V_R, "V_I" => V_I, "Vm" => Vm, "θ" => θ)
@@ -217,7 +201,7 @@ function read_initial_conditions(sim::Simulation)
         global_index = get_global_index(device)
         x0_device = Dict{Symbol, Float64}()
         for s in states
-            x0_device[s] = get_initial_conditions(sim)[global_index[s]]
+            x0_device[s] = get_x0(sim)[global_index[s]]
         end
         results[name] = x0_device
     end
@@ -229,7 +213,7 @@ function read_initial_conditions(sim::Simulation)
             global_index = get_global_index(br)
             x0_br = Dict{Symbol, Float64}()
             for s in states
-                x0_br[s] = get_initial_conditions(sim)[global_index[s]]
+                x0_br[s] = get_x0(sim)[global_index[s]]
             end
             printed_name = "Line " * name
             results[printed_name] = x0_br
@@ -247,7 +231,7 @@ function set_operating_point!(
     while status == BUILD_INCOMPLETE
         status = power_flow_solution!(x0_init, system, inputs)
         status = initialize_static_injection!(inputs)
-        status = initialize_dynamic_injection!(x0_init, inputs, system)
+        status = initialize_dynamic_injection!(x0_init, inputs)
         status = initialize_dynamic_branches!(x0_init, inputs)
         status = SIMULATION_INITIALIZED
     end

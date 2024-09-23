@@ -8,6 +8,6 @@ function MockIntegrator(inputs)
     return MockIntegrator(
         zeros(PSID.get_variable_count(inputs)),
         zeros(PSID.get_variable_count(inputs)),
-        inputs,
+        PSID.get_parameters(inputs),
     )
 end

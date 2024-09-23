@@ -1,7 +1,7 @@
 function network_model(
     inputs::SimulationInputs,
     I_balance::AbstractArray{T},
-    voltages::AbstractArray{T},
+    voltages::AbstractArray{<:ACCEPTED_REAL_TYPES},
 ) where {T <: ACCEPTED_REAL_TYPES}
     # This operation might need improvement, when the total shunts aren't added the
     # function is not allocating

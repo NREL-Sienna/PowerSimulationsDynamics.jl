@@ -126,7 +126,6 @@ get_vars_ix() = Dict{Int, Int}(GLOBAL_VAR_SYS_FREQ_INDEX => -1)
 
 const RELAXED_NLSOLVE_F_TOLERANCE = :1e-6
 const STRICT_NLSOLVE_F_TOLERANCE = :1e-9
-const NLSOLVE_X_TOLERANCE = :1e-9
 const MINIMAL_ACCEPTABLE_NLSOLVE_F_TOLERANCE = :1e-4
 const MAX_INIT_RESIDUAL = 10.0
 const MAX_NLSOLVE_INTERATIONS = 10
@@ -212,7 +211,7 @@ const DIFFEQ_SOLVE_KWARGS = [
 """
 Defines the status of the simulation object
 """
-@enum BUILD_STATUS begin
+@enum STATUS begin
     BUILT = 0
     BUILD_IN_PROGRESS = 1
     BUILD_INCOMPLETE = 2
@@ -223,6 +222,16 @@ Defines the status of the simulation object
     SIMULATION_FAILED = 7
 end
 
+"""
+Defines the level of initializing simulation
+"""
+@enum INITIALIZE_LEVEL begin
+    POWERFLOW_AND_DEVICES = 0
+    DEVICES_ONLY = 1
+    FLAT_START = 2
+    INITIALIZED = 3
+end
+
 const BUILD_TIMER = TimerOutputs.TimerOutput()
 
-const ACCEPTED_REAL_TYPES = Union{Float64, ForwardDiff.Dual}
+const ACCEPTED_REAL_TYPES = Union{Float64, ForwardDiff.Dual, Real}
