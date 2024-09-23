@@ -4,14 +4,10 @@
        
        # Transform the system&#39;s load</code><code class="nohighlight hljs ansi" style="display:block;">┌ Info: Building new system WECC 240 Bus from raw data
 └   sys_descriptor.raw_data = &quot;&quot;
-┌ Warning: System is saved in the data format version 2.0.0 will be automatically upgraded to 3.0.0 upon saving
-└ @ PowerSystems ~/.julia/packages/PowerSystems/xh3fM/src/data_format_conversions.jl:82
 ┌ Warning: The System was deserialized with checks disabled, and so was not validated.
-└ @ PowerSystems ~/.julia/packages/PowerSystems/xh3fM/src/base.jl:1464
-┌ Warning: System is saved in the data format version 2.0.0 will be automatically upgraded to 3.0.0 upon saving
-└ @ PowerSystems ~/.julia/packages/PowerSystems/xh3fM/src/data_format_conversions.jl:110
-[ Info: Serialized System to /home/runner/.julia/packages/PowerSystemCaseBuilder/vlTjU/data/serialized_system/NoArgs/WECC 240 Bus.json
-[ Info: Serialized System metadata to /home/runner/.julia/packages/PowerSystemCaseBuilder/vlTjU/data/serialized_system/NoArgs/WECC 240 Bus_metadata.json
+└ @ PowerSystems ~/.julia/packages/PowerSystems/Stu3w/src/base.jl:1908
+[ Info: Serialized System to /home/runner/.julia/packages/PowerSystemCaseBuilder/uZO8H/data/serialized_system/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/WECC 240 Bus.json
+[ Info: Serialized System metadata to /home/runner/.julia/packages/PowerSystemCaseBuilder/uZO8H/data/serialized_system/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/WECC 240 Bus_metadata.json
 System
 ┌───────────────────┬─────────────┐
 │ Property          │ Value       │
@@ -25,33 +21,34 @@ System
 └───────────────────┴─────────────┘
 
 Static Components
-┌─────────────────┬───────┬────────────────────────┬───────────────┐
-│ Type            │ Count │ Has Static Time Series │ Has Forecasts │
-├─────────────────┼───────┼────────────────────────┼───────────────┤
-│ ACBus           │ 243   │ false                  │ false         │
-│ Arc             │ 351   │ false                  │ false         │
-│ Area            │ 4     │ false                  │ false         │
-│ FixedAdmittance │ 7     │ false                  │ false         │
-│ Line            │ 329   │ false                  │ false         │
-│ LoadZone        │ 14    │ false                  │ false         │
-│ StandardLoad    │ 139   │ false                  │ false         │
-│ TapTransformer  │ 2     │ false                  │ false         │
-│ ThermalStandard │ 146   │ false                  │ false         │
-│ Transformer2W   │ 120   │ false                  │ false         │
-└─────────────────┴───────┴────────────────────────┴───────────────┘
+┌─────────────────┬───────┐
+│ Type            │ Count │
+├─────────────────┼───────┤
+│ ACBus           │ 243   │
+│ Arc             │ 351   │
+│ Area            │ 4     │
+│ FixedAdmittance │ 7     │
+│ Line            │ 329   │
+│ LoadZone        │ 14    │
+│ StandardLoad    │ 139   │
+│ TapTransformer  │ 2     │
+│ ThermalStandard │ 146   │
+│ Transformer2W   │ 120   │
+└─────────────────┴───────┘
 
 Dynamic Components
-┌──────────────────┬───────┐
-│ Type             │ Count │
-├──────────────────┼───────┤
-│ DynamicGenerator │ 36    │
-│ DynamicGenerator │ 41    │
-│ DynamicGenerator │ 1     │
-│ DynamicGenerator │ 3     │
-│ DynamicGenerator │ 22    │
-│ DynamicGenerator │ 6     │
-│ DynamicInverter  │ 37    │
-└──────────────────┴───────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for l in get_components(PSY.StandardLoad, sys)
+┌───────────────────────────────────────────────────────────────────────────────
+│ Type                                                                         ⋯
+├───────────────────────────────────────────────────────────────────────────────
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, SEXS, GasTG, IEEEST}       ⋯
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, SEXS, GasTG, PSSFixed}     ⋯
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, SEXS, HydroTurbineGov, IEE ⋯
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, SEXS, HydroTurbineGov, PSS ⋯
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, SEXS, SteamTurbineGov1, IE ⋯
+│ DynamicGenerator{RoundRotorQuadratic, SingleMass, SEXS, SteamTurbineGov1, PS ⋯
+│ DynamicInverter{RenewableEnergyConverterTypeA, OuterControl{ActiveRenewableC ⋯
+└───────────────────────────────────────────────────────────────────────────────
+                                                               2 columns omitted</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for l in get_components(PSY.StandardLoad, sys)
            transform_load_to_constant_impedance(l)
        end</code><code class="nohighlight hljs ansi" style="display:block;">┌ Warning: Load data is transformed under the assumption of a 1.0 p.u. Voltage Magnitude
 └ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/psy_utils.jl:73
@@ -338,105 +335,43 @@ Dynamic Components
            BranchTrip(1.0, Line, &quot;CORONADO    -1101-PALOVRDE    -1401-i_10&quot;);
            console_level = Logging.Info,
        )</code><code class="nohighlight hljs ansi" style="display:block;">[ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
 [ Info: Pre-Initializing Simulation States
 [ Info: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 ┌ Warning: Unit generator-3631-NB set at the limit -0.14000000000000004. Q_max = 0.20000000000000004 Q_min = -0.14000000000000004
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/post_processing.jl:352
+└ @ PowerFlows ~/.julia/packages/PowerFlows/BykSI/src/post_processing.jl:358
 ┌ Warning: Unit generator-6132-G set at the limit -1.47. Q_max = 1.47 Q_min = -1.47
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/post_processing.jl:352
+└ @ PowerFlows ~/.julia/packages/PowerFlows/BykSI/src/post_processing.jl:358
 ┌ Warning: Unit generator-6433-E set at the limit 0.59. Q_max = 0.59 Q_min = -0.59
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/post_processing.jl:352
+└ @ PowerFlows ~/.julia/packages/PowerFlows/BykSI/src/post_processing.jl:358
 [ Info: PowerFlow solve converged, the results have been stored in the system
 [ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
-[ Info: Residual from initial guess: max = 9.82774084334892e-10 at 1268, total = 2.3309883363794544e-8
+[ Info: Residual from initial guess: max = 3.716825458521811e-11 at 264, total = 5.670971678055149e-9
 Iter     f(x) inf-norm    Step 2-norm 
 ------   --------------   --------------
-[ Info: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+┌ Warning: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:66
 [ Info: Attaching Perturbations
 [ Info: Simulations status = BUILT
 ┌ Info: 
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     34.9s            6.30GiB    
+│                 Total measured:                      125s            30.0GiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    34.9s  100.0%   6.30GiB  100.0%
-│    Build Simulation Inputs                  1    3.58s   10.3%    200MiB    3.1%
-│      Wrap Branches                          1   12.3μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1    2.46s    7.1%    136MiB    2.1%
-│      Wrap Static Injectors                  1    270ms    0.8%   9.28MiB    0.1%
-│      Build initial parameters               1   38.7ms    0.1%   2.15MiB    0.0%
-│    Pre-initialization                       1    7.56s   21.7%    427MiB    6.6%
-│      Power Flow solution                    1    1.08s    3.1%   44.1MiB    0.7%
-│      Initialize Static Injectors            1    952ns    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1    5.04s   14.5%    315MiB    4.9%
-│    Calculate Jacobian                       1    16.9s   48.6%   5.16GiB   81.8%
-│    Make Model Function                      1   23.9μs    0.0%   32.0KiB    0.0%
-│    Initial Condition NLsolve refine...      1    6.46s   18.5%    536MiB    8.3%
-│    Build Perturbations                      1    194μs    0.0%   75.9KiB    0.0%
-│    Make DiffEq Problem                      1    345ms    1.0%   9.93MiB    0.2%
+│  Build Simulation                           1     125s  100.0%   30.0GiB  100.0%
+│    Build Simulation Inputs                  1    50.5s   40.5%   4.67GiB   15.6%
+│      Wrap Branches                          1   12.1μs    0.0%      224B    0.0%
+│      Wrap Dynamic Injectors                 1    1.63s    1.3%   90.3MiB    0.3%
+│      Wrap Static Injectors                  1    284ms    0.2%   11.7MiB    0.0%
+│      Build initial parameters               1    47.8s   38.4%   4.53GiB   15.1%
+│    Pre-initialization                       1    12.4s   10.0%   1.05GiB    3.5%
+│    Calculate Jacobian                       1    54.0s   43.4%   22.9GiB   76.5%
+│    Make Model Function                      1   35.0μs    0.0%   32.0KiB    0.0%
+│    Initial Condition NLsolve refine...      1    7.25s    5.8%   1.32GiB    4.4%
+│    Build Perturbations                      1    183μs    0.0%   75.2KiB    0.0%
+│    Make DiffEq Problem                      1    310ms    0.2%   8.63MiB    0.0%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -459,7 +394,7 @@ Simulation Summary
 │ Time Span                  │ (0.0, 20.0)  │
 │ Total Time Steps           │ 2015         │
 │ Number of States           │ 2164         │
-│ Total solve time           │ 19.546286783 │
+│ Total solve time           │ 53.114819708 │
 └────────────────────────────┴──────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101_ida = get_voltage_magnitude_series(res_ida, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101_ida);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_ida.svg" alt="plot"/></p><h2 id="Run-the-simulation-using-Rodas4()"><a class="docs-heading-anchor" href="#Run-the-simulation-using-Rodas4()">Run the simulation using Rodas4()</a><a id="Run-the-simulation-using-Rodas4()-1"></a><a class="docs-heading-anchor-permalink" href="#Run-the-simulation-using-Rodas4()" title="Permalink"></a></h2><p>In this case, we will use a MassMatrixModel formulation, for more details about the formulation checkout the <a href="https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable/models/">Models Section</a> in <code>PowerSimulationsDynamics.jl</code> documentation</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sim_rodas = Simulation(
            MassMatrixModel,
            sys, #system
@@ -468,105 +403,43 @@ Simulation Summary
            BranchTrip(1.0, Line, &quot;CORONADO    -1101-PALOVRDE    -1401-i_10&quot;);
            console_level = Logging.Info,
        )</code><code class="nohighlight hljs ansi" style="display:block;">[ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
-┌ Warning: Parameters not yet defined for dynamic component: IEEEST
-└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/utils/parameters.jl:16
 [ Info: Pre-Initializing Simulation States
 [ Info: Unit System changed to UnitSystem.SYSTEM_BASE = 0
 ┌ Warning: Unit generator-3631-NB set at the limit -0.14000000000000004. Q_max = 0.20000000000000004 Q_min = -0.14000000000000004
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/post_processing.jl:352
+└ @ PowerFlows ~/.julia/packages/PowerFlows/BykSI/src/post_processing.jl:358
 ┌ Warning: Unit generator-6132-G set at the limit -1.47. Q_max = 1.47 Q_min = -1.47
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/post_processing.jl:352
+└ @ PowerFlows ~/.julia/packages/PowerFlows/BykSI/src/post_processing.jl:358
 ┌ Warning: Unit generator-6433-E set at the limit 0.59. Q_max = 0.59 Q_min = -0.59
-└ @ PowerFlows ~/.julia/packages/PowerFlows/6nw6s/src/post_processing.jl:352
+└ @ PowerFlows ~/.julia/packages/PowerFlows/BykSI/src/post_processing.jl:358
 [ Info: PowerFlow solve converged, the results have been stored in the system
 [ Info: Unit System changed to UnitSystem.DEVICE_BASE = 1
-[ Info: Residual from initial guess: max = 9.82774084334892e-10 at 1268, total = 2.3309883363794544e-8
+[ Info: Residual from initial guess: max = 3.716825458521811e-11 at 264, total = 5.670971678055149e-9
 Iter     f(x) inf-norm    Step 2-norm 
 ------   --------------   --------------
-[ Info: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+┌ Warning: Initialization non-linear solve succeeded with a tolerance of 1.0e-9 using solver trust_region. Saving solution.
+└ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/nlsolve_wrapper.jl:66
 [ Info: Attaching Perturbations
 [ Info: Simulations status = BUILT
 ┌ Info: 
 │  ───────────────────────────────────────────────────────────────────────────────
 │                                                      Time          Allocations  
 │                                                ───────────────   ───────────────
-│                 Total measured:                     10.8s            0.98GiB    
+│                 Total measured:                     29.5s            4.60GiB    
 │ 
 │  Section                               ncalls     time    %tot     alloc    %tot
 │  ───────────────────────────────────────────────────────────────────────────────
-│  Build Simulation                           1    10.8s  100.0%   0.98GiB  100.0%
-│    Build Simulation Inputs                  1   39.8ms    0.4%   15.7MiB    1.6%
-│      Wrap Branches                          1   5.41μs    0.0%      240B    0.0%
-│      Wrap Dynamic Injectors                 1   7.17ms    0.1%   6.16MiB    0.6%
-│      Wrap Static Injectors                  1    509μs    0.0%    312KiB    0.0%
-│      Build initial parameters               1    961μs    0.0%   1.39MiB    0.1%
-│    Pre-initialization                       1   72.7ms    0.7%   10.3MiB    1.0%
-│      Power Flow solution                    1   10.5ms    0.1%   5.76MiB    0.6%
-│      Initialize Static Injectors            1   1.04μs    0.0%     0.00B    0.0%
-│      Initialize Dynamic Injectors           1   4.18ms    0.0%   2.83MiB    0.3%
-│    Calculate Jacobian                       1    9.31s   86.6%    725MiB   71.9%
-│    Make Model Function                      1   6.55ms    0.1%    154KiB    0.0%
-│    Initial Condition NLsolve refine...      1    929ms    8.6%    238MiB   23.6%
-│    Build Perturbations                      1   12.1ms    0.1%    231KiB    0.0%
-│    Make DiffEq Problem                      1    381ms    3.5%   19.5MiB    1.9%
+│  Build Simulation                           1    29.5s  100.0%   4.60GiB  100.0%
+│    Build Simulation Inputs                  1    13.7s   46.4%   1.87GiB   40.6%
+│      Wrap Branches                          1   6.58μs    0.0%      224B    0.0%
+│      Wrap Dynamic Injectors                 1   3.52ms    0.0%   2.39MiB    0.1%
+│      Wrap Static Injectors                  1    478μs    0.0%    290KiB    0.0%
+│      Build initial parameters               1    13.7s   46.3%   1.86GiB   40.5%
+│    Pre-initialization                       1    1.04s    3.5%    125MiB    2.6%
+│    Calculate Jacobian                       1    10.4s   35.1%   1.44GiB   31.2%
+│    Make Model Function                      1   6.82ms    0.0%    154KiB    0.0%
+│    Initial Condition NLsolve refine...      1    3.99s   13.5%   1.15GiB   24.9%
+│    Build Perturbations                      1   18.2ms    0.1%    627KiB    0.0%
+│    Make DiffEq Problem                      1    340ms    1.2%   16.3MiB    0.3%
 │  ───────────────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -588,13 +461,13 @@ Simulation Summary
            rtol = 1e-10,
            initializealg = NoInit(),
        )</code><code class="nohighlight hljs ansi" style="display:block;">SIMULATION_FINALIZED::STATUS = 6</code></pre><h2 id="Read-the-results"><a class="docs-heading-anchor" href="#Read-the-results">Read the results</a><a id="Read-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Read-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res_rodas = read_results(sim_rodas)</code><code class="nohighlight hljs ansi" style="display:block;">Simulation Results Summary
-┌────────────────────────────┬──────────────┐
-│ Property                   │ Value        │
-├────────────────────────────┼──────────────┤
-│ System Base Power [MVA]    │ 100.0        │
-│ System Base Frequency [Hz] │ 60.0         │
-│ Time Span                  │ (0.0, 20.0)  │
-│ Total Time Steps           │ 2002         │
-│ Number of States           │ 2164         │
-│ Total solve time           │ 35.847860861 │
-└────────────────────────────┴──────────────┘</code></pre><h2 id="Compare-the-results"><a class="docs-heading-anchor" href="#Compare-the-results">Compare the results</a><a id="Compare-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Compare-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected. For both of the solution techniques.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101 = get_voltage_magnitude_series(res_rodas, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101, label = &quot;RODAS4&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(v1101_ida, label = &quot;IDA&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 2 May 2024 21:39">Thursday 2 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+┌────────────────────────────┬───────────────┐
+│ Property                   │ Value         │
+├────────────────────────────┼───────────────┤
+│ System Base Power [MVA]    │ 100.0         │
+│ System Base Frequency [Hz] │ 60.0          │
+│ Time Span                  │ (0.0, 20.0)   │
+│ Total Time Steps           │ 2002          │
+│ Number of States           │ 2164          │
+│ Total solve time           │ 175.999800748 │
+└────────────────────────────┴───────────────┘</code></pre><h2 id="Compare-the-results"><a class="docs-heading-anchor" href="#Compare-the-results">Compare the results</a><a id="Compare-the-results-1"></a><a class="docs-heading-anchor-permalink" href="#Compare-the-results" title="Permalink"></a></h2><p>After the simulation is completed, we can extract the results and make plots as desired. In this case, we will plot the voltage magnitude at the bus at which the line was connected. For both of the solution techniques.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; v1101 = get_voltage_magnitude_series(res_rodas, 1101);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101, label = &quot;RODAS4&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(v1101_ida, label = &quot;IDA&quot;);</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 23 September 2024 16:37">Monday 23 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

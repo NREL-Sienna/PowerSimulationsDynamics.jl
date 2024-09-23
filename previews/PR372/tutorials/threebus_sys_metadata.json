@@ -2,7 +2,8 @@
     "name": "",
     "description": "",
     "frequency": 60,
-    "time_series_resolution_milliseconds": 0,
+    "time_series_resolutions_milliseconds": [
+    ],
     "component_counts": [
         {
             "type": "ACBus",
@@ -17,11 +18,11 @@
             "count": 1
         },
         {
-            "type": "DynamicGenerator",
+            "type": "DynamicGenerator{OneDOneQMachine, SingleMass, AVRTypeI, TGFixed, PSSFixed}",
             "count": 1
         },
         {
-            "type": "DynamicInverter",
+            "type": "DynamicInverter{AverageConverter, OuterControl{VirtualInertia, ReactivePowerDroop}, VoltageModeControl, FixedDCSource, KauraPLL, LCLFilter, Nothing}",
             "count": 1
         },
         {
@@ -30,10 +31,6 @@
         },
         {
             "type": "LoadZone",
-            "count": 1
-        },
-        {
-            "type": "Source",
             "count": 1
         },
         {
