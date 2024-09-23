@@ -10,7 +10,7 @@ function initialize_frequency_estimator!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     Vr_filter = inner_vars[Vr_filter_var]
     Vi_filter = inner_vars[Vi_filter_var]
@@ -86,7 +86,7 @@ function initialize_frequency_estimator!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     Vr_filter = inner_vars[Vr_filter_var]
     Vi_filter = inner_vars[Vi_filter_var]
@@ -157,7 +157,7 @@ function initialize_frequency_estimator!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     #Get parameters
     frequency = p[:params][:FrequencyEstimator][:frequency]

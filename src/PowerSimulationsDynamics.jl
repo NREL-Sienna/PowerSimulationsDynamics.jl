@@ -156,6 +156,7 @@ include("models/inverter_models/frequency_estimator_models.jl")
 include("models/inverter_models/outer_control_models.jl")
 include("models/inverter_models/inner_control_models.jl")
 include("models/inverter_models/converter_models.jl")
+include("models/inverter_models/output_current_limiter_models.jl")
 
 #Injection Models
 include("models/load_models.jl")

@@ -1,3 +1,7 @@
+##################################
+###### Mass Matrix Entries #######
+##################################
+
 function mass_matrix_tg_entries!(
     mass_matrix,
     tg::TG,
@@ -26,6 +30,31 @@ function mass_matrix_tg_entries!(
     mass_matrix[global_index[:x_a1], global_index[:x_a1]] = PSY.get_T5(tg) * PSY.get_T6(tg)
     return
 end
+
+function mass_matrix_tg_entries!(
+    mass_matrix,
+    tg::PSY.PIDGOV,
+    global_index::Base.ImmutableDict{Symbol, Int64},
+)
+    mass_matrix[global_index[:x_g1], global_index[:x_g1]] = PSY.get_T_reg(tg)
+    mass_matrix[global_index[:x_g3], global_index[:x_g3]] = PSY.get_Ta(tg)
+    mass_matrix[global_index[:x_g4], global_index[:x_g4]] = PSY.get_Ta(tg)
+    mass_matrix[global_index[:x_g5], global_index[:x_g5]] = PSY.get_Ta(tg)
+    return
+end
+
+function mass_matrix_tg_entries!(
+    mass_matrix,
+    tg::PSY.WPIDHY,
+    global_index::Base.ImmutableDict{Symbol, Int64},
+)
+    mass_matrix[global_index[:x_g1], global_index[:x_g1]] = PSY.get_T_reg(tg)
+    return
+end
+
+##################################
+##### Differential Equations #####
+##################################
 
 function mdl_tg_ode!(
     device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
@@ -398,6 +427,199 @@ function mdl_tg_ode!(
 
     #Update mechanical torque
     inner_vars[τm_var] = P_m / ω[1] #Fails when trying to assign a Dual to a cache of type Float? 
+
+    return
+end
+
+function mdl_tg_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
+    device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.WPIDHY, P}},
+    h,
+    t,
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+
+    #Obtain references
+    P_ref = get_P_ref(device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(device, PSY.WPIDHY)
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    x_g1 = internal_states[1] # Filter Input
+    x_g2 = internal_states[2] # PI Block
+    x_g3 = internal_states[3] # Regulator After PID Block
+    x_g4 = internal_states[4] # Derivative (High Pass) Block
+    x_g5 = internal_states[5] # Second Regulator Block
+    x_g6 = internal_states[6] # Gate State
+    x_g7 = internal_states[7] # Water Inertia State
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(device, PSY.WPIDHY)
+    ω = @view device_states[external_ix]
+
+    # Read Inner Vars
+    τ_e = inner_vars[τe_var]
+
+    #Get Parameters
+    tg = PSY.get_prime_mover(device)
+    T_reg = PSY.get_T_reg(tg)
+    reg = PSY.get_reg(tg)
+    Kp = PSY.get_Kp(tg)
+    Ki = PSY.get_Ki(tg)
+    Kd = PSY.get_Kd(tg)#Kd>0
+    Ta = PSY.get_Ta(tg)
+    Tb = PSY.get_Tb(tg)
+    V_min, V_max = PSY.get_V_lim(tg)
+    G_min, G_max = PSY.get_G_lim(tg)
+    P_min, P_max = PSY.get_P_lim(tg)
+    Tw = PSY.get_Tw(tg)
+    D = PSY.get_D(tg)
+    gate_openings = PSY.get_gate_openings(tg)
+    power_gate_openings = PSY.get_power_gate_openings(tg)
+
+    #Compute controller parameters for equivalent TF
+    Kp_prime = (-Ta * Ki) + Kp
+    Kd_prime = (Ta^2 * Ki) - (Ta * Kp) + Kd
+    Ki_prime = Ki
+
+    x_in = τ_e - P_ref
+    #Compute block derivatives
+    _, dxg1_dt = low_pass_mass_matrix(x_in, x_g1, reg, T_reg)
+    pid_input = x_g1 - (ω[1] - ω_sys)
+    pi_out, dxg2_dt = pi_block(pid_input, x_g2, Kp_prime, Ki_prime)
+    pd_out, dxg4_dt = high_pass(pid_input, x_g4, Kd_prime, Ta)
+    pid_out = pi_out + pd_out
+    _, dxg3_dt = low_pass(pid_out, x_g3, 1.0, Ta)
+    _, dxg5_dt = low_pass(x_g3, x_g5, 1.0, Tb)
+
+    #Set clamping for G_vel.
+    G_vel_sat = clamp(x_g5, V_min, V_max)
+
+    # Compute integrator
+    xg6_sat, dxg6_dt = integrator_windup(G_vel_sat, x_g6, 1.0, 1.0, G_min, G_max)
+
+    power_at_gate =
+        three_level_gate_to_power_map(xg6_sat, gate_openings, power_gate_openings)
+
+    # Compute Lead-Lag Block
+    ll_out, dxg7_dt = lead_lag(power_at_gate, x_g7, 1.0, -Tw, Tw / 2.0)
+    Power_sat = clamp(ll_out, P_min, P_max)
+
+    #Compute output torque
+    P_m = Power_sat - (D * (ω[1] - ω_sys))
+
+    #Compute 1 State TG ODE:
+    output_ode[local_ix[1]] = dxg1_dt
+    output_ode[local_ix[2]] = dxg2_dt
+    output_ode[local_ix[3]] = dxg3_dt
+    output_ode[local_ix[4]] = dxg4_dt
+    output_ode[local_ix[5]] = dxg5_dt
+    output_ode[local_ix[6]] = dxg6_dt
+    output_ode[local_ix[7]] = dxg7_dt
+
+    #Update mechanical torque
+    inner_vars[τm_var] = P_m / ω[1]
+
+    return
+end
+
+function mdl_tg_ode!(
+    device_states::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    output_ode::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    inner_vars::AbstractArray{<:ACCEPTED_REAL_TYPES},
+    ω_sys::ACCEPTED_REAL_TYPES,
+    device::DynamicWrapper{PSY.DynamicGenerator{M, S, A, PSY.PIDGOV, P}},
+    h,
+    t,
+) where {M <: PSY.Machine, S <: PSY.Shaft, A <: PSY.AVR, P <: PSY.PSS}
+
+    #Obtain references
+    P_ref = get_P_ref(device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(device, PSY.PIDGOV)
+
+    #Define internal states for component
+    internal_states = @view device_states[local_ix]
+    x_g1 = internal_states[1] # Filter Input
+    x_g2 = internal_states[2] # PI Block
+    x_g3 = internal_states[3] # Regulator After PI Block
+    x_g4 = internal_states[4] # Derivative (High Pass) Block
+    x_g5 = internal_states[5] # Second Regulator Block
+    x_g6 = internal_states[6] # Gate State
+    x_g7 = internal_states[7] # Water Inertia State
+
+    #Obtain external states inputs for component
+    external_ix = get_input_port_ix(device, PSY.PIDGOV)
+    ω = @view device_states[external_ix]
+
+    # Read Inner Vars
+    τ_e = inner_vars[τe_var]
+
+    #Get Parameters
+    tg = PSY.get_prime_mover(device)
+    feedback_flag = PSY.get_feedback_flag(tg)
+    Rperm = PSY.get_Rperm(tg)
+    T_reg = PSY.get_T_reg(tg)
+    Kp = PSY.get_Kp(tg)
+    Ki = PSY.get_Ki(tg)
+    Kd = PSY.get_Kd(tg)
+    Ta = PSY.get_Ta(tg)
+    Tb = PSY.get_Tb(tg)
+    D_turb = PSY.get_D_turb(tg)
+    gate_openings = PSY.get_gate_openings(tg)
+    power_gate_openings = PSY.get_power_gate_openings(tg)
+    G_min, G_max = PSY.get_G_lim(tg)
+    A_tw = PSY.get_A_tw(tg)
+    Tw = PSY.get_Tw(tg)
+    V_min, V_max = PSY.get_V_lim(tg)
+
+    #Compute auxiliary parameters
+    if feedback_flag == 0
+        x_in = P_ref - τ_e
+    else
+        x_in = P_ref - x_g6
+    end
+
+    #Compute block derivatives
+    _, dxg1_dt = low_pass_mass_matrix(x_in, x_g1, Rperm, T_reg)
+    pid_input = x_g1 - (ω[1] - ω_sys)
+    pi_out, dxg2_dt = pi_block(pid_input, x_g2, Kp, Ki)
+    _, dxg3_dt = low_pass_mass_matrix(pi_out, x_g3, 1.0, Ta)
+    pd_out, dxg4_dt = high_pass_mass_matrix(pid_input, x_g4, Kd, Ta)
+    _, dxg5_dt = low_pass_mass_matrix(x_g3 + pd_out, x_g5, 1.0, Ta)
+
+    # Compute integrator
+    integrator_input = (1.0 / Tb) * (x_g5 - x_g6)
+    integrator_input_sat = clamp(integrator_input, V_min, V_max)
+    xg6_sat, dxg6_dt =
+        integrator_nonwindup(integrator_input_sat, x_g6, 1.0, 1.0, G_min, G_max)
+
+    power_at_gate =
+        three_level_gate_to_power_map(xg6_sat, gate_openings, power_gate_openings)
+
+    # Compute Lead-Lag Block
+    Tz = A_tw * Tw
+    ll_out, dxg7_dt = lead_lag(power_at_gate, x_g7, 1.0, -Tz, Tz / 2.0)
+
+    #Compute output torque
+    P_m = ll_out - D_turb * (ω[1] - ω_sys)
+
+    #Compute 1 State TG ODE:
+    output_ode[local_ix[1]] = dxg1_dt
+    output_ode[local_ix[2]] = dxg2_dt
+    output_ode[local_ix[3]] = dxg3_dt
+    output_ode[local_ix[4]] = dxg4_dt
+    output_ode[local_ix[5]] = dxg5_dt
+    output_ode[local_ix[6]] = dxg6_dt
+    output_ode[local_ix[7]] = dxg7_dt
+
+    #Update mechanical torque
+    inner_vars[τm_var] = P_m / ω[1]
 
     return
 end

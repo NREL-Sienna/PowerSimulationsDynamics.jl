@@ -3,7 +3,7 @@ function initialize_inner!(
     p,
     static::PSY.StaticInjection,
     dynamic_device::DynamicWrapper{
-        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, PSY.LCLFilter, L},
+        PSY.DynamicInverter{C, O, PSY.VoltageModeControl, DC, P, F, L},
     },
     inner_vars::AbstractVector,
 ) where {
@@ -11,7 +11,8 @@ function initialize_inner!(
     O <: PSY.OuterControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    F <: PSY.Filter,
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
 
     #Obtain external states inputs for component
@@ -160,7 +161,7 @@ function initialize_inner!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
 
     #Obtain external states inputs for component
@@ -254,7 +255,7 @@ function initialize_inner!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     # Obtain inner variables for component
     Vr_filter = inner_vars[Vr_filter_var]

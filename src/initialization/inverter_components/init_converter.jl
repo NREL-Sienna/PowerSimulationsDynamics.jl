@@ -12,7 +12,7 @@ function initialize_converter!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 } end
 
 function initialize_converter!(
@@ -29,7 +29,7 @@ function initialize_converter!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     #Get inner vars
     V_R = inner_vars[Vr_cnv_var]
@@ -85,7 +85,7 @@ function initialize_converter!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     #Get inner vars
     Vr_filter = inner_vars[Vr_filter_var]

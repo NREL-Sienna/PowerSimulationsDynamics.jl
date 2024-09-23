@@ -12,7 +12,7 @@ function initialize_DCside!(
     IC <: PSY.InnerControl,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     #Update inner_vars
     inner_vars[Vdc_var] = p[:params][:DCSource][:voltage]

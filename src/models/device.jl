@@ -426,10 +426,14 @@ function _update_inner_vars!(
     I_d =
         (1.0 / (R^2 + Xq_pp * Xd_pp)) *
         (-R * (V_dq[1] - ψq_pp) + Xq_pp * (-V_dq[2] + ψd_pp))
+    I_q =
+        (1.0 / (R^2 + Xq_pp * Xd_pp)) * (Xd_pp * (V_dq[1] - ψq_pp) + R * (-V_dq[2] + ψd_pp))
     Se = saturation_function(machine, ψ_pp)
     Xad_Ifd = eq_p + (Xd - Xd_p) * (γ_d1 * I_d - γ_d2 * ψ_kd + γ_d2 * eq_p) + Se * ψd_pp
+    τ_e = I_d * (V_dq[1] + I_d * R) + I_q * (V_dq[2] + I_q * R)
 
     #Update Xad_Ifd
+    inner_vars[τe_var] = τ_e
     inner_vars[Xad_Ifd_var] = Xad_Ifd
     return
 end
@@ -481,11 +485,14 @@ function _update_inner_vars!(
 
     #Currents
     I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d + ψq_pp) + Xd_pp * (ψd_pp - V_q))
+    I_q = (1.0 / (R^2 + Xd_pp^2)) * (Xd_pp * (V_d + ψq_pp) + R * (ψd_pp - V_q))
     Se = saturation_function(machine, eq_p)
     Xad_Ifd =
         eq_p + Se * eq_p + (Xd - Xd_p) * (I_d + γ_d2 * (eq_p - ψ_kd - (Xd_p - Xl) * I_d))
+    τ_e = I_d * (V_d + I_d * R) + I_q * (V_q + I_q * R)
 
     #Update Xad_Ifd
+    inner_vars[τe_var] = τ_e
     inner_vars[Xad_Ifd_var] = Xad_Ifd
     return
 end
@@ -539,11 +546,14 @@ function _update_inner_vars!(
 
     #Currents
     I_d = (1.0 / (R^2 + Xd_pp^2)) * (-R * (V_d - ψq_pp) + Xq_pp * (-V_q + ψd_pp))
+    I_q = (1.0 / (R^2 + Xd_pp^2)) * (Xd_pp * (V_d - ψq_pp) + R * (-V_q + ψd_pp))
     Se = saturation_function(machine, ψ_pp)
     Xad_Ifd =
         eq_p + Se * ψd_pp + (Xd - Xd_p) * (I_d + γ_d2 * (eq_p - ψ_kd - (Xd_p - Xl) * I_d))
+    τ_e = I_d * (V_d + I_d * R) + I_q * (V_q + I_q * R)
 
     #Update Xad_Ifd
+    inner_vars[τe_var] = τ_e
     inner_vars[Xad_Ifd_var] = Xad_Ifd
     return
 end
@@ -562,7 +572,7 @@ function _update_inner_vars!(
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
     F <: PSY.Filter,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     return
 end
@@ -589,7 +599,7 @@ function _update_inner_vars!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     V_R = inner_vars[Vr_inv_var]
     V_I = inner_vars[Vi_inv_var]
@@ -713,7 +723,7 @@ function _update_inner_vars!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     filter_ix = get_local_state_ix(dynamic_device, PSY.LCLFilter)
     filter_states = @view device_states[filter_ix]

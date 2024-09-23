@@ -26,8 +26,8 @@ for l in collect(get_components(PSY.StandardLoad, sys_power))
         bus = PSY.get_bus(l),
         active_power = PSY.get_constant_active_power(l),
         reactive_power = PSY.get_constant_reactive_power(l),
-        #active_power_coefficient = 0.0, # Constant Power
-        #reactive_power_coefficient = 0.0, # Constant Power
+        #α = 0.0, # Constant Power
+        #β = 0.0, # Constant Power
         base_power = PSY.get_base_power(l),
         max_active_power = PSY.get_max_constant_active_power(l),
         max_reactive_power = PSY.get_max_constant_reactive_power(l),

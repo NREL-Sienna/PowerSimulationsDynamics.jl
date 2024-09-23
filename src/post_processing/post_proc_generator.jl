@@ -843,6 +843,69 @@ function _field_voltage(
 end
 
 """
+Function to obtain the field voltage time series of a Dynamic Generator with avr ESST1A.
+
+"""
+function _field_voltage(
+    avr::PSY.ST6B,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64, Vector{Float64}},
+)
+    #ASSUMPTION THAT PSS IS NOT ACTIVATE
+    # Obtain state Vm
+    ts, Vm = post_proc_state_series(res, (name, :Vm), dt)
+
+    # Obtain state x_i
+    ts, x_i = post_proc_state_series(res, (name, :x_i), dt)
+
+    # Obtain state x_d
+    ts, x_d = post_proc_state_series(res, (name, :x_d), dt)
+
+    # Obtain state x_d
+    ts, Vg = post_proc_state_series(res, (name, :Vg), dt)
+
+    # Obtain state Xad_Ifd
+    ts, Xad_Ifd = post_proc_field_current_series(res, name, dt)
+
+    # Obtain PSS output
+    _, Vs = post_proc_pss_output_series(res, name, dt)
+
+    V_ref = PSY.get_V_ref(avr)
+
+    #Get parameters
+    Tr = PSY.get_Tr(avr)
+    K_pa = PSY.get_K_pa(avr) #k_pa>0
+    K_ia = PSY.get_K_ia(avr)
+    K_da = PSY.get_K_da(avr)
+    T_da = PSY.get_T_da(avr)
+    Va_min, Va_max = PSY.get_Va_lim(avr)
+    K_ff = PSY.get_K_ff(avr)
+    K_m = PSY.get_K_m(avr)
+    K_ci = PSY.get_K_ci(avr) #K_cl in pss
+    K_lr = PSY.get_K_lr(avr)
+    I_lr = PSY.get_I_lr(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    Kg = PSY.get_Kg(avr)
+    Tg = PSY.get_Tg(avr) #T_g>0
+
+    Efd = zeros(length(ts))
+    for (ix, t) in enumerate(ts)
+        pid_input = V_ref + Vs[ix] - Vm[ix]
+        pi_out, dx_i = pi_block_nonwindup(pid_input, x_i[ix], K_pa, K_ia, Va_min, Va_max)
+        pd_out, dx_d = high_pass_mass_matrix(pid_input, x_d[ix], K_da, T_da)
+        Va = pi_out + pd_out
+        ff_out = ((Va - Vg[ix]) * K_m) + (K_ff * Va)
+        V_r1 = max(((I_lr * K_ci) - Xad_Ifd[ix]) * K_lr, Vr_min)
+        V_r2 = clamp(ff_out, Vr_min, Vr_max)
+        V_r = min(V_r1, V_r2)
+        Efd[ix] = V_r * Vm[ix]
+    end
+
+    return ts, Efd
+end
+
+"""
 Function to obtain the pss output time series of a Dynamic Generator with pss PSSFixed.
 
 """
@@ -1090,5 +1153,71 @@ function _mechanical_torque(
     Δω = ω .- ω_ref
     h = (x_g4 ./ x_g3) .^ 2
     τm = ((x_g4 .- q_nl) .* h * At - D_T * Δω .* x_g3) ./ ω
+    return ts, τm
+end
+
+"""
+Function to obtain the mechanical torque time series of a Dynamic Generator with HydroTurbineGov (HYGOV) Turbine Governor.
+
+"""
+function _mechanical_torque(
+    tg::PSY.PIDGOV,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64, Vector{Float64}},
+)
+    # Get params
+    D_turb = PSY.get_D_turb(tg)
+    gate_openings = PSY.get_gate_openings(tg)
+    power_gate_openings = PSY.get_power_gate_openings(tg)
+    A_tw = PSY.get_A_tw(tg)
+    Tw = PSY.get_Tw(tg)
+    setpoints = get_setpoints(res)
+    ω_ref = setpoints[name]["ω_ref"]
+    # Get state results
+    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt)
+    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt)
+    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    Pe = similar(x_g7)
+    for (ix, x7) in enumerate(x_g7)
+        x6 = x_g6[ix]
+        power_at_gate =
+            three_level_gate_to_power_map(x6, gate_openings, power_gate_openings)
+        Tz = A_tw * Tw
+        ll_out, _ = lead_lag(power_at_gate, x7, 1.0, -Tz, Tz / 2.0)
+        Pe[ix] = ll_out - D_turb * (ω[ix] - ω_ref)
+    end
+    τm = Pe ./ ω
+    return ts, τm
+end
+
+function _mechanical_torque(
+    tg::PSY.WPIDHY,
+    name::String,
+    res::SimulationResults,
+    dt::Union{Nothing, Float64, Vector{Float64}},
+)
+    # Get params
+    D = PSY.get_D(tg)
+    gate_openings = PSY.get_gate_openings(tg)
+    power_gate_openings = PSY.get_power_gate_openings(tg)
+    Tw = PSY.get_Tw(tg)
+    setpoints = get_setpoints(res)
+    ω_ref = setpoints[name]["ω_ref"]
+
+    # Get state results
+    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt)
+    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt)
+    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    Pm = similar(x_g7)
+
+    for (ix, x7) in enumerate(x_g7)
+        x6 = x_g6[ix]
+        power_at_gate =
+            three_level_gate_to_power_map(x6, gate_openings, power_gate_openings)
+        ll_out, _ = lead_lag(power_at_gate, x7, 1.0, -Tw, Tw / 2.0)
+        Pm[ix] = ll_out - D * (ω[ix] - ω_ref)
+    end
+    τm = Pm ./ ω
     return ts, τm
 end

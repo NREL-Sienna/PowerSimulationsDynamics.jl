@@ -49,7 +49,7 @@ function mdl_filter_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
 
     #external_ix = get_input_port_ix(dynamic_device, PSY.LCLFilter)
@@ -133,7 +133,7 @@ function mdl_filter_ode!(
     IC <: PSY.InnerControl,
     DC <: PSY.DCSource,
     P <: PSY.FrequencyEstimator,
-    L <: Union{Nothing, PSY.InverterLimiter},
+    L <: Union{Nothing, PSY.OutputCurrentLimiter},
 }
     #Obtain inner variables for component
     basepower = PSY.get_base_power(dynamic_device)
