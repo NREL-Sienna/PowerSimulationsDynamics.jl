@@ -9,6 +9,7 @@ function compute_output_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     #Obtain Data
     sys = get_system(res)
@@ -29,10 +30,10 @@ function compute_output_current(
     v_ds = V_R
 
     # Read states
-    ts, ψ_qs = post_proc_state_series(res, (name, :ψ_qs), dt)
-    _, ψ_ds = post_proc_state_series(res, (name, :ψ_ds), dt)
-    _, ψ_qr = post_proc_state_series(res, (name, :ψ_qr), dt)
-    _, ψ_dr = post_proc_state_series(res, (name, :ψ_dr), dt)
+    ts, ψ_qs = post_proc_state_series(res, (name, :ψ_qs), dt, unique_timestamps)
+    _, ψ_ds = post_proc_state_series(res, (name, :ψ_ds), dt, unique_timestamps)
+    _, ψ_qr = post_proc_state_series(res, (name, :ψ_qr), dt, unique_timestamps)
+    _, ψ_dr = post_proc_state_series(res, (name, :ψ_dr), dt, unique_timestamps)
 
     #Additional Fluxes 
     ψ_mq = X_aq * (ψ_qs / X_ls + ψ_qr / X_lr) # (4.14-15) in Krause
@@ -59,6 +60,7 @@ function compute_output_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     #Obtain Data
     sys = get_system(res)
@@ -75,8 +77,8 @@ function compute_output_current(
     X_p = PSY.get_X_p(dynamic_device)
 
     # Read states
-    ts, ψ_qr = post_proc_state_series(res, (name, :ψ_qr), dt)
-    _, ψ_dr = post_proc_state_series(res, (name, :ψ_dr), dt)
+    ts, ψ_qr = post_proc_state_series(res, (name, :ψ_qr), dt, unique_timestamps)
+    _, ψ_dr = post_proc_state_series(res, (name, :ψ_dr), dt, unique_timestamps)
 
     # voltages in QD 
     v_qs = V_I
@@ -113,6 +115,7 @@ function compute_output_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     #TODO: We should dispatch this using the ZipLoad model that we have, but that would
     #      require to properly have access to it in the SimResults.
@@ -153,6 +156,7 @@ function compute_output_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     #TODO: We should dispatch this using the ZipLoad model that we have, but that would
     #      require to properly have access to it in the SimResults.
@@ -194,6 +198,7 @@ function compute_output_current(
     V_R::Vector{Float64},
     V_I::Vector{Float64},
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     #TODO: We should dispatch this using the ZipLoad model that we have, but that would
     #      require to properly have access to it in the SimResults.

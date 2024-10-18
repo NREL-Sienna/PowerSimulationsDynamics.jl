@@ -36,20 +36,24 @@ Internal function to obtain as a Vector of Float64 of a specific state. It recei
 global index for a state.
 
 """
-function _post_proc_state_series(solution, ix::Int, dt::Nothing)
-    ix_t = unique(i -> solution.t[i], eachindex(solution.t))
+function _post_proc_state_series(solution, ix::Int, dt::Nothing, unique_timestamps::Bool)
+    if unique_timestamps
+        ix_t = unique(i -> solution.t[i], eachindex(solution.t))
+    else
+        ix_t = eachindex(solution.t)
+    end
     ts = solution.t[ix_t]
     state = solution[ix, ix_t]
     return ts, state
 end
 
-function _post_proc_state_series(solution, ix::Int, dt::Float64)
+function _post_proc_state_series(solution, ix::Int, dt::Float64, ::Bool)
     ts = collect(range(0; stop = solution.t[end], step = dt))
     state = solution(ts; idxs = ix)
     return ts, state.u
 end
 
-function _post_proc_state_series(solution, ix::Int, dt::Vector{Float64})
+function _post_proc_state_series(solution, ix::Int, dt::Vector{Float64}, ::Bool)
     state = solution(dt; idxs = ix)
     return dt, state.u
 end
@@ -62,6 +66,7 @@ function post_proc_state_series(
     res::SimulationResults,
     ref::Tuple{String, Symbol},
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     global_state_index = get_global_index(res)
     if !haskey(global_state_index, ref[1])
@@ -69,7 +74,7 @@ function post_proc_state_series(
         error("State $(ref[2]) device $(ref[1]) not found in the system. ")
     end
     ix = get(global_state_index[ref[1]], ref[2], 0)
-    return _post_proc_state_series(get_solution(res), ix, dt)
+    return _post_proc_state_series(get_solution(res), ix, dt, unique_timestamps)
 end
 
 """
@@ -80,6 +85,7 @@ function post_proc_voltage_current_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )::NTuple{5, Vector{Float64}}
     #Note: Type annotation since get_dynamic_injector is type unstable and solution is Union{Nothing, DAESol}
     system = get_system(res)
@@ -91,12 +97,14 @@ function post_proc_voltage_current_series(
         error("Device $(name) not found in the system")
     end
     bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
-    ts, V_R, V_I = post_proc_voltage_series(solution, bus_ix, n_buses, dt)
+    ts, V_R, V_I =
+        post_proc_voltage_series(solution, bus_ix, n_buses, dt, unique_timestamps)
     dyn_device = PSY.get_dynamic_injector(device)
     if isnothing(dyn_device)
-        _, I_R, I_I = compute_output_current(res, device, V_R, V_I, dt)
+        _, I_R, I_I = compute_output_current(res, device, V_R, V_I, dt, unique_timestamps)
     else
-        _, I_R, I_I = compute_output_current(res, dyn_device, V_R, V_I, dt)
+        _, I_R, I_I =
+            compute_output_current(res, dyn_device, V_R, V_I, dt, unique_timestamps)
     end
     return ts, V_R, V_I, I_R, I_I
 end
@@ -111,10 +119,11 @@ function post_proc_voltage_series(
     bus_ix::Int,
     n_buses::Int,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     bus_ix < 0 && error("Bus number $(bus_number) not found.")
-    ts, V_R = _post_proc_state_series(solution, bus_ix, dt)
-    _, V_I = _post_proc_state_series(solution, bus_ix + n_buses, dt)
+    ts, V_R = _post_proc_state_series(solution, bus_ix, dt, unique_timestamps)
+    _, V_I = _post_proc_state_series(solution, bus_ix + n_buses, dt, unique_timestamps)
     return collect(ts), collect(V_R), collect(V_I)
 end
 
@@ -127,8 +136,9 @@ function post_proc_real_current_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, _, _, I_R, _ = post_proc_voltage_current_series(res, name, dt)
+    ts, _, _, I_R, _ = post_proc_voltage_current_series(res, name, dt, unique_timestamps)
     return ts, I_R
 end
 """
@@ -140,8 +150,9 @@ function post_proc_imaginary_current_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, _, _, _, I_I = post_proc_voltage_current_series(res, name, dt)
+    ts, _, _, _, I_I = post_proc_voltage_current_series(res, name, dt, unique_timestamps)
     return ts, I_I
 end
 
@@ -154,8 +165,10 @@ function post_proc_activepower_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, V_R, V_I, I_R, I_I = post_proc_voltage_current_series(res, name, dt)
+    ts, V_R, V_I, I_R, I_I =
+        post_proc_voltage_current_series(res, name, dt, unique_timestamps)
     return ts, V_R .* I_R + V_I .* I_I
 end
 
@@ -168,8 +181,10 @@ function post_proc_reactivepower_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
-    ts, V_R, V_I, I_R, I_I = post_proc_voltage_current_series(res, name, dt)
+    ts, V_R, V_I, I_R, I_I =
+        post_proc_voltage_current_series(res, name, dt, unique_timestamps)
     return ts, V_I .* I_R - V_R .* I_I
 end
 
@@ -182,6 +197,7 @@ function post_proc_field_current_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     system = get_system(res)
     bus_lookup = get_bus_lookup(res)
@@ -189,9 +205,10 @@ function post_proc_field_current_series(
     solution = res.solution
     device = PSY.get_component(PSY.StaticInjection, system, name)
     bus_ix = get(bus_lookup, PSY.get_number(PSY.get_bus(device)), -1)
-    ts, V_R, V_I = post_proc_voltage_series(solution, bus_ix, n_buses, dt)
+    ts, V_R, V_I =
+        post_proc_voltage_series(solution, bus_ix, n_buses, dt, unique_timestamps)
     dyn_device = PSY.get_dynamic_injector(device)
-    _, I_fd = compute_field_current(res, dyn_device, V_R, V_I, dt)
+    _, I_fd = compute_field_current(res, dyn_device, V_R, V_I, dt, unique_timestamps)
     return ts, I_fd
 end
 
@@ -204,11 +221,12 @@ function post_proc_field_voltage_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     system = get_system(res)
     device = PSY.get_component(PSY.StaticInjection, system, name)
     dyn_device = PSY.get_dynamic_injector(device)
-    ts, Vf = compute_field_voltage(res, dyn_device, dt)
+    ts, Vf = compute_field_voltage(res, dyn_device, dt, unique_timestamps)
     return ts, Vf
 end
 
@@ -221,11 +239,12 @@ function post_proc_pss_output_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     system = get_system(res)
     device = PSY.get_component(PSY.StaticInjection, system, name)
     dyn_device = PSY.get_dynamic_injector(device)
-    ts, Vs = compute_pss_output(res, dyn_device, dt)
+    ts, Vs = compute_pss_output(res, dyn_device, dt, unique_timestamps)
     return ts, Vs
 end
 
@@ -238,11 +257,12 @@ function post_proc_mechanical_torque_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     system = get_system(res)
     device = PSY.get_component(PSY.StaticInjection, system, name)
     dyn_device = PSY.get_dynamic_injector(device)
-    ts, τm = compute_mechanical_torque(res, dyn_device, dt)
+    ts, τm = compute_mechanical_torque(res, dyn_device, dt, unique_timestamps)
     return ts, τm
 end
 
@@ -254,6 +274,7 @@ function post_proc_branch_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     system = get_system(res)
     bus_lookup = get_bus_lookup(res)
@@ -267,8 +288,10 @@ function post_proc_branch_series(
     bus_to_number = PSY.get_number(PSY.get_to(PSY.get_arc(branch)))
     bus_from_ix = get(bus_lookup, bus_from_number, -1)
     bus_to_ix = get(bus_lookup, bus_to_number, -1)
-    ts, V_R_from, V_I_from = post_proc_voltage_series(solution, bus_from_ix, n_buses, dt)
-    _, V_R_to, V_I_to = post_proc_voltage_series(solution, bus_to_ix, n_buses, dt)
+    ts, V_R_from, V_I_from =
+        post_proc_voltage_series(solution, bus_from_ix, n_buses, dt, unique_timestamps)
+    _, V_R_to, V_I_to =
+        post_proc_voltage_series(solution, bus_to_ix, n_buses, dt, unique_timestamps)
     r = PSY.get_r(branch)
     x = PSY.get_x(branch)
     I_flow = ((V_R_from + V_I_from * 1im) - (V_R_to + V_I_to * 1im)) ./ (r + x * 1im)
@@ -282,6 +305,7 @@ function post_proc_frequency_series(
     res::SimulationResults,
     name::String,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     system = get_system(res)
     device = PSY.get_component(PSY.StaticInjection, system, name)
@@ -289,14 +313,15 @@ function post_proc_frequency_series(
     if isnothing(dyn_device)
         error("Dynamic Injection $(name) not found in the system")
     end
-    ts, ω = compute_frequency(res, dyn_device, dt)
+    ts, ω = compute_frequency(res, dyn_device, dt, unique_timestamps)
 end
 
 """
     get_state_series(
         res::SimulationResults,
         ref::Tuple{String, Symbol};
-        dt::Union{Nothing, Float64, Vector{Float64}} = nothing
+        dt::Union{Nothing, Float64, Vector{Float64}} = nothing,
+        unique_timestamps::Bool = true,
     )
     end
 
@@ -307,8 +332,13 @@ Function to obtain series of states out of DAE Solution.
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `ref:Tuple{String, Symbol}` : Tuple used to identify the dynamic device, via its name, as a `String`, and the associated state as a `Symbol`.
 """
-function get_state_series(res::SimulationResults, ref::Tuple{String, Symbol}; dt = nothing)
-    return post_proc_state_series(res, ref, dt)
+function get_state_series(
+    res::SimulationResults,
+    ref::Tuple{String, Symbol};
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_state_series(res, ref, dt, unique_timestamps)
 end
 
 """
@@ -324,10 +354,16 @@ Function to obtain the voltage magnitude series out of the DAE Solution.
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `bus_number::Int` : Bus number identifier
 """
-function get_voltage_magnitude_series(res::SimulationResults, bus_number::Int; dt = nothing)
+function get_voltage_magnitude_series(
+    res::SimulationResults,
+    bus_number::Int;
+    dt = nothing,
+    unique_timestamps = true,
+)
     n_buses = get_bus_count(res)
     bus_ix = get(get_bus_lookup(res), bus_number, 0)
-    ts, V_R, V_I = post_proc_voltage_series(res.solution, bus_ix, n_buses, dt)
+    ts, V_R, V_I =
+        post_proc_voltage_series(res.solution, bus_ix, n_buses, dt, unique_timestamps)
     return ts, sqrt.(V_R .^ 2 .+ V_I .^ 2)
 end
 
@@ -344,10 +380,16 @@ Function to obtain the voltage angle series out of the DAE Solution.
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `bus_number::Int` : Bus number identifier
 """
-function get_voltage_angle_series(res::SimulationResults, bus_number::Int; dt = nothing)
+function get_voltage_angle_series(
+    res::SimulationResults,
+    bus_number::Int;
+    dt = nothing,
+    unique_timestamps = true,
+)
     n_buses = get_bus_count(res)
     bus_ix = get(get_bus_lookup(res), bus_number, 0)
-    ts, V_R, V_I = post_proc_voltage_series(res.solution, bus_ix, n_buses, dt)
+    ts, V_R, V_I =
+        post_proc_voltage_series(res.solution, bus_ix, n_buses, dt, unique_timestamps)
     return ts, atan.(V_I, V_R)
 end
 
@@ -364,8 +406,13 @@ Function to obtain the real current time series of a Dynamic Injection series ou
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified device
 """
-function get_real_current_series(res::SimulationResults, name::String; dt = nothing)
-    return post_proc_real_current_series(res, name, dt)
+function get_real_current_series(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_real_current_series(res, name, dt, unique_timestamps)
 end
 
 """
@@ -381,8 +428,13 @@ Function to obtain the imaginary current time series of a Dynamic Injection seri
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified device
 """
-function get_imaginary_current_series(res::SimulationResults, name::String; dt = nothing)
-    return post_proc_imaginary_current_series(res, name, dt)
+function get_imaginary_current_series(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_imaginary_current_series(res, name, dt, unique_timestamps)
 end
 
 """
@@ -398,8 +450,13 @@ Function to obtain the active power output time series of a Dynamic Injection se
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified device
 """
-function get_activepower_series(res::SimulationResults, name::String; dt = nothing)
-    return post_proc_activepower_series(res, name, dt)
+function get_activepower_series(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_activepower_series(res, name, dt, unique_timestamps)
 end
 
 """
@@ -415,8 +472,13 @@ Function to obtain the reactive power output time series of a Dynamic Injection 
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified device
 """
-function get_reactivepower_series(res::SimulationResults, name::String; dt = nothing)
-    return post_proc_reactivepower_series(res, name, dt)
+function get_reactivepower_series(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_reactivepower_series(res, name, dt, unique_timestamps)
 end
 
 """
@@ -432,8 +494,13 @@ Function to obtain the field current time series of a Dynamic Generator out of t
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified device
 """
-function get_field_current_series(res::SimulationResults, name::String; dt = nothing)
-    return post_proc_field_current_series(res, name, dt)
+function get_field_current_series(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_field_current_series(res, name, dt, unique_timestamps)
 end
 
 """
@@ -449,8 +516,13 @@ Function to obtain the field voltage time series of a Dynamic Generator out of t
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified device
 """
-function get_field_voltage_series(res::SimulationResults, name::String; dt = nothing)
-    return post_proc_field_voltage_series(res, name, dt)
+function get_field_voltage_series(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_field_voltage_series(res, name, dt, unique_timestamps)
 end
 
 """
@@ -466,8 +538,13 @@ Function to obtain the pss output time series of a Dynamic Generator out of the 
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified device
 """
-function get_pss_output_series(res::SimulationResults, name::String; dt = nothing)
-    return post_proc_pss_output_series(res, name, dt)
+function get_pss_output_series(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_pss_output_series(res, name, dt, unique_timestamps)
 end
 
 """
@@ -483,8 +560,13 @@ Function to obtain the mechanical torque time series of the mechanical torque ou
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified device
 """
-function get_mechanical_torque_series(res::SimulationResults, name::String; dt = nothing)
-    return post_proc_mechanical_torque_series(res, name, dt)
+function get_mechanical_torque_series(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_mechanical_torque_series(res, name, dt, unique_timestamps)
 end
 
 """
@@ -499,8 +581,13 @@ Function to obtain the real current flowing through the series element of a Bran
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified line
 """
-function get_real_current_branch_flow(res::SimulationResults, name::String; dt = nothing)
-    ts, _, _, _, _, Ir, _ = post_proc_branch_series(res, name, dt)
+function get_real_current_branch_flow(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    ts, _, _, _, _, Ir, _ = post_proc_branch_series(res, name, dt, unique_timestamps)
     return ts, Ir
 end
 
@@ -520,8 +607,9 @@ function get_imaginary_current_branch_flow(
     res::SimulationResults,
     name::String;
     dt = nothing,
+    unique_timestamps = true,
 )
-    ts, _, _, _, _, _, Ii = post_proc_branch_series(res, name, dt)
+    ts, _, _, _, _, _, Ii = post_proc_branch_series(res, name, dt, unique_timestamps)
     return ts, Ii
 end
 
@@ -549,8 +637,10 @@ function get_activepower_branch_flow(
     name::String,
     location::Symbol;
     dt = nothing,
+    unique_timestamps = true,
 )
-    ts, V_R_from, V_I_from, V_R_to, V_I_to, Ir, Ii = post_proc_branch_series(res, name, dt)
+    ts, V_R_from, V_I_from, V_R_to, V_I_to, Ir, Ii =
+        post_proc_branch_series(res, name, dt, unique_timestamps)
     if location == :from
         return ts, V_R_from .* Ir + V_I_from .* Ii
     elseif location == :to
@@ -585,8 +675,10 @@ function get_reactivepower_branch_flow(
     name::String,
     location::Symbol;
     dt = nothing,
+    unique_timestamps = true,
 )
-    ts, V_R_from, V_I_from, V_R_to, V_I_to, Ir, Ii = post_proc_branch_series(res, name, dt)
+    ts, V_R_from, V_I_from, V_R_to, V_I_to, Ir, Ii =
+        post_proc_branch_series(res, name, dt, unique_timestamps)
     if location == :from
         return ts, V_I_from .* Ir - V_R_from .* Ii
     elseif location == :to
@@ -610,8 +702,13 @@ Function to obtain the frequency time series of a Dynamic Injection out of the D
 - `res::SimulationResults` : Simulation Results object that contains the solution
 - `name::String` : Name to identify the specified device
 """
-function get_frequency_series(res::SimulationResults, name::String; dt = nothing)
-    return post_proc_frequency_series(res, name, dt)
+function get_frequency_series(
+    res::SimulationResults,
+    name::String;
+    dt = nothing,
+    unique_timestamps = true,
+)
+    return post_proc_frequency_series(res, name, dt, unique_timestamps)
 end
 
 """
