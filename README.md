@@ -36,6 +36,8 @@ using PowerSimulationsDynamics
 using PowerSystems
 ```
 
+For information on using the package, see the [stable documentation](https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/stable/). Use the [in-development documentation](https://nrel-sienna.github.io/PowerSimulationsDynamics.jl/dev/) for the version of the documentation which contains the unreleased features.
+
 ## Citing PowerSimulationsDynamics.jl
 
 [Paper describing `PowerSimulationsDynamics.jl`](https://arxiv.org/abs/2308.02921)
