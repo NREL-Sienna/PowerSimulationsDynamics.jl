@@ -212,7 +212,7 @@ Vr3 -0.0986
 │ Time Span                  │ (0.0, 20.0) │
 │ Total Time Steps           │ 342         │
 │ Number of States           │ 86          │
-│ Total solve time           │ 2.204081228 │
+│ Total solve time           │ 1.816824373 │
 └────────────────────────────┴─────────────┘</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(ACBus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
            plot!(
@@ -232,25 +232,25 @@ Vr3 -0.0986
                label = &quot;$(get_name(g)) - ω&quot;,
            );
        end</code><code class="nohighlight hljs ansi" style="display:block;"></code></pre><p><img src="../figs/14bus_gen_speed.svg" alt="plot"/></p><p>It is also possible to explore the small signal stability of this system we created.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res = small_signal_analysis(sim)</code><code class="nohighlight hljs ansi" style="display:block;">The system is small signal stable</code></pre><h2 id="The-eigenvalues-can-be-explored"><a class="docs-heading-anchor" href="#The-eigenvalues-can-be-explored">The eigenvalues can be explored</a><a id="The-eigenvalues-can-be-explored-1"></a><a class="docs-heading-anchor-permalink" href="#The-eigenvalues-can-be-explored" title="Permalink"></a></h2><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res.eigenvalues</code><code class="nohighlight hljs ansi" style="display:block;">58-element Vector{ComplexF64}:
+   -1000.000000000002 + 0.0im
   -1000.0000000000009 + 0.0im
-  -1000.0000000000006 + 0.0im
   -1000.0000000000005 + 0.0im
-  -1000.0000000000002 + 0.0im
-   -999.9999999999994 + 0.0im
+              -1000.0 + 0.0im
+   -999.9999999999986 + 0.0im
     -51.8336437195576 + 0.0im
-   -51.70455018825636 + 0.0im
-   -51.44437441320372 - 0.018220782843113438im
-   -51.44437441320372 + 0.018220782843113438im
+   -51.70455018825631 + 0.0im
+   -51.44437441320357 - 0.01822078284321266im
+   -51.44437441320357 + 0.01822078284321266im
    -51.41020350332119 + 0.0im
                       ⋮
-  -0.8293800767696595 - 0.04428569213206042im
-  -0.8293800767696595 + 0.04428569213206042im
-  -0.6362034818550809 + 0.0im
+   -0.829380076769601 - 0.044285692132136414im
+   -0.829380076769601 + 0.044285692132136414im
+  -0.6362034818551452 + 0.0im
                  -0.5 + 0.0im
-  -0.4682884182384499 + 0.0im
- -0.28233919601444385 + 0.0im
-  -0.2291061939257908 - 7.684635708748412im
-  -0.2291061939257908 + 7.684635708748412im
+ -0.46828841823852807 + 0.0im
+ -0.28233919601447216 + 0.0im
+ -0.22910619392572007 - 7.684635708748425im
+ -0.22910619392572007 + 7.684635708748425im
                   0.0 + 0.0im</code></pre><h2 id="Modifying-the-system-and-adding-storage"><a class="docs-heading-anchor" href="#Modifying-the-system-and-adding-storage">Modifying the system and adding storage</a><a id="Modifying-the-system-and-adding-storage-1"></a><a class="docs-heading-anchor-permalink" href="#Modifying-the-system-and-adding-storage" title="Permalink"></a></h2><p>Reload the system for this example:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sys = build_system(PSIDSystems, &quot;14 Bus Base Case&quot;)
        
        # We want to remove the generator 6 and the dynamic component attached to it.</code><code class="nohighlight hljs ansi" style="display:block;">System
@@ -329,7 +329,9 @@ Dynamic Components
            output_active_power_limits = (min = 0.0, max = 1.0),
            reactive_power_limits = (min = -1.0, max = 1.0),
            efficiency = (in = 0.80, out = 0.90),
-       )</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `GenericBattery` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(sys, storage)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `storage` not defined</code></pre><p>A good sanity check it running a power flow on the system to make sure all the components are properly scaled and that the system is properly balanced. We can use <code>PowerSystems</code> to perform this check. We can get the results back and perform a sanity check.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res = solve_powerflow(ACPowerFlow(), sys)</code><code class="nohighlight hljs ansi" style="display:block;">Dict{String, DataFrames.DataFrame} with 2 entries:
+       )</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `GenericBattery` not defined in `Main`
+Suggestion: check for spelling errors or missing imports.</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(sys, storage)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `storage` not defined in `Main`
+Suggestion: check for spelling errors or missing imports.</code></pre><p>A good sanity check it running a power flow on the system to make sure all the components are properly scaled and that the system is properly balanced. We can use <code>PowerSystems</code> to perform this check. We can get the results back and perform a sanity check.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; res = solve_powerflow(ACPowerFlow(), sys)</code><code class="nohighlight hljs ansi" style="display:block;">Dict{String, DataFrames.DataFrame} with 2 entries:
   &quot;flow_results&quot; =&gt; 20×9 DataFrame…
   &quot;bus_results&quot;  =&gt; 14×9 DataFrame…</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; res[&quot;bus_results&quot;]</code><code class="nohighlight hljs ansi" style="display:block;">14×9 DataFrame
  Row │ bus_number  Vm       θ           P_gen    P_load   P_net    Q_gen       ⋯
@@ -376,7 +378,9 @@ Dynamic Components
                ki_pll = 4.69,   #PLL integral gain
            ),
            filter = LCLFilter(lf = 0.08, rf = 0.003, cf = 0.074, lg = 0.2, rg = 0.01),
-       )</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `storage` not defined</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(sys, inverter, storage)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `inverter` not defined</code></pre><p>These are the current system components:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sys</code><code class="nohighlight hljs ansi" style="display:block;">System
+       )</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `storage` not defined in `Main`
+Suggestion: check for spelling errors or missing imports.</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; add_component!(sys, inverter, storage)</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `inverter` not defined in `Main`
+Suggestion: check for spelling errors or missing imports.</code></pre><p>These are the current system components:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; sys</code><code class="nohighlight hljs ansi" style="display:block;">System
 ┌───────────────────┬─────────────┐
 │ Property          │ Value       │
 ├───────────────────┼─────────────┤
@@ -436,7 +440,7 @@ Dynamic Components
 │      [7] macro expansion
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:163 [inlined]
 │      [8] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/Lw5SP/src/TimerOutput.jl:237 [inlined]
+│        @ ~/.julia/packages/TimerOutputs/NRdsv/src/TimerOutput.jl:237 [inlined]
 │      [9] _calculate_initial_guess!(x0_init::Vector{Float64}, sim::Simulation{ResidualModel})
 │        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_initialization.jl:162
 │     [10] precalculate_initial_conditions!
@@ -446,21 +450,21 @@ Dynamic Components
 │     [12] macro expansion
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:443 [inlined]
 │     [13] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/Lw5SP/src/TimerOutput.jl:237 [inlined]
+│        @ ~/.julia/packages/TimerOutputs/NRdsv/src/TimerOutput.jl:237 [inlined]
 │     [14] macro expansion
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:442 [inlined]
 │     [15] macro expansion
-│        @ ~/.julia/packages/TimerOutputs/Lw5SP/src/TimerOutput.jl:237 [inlined]
+│        @ ~/.julia/packages/TimerOutputs/NRdsv/src/TimerOutput.jl:237 [inlined]
 │     [16] _build!(sim::Simulation{ResidualModel}; kwargs::@Kwargs{console_level::Base.CoreLogging.LogLevel})
 │        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:423
 │     [17] _build!
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:412 [inlined]
 │     [18] (::PowerSimulationsDynamics.var&quot;#125#126&quot;{@Kwargs{console_level::Base.CoreLogging.LogLevel}, Simulation{ResidualModel}})()
 │        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:478
-│     [19] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:515
+│     [19] with_logstate(f::PowerSimulationsDynamics.var&quot;#125#126&quot;{@Kwargs{console_level::Base.CoreLogging.LogLevel}, Simulation{ResidualModel}}, logstate::Base.CoreLogging.LogState)
+│        @ Base.CoreLogging ./logging/logging.jl:522
 │     [20] with_logger
-│        @ ./logging.jl:627 [inlined]
+│        @ ./logging/logging.jl:632 [inlined]
 │     [21] #build!#124
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:477 [inlined]
 │     [22] build!
@@ -474,7 +478,7 @@ Dynamic Components
 │     [26] top-level scope
 │        @ REPL[1]:1
 │     [27] eval
-│        @ ./boot.jl:385 [inlined]
+│        @ ./boot.jl:430 [inlined]
 │     [28] #21
 │        @ ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:721 [inlined]
 │     [29] cd(f::Documenter.Expanders.var&quot;#21#23&quot;{Module}, dir::String)
@@ -483,10 +487,10 @@ Dynamic Components
 │        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:720
 │     [31] (::IOCapture.var&quot;#5#9&quot;{DataType, Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
 │        @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:170
-│     [32] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:515
-│     [33] with_logger
-│        @ ./logging.jl:627 [inlined]
+│     [32] with_logstate(f::IOCapture.var&quot;#5#9&quot;{DataType, Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}}, logstate::Base.CoreLogging.LogState)
+│        @ Base.CoreLogging ./logging/logging.jl:522
+│     [33] with_logger(f::Function, logger::Base.CoreLogging.ConsoleLogger)
+│        @ Base.CoreLogging ./logging/logging.jl:632
 │     [34] capture(f::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer, io_context::Vector{Any})
 │        @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:167
 │     [35] runner(::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
@@ -508,11 +512,11 @@ Dynamic Components
 │     [43] top-level scope
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
 │     [44] include(mod::Module, _path::String)
-│        @ Base ./Base.jl:495
+│        @ Base ./Base.jl:557
 │     [45] exec_options(opts::Base.JLOptions)
-│        @ Base ./client.jl:318
+│        @ Base ./client.jl:323
 │     [46] _start()
-│        @ Base ./client.jl:552
+│        @ Base ./client.jl:531
 └ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:468
 Simulation Summary
 ┌─────────────────────────┬────────────────┐
@@ -539,16 +543,16 @@ Simulation Summary
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:520 [inlined]
 │      [5] (::PowerSimulationsDynamics.var&quot;#133#134&quot;{@Kwargs{abstol::Float64}, Simulation{ResidualModel}, Sundials.IDA{:Dense, Nothing, Nothing}})()
 │        @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:579
-│      [6] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:515
+│      [6] with_logstate(f::PowerSimulationsDynamics.var&quot;#133#134&quot;{@Kwargs{abstol::Float64}, Simulation{ResidualModel}, Sundials.IDA{:Dense, Nothing, Nothing}}, logstate::Base.CoreLogging.LogState)
+│        @ Base.CoreLogging ./logging/logging.jl:522
 │      [7] with_logger
-│        @ ./logging.jl:627 [inlined]
+│        @ ./logging/logging.jl:632 [inlined]
 │      [8] #execute!#132
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:577 [inlined]
 │      [9] top-level scope
 │        @ REPL[1]:1
 │     [10] eval
-│        @ ./boot.jl:385 [inlined]
+│        @ ./boot.jl:430 [inlined]
 │     [11] #21
 │        @ ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:721 [inlined]
 │     [12] cd(f::Documenter.Expanders.var&quot;#21#23&quot;{Module}, dir::String)
@@ -557,10 +561,10 @@ Simulation Summary
 │        @ Documenter.Expanders ~/.julia/packages/Documenter/bYYzK/src/Expanders.jl:720
 │     [14] (::IOCapture.var&quot;#5#9&quot;{DataType, Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}})()
 │        @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:170
-│     [15] with_logstate(f::Function, logstate::Any)
-│        @ Base.CoreLogging ./logging.jl:515
-│     [16] with_logger
-│        @ ./logging.jl:627 [inlined]
+│     [15] with_logstate(f::IOCapture.var&quot;#5#9&quot;{DataType, Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}, IOContext{Base.PipeEndpoint}}, logstate::Base.CoreLogging.LogState)
+│        @ Base.CoreLogging ./logging/logging.jl:522
+│     [16] with_logger(f::Function, logger::Base.CoreLogging.ConsoleLogger)
+│        @ Base.CoreLogging ./logging/logging.jl:632
 │     [17] capture(f::Documenter.Expanders.var&quot;#20#22&quot;{Documenter.Documents.Page, Module}; rethrow::Type, color::Bool, passthrough::Bool, capture_buffer::IOBuffer, io_context::Vector{Any})
 │        @ IOCapture ~/.julia/packages/IOCapture/Y5rEA/src/IOCapture.jl:167
 │     [18] runner(::Type{Documenter.Expanders.REPLBlocks}, x::Markdown.Code, page::Documenter.Documents.Page, doc::Documenter.Documents.Document)
@@ -582,11 +586,11 @@ Simulation Summary
 │     [26] top-level scope
 │        @ ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/docs/make.jl:3
 │     [27] include(mod::Module, _path::String)
-│        @ Base ./Base.jl:495
+│        @ Base ./Base.jl:557
 │     [28] exec_options(opts::Base.JLOptions)
-│        @ Base ./client.jl:318
+│        @ Base ./client.jl:323
 │     [29] _start()
-│        @ Base ./client.jl:552
+│        @ Base ./client.jl:531
 └ @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation.jl:581
 SIMULATION_FAILED::BUILD_STATUS = 7</code></pre><p>Using <code>PowerSimulationsDynamics</code> tools for exploring the results, we can plot all the voltage results for the buses</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; result = read_results(sim)</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; p = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for b in get_components(ACBus, sys)
            voltage_series = get_voltage_magnitude_series(result, get_number(b))
@@ -598,10 +602,11 @@ SIMULATION_FAILED::BUILD_STATUS = 7</code></pre><p>Using <code>PowerSimulationsD
                label = &quot;Bus - $(get_name(b))&quot;,
            );
        end</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching get_voltage_magnitude_series(::Nothing, ::Int64)
+The function `get_voltage_magnitude_series` exists, but no method is defined for this combination of argument types.
 
 Closest candidates are:
-  get_voltage_magnitude_series(!Matched::SimulationResults, ::Int64; dt)
-   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:327</code></pre><p><img src="../figs/14bus_gen_inv_volt.svg" alt="plot"/></p><p>We can also explore the frequency of the different static generators and storage</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; p2 = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for g in get_components(ThermalStandard, sys)
+  get_voltage_magnitude_series(!Matched::SimulationResults, ::Int64; dt, unique_timestamps)
+   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:357</code></pre><p><img src="../figs/14bus_gen_inv_volt.svg" alt="plot"/></p><p>We can also explore the frequency of the different static generators and storage</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; p2 = plot();</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; for g in get_components(ThermalStandard, sys)
            state_series = get_state_series(result, (get_name(g), :ω))
            plot!(
                p2,
@@ -611,11 +616,14 @@ Closest candidates are:
                label = &quot;$(get_name(g)) - ω&quot;,
            );
        end</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching get_state_series(::Nothing, ::Tuple{String, Symbol})
+The function `get_state_series` exists, but no method is defined for this combination of argument types.
 
 Closest candidates are:
-  get_state_series(!Matched::SimulationResults, ::Tuple{String, Symbol}; dt)
-   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:310</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; state_series = get_state_series(result, (&quot;Battery&quot;, :ω_oc))</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching get_state_series(::Nothing, ::Tuple{String, Symbol})
+  get_state_series(!Matched::SimulationResults, ::Tuple{String, Symbol}; dt, unique_timestamps)
+   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:335</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; state_series = get_state_series(result, (&quot;Battery&quot;, :ω_oc))</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: MethodError: no method matching get_state_series(::Nothing, ::Tuple{String, Symbol})
+The function `get_state_series` exists, but no method is defined for this combination of argument types.
 
 Closest candidates are:
-  get_state_series(!Matched::SimulationResults, ::Tuple{String, Symbol}; dt)
-   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:310</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `state_series` not defined</code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines Simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 19 September 2024 02:03">Thursday 19 September 2024</span>. Using Julia version 1.10.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  get_state_series(!Matched::SimulationResults, ::Tuple{String, Symbol}; dt, unique_timestamps)
+   @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:335</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(p2, state_series; xlabel = &quot;Time&quot;, ylabel = &quot;Speed [pu]&quot;, label = &quot;Battery - ω&quot;);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `state_series` not defined in `Main`
+Suggestion: check for spelling errors or missing imports.</code></pre><p><img src="../figs/14bus_gen_inv_speed.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_dynamic_lines/">« Dynamic Lines Simulation</a><a class="docs-footer-nextpage" href="../tutorial_240bus/">240 WECC solver comparison »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Friday 18 October 2024 16:44">Friday 18 October 2024</span>. Using Julia version 1.11.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
