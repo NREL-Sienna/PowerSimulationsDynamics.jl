@@ -75,6 +75,17 @@ function mass_matrix_avr_entries!(
     return
 end
 
+function mass_matrix_avr_entries!(
+    mass_matrix,
+    avr::PSY.ST8C,
+    global_index::Base.ImmutableDict{Symbol, Int64},
+)
+    mass_matrix[global_index[:Vm], global_index[:Vm]] = PSY.get_Tr(avr)
+    mass_matrix[global_index[:x_a3], global_index[:x_a3]] = PSY.get_T_a(avr)
+    mass_matrix[global_index[:x_a4], global_index[:x_a4]] = PSY.get_T_f(avr)
+    return
+end
+
 ##################################
 ##### Differential Equations #####
 ##################################
@@ -722,5 +733,91 @@ function mdl_avr_ode!(
 
     #Update inner_vars
     inner_vars[Vf_var] = E_fd
+    return
+end
+
+function mdl_avr_ode!(
+    device_states::AbstractArray,
+    output_ode::AbstractArray,
+    inner_vars::AbstractArray,
+    dynamic_device::DynamicWrapper{PSY.DynamicGenerator{M, S, PSY.ST8C, TG, P}},
+    h,
+    t,
+) where {M <: PSY.Machine, S <: PSY.Shaft, TG <: PSY.TurbineGov, P <: PSY.PSS}
+
+    #Obtain references
+    V_ref = get_V_ref(dynamic_device)
+
+    #Obtain indices for component w/r to device
+    local_ix = get_local_state_ix(dynamic_device, PSY.ST8C)
+
+    #Define inner states for component
+    internal_states = @view device_states[local_ix]
+    Vm = internal_states[1] # Sensed Voltage
+    x_a1 = internal_states[2] # Regulator Integrator
+    x_a2 = internal_states[3] # Field Regulator
+    x_a3 = internal_states[4] # Controller Integrator
+    x_a4 = internal_states[5] # Regulator Feedback
+
+    #Define external states for device
+    Vt = sqrt(inner_vars[VR_gen_var]^2 + inner_vars[VI_gen_var]^2) # machine's terminal voltage
+    Vs = inner_vars[V_pss_var] # PSS output 
+    Ifd = inner_vars[Xad_Ifd_var] # machine's field current in exciter base 
+
+    #Get parameters
+    avr = PSY.get_avr(dynamic_device)
+    SW1_Flag = PSY.get_SW1_Flag(avr)
+    if SW1_Flag == 1
+        error("Source from generator terminal voltage not supported.")
+    end
+    Tr = PSY.get_Tr(avr)
+    K_pr = PSY.get_K_pr(avr)
+    K_ir = PSY.get_K_ir(avr)
+    Vpi_min, Vpi_max = PSY.get_Vpi_lim(avr)
+    K_pa = PSY.get_K_pa(avr)
+    K_ia = PSY.get_K_ia(avr)
+    Va_min, Va_max = PSY.get_Va_lim(avr)
+    K_a = PSY.get_K_a(avr)
+    T_a = PSY.get_T_a(avr)
+    Vr_min, Vr_max = PSY.get_Vr_lim(avr)
+    K_f = PSY.get_K_f(avr)
+    T_f = PSY.get_T_f(avr)
+    K_c1 = PSY.get_K_c1(avr)
+    K_p = PSY.get_K_p(avr)
+    K_i2 = PSY.get_K_i2(avr)
+    VB1_max = PSY.get_VB1_max(avr)
+
+    if K_i2 != 0.0
+        error("Feedforward Current for AVR ST8C not implemented yet.")
+    end
+    #TODO: Implement Terminal Current FF for AVR
+    V_b2 = 0.0
+    #TODO: Implement Voltage Compensation if needed
+    V_e = K_p
+
+    # Compute block derivatives
+    _, dVm_dt = low_pass_mass_matrix(Vt, Vm, 1.0, Tr)
+    V_pi_in = V_ref + Vs - Vm
+    Ifd_ref, dxa1_dt = pi_block_nonwindup(V_pi_in, x_a1, K_pr, K_ir, Vpi_min, Vpi_max)
+    Ifd_diff = Ifd_ref - x_a4
+    pi_out, dxa2_dt = pi_block_nonwindup(Ifd_diff, x_a2, K_pa, K_ia, Va_min, Va_max)
+    _, dxa3_dt = low_pass_nonwindup_mass_matrix(pi_out, x_a3, K_a, T_a, Vr_min, Vr_max)
+    _, dxa4_dt = low_pass_mass_matrix(Ifd, x_a4, K_f, T_f)
+
+    # Compute V_b1
+    I_n1 = K_c1 * Ifd / V_e
+    F_ex = rectifier_function(I_n1)
+    V_b1 = min(F_ex * V_e, VB1_max)
+
+    #Compute 5 States AVR ODE:
+    output_ode[local_ix[1]] = dVm_dt
+    output_ode[local_ix[2]] = dxa1_dt
+    output_ode[local_ix[3]] = dxa2_dt
+    output_ode[local_ix[4]] = dxa3_dt
+    output_ode[local_ix[5]] = dxa4_dt
+
+    #Update inner_vars
+    Efd = V_b1 * x_a3 + V_b2
+    inner_vars[Vf_var] = Efd
     return
 end
