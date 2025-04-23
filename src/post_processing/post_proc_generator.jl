@@ -1194,6 +1194,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Get params
     D_turb = PSY.get_D_turb(tg)
@@ -1204,9 +1205,9 @@ function _mechanical_torque(
     setpoints = get_setpoints(res)
     ω_ref = setpoints[name]["ω_ref"]
     # Get state results
-    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt)
-    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt)
-    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt, unique_timestamps)
+    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt, unique_timestamps)
+    _, ω = post_proc_state_series(res, (name, :ω), dt, unique_timestamps)
     Pe = similar(x_g7)
     for (ix, x7) in enumerate(x_g7)
         x6 = x_g6[ix]
@@ -1225,6 +1226,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Get params
     D = PSY.get_D(tg)
@@ -1235,9 +1237,9 @@ function _mechanical_torque(
     ω_ref = setpoints[name]["ω_ref"]
 
     # Get state results
-    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt)
-    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt)
-    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt, unique_timestamps)
+    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt, unique_timestamps)
+    _, ω = post_proc_state_series(res, (name, :ω), dt, unique_timestamps)
     Pm = similar(x_g7)
 
     for (ix, x7) in enumerate(x_g7)
