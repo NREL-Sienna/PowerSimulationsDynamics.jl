@@ -1194,7 +1194,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true
 )
     # Get params
     D_turb = PSY.get_D_turb(tg)
