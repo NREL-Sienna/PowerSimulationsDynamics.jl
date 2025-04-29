@@ -133,6 +133,7 @@ function _check_residual(
                 Generator = $gen_name, state = $state.
                Residual error is too large to continue")
         else
+            bus_count = get_bus_count(inputs)
             bus_no = ix > bus_count ? ix - bus_count : ix
             component = ix > bus_count ? "imag" : "real"
             error("The initial residual in the state located at $ix has a value of $val.
