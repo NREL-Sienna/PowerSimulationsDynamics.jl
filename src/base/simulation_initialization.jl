@@ -11,7 +11,7 @@ function power_flow_solution!(
     sys::PSY.System,
     inputs::SimulationInputs,
 )
-    pf = PF.ACPowerFlow{TrustRegionACPowerFlow}()
+    pf = PF.ACPowerFlow{PF.TrustRegionACPowerFlow}()
     res = PF.solve_powerflow!(pf, sys)
     if !res
         @error("PowerFlow failed to solve")
