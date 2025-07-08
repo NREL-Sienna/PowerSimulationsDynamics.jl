@@ -872,25 +872,26 @@ function _field_voltage(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     #ASSUMPTION THAT PSS IS NOT ACTIVATE
     # Obtain state Vm
-    ts, Vm = post_proc_state_series(res, (name, :Vm), dt)
+    ts, Vm = post_proc_state_series(res, (name, :Vm), dt, unique_timestamps)
 
     # Obtain state x_i
-    ts, x_i = post_proc_state_series(res, (name, :x_i), dt)
+    ts, x_i = post_proc_state_series(res, (name, :x_i), dt, unique_timestamps)
 
     # Obtain state x_d
-    ts, x_d = post_proc_state_series(res, (name, :x_d), dt)
+    ts, x_d = post_proc_state_series(res, (name, :x_d), dt, unique_timestamps)
 
     # Obtain state x_d
-    ts, Vg = post_proc_state_series(res, (name, :Vg), dt)
+    ts, Vg = post_proc_state_series(res, (name, :Vg), dt, unique_timestamps)
 
     # Obtain state Xad_Ifd
-    ts, Xad_Ifd = post_proc_field_current_series(res, name, dt)
+    ts, Xad_Ifd = post_proc_field_current_series(res, name, dt, unique_timestamps)
 
     # Obtain PSS output
-    _, Vs = post_proc_pss_output_series(res, name, dt)
+    _, Vs = post_proc_pss_output_series(res, name, dt, unique_timestamps)
 
     V_ref = PSY.get_V_ref(avr)
 
@@ -1154,6 +1155,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64},
+    unique_timestamps::Bool,
 )
     ts, x_a3 = post_proc_state_series(res, (name, :x_a3), dt, unique_timestamps)
     return ts, x_a3
@@ -1194,6 +1196,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Get params
     D_turb = PSY.get_D_turb(tg)
@@ -1204,9 +1207,9 @@ function _mechanical_torque(
     setpoints = get_setpoints(res)
     ω_ref = setpoints[name]["ω_ref"]
     # Get state results
-    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt)
-    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt)
-    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt, unique_timestamps)
+    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt, unique_timestamps)
+    _, ω = post_proc_state_series(res, (name, :ω), dt, unique_timestamps)
     Pe = similar(x_g7)
     for (ix, x7) in enumerate(x_g7)
         x6 = x_g6[ix]
@@ -1225,6 +1228,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Get params
     D = PSY.get_D(tg)
@@ -1235,9 +1239,9 @@ function _mechanical_torque(
     ω_ref = setpoints[name]["ω_ref"]
 
     # Get state results
-    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt)
-    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt)
-    _, ω = post_proc_state_series(res, (name, :ω), dt)
+    ts, x_g7 = post_proc_state_series(res, (name, :x_g7), dt, unique_timestamps)
+    _, x_g6 = post_proc_state_series(res, (name, :x_g6), dt, unique_timestamps)
+    _, ω = post_proc_state_series(res, (name, :ω), dt, unique_timestamps)
     Pm = similar(x_g7)
 
     for (ix, x7) in enumerate(x_g7)
