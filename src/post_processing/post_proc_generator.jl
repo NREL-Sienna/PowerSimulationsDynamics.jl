@@ -936,12 +936,13 @@ function _field_voltage(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
+    unique_timestamps::Bool,
 )
     # Obtain state Vm
-    ts, x_a3 = post_proc_state_series(res, (name, :x_a3), dt)
+    ts, x_a3 = post_proc_state_series(res, (name, :x_a3), dt, unique_timestamps)
 
     # Obtain state Xad_Ifd
-    ts, Xad_Ifd = post_proc_field_current_series(res, name, dt)
+    ts, Xad_Ifd = post_proc_field_current_series(res, name, dt, unique_timestamps)
 
     #Get parameters
     K_c1 = PSY.get_K_c1(avr)
@@ -1206,8 +1207,9 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64},
+    unique_timestamps::Bool,
 )
-    ts, x_g5 = post_proc_state_series(res, (name, :x_g5), dt)
+    ts, x_g5 = post_proc_state_series(res, (name, :x_g5), dt, unique_timestamps)
     return ts, x_g5
 end
 
@@ -1315,7 +1317,8 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64},
+    unique_timestamps::Bool,
 )
-    ts, τm = post_proc_state_series(res, (name, :τm), dt)
+    ts, τm = post_proc_state_series(res, (name, :τm), dt, unique_timestamps)
     return ts, τm
 end
