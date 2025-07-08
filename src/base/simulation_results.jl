@@ -77,7 +77,9 @@ function post_proc_state_series(
     state_dict = global_state_index[ref[1]]
     if !haskey(state_dict, ref[2])
         available_states = join(keys(state_dict), ", ")
-        error("State $(ref[2]) not found in device $(ref[1]). Available states: $available_states")
+        error(
+            "State $(ref[2]) not found in device $(ref[1]). Available states: $available_states",
+        )
     end
 
     ix = state_dict[ref[2]]
