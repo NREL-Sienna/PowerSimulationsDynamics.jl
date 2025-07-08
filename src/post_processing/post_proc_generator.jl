@@ -1056,7 +1056,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true,
 )
     # TODO: This will not plot correctly when changing P_ref in a callback
     ts, _ = _post_proc_state_series(res.solution, 1, dt, unique_timestamps)
@@ -1076,7 +1076,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true,
 )
     # Get params
     Tc = PSY.get_Tc(tg)
@@ -1105,7 +1105,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true,
 )
     # TODO: This will not plot correctly when changing P_ref in a callback
     # Get params
@@ -1135,7 +1135,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true,
 )
     # TODO: This will not plot correctly when changing P_ref in a callback
     # Get params
@@ -1171,7 +1171,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true,
 )
     # Get params
     D_turb = PSY.get_D_turb(tg)
@@ -1192,7 +1192,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true,
 )
     ts, x_a3 = post_proc_state_series(res, (name, :x_a3), dt, unique_timestamps)
     return ts, x_a3
@@ -1222,7 +1222,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true,
 )
     # Get params
     q_nl = PSY.get_q_nl(tg)
@@ -1249,7 +1249,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true,
 )
     # Get params
     D_turb = PSY.get_D_turb(tg)
@@ -1281,7 +1281,7 @@ function _mechanical_torque(
     name::String,
     res::SimulationResults,
     dt::Union{Nothing, Float64, Vector{Float64}},
-    unique_timestamps::Bool,
+    unique_timestamps::Bool = true,
 )
     # Get params
     D = PSY.get_D(tg)
