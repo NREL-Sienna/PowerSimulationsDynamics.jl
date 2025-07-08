@@ -227,6 +227,11 @@ tg_type2() = TGTypeII(
     (min = 0.1, max = 1.5), #τ_lims
 )
 
+tg_simple() = TGSimple(;
+    d_t = 130.0,
+    Tm = 0.2,
+)
+
 ########  AVR Data #########
 
 avr_none() = AVRFixed(0.0)

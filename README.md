@@ -49,7 +49,8 @@ For information on using the package, see the [stable documentation](https://nre
       year={2023},
       eprint={2308.02921},
       archivePrefix={arXiv},
-      primaryClass={eess.SY}
+      primaryClass={eess.SY},
+      doi={https://doi.org/10.48550/arXiv.2308.02921}
 }
 ```
 
