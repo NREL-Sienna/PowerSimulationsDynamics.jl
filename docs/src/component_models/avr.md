@@ -179,3 +179,108 @@ f(I_N) &= \left\{\begin{array}{cl}
 
 on which ``X_{ad}I_{fd}`` is the field current coming from the generator and ``V_{h}`` is the terminal voltage, and ``A,B`` are the saturation coefficients computed using the ``E_1, E_2, S_e(E_1), S_e(E_2)`` data.
 
+## Excitation System ST8C ```[ST8C]```
+
+The model represents the 5-states IEEE Type ST8C Excitation System Model:
+
+```math
+\begin{align}
+T_r \dot{V}_m &= V_{h} - V_m \tag{8a} \\
+\dot{x}_{a1} &= \begin{cases}
+V_{\pi_{in}} & \text{if } V_{\pi_{min}} < K_{pr} V_{\pi_{in}} + K_{ir} x_{a1} < V_{\pi_{max}} \\
+0 & \text{otherwise}
+\end{cases} \tag{8b} \\
+\dot{x}_{a2} &= \begin{cases}
+I_{fd_{diff}} & \text{if } V_{a_{min}} < K_{pa} I_{fd_{diff}} + K_{ia} x_{a2} < V_{a_{max}} \\
+0 & \text{otherwise}
+\end{cases} \tag{8c} \\
+T_a \dot{x}_{a3} &= \begin{cases}
+K_a \pi_{out} - x_{a3} & \text{if } V_{r_{min}} < x_{a3} < V_{r_{max}} \\
+0 & \text{otherwise}
+\end{cases} \tag{8d} \\
+T_f \dot{x}_{a4} &= K_f I_{fd} - x_{a4} \tag{8e} \\
+\end{align}
+```
+
+with
+
+```math
+\begin{align*}
+V_{\pi_{in}} &= V_{ref} + V_s - V_m \\
+I_{fd_{ref}} &= \text{clamp}(K_{pr} V_{\pi_{in}} + K_{ir} x_{a1}, V_{\pi_{min}}, V_{\pi_{max}}) \\
+I_{fd_{diff}} &= I_{fd_{ref}} - x_{a4} \\
+\pi_{out} &= \text{clamp}(K_{pa} I_{fd_{diff}} + K_{ia} x_{a2}, V_{a_{min}}, V_{a_{max}}) \\
+I_{N1} &= \frac{K_{c1} I_{fd}}{V_e} \\
+F_{ex} &= f(I_{N1}) \\
+V_{b1} &= \min(F_{ex} V_e, V_{B1_{max}}) \\
+V_{b2} &= 0 \quad \text{(feedforward current not implemented)} \\
+E_{fd} &= V_{b1} x_{a3} + V_{b2} \\
+f(I_N) &= \left\{\begin{array}{cl}
+    1 & \text{ if }I_N \le 0 \\
+    1 - 0.577 I_N & \text{ if } 0 < I_N \le 0.433 \\
+    \sqrt{0.75 - I_N^2} & \text{ if } 0.433 < I_N \le 0.75 \\
+    1.732(1-I_N) & \text{ if } 0.75 <  I_N \le 1 \\
+    0 & \text{ if } I_N > 1 \end{array} \right.
+\end{align*}
+```
+
+on which ``I_{fd}`` is the field current from the generator, ``V_{h}`` is the terminal voltage, and ``V_s`` is the PSS output signal.
+
+### Notes
+
+- The rectifier function ``f(I_N)`` models the characteristic of a three-phase full-wave rectifier
+- Terminal current feedforward (``K_{i2}``) is not currently implemented and must be set to 0.0
+- Voltage compensation is not implemented (``V_e = K_p``)
+
+
+## Excitation System ST6B ```[ST6B]```
+
+The model represents the 4-states IEEE Type ST6B Excitation System Model:
+
+```math
+\begin{align}
+T_r \dot{V}_m &= V_{h} - V_m \tag{9a} \\
+\dot{x}_{i} &= \begin{cases}
+V_{\pi_{in}} & \text{if } V_{a_{min}} < K_{pa} V_{\pi_{in}} + K_{ia} x_{i} < V_{a_{max}} \\
+0 & \text{otherwise}
+\end{cases} \tag{9b} \\
+T_{da} \dot{x}_{d} &= -K_{da} V_{\pi_{in}} - x_{d} \tag{9c} \\
+\dot{V}_{g} &= \frac{1}{T_g} (K_g E_{fd} - V_g) \tag{9d} \\
+\end{align}
+```
+
+with
+
+```math
+\begin{align*}
+V_{\pi_{in}} &= V_{ref} + V_s - V_m \\
+\text{PI output} &= \text{clamp}(K_{pa} V_{\pi_{in}} + K_{ia} x_{i}, V_{a_{min}}, V_{a_{max}}) \\
+\text{PD output} &= x_{d} + \frac{K_{da}}{T_{da}} V_{\pi_{in}} \\
+V_a &= \text{PI output} + \text{PD output} \\
+\text{FF output} &= (V_a - V_g) K_m + K_{ff} V_a \\
+V_{r1} &= \max((I_{lr} K_{ci} - X_{ad} I_{fd}) K_{lr}, V_{r_{min}}) \\
+V_{r2} &= \text{clamp}(\text{FF output}, V_{r_{min}}, V_{r_{max}}) \\
+V_r &= \min(V_{r1}, V_{r2}) \\
+E_{fd} &= V_r V_m \\
+\end{align*}
+```
+
+on which ``X_{ad} I_{fd}`` is the field current from the generator, ``V_{h}`` is the terminal voltage, and ``V_s`` is the PSS output signal. Finally, the derivative block implements a high-pass filter:
+```math
+\text{PD output} = x_d + \frac{K_{da}}{T_{da}} u, \quad T_{da} \dot{x}_d = -\frac{K_{da}}{T_{da}} u - x_d
+```
+while the current limiter ensures:
+```math
+V_{r1} = \max((I_{lr} K_{ci} - X_{ad} I_{fd}) K_{lr}, V_{r_{min}})
+```
+
+### Notes
+
+- The derivative term uses a high-pass filter implementation
+- Current limiting is active when field current exceeds the reference value ``I_{lr}``
+- The exciter output is the minimum of voltage-limited and current-limited values
+- During initialization, ``I_{lr}`` is typically adjusted to match operating conditions
+
+
+
+

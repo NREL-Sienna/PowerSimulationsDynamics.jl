@@ -70,10 +70,19 @@ function post_proc_state_series(
 )
     global_state_index = get_global_index(res)
     if !haskey(global_state_index, ref[1])
-        @error "$(keys(global_state_index))"
-        error("State $(ref[2]) device $(ref[1]) not found in the system. ")
+        available_devices = join(keys(global_state_index), ", ")
+        error("Device $(ref[1]) not found. Available devices: $available_devices")
     end
-    ix = get(global_state_index[ref[1]], ref[2], 0)
+
+    state_dict = global_state_index[ref[1]]
+    if !haskey(state_dict, ref[2])
+        available_states = join(keys(state_dict), ", ")
+        error(
+            "State $(ref[2]) not found in device $(ref[1]). Available states: $available_states",
+        )
+    end
+
+    ix = state_dict[ref[2]]
     return _post_proc_state_series(get_solution(res), ix, dt, unique_timestamps)
 end
 
