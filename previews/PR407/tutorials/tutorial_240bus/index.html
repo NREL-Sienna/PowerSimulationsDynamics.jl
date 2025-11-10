@@ -418,12 +418,12 @@ Dynamic Components
 │ ─────────────────────────────────────────────────────────────────────
 │                                           Time          Allocations  
 │                                     ───────────────   ───────────────
-│           Total measured:                1.07s            79.7MiB    
+│           Total measured:                1.61s            74.2MiB    
 │ 
 │ Section                     ncalls     time    %tot     alloc    %tot
 │ ─────────────────────────────────────────────────────────────────────
-│ Build Simulation                 1    1.07s  100.0%   79.7MiB  100.0%
-│   Build Simulation Inputs        1    1.01s   94.3%   72.3MiB   90.7%
+│ Build Simulation                 1    1.61s  100.0%   74.2MiB  100.0%
+│   Build Simulation Inputs        1    1.54s   96.1%   66.8MiB   90.0%
 │ ─────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -600,12 +600,12 @@ Suggestion: add an appropriate import or assignment. This global was declared bu
 │ ─────────────────────────────────────────────────────────────────────
 │                                           Time          Allocations  
 │                                     ───────────────   ───────────────
-│           Total measured:               57.1ms            8.13MiB    
+│           Total measured:               56.9ms            8.13MiB    
 │ 
 │ Section                     ncalls     time    %tot     alloc    %tot
 │ ─────────────────────────────────────────────────────────────────────
-│ Build Simulation                 1   57.1ms  100.0%   8.13MiB  100.0%
-│   Build Simulation Inputs        1   1.93ms    3.4%    927KiB   11.1%
+│ Build Simulation                 1   56.9ms  100.0%   8.13MiB  100.0%
+│   Build Simulation Inputs        1   2.01ms    3.5%    927KiB   11.1%
 │ ─────────────────────────────────────────────────────────────────────
 └ 
 Simulation Summary
@@ -696,4 +696,4 @@ Closest candidates are:
   get_voltage_magnitude_series(!Matched::SimulationResults, ::Int64; dt, unique_timestamps)
    @ PowerSimulationsDynamics ~/work/PowerSimulationsDynamics.jl/PowerSimulationsDynamics.jl/src/base/simulation_results.jl:366</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot(v1101, label = &quot;RODAS4&quot;);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `v1101` not defined in `Main`
 Suggestion: add an appropriate import or assignment. This global was declared but not assigned.</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; plot!(v1101_ida, label = &quot;IDA&quot;);</code><code class="nohighlight hljs ansi" style="display:block;">ERROR: UndefVarError: `v1101_ida` not defined in `Main`
-Suggestion: add an appropriate import or assignment. This global was declared but not assigned.</code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 10 November 2025 14:46">Monday 10 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+Suggestion: add an appropriate import or assignment. This global was declared but not assigned.</code></pre><p><img src="../figs/v1101_comparison.svg" alt="plot"/></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial_inverter_modeling/">« Inverter Modeling</a><a class="docs-footer-nextpage" href="../tutorial_continuation_pf/">Small-Signal Analysis »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Monday 10 November 2025 14:47">Monday 10 November 2025</span>. Using Julia version 1.12.1.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
