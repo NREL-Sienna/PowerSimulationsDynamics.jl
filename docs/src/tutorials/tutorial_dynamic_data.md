@@ -150,7 +150,7 @@ In order to do so, we will parse the following `ThreebusInverter.raw` network:
 
 ```@repl dyn_data
 threebus_sys = build_system(PSIDSystems, "3 Bus Inverter Base")
-slack_bus = first(get_components(x -> get_bustype(x) == BusTypes.REF, Bus, threebus_sys))
+slack_bus = first(get_components(x -> get_bustype(x) == ACBusTypes.REF, Bus, threebus_sys))
 inf_source = Source(
     name = "InfBus", #name
     available = true, #availability
