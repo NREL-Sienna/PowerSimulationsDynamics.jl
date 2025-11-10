@@ -11,6 +11,8 @@ This document analyzes the changes made to update PowerSimulationsDynamics.jl to
 | PowerSystems | 4 | 5 | Nov 2024 | Yes - struct redefinitions, API removals (get_bus_numbers) |
 | PowerFlows | 0.9 | 0.10 | Nov 4, 2024 | Yes - complete API rewrite |
 | PowerNetworkMatrices | 0.12.1 | 0.14 | Nov 4, 2024 | Yes - arc-based indexing |
+| **DataStructures** | ~0.18 | 0.19 | - | Required by PowerSystems v5 |
+| **Julia** | ^1.6 | ^1.10 | - | Required by PowerSystems v5 and PowerFlows v0.10 |
 
 ## Code Changes Made
 
@@ -150,3 +152,6 @@ All identified API changes have been implemented. The code should now be compati
 2. `617d0f0` - Add comprehensive dependency update analysis
 3. `42d19f1` - Update InfrastructureSystems to version 3
 4. `0386d05` - Fix PowerSystems v5 API: replace get_bus_numbers
+5. `713de0b` - Update dependency analysis with all implemented fixes
+6. `815df11` - Update DataStructures to version 0.19
+7. `2337329` - Update minimum Julia version to 1.10
