@@ -34,6 +34,10 @@
             "count": 1
         },
         {
+            "type": "Source",
+            "count": 1
+        },
+        {
             "type": "StandardLoad",
             "count": 3
         },
