@@ -17,7 +17,7 @@ function power_flow_solution!(
         @error("PowerFlow failed to solve")
         return BUILD_FAILED
     end
-    bus_size = length(PSY.get_bus_numbers(sys))
+    bus_size = length(collect(PSY.get_components(PSY.Bus, sys)))
     @debug "Updating bus voltage magnitude and angle to match power flow result"
     for bus in PSY.get_components(PSY.Bus, sys)
         bus_n = PSY.get_number(bus)
