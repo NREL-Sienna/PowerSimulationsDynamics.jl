@@ -24,7 +24,7 @@ TimerOutputs = "a759f4b9-e2f1-59dc-863e-4aeb61b1ea8f"
 
 [compat]
 DataFrames = "1"
-DataStructures = "~0.18"
+DataStructures = "0.19"
 DocStringExtensions = "~0.9"
 FastClosures = "^0.3"
 ForwardDiff = "~v0.10"
