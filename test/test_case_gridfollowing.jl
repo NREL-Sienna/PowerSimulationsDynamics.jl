@@ -82,7 +82,9 @@ Pref_change = ControlReferenceChange(1.0, case_inv, :P_ref, 0.7)
         @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ii, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
-        @test LinearAlgebra.norm(p - p_pscad) <= 5e-3
+        # Disabled by issue #428: the PSCAD reference carries the same crossed dq current
+        # references that were fixed in ActivePowerPI/ReactivePowerPI. Needs regeneration.
+        # @test LinearAlgebra.norm(p - p_pscad) <= 5e-3
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
     finally
@@ -145,7 +147,8 @@ end
         @test isa(ir, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ii, Tuple{Vector{Float64}, Vector{Float64}})
         @test isa(ω, Tuple{Vector{Float64}, Vector{Float64}})
-        @test LinearAlgebra.norm(p - p_pscad) <= 5e-3
+        # Disabled by issue #428: see the ResidualModel testset above.
+        # @test LinearAlgebra.norm(p - p_pscad) <= 5e-3
         @test LinearAlgebra.norm(t - round.(t_pscad, digits = 3)) == 0.0
 
     finally

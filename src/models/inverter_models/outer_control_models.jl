@@ -890,9 +890,9 @@ function mdl_outer_ode!(
     q_elec_out = -Ii_filter * Vr_filter + Ir_filter * Vi_filter
 
     #Compute block derivatives
-    Iq_pi, dσpoc_dt = pi_block(p_ref - p_oc, σp_oc, Kp_p, Ki_p)
+    Id_pi, dσpoc_dt = pi_block(p_ref - p_oc, σp_oc, Kp_p, Ki_p)
     _, dpoc_dt = low_pass(p_elec_out, p_oc, 1.0, 1.0 / ωz)
-    Id_pi, dσqoc_dt = pi_block(q_ref - q_oc, σq_oc, Kp_q, Ki_q)
+    Iq_pi, dσqoc_dt = pi_block(q_ref - q_oc, σq_oc, Kp_q, Ki_q)
     _, dqoc_dt = low_pass(q_elec_out, q_oc, 1.0, 1.0 / ωf)
 
     #Compute 4 states ODEs
@@ -904,8 +904,9 @@ function mdl_outer_ode!(
     #Update inner vars
     inner_vars[θ_oc_var] = θ_pll
     inner_vars[ω_oc_var] = ω_pll
-    inner_vars[Iq_oc_var] = Iq_pi
     inner_vars[Id_oc_var] = Id_pi
+    # The PLL drives v_q to zero, so q_elec_out = -v_d * i_q: the q-axis gain is negative
+    inner_vars[Iq_oc_var] = -Iq_pi
     return
 end
 
