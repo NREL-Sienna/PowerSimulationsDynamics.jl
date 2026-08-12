@@ -100,7 +100,7 @@ The equations are:
     \dot{\sigma}_{p} &= p_\text{ref} - p_m \tag{4a} \\
     \dot{p}_m &= \omega_z (p_e - p_m) \tag{4b} \\
     \dot{\sigma}_{q} &= q_\text{ref} - q_m \tag{4c} \\
-    \dot{q}_m &= \omega_f (q_e - p_m) \tag{4d} \\
+    \dot{q}_m &= \omega_f (q_e - q_m) \tag{4d} \\
 \end{align}
 ```
 
@@ -112,10 +112,15 @@ with
     q_e &= v_ii_r - v_ri_i \tag{4f} \\
     \omega_{\text{olc}} &= \omega_{\text{pll}} \tag{4g} \\
     \theta_{\text{olc}} &= \theta_{\text{pll}} \tag{4h} \\
-    i_\text{d,cv}^\text{ref} &= k_p^q (q_\text{ref} - q_m) + k_i^q \sigma_q \tag{4i} \\
-    i_\text{q,cv}^\text{ref} &= k_p^p (p_\text{ref} - p_m) + k_i^p \sigma_p \tag{4j} \\
+    i_\text{d,cv}^\text{ref} &= k_p^p (p_\text{ref} - p_m) + k_i^p \sigma_p \tag{4i} \\
+    i_\text{q,cv}^\text{ref} &= -\left[k_p^q (q_\text{ref} - q_m) + k_i^q \sigma_q\right] \tag{4j} \\
 \end{align}
 ```
+
+The PLL drives ``v_q`` to zero, so in the outer-loop ``dq`` frame ``p_e = v_d i_d`` and
+``q_e = -v_d i_q``. Active power is therefore controlled through the ``d``-axis current and
+reactive power through the ``q``-axis current, with the negative sign in (4j) accounting for
+the sign of the reactive-power gain.
 
 This models requires a PLL to have a SRF for an internal ``dq`` reference frame. Contrary
 to the Grid-Forming model, it cannot work without a PLL. Since this Outer Control outputs

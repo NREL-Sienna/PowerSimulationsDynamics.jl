@@ -253,9 +253,9 @@ function initialize_outer!(
         PSY.OuterControl{PSY.ActivePowerPI, PSY.ReactivePowerPI},
     )
     outer_states = @view device_states[outer_ix]
-    outer_states[1] = I_dq_cnv[q] / Ki_p #σp_oc
+    outer_states[1] = I_dq_cnv[d] / Ki_p #σp_oc
     outer_states[2] = p_elec_out #p_oc
-    outer_states[3] = I_dq_cnv[d] / Ki_q #σq_oc
+    outer_states[3] = -I_dq_cnv[q] / Ki_q #σq_oc
     outer_states[4] = q_elec_out #q_oc
 
     #Update inner vars
