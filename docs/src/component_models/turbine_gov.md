@@ -34,7 +34,7 @@ This turbine governor is a simplified model of the Type I.
 ```math
 \begin{align}
 \dot{x}_g &= \frac{1}{T_2}\left[\frac{1}{R}\left(1 - \frac{T_1}{T_2}\right) (\omega_s - \omega) - x_g\right] \tag{2a} \\
-\tau_m &= P_{\text{ref}} + \frac{1}{R}\frac{T_1}{T_2}(\omega_s - \omega) \tag{2b}
+\tau_m &= P_{\text{ref}} + x_g + \frac{1}{R}\frac{T_1}{T_2}(\omega_s - \omega) \tag{2b}
 \end{align}
 ```
 

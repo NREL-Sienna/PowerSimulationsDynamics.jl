@@ -201,7 +201,7 @@ function mdl_machine_ode!(
         (-eq_p - (Xd - Xd_p) * (i_d - γ_d2 * ψd_pp - (1 - γ_d1) * i_d + γ_d2 * eq_p) + Vf)     #15.13 eq_p
     output_ode[local_ix[4]] =
         (1.0 / Tq0_p) *
-        (-ed_p + (Xq - Xq_p) * (i_q - γ_q2 * ψq_pp - (1 - γ_q1) * i_q - γ_d2 * ed_p))          #15.13 ed_p
+        (-ed_p + (Xq - Xq_p) * (i_q - γ_q2 * ψq_pp - (1 - γ_q1) * i_q - γ_q2 * ed_p))          #15.13 ed_p
     output_ode[local_ix[5]] = (1.0 / Td0_pp) * (-ψd_pp + eq_p - (Xd_p - Xl) * i_d)        #15.13 ψd_pp
     output_ode[local_ix[6]] = (1.0 / Tq0_pp) * (-ψq_pp - ed_p - (Xq_p - Xl) * i_q)        #15.13 ψq_pp
 
