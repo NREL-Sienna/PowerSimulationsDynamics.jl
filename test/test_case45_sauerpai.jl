@@ -1,8 +1,8 @@
 """
 Case 45:
-This case study a three bus system with 2 machines (Sauer Pai: 6th order model) and an infinite source.
-The fault drop the connection between buses 1 and 3, eliminating the direct connection between the infinite source
-and the generator located in bus 3. 
+This case studies a three bus system with a Sauer Pai machine (6th order model) at bus 101 and a
+droop grid-forming inverter at bus 102, supplying loads at bus 103.
+The fault trips the line between buses 101 and 102.
 """
 
 ##################################################
@@ -39,12 +39,12 @@ perturbation = BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
         #end
         # Test Initial Condition
         diff_val = [0.0]
-        #=         res = get_init_values_for_comparison(sim)
-                for (k, v) in test45_x0_init
-                    diff_val[1] += LinearAlgebra.norm(res[k] - v)
-                end =#
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test45_x0_init
+            diff_val[1] += LinearAlgebra.norm(res[k] - v)
+        end
 
-        #@test (diff_val[1] < 1e-3)
+        @test (diff_val[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -67,14 +67,9 @@ perturbation = BranchTrip(1.0, Line, "BUS 1-BUS 2-i_1")
         # Should return zeros and a warning
         series3 = get_field_current_series(results, "generator-101-1")
 
-        # TODO Testing:
-        # Obtain PSAT benchmark data
-        #psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test45/Test45_delta.csv")
-        #t_psat, δ_psat = get_csv_delta(psat_csv)
-
-        # Test Transient Simulation Results
-        #@test LinearAlgebra.norm(t - t_psat) == 0.0
-        # @test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
+        # No PSAT benchmark exists for this case: the system pairs a SauerPai machine with a
+        # droop inverter, which PSAT cannot represent. Coverage here is the initial condition
+        # against test45_x0_init plus small-signal stability.
 
         power = PSID.get_activepower_series(results, "generator-101-1")
         rpower = PSID.get_reactivepower_series(results, "generator-101-1")
@@ -101,12 +96,12 @@ end
 
         # Test Initial Condition
         diff_val = [0.0]
-        #res = get_init_values_for_comparison(sim)
-        #for (k, v) in test45_x0_init
-        #    diff_val[1] += LinearAlgebra.norm(res[k] - v)
-        #end
+        res = get_init_values_for_comparison(sim)
+        for (k, v) in test45_x0_init
+            diff_val[1] += LinearAlgebra.norm(res[k] - v)
+        end
 
-        #@test (diff_val[1] < 1e-3)
+        @test (diff_val[1] < 1e-3)
 
         # Obtain small signal results for initial conditions
         small_sig = small_signal_analysis(sim)
@@ -129,13 +124,9 @@ end
         # Should return zeros and a warning
         series3 = get_field_current_series(results, "generator-101-1")
 
-        # Obtain PSAT benchmark data
-        #psat_csv = joinpath(TEST_FILES_DIR, "benchmarks/psat/Test45/Test45_delta.csv")
-        #t_psat, δ_psat = get_csv_delta(psat_csv)
-
-        # Test Transient Simulation Results
-        #@test LinearAlgebra.norm(t - t_psat) == 0.0
-        #@test LinearAlgebra.norm(δ - δ_psat, Inf) <= 1e-3
+        # No PSAT benchmark exists for this case: the system pairs a SauerPai machine with a
+        # droop inverter, which PSAT cannot represent. Coverage here is the initial condition
+        # against test45_x0_init plus small-signal stability.
 
         power = PSID.get_activepower_series(results, "generator-101-1")
         rpower = PSID.get_reactivepower_series(results, "generator-101-1")

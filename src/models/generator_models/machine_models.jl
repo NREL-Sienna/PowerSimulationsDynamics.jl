@@ -184,7 +184,7 @@ function mdl_machine_ode!(
     γ_d2 = PSY.get_γ_d2(machine)
     γ_q2 = PSY.get_γ_q2(machine)
     basepower = PSY.get_base_power(dynamic_device)
-    ``
+
     #RI to dq transformation
     V_dq = ri_dq(δ) * [V_tR; V_tI]
 
