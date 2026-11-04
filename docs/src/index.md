@@ -46,15 +46,18 @@ BDF and Rosenbrock methods.
 `PowerSimulationsDynamics.jl` is part of the National Laboratory of the Rockies (formerly known as NREL)'s
 [Sienna ecosystem](https://sienna-platform.github.io/Sienna/), an open source framework for
 power system modeling, simulation, and optimization. The Sienna ecosystem can be
-[found on Github](https://github.com/Sienna-Platform/). It contains three applications:
+[found on GitHub](https://github.com/Sienna-Platform). It contains four applications:
 
   - [Sienna\Data](https://sienna-platform.github.io/Sienna/pages/applications/sienna_data.html) enables
     efficient data input, analysis, and transformation
   - [Sienna\Ops](https://sienna-platform.github.io/Sienna/pages/applications/sienna_ops.html) enables
-    enables system scheduling simulations by formulating and solving optimization problems
+    system scheduling simulations by formulating and solving optimization problems
   - [Sienna\Dyn](https://sienna-platform.github.io/Sienna/pages/applications/sienna_dyn.html) enables
     system transient analysis including small signal stability and full system dynamic
     simulations
+  - [Sienna\Net](https://sienna-platform.github.io/Sienna/pages/applications/sienna_network.html)
+    enables power flow analysis, reactive power planning, and transmission network reductions for
+    scalable analysis.
 
 Each application uses multiple packages in the [`Julia`](http://www.julialang.org)
 programming language. `PowerSimulationsDynamics.jl` is the core package for Sienna\Dyn.
